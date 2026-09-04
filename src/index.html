@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>La langue morte</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>html{color-scheme:dark}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+</head>
+<body>
+<div class="shell">
+  <header class="masthead">
+    <h1>La langue morte</h1>
+    <span class="sub">prototype · actes I–II · 13 glyphes sur 45</span>
+    <span class="spacer"></span>
+    <div class="devbar">
+      <span>hors jeu</span>
+      <span id="chrono" style="color:var(--dim);min-width:44px;text-align:right">0:00</span>
+      <button data-spd="1" aria-pressed="true">×1</button>
+      <button data-spd="3" aria-pressed="false">×3</button>
+      <button data-spd="10" aria-pressed="false">×10</button>
+      <button id="reset">réinitialiser</button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <section class="panel corpus-wrap">
+      <div class="phead"><span>Le corpus</span><span style="color:var(--faint);letter-spacing:.06em">j / k</span><span class="r" id="pct">signes 0 %</span></div>
+      <div class="meter"><i id="meter"></i></div>
+      <div class="rail" id="rail" aria-label="Tablettes dégagées. Cliquez pour y aller."></div>
+      <div id="corpus" aria-label="Corpus. Cliquez sur les signes pour relever des occurrences."></div>
+      <div class="log" id="log"><p class="hint">commence</p></div>
+    </section>
+
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <section class="panel">
+        <div class="phead"><span>Relevés</span></div>
+        <div class="res">
+          <div class="rrow r-O"><span class="rname" id="nm-O">Occurrences</span><span class="rrate" id="rt-O"></span><span class="rval" id="vl-O"></span></div>
+          <div class="rrow r-H"><span class="rname" id="nm-H">Hypothèses</span><span class="rrate" id="rt-H"></span><span class="rval" id="vl-H"></span></div>
+          <div class="rrow r-C"><span class="rname" id="nm-C">Certitude</span><span class="rrate" id="rt-C"></span><span class="rval" id="vl-C"></span></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="phead"><span>À la main</span></div>
+        <div class="acts">
+          <button class="act prime" id="a-rel"><span class="an">Relever un signe</span><span class="ac" id="ac-rel"></span></button>
+          <button class="act" id="a-hyp"><span class="an">Formuler une hypothèse</span><span class="ac" id="ac-hyp"></span></button>
+          <button class="act" id="a-rec"><span class="an">Recouper deux passages</span><span class="ac" id="ac-rec"></span></button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="phead"><span>Instruments</span></div>
+        <div class="instr" id="instr"></div>
+      </section>
+    </div>
+
+    <section class="panel">
+      <div class="phead"><span>Lexique</span><span class="r" id="lexr">0 / 12</span></div>
+      <div class="lex" id="lex"></div>
+    </section>
+  </div>
+</div>
+
+<div class="tip" id="tip" hidden></div>
+<div class="bloom" id="bloom"></div>
+<div class="end" id="end" hidden>
+  <div class="endcard">
+    <h2>Fin du prototype</h2>
+    <div class="k">actes I et II · 13 glyphes sur 45</div>
+    <p class="quote">Copier. Ils ont tout copié — beaucoup plus de fois qu'il n'en fallait pour garder.</p>
+    <p>Le corpus s'arrête ici. La suite — la grammaire, la datation des tablettes, la deuxième personne, la composition des glyphes, les contradictions — appartient aux actes III à V.</p>
+    <div class="endstats" id="endstats"></div>
+    <p style="font-size:15px"><b style="color:var(--lamp);font-weight:500">La seule question qui compte&nbsp;:</b> au moment où les compteurs sont devenus lisibles, est-ce que ça a fait quelque chose&nbsp;? Si non, le concept ne tient pas, et les 32 glyphes restants ne le sauveront pas.</p>
+    <button class="go" id="again">recommencer</button>
+  </div>
+</div>
+
+<script src="signes.js"></script>
+<script src="lexique.js"></script>
+<script src="corpus.js"></script>
+<script src="economie.js"></script>
+<script src="rendu.js"></script>
+<script src="jeu.js"></script>
+</body>
+</html>

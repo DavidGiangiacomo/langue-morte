@@ -1,0 +1,884 @@
+<title>La langue morte</title>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="style.css">
+<style>
+:root{
+  --ink:#14100C; --clay:#1E1811; --clay2:#282018; --line:#3A2E22; --line2:#4A3B2C;
+  --lamp:#EADDC6; --mid:#B0A08A; --dim:#7A6A57; --faint:#544636;
+  --ochre:#D68C46; --ochre-d:#8A5729; --slate:#9DB8C7; --grain:#CBA765;
+  --serif:"EB Garamond",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+*{box-sizing:border-box}
+body{
+  background:var(--ink); color:var(--lamp); font-family:var(--serif);
+  font-size:16px; line-height:1.5; min-height:100vh;
+  background-image:radial-gradient(120% 80% at 22% 0%, #241C14 0%, #14100C 62%);
+}
+button{font:inherit;color:inherit;background:none;border:none;cursor:pointer}
+button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);outline-offset:2px}
+
+/* ---------- shell ---------- */
+.shell{max-width:1500px;margin:0 auto;padding:20px 22px 40px;display:flex;flex-direction:column;gap:16px;min-height:100vh}
+.masthead{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;border-bottom:1px solid var(--line);padding-bottom:12px}
+.masthead h1{font-size:22px;font-weight:600;margin:0;letter-spacing:.18em;text-transform:uppercase}
+.masthead .sub{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.08em}
+.masthead .spacer{flex:1}
+.devbar{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.06em}
+.devbar button{border:1px solid var(--line);padding:3px 7px;border-radius:2px;font-family:var(--mono);font-size:10px;color:var(--dim)}
+.devbar button[aria-pressed="true"]{border-color:var(--ochre-d);color:var(--ochre)}
+.devbar button:hover{color:var(--lamp)}
+
+.grid{display:grid;grid-template-columns:minmax(0,1.5fr) 328px 322px;gap:16px;align-items:start;flex:1}
+@media (max-width:1180px){.grid{grid-template-columns:1fr}}
+
+.panel{background:var(--clay);border:1px solid var(--line);border-radius:3px}
+.phead{display:flex;align-items:baseline;gap:10px;padding:9px 13px;border-bottom:1px solid var(--line);
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+.phead .r{margin-left:auto;color:var(--mid);letter-spacing:.06em}
+
+/* ---------- corpus ---------- */
+.corpus-wrap{display:flex;flex-direction:column;min-height:0}
+.meter{height:2px;background:var(--line);position:relative;overflow:hidden}
+.meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ochre-d),var(--ochre));transition:width .5s ease}
+.rail{display:flex;flex-wrap:wrap;gap:3px;padding:8px 12px;border-bottom:1px solid var(--line);
+  max-height:78px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
+.rcell[hidden]{display:none}
+.rcell{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:30px;max-width:64px;
+  padding:4px 5px 5px;border:1px solid var(--line);border-radius:2px;background:var(--clay2);
+  cursor:pointer;transition:border-color .15s,background .15s}
+.rcell:hover{border-color:var(--ochre-d);background:#31261B}
+.rcell .rn{font-family:var(--mono);font-size:10px;color:var(--dim);line-height:1.1;display:flex;align-items:center;gap:1px}
+.rcell .rn .gl{width:7px;height:10px;vertical-align:0}
+.rcell .rb{width:100%;height:3px;background:#443528;border-radius:1px;overflow:hidden}
+.rcell .rb i{display:block;height:100%;background:var(--ochre-d);transition:width .5s ease}
+.rcell.ici{border-color:var(--mid)}
+.rcell.touche{border-color:var(--ochre)}
+.rcell.touche .rn{color:var(--ochre)}
+.rcell.touche .rb i{background:var(--ochre)}
+#corpus{padding:14px 16px 20px;overflow-y:auto;max-height:min(74vh,780px);cursor:crosshair;
+  scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
+.tablet{padding:14px 0 16px;border-bottom:1px dashed var(--line);margin-bottom:4px}
+.tablet:last-child{border-bottom:none}
+.tlabel{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-bottom:7px}
+.ln{display:flex;flex-wrap:wrap;align-items:center;gap:3px 9px;padding:3px 0;line-height:1.9}
+.tok{display:inline-flex;align-items:center;padding:1px 3px;border-radius:2px;transition:background .15s}
+.tok.g{color:var(--faint)}
+.tok.g:hover{background:#2E241A}
+.tok.w{color:var(--lamp);font-size:17px;letter-spacing:.01em}
+.tok.sep{color:var(--faint);padding:0 2px}
+.tok.num{color:var(--grain);font-family:var(--mono);font-size:14px;font-variant-numeric:tabular-nums}
+.tok.flash{animation:flash .85s ease}
+@keyframes flash{0%{background:var(--ochre);color:#14100C}55%{background:#5A3A1A;color:var(--lamp)}100%{background:transparent}}
+.gl{width:13px;height:17px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px}
+.gl2{width:22px}
+.tok.g .gl{stroke-width:1.55}
+.tlabel .gl{width:11px;height:14px;vertical-align:-2px;color:var(--faint)}
+.tlabel .numgl{margin-left:4px}
+.tablet[hidden]{display:none}
+.numgl{display:inline-flex;gap:2px;align-items:center;color:var(--faint)}
+.numgl .gl{width:11px;height:15px}
+
+.log{border-top:1px solid var(--line);padding:9px 16px;min-height:52px;display:flex;flex-direction:column;gap:3px;justify-content:center}
+.log p{margin:0;font-size:14.5px;font-style:italic;color:var(--mid)}
+.log p.new{color:var(--ochre)}
+.log .hint{font-family:var(--mono);font-size:10.5px;font-style:normal;letter-spacing:.1em;color:var(--faint);text-transform:uppercase}
+
+/* ---------- resources ---------- */
+.res{padding:11px 13px;display:flex;flex-direction:column;gap:8px}
+.rrow{display:flex;align-items:center;gap:10px}
+.rname{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);width:88px;flex:none}
+.rval{margin-left:auto;font-family:var(--mono);font-size:15px;font-variant-numeric:tabular-nums;text-align:right}
+.rrate{font-family:var(--mono);font-size:10px;color:var(--faint);width:74px;text-align:right;flex:none}
+.r-O .rval{color:var(--mid)} .r-H .rval{color:var(--grain)} .r-C .rval{color:var(--slate)}
+.r-C .rname{color:var(--slate);opacity:.75}
+.dry{color:var(--ochre)!important}
+
+/* ---------- actions ---------- */
+.acts{padding:11px 13px;display:flex;flex-direction:column;gap:7px}
+.act{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:1px solid var(--line2);
+  background:var(--clay2);padding:8px 11px;border-radius:2px;transition:border-color .15s,background .15s}
+.act:hover:not(:disabled){border-color:var(--ochre-d);background:#31261B}
+.act:disabled{opacity:.42;cursor:default}
+.act .an{font-size:15.5px;white-space:nowrap}
+.act .ac{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--dim);display:flex;gap:6px;
+  align-items:center;flex-wrap:wrap;justify-content:flex-end;max-width:56%;line-height:1.35}
+.act.prime{border-color:var(--ochre-d);background:#33261A}
+.act.prime:hover{background:#3E2D1D}
+
+/* ---------- instruments ---------- */
+.instr{padding:7px 9px;display:flex;flex-direction:column;gap:5px}
+.ins{display:grid;grid-template-columns:1fr auto;gap:2px 10px;width:100%;text-align:left;border:1px solid transparent;
+  padding:7px 9px;border-radius:2px;transition:border-color .15s,background .15s}
+.ins:hover:not(:disabled){background:#2C2318;border-color:var(--line2)}
+.ins:disabled{cursor:default}
+.ins.afford{border-color:var(--ochre-d)}
+.ins .nm{display:flex;align-items:center;gap:7px;font-size:16px}
+.ins .nm .gl{width:12px;height:16px}
+.ins .lv{font-family:var(--mono);font-size:12px;color:var(--mid);font-variant-numeric:tabular-nums}
+.ins .ds{grid-column:1;font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.03em}
+.ins .cs{grid-column:2;font-family:var(--mono);font-size:10.5px;color:var(--dim);text-align:right;font-variant-numeric:tabular-nums}
+.ins.afford .cs{color:var(--ochre)}
+.ins.locked{opacity:.3}
+
+/* ---------- lexique ---------- */
+.lex{padding:10px 11px;display:flex;flex-direction:column;gap:13px}
+.branch .bh{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-bottom:6px}
+.chain{display:flex;flex-direction:column;gap:4px}
+.gcard{display:grid;grid-template-columns:30px 1fr auto;align-items:center;gap:3px 9px;width:100%;text-align:left;
+  border:1px solid var(--line);background:var(--clay2);padding:6px 9px;border-radius:2px;transition:all .15s}
+.gcard .sig{grid-row:1/3;display:flex;align-items:center;justify-content:center;color:var(--dim)}
+.gcard .sig .gl{width:16px;height:21px}
+.gcard .ttl{font-size:15.5px;color:var(--mid)}
+.gcard .cost{font-family:var(--mono);font-size:11px;color:var(--dim);text-align:right;font-variant-numeric:tabular-nums;display:flex;gap:4px;align-items:center;justify-content:flex-end}
+.gcard .eff{grid-column:2/4;font-family:var(--mono);font-size:9.5px;color:var(--faint);letter-spacing:.02em;line-height:1.45}
+.gcard .eff:empty,.ins .ds:empty{display:none}
+.ins.locked .nm{opacity:.55}
+.gcard.afford{border-color:var(--ochre-d);background:#302518}
+.gcard.afford .sig{color:var(--ochre)} .gcard.afford .cost{color:var(--ochre)} .gcard.afford .ttl{color:var(--lamp)}
+.gcard.afford:hover{background:#3B2C1B;border-color:var(--ochre)}
+.gcard.locked{opacity:.28;cursor:default}
+.gcard.done{border-color:transparent;background:transparent;cursor:default}
+.gcard.done .sig{color:var(--lamp)} .gcard.done .ttl{color:var(--lamp)}
+.gcard.done .cost{color:var(--faint)}
+.gcard:disabled{cursor:default}
+
+/* ---------- overlays ---------- */
+.tip{position:fixed;z-index:60;pointer-events:none;background:#2C2219;border:1px solid var(--line2);
+  border-radius:3px;padding:7px 11px;display:flex;align-items:center;gap:9px;
+  box-shadow:0 8px 24px rgba(0,0,0,.55)}
+.tip[hidden]{display:none}
+.tip .gl{width:17px;height:22px;color:var(--lamp);stroke-width:1.6}
+.tip .gl2{width:29px}
+.tip .numgl{gap:3px;color:var(--lamp)}
+.tip .numgl .gl{width:14px;height:18px}
+.tip .lab{font-family:var(--mono);font-size:10px;letter-spacing:.09em;color:var(--dim);text-transform:uppercase;white-space:nowrap}
+.tip .lab b{color:var(--lamp);font-weight:500}
+.tip .plus{font-family:var(--mono);font-size:12px;color:var(--faint)}
+.bloom{position:fixed;inset:0;pointer-events:none;background:radial-gradient(60% 50% at 50% 45%,rgba(214,140,70,.30),transparent 70%);opacity:0;z-index:40}
+.bloom.on{animation:bl 1.1s ease}
+@keyframes bl{0%{opacity:0}18%{opacity:1}100%{opacity:0}}
+.end{position:fixed;inset:0;z-index:50;background:rgba(12,9,6,.93);display:flex;align-items:center;justify-content:center;padding:24px}
+.end[hidden]{display:none}
+.endcard{max-width:620px;background:var(--clay);border:1px solid var(--line2);border-radius:3px;padding:30px 34px}
+.endcard h2{font-size:24px;font-weight:600;margin:0 0 4px;letter-spacing:.04em}
+.endcard .k{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-bottom:18px}
+.endcard p{margin:0 0 13px;color:var(--mid);max-width:60ch}
+.endcard .quote{border-left:2px solid var(--ochre-d);padding-left:14px;font-style:italic;color:var(--lamp);font-size:17px}
+.endstats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px 20px;margin:20px 0;font-family:var(--mono);font-size:11px;color:var(--dim)}
+.endstats b{color:var(--lamp);font-weight:500;float:right;font-variant-numeric:tabular-nums}
+.endcard .go{border:1px solid var(--ochre-d);color:var(--ochre);padding:9px 18px;border-radius:2px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.endcard .go:hover{background:#33261A}
+
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+
+<div class="shell">
+  <header class="masthead">
+    <h1>La langue morte</h1>
+    <span class="sub">prototype · actes I–II · 13 glyphes sur 45</span>
+    <span class="spacer"></span>
+    <div class="devbar">
+      <span>hors jeu</span>
+      <span id="chrono" style="color:var(--dim);min-width:44px;text-align:right">0:00</span>
+      <button data-spd="1" aria-pressed="true">×1</button>
+      <button data-spd="3" aria-pressed="false">×3</button>
+      <button data-spd="10" aria-pressed="false">×10</button>
+      <button id="reset">réinitialiser</button>
+    </div>
+  </header>
+
+  <div class="grid">
+    <section class="panel corpus-wrap">
+      <div class="phead"><span>Le corpus</span><span style="color:var(--faint);letter-spacing:.06em">j / k</span><span class="r" id="pct">signes 0 %</span></div>
+      <div class="meter"><i id="meter"></i></div>
+      <div class="rail" id="rail" aria-label="Tablettes dégagées. Cliquez pour y aller."></div>
+      <div id="corpus" aria-label="Corpus. Cliquez sur les signes pour relever des occurrences."></div>
+      <div class="log" id="log"><p class="hint">commence</p></div>
+    </section>
+
+    <div style="display:flex;flex-direction:column;gap:16px">
+      <section class="panel">
+        <div class="phead"><span>Relevés</span></div>
+        <div class="res">
+          <div class="rrow r-O"><span class="rname" id="nm-O">Occurrences</span><span class="rrate" id="rt-O"></span><span class="rval" id="vl-O"></span></div>
+          <div class="rrow r-H"><span class="rname" id="nm-H">Hypothèses</span><span class="rrate" id="rt-H"></span><span class="rval" id="vl-H"></span></div>
+          <div class="rrow r-C"><span class="rname" id="nm-C">Certitude</span><span class="rrate" id="rt-C"></span><span class="rval" id="vl-C"></span></div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="phead"><span>À la main</span></div>
+        <div class="acts">
+          <button class="act prime" id="a-rel"><span class="an">Relever un signe</span><span class="ac" id="ac-rel"></span></button>
+          <button class="act" id="a-hyp"><span class="an">Formuler une hypothèse</span><span class="ac" id="ac-hyp"></span></button>
+          <button class="act" id="a-rec"><span class="an">Recouper deux passages</span><span class="ac" id="ac-rec"></span></button>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="phead"><span>Instruments</span></div>
+        <div class="instr" id="instr"></div>
+      </section>
+    </div>
+
+    <section class="panel">
+      <div class="phead"><span>Lexique</span><span class="r" id="lexr">0 / 12</span></div>
+      <div class="lex" id="lex"></div>
+    </section>
+  </div>
+</div>
+
+<div class="tip" id="tip" hidden></div>
+<div class="bloom" id="bloom"></div>
+<div class="end" id="end" hidden>
+  <div class="endcard">
+    <h2>Fin du prototype</h2>
+    <div class="k">actes I et II · 13 glyphes sur 45</div>
+    <p class="quote">Copier. Ils ont tout copié — beaucoup plus de fois qu'il n'en fallait pour garder.</p>
+    <p>Le corpus s'arrête ici. La suite — la grammaire, la datation des tablettes, la deuxième personne, la composition des glyphes, les contradictions — appartient aux actes III à V.</p>
+    <div class="endstats" id="endstats"></div>
+    <p style="font-size:15px"><b style="color:var(--lamp);font-weight:500">La seule question qui compte&nbsp;:</b> au moment où les compteurs sont devenus lisibles, est-ce que ça a fait quelque chose&nbsp;? Si non, le concept ne tient pas, et les 32 glyphes restants ne le sauveront pas.</p>
+    <button class="go" id="again">recommencer</button>
+  </div>
+</div>
+
+<script>
+/* « La langue morte » — tracés des 45 signes, composés, numération
+   Scripts classiques, portée globale partagée, chargés dans l'ordre de index.html.
+   Aucune dépendance externe hors les polices Google. */
+
+"use strict";
+
+/* ============================ signes ============================ */
+const P = {
+  u1:'M10 4 L10 22',
+  u5:'M4 5 L10 21 L16 5',
+  t10:'M16.5 13 A6.5 6.5 0 1 1 3.5 13 A6.5 6.5 0 1 1 16.5 13',
+  t50:'M16.5 13 A6.5 6.5 0 1 1 3.5 13 A6.5 6.5 0 1 1 16.5 13 M2 13 H18',
+  h100:'M10 3 L18 13 L10 23 L2 13 Z',
+  h500:'M10 3 L18 13 L10 23 L2 13 Z M2 13 H18',
+  k1000:'M10 3 V23 M2 13 H18 M4.5 7.5 L15.5 18.5 M15.5 7.5 L4.5 18.5',
+  anna:'M6 4 L6 22 M14 4 L14 22',
+  tem:'M10 23 V6 M10 8 L5 12 M10 8 L15 12 M10 13.5 L6 17 M10 13.5 L14 17',
+  kish:'M2 9 Q6 5 10 9 T18 9 M2 17 Q6 13 10 17 T18 17',
+  gan:'M3 6 H17 V20 H3 Z M3 13 H17 M10 6 V20',
+  ur:'M3 21 V11 L10 5 L17 11 V21 Z',
+  tab:'M4 5 H16 V21 H4 Z M7 10 H13 M7 13.5 H13 M7 17 H11',
+  im:'M4 17 Q10 11 16 17 M6 6 L8 10 M10 4 V9 M14 6 L12 10',
+  sar:'M5 22 L14 7.5 M11.5 5 L17 8.5 L14 12.5 Z',
+  kal:'M6 5 V21 M12 5 V21 M4 5 H8 M10 5 H14',
+  shen:'M2 13 Q10 5 18 13 Q10 21 2 13 Z M12 13 A2 2 0 1 1 8 13 A2 2 0 1 1 12 13',
+  nur:'M14 13 A4 4 0 1 1 6 13 A4 4 0 1 1 14 13 M10 2 V5 M10 21 V24 M2 13 H5 M15 13 H18',
+  mu:'M10 22 V9 M11.5 5.5 A1.5 1.5 0 1 1 8.5 5.5 A1.5 1.5 0 1 1 11.5 5.5',
+  ta:'M10 22 V9 M10 9 L15 6.5 M17.5 5 A1.5 1.5 0 1 1 14.5 5 A1.5 1.5 0 1 1 17.5 5',
+  hal:'M10 3 V23 M3 19 L17 7',
+  mesh:'M10 23 V13 M10 13 C3.5 13 3.5 5 10 5 C16.5 5 16.5 13 10 13 Z',
+  pat:'M14 4 L6 13 L14 22',
+  la:'M4 22 L16 4',
+  dun:'M3 9 H17 M3 17 H17',
+  zur:'M6 4 L14 13 L6 22',
+  esh:'M14 3 A10 10 0 1 0 14 23 A7.5 7.5 0 1 1 14 3',
+  en:'M10 22 V14 M10 14 L4 6 M10 14 L16 6',
+  mik:'M10 4 V9 M10 12 V17 M10 20 V23',
+  lash:'M4 6 L16 20 M16 6 L4 20',
+  nash:'M7 22 V9 M13 22 V9 M11.5 5.5 A1.5 1.5 0 1 1 8.5 5.5 A1.5 1.5 0 1 1 11.5 5.5',
+  ke:'M4 21 Q10 21 10 13 Q10 5 16 5 M16 5 L12 2 M16 5 L12 8',
+  nm1:'M2 7 Q6 3 10 7 T18 7 M2 13 Q6 9 10 13 T18 13 M2 19 Q6 15 10 19 T18 19',
+  nm2:'M3 22 V12 H8 V22 M8 12 V6 H13 V22 M13 12 H17 V22 M2 22 H18',
+  nm3:'M4 4 L10 13 L4 22 M16 4 V22 M10 13 H16',
+  nm4:'M10 3 L17 10 L10 17 L3 10 Z M10 17 V23',
+  nm5:'M4 20 Q10 2 16 20 M6 14 H14 M10 20 V23',
+  nm6:'M5 5 H15 M10 5 V21 M5 21 H15 M7 13 H13'
+};
+P.an = P.u1; P.hem = P.u5; P.sela = P.t10; P.meku = P.h100; P.mille = P.k1000;
+
+/* Les composés se voient comme composés : le signe de « deux » EST le signe de « un »
+   redoublé, celui de « grenier » contient « maison » et « grain ». Le joueur reconnaît
+   les parties avant de savoir lire le tout — c'est l'intuition que la mécanique de
+   composition des actes III+ viendra formaliser. */
+const COMP = {
+  anna:['u1','u1'],      lan:['la','u1'],       selanna:['t10','t10'],
+  urtem:['ur','tem'],    tabsar:['tab','sar'],  shenu:['shen','nash'],
+  nurnur:['nur','nur'],  nurhal:['nur','hal'],  mula:['mu','la'],
+  nashal:['nash','hal'], meshke:['mesh','ke'],  halnash:['hal','nash'],
+  shenke:['shen','ke'],  imme:['im','sar'],     halan:['hal','u1'],
+  enla:['en','la'],      taru:['ta','en']
+};
+const svCache = {};
+function sv(k){
+  if(svCache[k]) return svCache[k];
+  let out;
+  if(COMP[k]){
+    const [a,b] = COMP[k];
+    out = '<svg class="gl gl2" viewBox="0 0 34 26" aria-hidden="true">'
+        + '<g transform="translate(0,2.6) scale(0.8)"><path d="'+P[a]+'"/></g>'
+        + '<g transform="translate(17,2.6) scale(0.8)"><path d="'+P[b]+'"/></g></svg>';
+  } else if(P[k]){
+    out = '<svg class="gl" viewBox="0 0 20 26" aria-hidden="true"><path d="'+P[k]+'"/></svg>';
+  } else {
+    out = '<svg class="gl" viewBox="0 0 20 26" aria-hidden="true"><path d="M6 6 H14 M6 20 H14 M10 6 V20"/></svg>';
+  }
+  return (svCache[k] = out);
+}
+
+/* numération : additive, 1 · 5 · 10 · 50 · 100 · 500 · 1000 */
+const STEPS = [[1000,'k1000'],[500,'h500'],[100,'h100'],[50,'t50'],[10,'t10'],[5,'u5'],[1,'u1']];
+
+/* Chaque glyphe de la branche NOMBRE ouvre un ou plusieurs signes de numération.
+   `hem` (cinq) en ouvre trois d'un coup : comprendre qu'un signe vaut cinq du rang
+   inférieur, c'est une seule idée, valable à tous les rangs.
+   `anna` (deux) n'ouvre AUCUN signe — il ouvre le principe du redoublement. Savoir que
+   ▏ vaut un ne dit rien de ce que vaut ▏▏ : tant qu'on ne l'a pas, on ne sait lire qu'un
+   nombre où chaque signe n'apparaît qu'une seule fois. */
+const NUMSYM = { an:['u1'], hem:['u5','t50','h500'], sela:['t10'], meku:['h100'], mille:['k1000'] };
+let SU = new Set();
+function majSignes(){ SU = new Set(); for(const g in NUMSYM) if(has(g)) NUMSYM[g].forEach(k=>SU.add(k)); }
+
+function numSyms(n){
+  const out=[]; let left=Math.max(0,Math.floor(n));
+  for(const [v,k] of STEPS){ while(left>=v && out.length<24){ out.push(k); left-=v; } }
+  return out;
+}
+/* Un nombre du corpus ne passe en chiffres que si le joueur connaît chacun de ses signes.
+   Avec `un` seul, « champ 3 » se lit et « grain 212 » reste opaque : c'est ce qu'il sait. */
+function numLisible(n){
+  n = Math.floor(n);
+  if(n === 0) return has('lan');
+  const sy = numSyms(n);
+  if(!sy.length) return false;
+  for(const k of sy) if(!SU.has(k)) return false;
+  if(!has('anna')){
+    const vus = new Set();
+    for(const k of sy){ if(vus.has(k)) return false; vus.add(k); }
+  }
+  return true;
+}
+
+const numCache = {};
+function numGlyphs(n){
+  n = Math.max(0, Math.floor(n));
+  if(numCache[n]) return numCache[n];
+  let out = n===0 ? [sv('lan')] : numSyms(n).map(sv);
+  if(!out.length) out=[sv('lan')];
+  const s = '<span class="numgl">'+out.join('')+'</span>';
+  if(n<=2000) numCache[n]=s;
+  return s;
+}
+
+
+/* « La langue morte » — les 13 glyphes du MVP (actes I-II)
+   Scripts classiques, portée globale partagée, chargés dans l'ordre de index.html.
+   Aucune dépendance externe hors les polices Google. */
+"use strict";
+
+/* ============================ lexique ============================ */
+const GL = [
+  {id:'an',   br:'nombre',  mot:'un',       cost:2,  eff:'les relevés en chiffres · le signe « un » dans les tablettes',
+   log:'Un trait. Un. Mes propres comptes se tiennent enfin — les leurs, à peine.'},
+  {id:'anna', br:'nombre',  mot:'deux',     cost:5,  eff:'le redoublement : un signe répété s’additionne · nombres jusqu’à 4 · les coûts en chiffres · +25 % au relevé',
+   log:'Deux traits pour deux. Un signe répété s’ajoute à lui-même — tout le système tient là-dedans.'},
+  {id:'hem',  br:'nombre',  mot:'cinq',     cost:11, eff:'le principe du cinq · nombres jusqu’à 9',
+   log:'Cinq. Un signe qui vaut cinq du rang d’en dessous — et à tous les rangs.'},
+  {id:'sela', br:'nombre',  mot:'dix',      cost:18, eff:'les débits en chiffres · nombres jusqu’à 99',
+   log:'La main : dix. Ils comptaient sur les mains, comme tout le monde.'},
+  {id:'meku', br:'nombre',  mot:'cent',     cost:33, eff:'nombres jusqu’à 999 · grands nombres repliés · achat ×10',
+   log:'Cent. Les récoltes deviennent lisibles. Et elles baissent.'},
+  {id:'tem',  br:'matiere', mot:'grain',    cost:3,  eff:'+30 % au copiste',
+   log:'Du grain. Ce ne sont pas des prières : ce sont des inventaires.'},
+  {id:'ur',   br:'matiere', mot:'maison',   cost:6,  eff:'les instruments prennent leur nom',
+   log:'Une maison. Les outils du corpus prennent un nom.'},
+  {id:'tab',  br:'matiere', mot:'tablette', cost:14, eff:'+50 % au relevé',
+   log:'La tablette se nomme elle-même. Ils comptaient leurs tablettes comme leur grain.'},
+  {id:'kish', br:'matiere', mot:'eau',      cost:22, eff:'+30 % à la table de fréquences',
+   log:'L’eau. Un relevé par année, tenu sur deux siècles.'},
+  {id:'gan',  br:'matiere', mot:'champ',    cost:40, eff:'recoupement −25 % de coût',
+   log:'Le champ. Quatre champs, et les nombres qui baissent d’une tablette à l’autre.'},
+  {id:'im',   br:'parole',  mot:'dire',     cost:8,  eff:'le lexique annonce ce qu’il fait',
+   log:'Dire. Le lexique cesse d’être un pari.'},
+  {id:'sar',  br:'parole',  mot:'graver',   cost:27, eff:'+50 % à la concordance',
+   log:'Graver. Quelqu’un a tenu ce stylet, et l’a écrit.'},
+  {id:'kal',  br:'parole',  mot:'copier',   cost:48, eff:'×2 sur toute la production',
+   log:'Copier. Deux fois, puis dix, puis cent. Bien plus qu’il n’en fallait pour garder.'}
+];
+const NGL = GL.length;
+const BR = [['nombre','Nombre'],['matiere','Matière'],['parole','Parole']];
+const byId = Object.fromEntries(GL.map(g=>[g.id,g]));
+
+
+/* GÉNÉRÉ — ne pas éditer à la main.
+   Source : docs/corpus.md → outils/corpus.py → ce fichier.
+   Régénérer avec : python outils/corpus.py */
+
+"use strict";
+
+const CORPUS=[{"t":1,"l":["tab %1 · nur %9","gan %1 · tem %212","gan %2 · tem %198","gan %3 · tem %140","gan %4 · tem %206","tem %756","kish %14","ur %31"]},{"t":2,"l":["tab %2 · nur %12","gan %1 · tem %205","gan %2 · tem %191","gan %3 · tem %138","gan %4 · tem %208","tem %742","kish %13","ur %31"]},{"t":3,"l":["tab %3 · nur %19","gan %1 · tem %224","gan %2 · tem %210","gan %3 · tem %152","gan %4 · tem %215","tem %801","kish %15","ur %33"]},{"t":4,"l":["tab %4 · nur %27","gan %1 · tem %190","gan %2 · tem %176","gan %3 · tem %130","gan %4 · tem %194","tem %690","kish %12","ur %30","urtem %1 · tem %690","imme nm3"]},{"t":5,"l":["tab %5 · nur %40","urtem %1 · tem %705","ur %1 · tem %20 · zur · nash · dun","ur %2 · tem %20 · en la · enla","ur %3 · tem %20 · pat · nur la · en shen","ur %4 · tem %20 · en la · enla","ur %5 · tem %20 · imme · esh · dun sar","ur %6 · tem %20 · pat · nur la · en shen","ur %7 · tem %20 · en mesh · dun la · zur","ur %8 · tem %20 · en la · enla","ur %9 · tem %20 · pat · nur la · en shen","ur %10 · tem %20 · imme · esh · dun sar","ur %11 · tem %20 · en la · enla","ur %12 · tem %20 · pat · nur la · en shen","ur %13 · tem %20 · zur · nash · dun","ur %14 · tem %20 · en mesh · dun la · zur","ur %15 · tem %20 · imme · esh · dun sar","ur %16 · tem %20 · en la · enla","ur %17 · tem %20 · zur · nash · dun","ur %18 · tem %20 · pat · nur la · en shen","ur %19 · tem %20 · en la · enla","ur %20 · tem %20 · imme · esh · dun sar","ur %21 · tem %20 · en mesh · dun la · zur","ur %22 · tem %20 · en la · enla","ur %23 · tem %20 · en la · enla","ur %24 · tem %20 · pat · nur la · en shen","ur %25 · tem %20 · imme · esh · dun sar","ur %26 · tem %20 · en la · enla","ur %27 · tem %20 · pat · nur la · en shen","ur %28 · tem %20 · en mesh · dun la · zur","ur %29 · tem %20 · zur · nash · dun","ur %30 · tem %20 · imme · esh · dun sar","ur %31 · tem %20 · en la · enla","tem %620","urtem %1 · tem %85","mesh %60","tem %25","imme nm3"]},{"t":6,"l":["tab %6 · nur %40","nur %40 · kish %13","pat · nur %27 · kish %12 · en la · enla","pat · nur %19 · kish %15 · en la · enla","pat · nur %12 · kish %13 · en la · enla","pat · nur %9 · kish %14 · en la · enla","dun shen · kish","mik kish · mik la","zur · dun shen","imme nm3"]},{"t":7,"l":["tab %7 · nur %54","gan %1 · tem %180","gan %2 · tem %168","gan %3 · tem %124","gan %4 · tem %176","tem %648","kish %11","ur %29","ur %1 · tem %20 · zur · nash · dun","ur %2 · tem %20 · en la · enla","ur %3 · tem %20 · pat · nur la · en shen","ur %4 · tem %20 · en la · enla","ur %5 · tem %20 · imme · esh · dun sar","ur %6 · tem %20 · pat · nur la · en shen","ur %7 · tem %20 · en mesh · dun la · zur","ur %8 · tem %20 · en la · enla","ur %9 · tem %20 · pat · nur la · en shen","ur %10 · tem %20 · imme · esh · dun sar","ur %11 · tem %20 · en la · enla","ur %12 · tem %20 · pat · nur la · en shen","ur %13 · tem %20 · zur · nash · dun","ur %14 · tem %20 · en mesh · dun la · zur","ur %15 · tem %20 · imme · esh · dun sar","ur %16 · tem %20 · en la · enla","ur %17 · tem %20 · zur · nash · dun","ur %18 · tem %20 · pat · nur la · en shen","ur %19 · tem %20 · en la · enla","ur %20 · tem %20 · imme · esh · dun sar","ur %21 · tem %20 · en mesh · dun la · zur","ur %22 · tem %20 · en la · enla","ur %23 · tem %20 · en la · enla","ur %24 · tem %20 · pat · nur la · en shen","ur %25 · tem %20 · imme · esh · dun sar","ur %26 · tem %20 · en la · enla","ur %27 · tem %20 · pat · nur la · en shen","ur %28 · tem %20 · en mesh · dun la · zur","ur %29 · tem %20 · zur · nash · dun","tem %580","urtem %1 · tem %62"]},{"t":8,"l":["tab %8 · nur %54","tabsar %1","tab %1 · tab %2 · tab %3 · tab %4","dun kal · en la · enla","tab %5 · tab %6 · tab %7 · tab %8","tab %9 · tab %10 · tab %11 · tab %12","esh · kal · zur","tab %13 · tab %14 · tab %15 · tab %16","dun kal · en la · enla","tab %17 · tab %18 · tab %19 · tab %20","tab %21 · tab %22 · tab %23 · tab %24","dun kal tab","kal %2","en kal · la lash","en lash · dun la","esh · dun sar","zur · dun shen","imme nm3"]},{"t":9,"l":["tab %9 · nur %71","gan %1 · tem %184","gan %2 · tem %171","gan %3 · tem %126","gan %4 · tem %180","tem %661","kish %12","ur %30","ur %1 · tem %20 · zur · nash · dun","ur %2 · tem %20 · en la · enla","ur %3 · tem %20 · pat · nur la · en shen","ur %4 · tem %20 · en la · enla","ur %5 · tem %20 · imme · esh · dun sar","ur %6 · tem %20 · pat · nur la · en shen","ur %7 · tem %20 · en mesh · dun la · zur","ur %8 · tem %20 · en la · enla","ur %9 · tem %20 · pat · nur la · en shen","ur %10 · tem %20 · imme · esh · dun sar","ur %11 · tem %20 · en la · enla","ur %12 · tem %20 · pat · nur la · en shen","ur %13 · tem %20 · zur · nash · dun","ur %14 · tem %20 · en mesh · dun la · zur","ur %15 · tem %20 · imme · esh · dun sar","ur %16 · tem %20 · en la · enla","ur %17 · tem %20 · zur · nash · dun","ur %18 · tem %20 · pat · nur la · en shen","ur %19 · tem %20 · en la · enla","ur %20 · tem %20 · imme · esh · dun sar","ur %21 · tem %20 · en mesh · dun la · zur","ur %22 · tem %20 · en la · enla","ur %23 · tem %20 · en la · enla","ur %24 · tem %20 · pat · nur la · en shen","ur %25 · tem %20 · imme · esh · dun sar","ur %26 · tem %20 · en la · enla","ur %27 · tem %20 · pat · nur la · en shen","ur %28 · tem %20 · en mesh · dun la · zur","ur %29 · tem %20 · zur · nash · dun","ur %30 · tem %20 · imme · esh · dun sar","tem %600","urtem %1 · tem %1"]},{"t":10,"l":["tab %10 · nur %88","gan %1 · tem %165","gan %2 · tem %153","gan %3 · tem %112","gan %4 · tem %160","tem %590","kish %10","ur %27","mesh %60","ur %1 · tem %20 · zur · nash · dun","ur %2 · tem %20 · en la · enla","ur %3 · tem %20 · pat · nur la · en shen","ur %4 · tem %20 · en la · enla","ur %5 · tem %20 · imme · esh · dun sar","ur %6 · tem %20 · pat · nur la · en shen","ur %7 · tem %20 · en mesh · dun la · zur","ur %8 · tem %20 · en la · enla","ur %9 · tem %20 · pat · nur la · en shen","ur %10 · tem %20 · imme · esh · dun sar","ur %11 · tem %20 · en la · enla","ur %12 · tem %20 · pat · nur la · en shen","ur %13 · tem %20 · zur · nash · dun","ur %14 · tem %20 · en mesh · dun la · zur","ur %15 · tem %20 · imme · esh · dun sar","ur %16 · tem %20 · en la · enla","ur %17 · tem %20 · zur · nash · dun","ur %18 · tem %20 · pat · nur la · en shen","ur %19 · tem %20 · en la · enla","ur %20 · tem %20 · imme · esh · dun sar","ur %21 · tem %20 · en mesh · dun la · zur","ur %22 · tem %20 · en la · enla","ur %23 · tem %20 · en la · enla","ur %24 · tem %20 · pat · nur la · en shen","ur %25 · tem %20 · imme · esh · dun sar","ur %26 · tem %20 · en la · enla","ur %27 · tem %20 · pat · nur la · en shen","urtem %1 · tem %0"]},{"t":11,"l":["tab %11 · nur %88","imme nm3 hal","tabsar %1 · tab %11","dun kal tab","kal %2","en kal · la lash","en lash · dun la","esh · dun sar","zur · dun shen","imme nm4"]},{"t":12,"l":["tab %12 · nur %103","gan %1 · tem %146","gan %2 · tem %135","gan %3 · tem %99","gan %4 · tem %142","tem %522","kish %9","ur %24","mesh %80","ur %1 · tem %20 · zur · nash · dun","ur %2 · tem %20 · en la · enla","ur %3 · tem %20 · pat · nur la · en shen","ur %4 · tem %20 · en la · enla","ur %5 · tem %20 · imme · esh · dun sar","ur %6 · tem %20 · pat · nur la · en shen","ur %7 · tem %20 · en mesh · dun la · zur","ur %8 · tem %20 · en la · enla","ur %9 · tem %20 · pat · nur la · en shen","ur %10 · tem %20 · imme · esh · dun sar","ur %11 · tem %20 · en la · enla","ur %12 · tem %20 · pat · nur la · en shen","ur %13 · tem %20 · zur · nash · dun","ur %14 · tem %20 · en mesh · dun la · zur","ur %15 · tem %20 · imme · esh · dun sar","ur %16 · tem %20 · en la · enla","ur %17 · tem %20 · zur · nash · dun","ur %18 · tem %20 · pat · nur la · en shen","ur %19 · tem %20 · en la · enla","ur %20 · tem %20 · imme · esh · dun sar","ur %21 · tem %20 · en mesh · dun la · zur","ur %22 · tem %20 · en la · enla","ur %23 · tem %20 · en la · enla","ur %24 · la · urtem la · pat · nur la","urtem %1 · tem %12"]},{"t":13,"l":["tab %13 · nur %112","gan %1 · tem %153","gan %2 · tem %142","gan %3 · tem %104","gan %4 · tem %149","tem %548","kish %10","ur %25","zur · nur %103 · tem %522","zur · nur %112 · tem %548","mik kish","ur %1 · tem %20 · zur · nash · dun","ur %2 · tem %20 · en la · enla","ur %3 · tem %20 · pat · nur la · en shen","ur %4 · tem %20 · en la · enla","ur %5 · tem %20 · imme · esh · dun sar","ur %6 · tem %20 · pat · nur la · en shen","ur %7 · tem %20 · en mesh · dun la · zur","ur %8 · tem %20 · en la · enla","ur %9 · tem %20 · pat · nur la · en shen","ur %10 · tem %20 · imme · esh · dun sar","ur %11 · tem %20 · en la · enla","ur %12 · tem %20 · pat · nur la · en shen","ur %13 · tem %20 · zur · nash · dun","ur %14 · tem %20 · en mesh · dun la · zur","ur %15 · tem %20 · imme · esh · dun sar","ur %16 · tem %20 · en la · enla","ur %17 · tem %20 · zur · nash · dun","ur %18 · tem %20 · pat · nur la · en shen","ur %19 · tem %20 · en la · enla","ur %20 · tem %20 · imme · esh · dun sar","ur %21 · tem %20 · en mesh · dun la · zur","ur %22 · tem %20 · en la · enla","ur %23 · tem %20 · en la · enla","ur %24 · tem %20 · pat · nur la · en shen","ur %25 · la · urtem la · pat · nur la","imme nm4"]},{"t":14,"l":["tab %14 · nur %126","tem %470","kish %8","ur %22","mesh %100","urtem %1 · tem %0","ur %1 · tem %20 · zur · nash · dun","ur %2 · tem %20 · en la · enla","ur %3 · tem %20 · pat · nur la · en shen","ur %4 · tem %20 · en la · enla","ur %5 · tem %20 · imme · esh · dun sar","ur %6 · tem %20 · pat · nur la · en shen","ur %7 · tem %20 · en mesh · dun la · zur","ur %8 · tem %20 · en la · enla","ur %9 · tem %20 · pat · nur la · en shen","ur %10 · tem %20 · imme · esh · dun sar","ur %11 · tem %20 · en la · enla","ur %12 · tem %20 · pat · nur la · en shen","ur %13 · tem %20 · zur · nash · dun","ur %14 · tem %20 · en mesh · dun la · zur","ur %15 · tem %20 · imme · esh · dun sar","ur %16 · tem %20 · en la · enla","ur %17 · tem %20 · zur · nash · dun","ur %18 · tem %20 · pat · nur la · en shen","ur %19 · tem %20 · en la · enla","ur %20 · tem %20 · imme · esh · dun sar","ur %21 · la · urtem la · pat · nur la","ur %22 · la · urtem la · pat · nur la","tem %440","tem %30","dun kal tab","kal %10","en kal · la lash","en lash · dun la","esh · dun sar","zur · dun shen"]},{"t":15,"l":["tab %15 · nur %139","tem %401","ur %19","nurnur %1 · zur","pat · nurnur %1 · kish %14","nur %139 · kish %7","pat · nur %126 · kish %8 · en la · enla","pat · nur %112 · kish %10 · en la · enla","pat · nur %103 · kish %9 · en la · enla","pat · nur %88 · kish %10 · en la · enla","pat · nur %71 · kish %12 · en la · enla","pat · nur %54 · kish %11 · en la · enla","pat · nur %40 · kish %13 · en la · enla","pat · nur %27 · kish %12 · en la · enla","pat · nur %19 · kish %15 · en la · enla","pat · nur %12 · kish %13 · en la · enla","pat · nur %9 · kish %14 · en la · enla","dun shen · kish","mik kish · mik la","zur · dun shen","dun shen · tem","imme nm4"]},{"t":16,"l":["tab %16 · nur %150","tabsar %1 · tab %300","tab %1 · tab %2 · tab %3 · tab %4","dun kal · en la · enla","tab %5 · tab %6 · tab %7 · tab %8","tab %9 · tab %10 · tab %11 · tab %12","esh · kal · zur","tab %13 · tab %14 · tab %15 · tab %16","dun kal · en la · enla","tab %17 · tab %18 · tab %19 · tab %20","tab %21 · tab %22 · tab %23 · tab %24","tab %25 · tab %26 · tab %27 · tab %28","dun kal · en la · enla","esh · kal · zur","tab %29 · tab %30 · tab %31 · tab %32","tab %33 · tab %34 · tab %35 · tab %36","tab %37 · tab %38 · tab %39 · tab %40","dun kal · en la · enla","tab %41 · tab %42 · tab %43 · tab %44","esh · kal · zur","tab %45 · tab %46 · tab %47 · tab %48","tab %49 · tab %50 · tab %51 · tab %52","dun kal · en la · enla","tab %53 · tab %54 · tab %55 · tab %56","tab %57 · tab %58 · tab %59 · tab %60","esh · kal · zur","tab %61 · tab %62 · tab %63 · tab %64","dun kal · en la · enla","tab %65 · tab %66 · tab %67 · tab %68","tab %69 · tab %70 · tab %71 · tab %72","tab %73 · tab %74 · tab %75 · tab %76","dun kal · en la · enla","esh · kal · zur","tab %77 · tab %78 · tab %79 · tab %80","tab %81 · tab %82 · tab %83 · tab %84","tab %85 · tab %86 · tab %87 · tab %88","dun kal · en la · enla","tab %89 · tab %90 · tab %91 · tab %92","esh · kal · zur","tab %93 · tab %94 · tab %95 · tab %96","dun kal tab","kal %10","en kal · la lash","en lash · dun la","esh · dun sar","zur · dun shen","ur %17 · imme %6","tem %418","kish %8"]},{"t":17,"l":["tab %17 · nur %150","tab · en kal · dun","tab · en la kal · enla","tem · la tab","kish · la tab","dun tab · shen","dun tab · ke shen","imme nm4"]},{"t":18,"l":["tab %18 · nur %164","tem %352","kish %6","ur %17","nash · shenu","pat · nash · shenu","zur · nash · shenu","en la shen · nash la","imme nm4"]},{"t":19,"l":["tab %19 · nur %177","gan %1 · tem %80","gan %2 · tem %74","gan %3 · tem %54","gan %4 · tem %79","tem %287","kish %5","ur %14","ur %1 · tem %20 · zur · nash · dun","ur %2 · tem %20 · en la · enla","ur %3 · tem %20 · pat · nur la · en shen","ur %4 · tem %20 · en la · enla","ur %5 · tem %20 · imme · esh · dun sar","ur %6 · tem %20 · pat · nur la · en shen","ur %7 · tem %20 · en mesh · dun la · zur","ur %8 · tem %20 · en la · enla","ur %9 · tem %20 · pat · nur la · en shen","ur %10 · tem %20 · imme · esh · dun sar","ur %11 · tem %20 · en la · enla","ur %12 · tem %20 · pat · nur la · en shen","ur %13 · la · urtem la · pat · nur la","ur %14 · la · urtem la · pat · nur la","imme nm4 hal","imme nm5"]},{"t":20,"l":["tab %20 · nur %183","tem %301","kish %6","ur %15","ur %1 · tem %20 · zur · nash · dun","ur %2 · tem %20 · en la · enla","ur %3 · tem %20 · pat · nur la · en shen","ur %4 · tem %20 · en la · enla","ur %5 · tem %20 · imme · esh · dun sar","ur %6 · tem %20 · pat · nur la · en shen","ur %7 · tem %20 · en mesh · dun la · zur","ur %8 · tem %20 · en la · enla","ur %9 · tem %20 · pat · nur la · en shen","ur %10 · tem %20 · imme · esh · dun sar","ur %11 · tem %20 · en la · enla","ur %12 · tem %20 · pat · nur la · en shen","ur %13 · tem %20 · zur · nash · dun","ur %14 · la · urtem la · pat · nur la","ur %15 · la · urtem la · pat · nur la","ta · shen","taru shen · ta","mu sar · ta shen","mik ta","imme nm5"]},{"t":21,"l":["tab %21 · nur %183","dun sar · an","dun sar · an · anna · an","dun sar · sela","tab %1 · tab %1 · tab %1","en shen an · zur shen anna","dun · lash la","imme nm5"]},{"t":22,"l":["tab %22 · nur %195","tem %224","kish %4","ur %11","mesh %100","tem la","ur %1 · tem %15 · zur · nash · dun","ur %2 · tem %15 · en la · enla","ur %3 · tem %15 · pat · nur la · en shen","ur %4 · tem %15 · en la · enla","ur %5 · tem %15 · imme · esh · dun sar","ur %6 · tem %15 · pat · nur la · en shen","ur %7 · tem %15 · en mesh · dun la · zur","ur %8 · tem %15 · en la · enla","ur %9 · la · urtem la · pat · nur la","ur %10 · la · urtem la · pat · nur la","ur %11 · la · urtem la · pat · nur la","en mesh · la meshke","en tab · meshke","imme nm5"]},{"t":23,"l":["tab %23 · nur %201","tem %166","kish %3","ur %9 · imme %5","tabsar %1 · tab %900","tab %1 · tab %2 · tab %3 · tab %4","dun kal · en la · enla","tab %9 · tab %10 · tab %11 · tab %12","tab %17 · tab %18 · tab %19 · tab %20","esh · kal · zur","tab %25 · tab %26 · tab %27 · tab %28","dun kal · en la · enla","tab %33 · tab %34 · tab %35 · tab %36","tab %41 · tab %42 · tab %43 · tab %44","tab %49 · tab %50 · tab %51 · tab %52","dun kal · en la · enla","esh · kal · zur","tab %57 · tab %58 · tab %59 · tab %60","tab %65 · tab %66 · tab %67 · tab %68","tab %73 · tab %74 · tab %75 · tab %76","dun kal · en la · enla","tab %81 · tab %82 · tab %83 · tab %84","esh · kal · zur","tab %89 · tab %90 · tab %91 · tab %92","tab %97 · tab %98 · tab %99 · tab %100","dun kal · en la · enla","tab %105 · tab %106 · tab %107 · tab %108","tab %113 · tab %114 · tab %115 · tab %116","esh · kal · zur","ur %1 · tem %15 · zur · nash · dun","ur %2 · tem %15 · en la · enla","ur %3 · tem %15 · pat · nur la · en shen","ur %4 · tem %15 · en la · enla","ur %5 · tem %15 · imme · esh · dun sar","ur %6 · tem %15 · pat · nur la · en shen","ur %7 · tem %15 · en mesh · dun la · zur","ur %8 · tem %15 · en la · enla","ur %9 · tem %15 · pat · nur la · en shen","dun kal tab","kal %100","en kal · la lash","en lash · dun la","esh · dun sar","zur · dun shen","en kal %100 · an ke","imme nm5"]},{"t":24,"l":["tab %24 · nur %201","taru shen · ta la nash","taru shen · ta zur","en ta shen · nash la hal","en ta la shen · nash hal","dun ta","imme nm5"]},{"t":25,"l":["tab %25 · nur %207","tem %110","kish %2","ur %6","ur %1 · tem %10 · zur · nash · dun","ur %2 · tem %10 · en la · enla","ur %3 · tem %10 · pat · nur la · en shen","ur %4 · la · urtem la · pat · nur la","ur %5 · la · urtem la · pat · nur la","ur %6 · la · urtem la · pat · nur la","gan %1 · la","gan %2 · la","gan %3 · tem %21","gan %4 · la","urtem %1 · la","imme nm5"]},{"t":26,"l":["tab %26 · nur %209","tem %98","ur %5","nur %209 · kish %1","pat · nur %211 · kish %1 · en la · enla","pat · nur %209 · kish %2 · en la · enla","pat · nur %207 · kish %2 · en la · enla","pat · nur %201 · kish %3 · en la · enla","pat · nur %195 · kish %4 · en la · enla","pat · nur %183 · kish %6 · en la · enla","pat · nur %177 · kish %5 · en la · enla","pat · nur %164 · kish %6 · en la · enla","pat · nur %150 · kish %8 · en la · enla","pat · nur %139 · kish %7 · en la · enla","pat · nur %126 · kish %8 · en la · enla","pat · nur %112 · kish %10 · en la · enla","pat · nur %103 · kish %9 · en la · enla","pat · nur %88 · kish %10 · en la · enla","pat · nur %71 · kish %12 · en la · enla","pat · nur %54 · kish %11 · en la · enla","pat · nur %40 · kish %13 · en la · enla","pat · nur %27 · kish %12 · en la · enla","pat · nur %19 · kish %15 · en la · enla","pat · nur %12 · kish %13 · en la · enla","pat · nur %9 · kish %14 · en la · enla","dun shen · kish","mik kish · mik la","zur · dun shen","pat · tab %6 · lash","pat · tab %13 · lash","mik kish · lash","mu sar · lash","dun lash la","imme nm5"]},{"t":27,"l":["tab %27 · nur %211","tem %54","kish %1","ur %3","mesh · la tem","mesh · tab","tab · shenke","en tab shen · tab meshke","nash · mesh","imme nm5"]},{"t":28,"l":["tab %28 · nur %213","tem %29","kish %1","ur %2","nash sar · tab","nash sar · tab · en shen · ke","an · anna · sela · meku · lan","tem · kish · gan · ur","shen · sar · kal","en ta shen an · ta shen tem","en ta shen tem · ta shen nash","dun tab · en an · zur anna","mik ta · zur nurnur","imme nm5"]},{"t":29,"l":["tab %29 · nurhal","gan %1 · %0","gan %2 · %0","gan %3 · %0","gan %4 · %0","tem %0","kish %0","ur %0","urtem %0","mesh %0","tab %1 · tab %2 · tab %3 · tab %4","dun kal · en la · enla","tab %9 · tab %10 · tab %11 · tab %12","tab %17 · tab %18 · tab %19 · tab %20","esh · kal · zur","tab %25 · tab %26 · tab %27 · tab %28","dun kal · en la · enla","tab %33 · tab %34 · tab %35 · tab %36","tab %41 · tab %42 · tab %43 · tab %44","tab %49 · tab %50 · tab %51 · tab %52","dun kal · en la · enla","esh · kal · zur","tab %57 · tab %58 · tab %59 · tab %60","tab %65 · tab %66 · tab %67 · tab %68","tab %73 · tab %74 · tab %75 · tab %76","dun kal · en la · enla","tab %81 · tab %82 · tab %83 · tab %84","esh · kal · zur","tab %89 · tab %90 · tab %91 · tab %92","tab %97 · tab %98 · tab %99 · tab %100","dun kal · en la · enla","tab %105 · tab %106 · tab %107 · tab %108","tab %113 · tab %114 · tab %115 · tab %116","esh · kal · zur","tab %121 · tab %122 · tab %123 · tab %124","dun kal · en la · enla","tab %129 · tab %130 · tab %131 · tab %132","tab %137 · tab %138 · tab %139 · tab %140","tab %145 · tab %146 · tab %147 · tab %148","dun kal · en la · enla","esh · kal · zur","tab %153 · tab %154 · tab %155 · tab %156","tabsar %1 · tab %1200","imme %1"]},{"t":30,"l":["tab %30 · nurhal","mu sar · halan","imme nm5","nm6 shen","nm6 shen · esh","mu la im nm6 · im hal","mu sar nm6 · sar la hal","halnash · la","taru shen · ta ke","nashal"]}];
+
+/* Ordre de sortie de terre — pas l'ordre chronologique. La tablette 21 (l'abécédaire)
+   arrive 7e et ne sera comprise qu'à l'acte IV ; la 29 (le registre de zéros) arrive
+   avant la 28 qui l'explique. Voir docs/corpus.md §8. */
+const ORDRE = [1,2,3,4,8,5,21,7,6,11,9,16,10,12,17,13,15,22,14,18,19,25,20,23,26,24,27,29,28,30];
+const TB = ORDRE.map(n => CORPUS.find(t => t.t === n));
+
+
+/* « La langue morte » — état, ressources, instruments, boucle de simulation
+   Scripts classiques, portée globale partagée, chargés dans l'ordre de index.html.
+   Aucune dépendance externe hors les polices Google. */
+"use strict";
+
+/* ============================ état ============================ */
+const KEY='langue-morte-mvp-v2';
+const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0},gl:[],t:0,done:false});
+let S_ = fresh(), speed = 1;
+try{ const raw=localStorage.getItem(KEY); if(raw){ const p=JSON.parse(raw);
+  if(p&&p.b){ const b=Object.assign({cop:0,tab:0,con:0,ate:0},p.b); S_=Object.assign(fresh(),p); S_.b=b; } } }catch(e){}
+const has = id => S_.gl.indexOf(id)>=0;
+
+/* ---- économie ---- */
+const M = {
+  click:()=> 1*(has('anna')?1.25:1)*(has('tab')?1.5:1)*(has('kal')?2:1),
+  cop:  ()=> (has('tem')?1.3:1)*(has('kal')?2:1),
+  tabl: ()=> (has('kish')?1.3:1)*(has('kal')?2:1),
+  con:  ()=> (has('sar')?1.5:1)*(has('kal')?2:1)
+};
+/* production brute d'occurrences par seconde (sert au barème du relevé manuel) */
+const oBrut = () => (S_.b.cop*1.0 + S_.b.ate*25)*M.cop();
+/* le relevé manuel vaut au minimum 1, puis 3 % du débit : il reste utile sans être la colonne vertébrale */
+const clickVal = () => (1 + 0.03*oBrut()) * M.click();
+
+const INS = [
+  {k:'cop', nom:'Copiste',              sig:'sar',  base:15,   r:1.12,
+   ds:()=>'+'+f(1.0*M.cop(),1)+' occ./s',  unlock:()=>true},
+  {k:'tab', nom:'Table de fréquences',  sig:'tab',  base:100,  r:1.15,
+   ds:()=>'−1 occ./s → +'+f(0.6*M.tabl(),2)+' hyp./s', unlock:()=>S_.b.cop>0||S_.O>=70},
+  {k:'con', nom:'Concordance',          sig:'gan',  base:450,  r:1.18,
+   ds:()=>'−0,5 hyp./s → +'+f(0.003*M.con(),3)+' cert./s', unlock:()=>S_.b.tab>0||S_.H>=15},
+  {k:'ate', nom:'Atelier de copie',     sig:'kal',  base:1800, r:1.15,
+   ds:()=>'+'+f(25*M.cop(),0)+' occ./s',   unlock:()=>S_.b.con>0||S_.O>=900}
+];
+const insCost = i => Math.ceil(i.base*Math.pow(i.r,S_.b[i.k]));
+const recCost = () => { const m=Math.pow(1.12,S_.rec)*(has('gan')?0.75:1);
+  return {O:Math.ceil(12*m), H:Math.ceil(3*m)}; };
+const recGain = () => Math.min(3, 1 + Math.floor(S_.gl.length/5));
+const hypCost = () => 3;
+
+/* ---- formats ---- */
+const nf = new Intl.NumberFormat('fr-FR');
+function f(n,d){ return n.toFixed(d).replace('.',','); }
+function big(n){
+  n = Math.floor(n);
+  if(has('meku')){
+    if(n>=1e9) return f(n/1e9,2)+' Md';
+    if(n>=1e6) return f(n/1e6,2)+' M';
+    if(n>=1e4) return f(n/1e3,1)+' k';
+  }
+  return nf.format(n);
+}
+const readN  = () => has('an');
+const readC  = () => has('anna');
+const readR  = () => has('sela');
+function amount(n, lisible){ return lisible ? big(n) : numGlyphs(n); }
+
+/* ============================ actions ============================ */
+function relever(){ S_.O += clickVal(); S_.clicks++; }
+function formuler(){ const c=hypCost(); if(S_.O>=c){ S_.O-=c; S_.H+=1; } }
+function recouper(){ const c=recCost(); if(S_.O>=c.O&&S_.H>=c.H){ S_.O-=c.O; S_.H-=c.H; S_.C+=recGain(); S_.rec++; } }
+function acheterIns(k){ const i=INS.find(x=>x.k===k), c=insCost(i);
+  if(i.unlock()&&S_.O>=c){ S_.O-=c; S_.b[k]++; } }
+function acheterGl(id){
+  const g=byId[id]; if(has(id)||S_.C<g.cost) return;
+  const avant = CORPUS.map(pctTablette);
+  S_.C-=g.cost; S_.gl.push(id);
+  majSignes();
+  numCache.length = 0;
+  touchees = new Set();
+  CORPUS.forEach((tb,i)=>{ if(pctTablette(tb) > avant[i] + 1e-9) touchees.add(tb.t); });
+  pushLog(g.log);
+  paintCorpus(id);
+  lastPct=-1;
+  if(id==='an'||id==='kal'){ const b=$('bloom'); b.classList.remove('on'); void b.offsetWidth; b.classList.add('on'); }
+  if(S_.gl.length===NGL){ S_.done=true; showEnd(); }
+}
+
+function showEnd(){
+  const m=Math.floor(S_.t/60), s=Math.floor(S_.t%60);
+  $('endstats').innerHTML=[
+    ['temps de lecture', m+' min '+String(s).padStart(2,'0')],
+    ['signes relevés à la main', nf.format(S_.clicks)],
+    ['recoupements', nf.format(S_.rec)],
+    ['lignes entièrement lues', mesures().lig+' %'],
+    ['signes déchiffrés', mesures().sig+' %']
+  ].map(([k,v])=>'<div>'+k+' <b>'+v+'</b></div>').join('');
+  $('end').hidden=false;
+}
+
+/* ============================ boucle ============================ */
+function tick(dt){
+  S_.t += dt;
+  S_.O += oBrut()*dt;
+  // table de fréquences : consomme des occurrences
+  const wantO = S_.b.tab*1.0*dt;
+  if(wantO>0){ const canO=Math.min(wantO,S_.O); const fr=canO/wantO;
+    S_.O-=canO; S_.H += S_.b.tab*0.6*M.tabl()*fr*dt; }
+  // concordance : consomme des hypothèses
+  const wantH = S_.b.con*0.5*dt;
+  if(wantH>0){ const canH=Math.min(wantH,S_.H); const fr=canH/wantH;
+    S_.H-=canH; S_.C += S_.b.con*0.003*M.con()*fr*dt; }
+}
+let last=performance.now();
+function frame(now){
+  let dt=(now-last)/1000; last=now;
+  if(dt>0.5) dt=0.5;
+  if(!S_.done) tick(dt*speed);
+  paintRes(); paintActs(); paintInstr(); paintLex(); paintMeter();
+  const ch=Math.floor(S_.t/60)+':'+String(Math.floor(S_.t%60)).padStart(2,'0');
+  if($('chrono').textContent!==ch) $('chrono').textContent=ch;
+  requestAnimationFrame(frame);
+}
+
+
+/* « La langue morte » — corpus, barre de tablettes, panneaux, infobulle, journal
+   Scripts classiques, portée globale partagée, chargés dans l'ordre de index.html.
+   Aucune dépendance externe hors les polices Google. */
+"use strict";
+
+/* ============================ rendu corpus ============================ */
+const elCorpus=document.getElementById('corpus');
+/* Nombre de tablettes dégagées : 4 au départ, les 30 au douzième glyphe. */
+const revCount = () => Math.min(TB.length, 4 + Math.round(S_.gl.length * (TB.length-4) / NGL));
+let lastRev = 0;
+
+function buildCorpus(){
+  let h='';
+  TB.forEach((tb,i)=>{
+    h+='<div class="tablet" data-tb="'+tb.t+'" hidden>';
+    for(const line of tb.l){
+      h+='<div class="ln">';
+      for(const tk of line.split(' ')){
+        if(tk==='·') h+='<span class="tok sep">·</span>';
+        else if(tk.charCodeAt(0)===37) h+='<span class="tok" data-n="'+tk.slice(1)+'"></span>';
+        else h+='<span class="tok" data-w="'+tk+'"></span>';
+      }
+      h+='</div>';
+    }
+    h+='</div>';
+  });
+  elCorpus.innerHTML=h;
+  paintCorpus(null);
+}
+
+function paintCorpus(flashId){
+  elCorpus.querySelectorAll('[data-w]').forEach(el=>{
+    const id=el.dataset.w, known=!!byId[id] && has(id);
+    const want = known ? 'w:'+byId[id].mot : 'g';
+    if(el.__v===want && flashId!==id) return;
+    el.__v=want;
+    el.className='tok '+(known?'w':'g')+(flashId===id?' flash':'');
+    el.innerHTML = known ? byId[id].mot : sv(id);
+  });
+  elCorpus.querySelectorAll('[data-n]').forEach(el=>{
+    const n=+el.dataset.n, lis=numLisible(n), want=lis?'n':'g';
+    if(el.__v===want) return;
+    el.__v=want;
+    el.className='tok '+(lis?'num':'g');
+    el.innerHTML = lis ? nf.format(n) : numGlyphs(n);
+  });
+  revealer(); paintRail();
+}
+
+/* Un nouveau mot donne envie de relire les 30 tablettes — encore faut-il pouvoir y aller.
+   La barre indique, par tablette, la part de lignes entièrement lues ; à chaque glyphe
+   acquis elle marque en ocre les tablettes où ce signe apparaît. La relecture devient
+   une tournée guidée au lieu d'un défilement. */
+let touchees = new Set();
+function buildRail(){
+  $('rail').innerHTML = TB.map(tb =>
+    '<button class="rcell" data-go="'+tb.t+'" title="tablette '+tb.t+'">'+
+      '<span class="rn"></span><span class="rb"><i></i></span></button>').join('');
+}
+function paintRail(){
+  const n=revCount(), lisNum=has('tab')&&has('an');
+  const cells=$('rail').children;
+  for(let i=0;i<cells.length;i++){
+    const c=cells[i], t=TB[i].t;
+    const v=i>=n; if(c.hidden!==v) c.hidden=v; if(v) continue;
+    const num = lisNum ? String(t) : null;
+    const wantN = num || 'g';
+    const rn=c.querySelector('.rn');
+    if(rn.__v!==wantN){ rn.__v=wantN; rn.innerHTML = num || numGlyphs(t); }
+    const p=Math.round(100*pctTablette(TB[i]));
+    const bar=c.querySelector('.rb i');
+    if(bar.__v!==p){ bar.__v=p; bar.style.width=p+'%'; }
+    const tch = touchees.has(t);
+    if(c.classList.contains('touche')!==tch) c.classList.toggle('touche',tch);
+  }
+}
+function versTablette(t){
+  const el=elCorpus.querySelector('.tablet[data-tb="'+t+'"]');
+  if(!el || el.hidden) return;
+  elCorpus.scrollTo({top: el.offsetTop - elCorpus.firstElementChild.offsetTop - 8, behavior:'smooth'});
+  const cells=$('rail').children;
+  for(let i=0;i<cells.length;i++) cells[i].classList.toggle('ici', TB[i].t===t);
+}
+function tabletteVisible(){
+  const y=elCorpus.scrollTop, base=elCorpus.firstElementChild.offsetTop;
+  let best=null;
+  for(const el of elCorpus.querySelectorAll('.tablet')){
+    if(el.hidden) continue;
+    if(el.offsetTop - base <= y + 40) best=el; else break;
+  }
+  return best;
+}
+function saut(d){
+  const vis=tabletteVisible(); const list=[...elCorpus.querySelectorAll('.tablet')].filter(e=>!e.hidden);
+  let i=list.indexOf(vis); i = Math.max(0, Math.min(list.length-1, (i<0?0:i)+d));
+  versTablette(+list[i].dataset.tb);
+}
+
+function revealer(){
+  const n = revCount();
+  const tabs = elCorpus.querySelectorAll('.tablet');
+  for(let i=0;i<tabs.length;i++){ const v = i>=n; if(tabs[i].hidden!==v) tabs[i].hidden=v; }
+  if(n>lastRev && lastRev>0) pushLog(n-lastRev>1 ? (n-lastRev)+' tablettes dégagées.' : 'Une tablette dégagée.');
+  lastRev = n;
+}
+
+/* Deux mesures. « Signes » sature tôt : on peut lire presque tous les mots d'un
+   inventaire sans rien comprendre. « Lignes » ne compte qu'une ligne dont AUCUN signe
+   ne reste opaque — elle progresse avec le sens, pas avec le volume. */
+function tokLisible(tk){
+  if(tk==='·') return true;
+  if(tk.charCodeAt(0)===37) return numLisible(+tk.slice(1));
+  return !!byId[tk] && has(tk);
+}
+function mesures(){
+  let tot=0, ok=0, nl=0, nlOk=0;
+  for(const tb of CORPUS) for(const l of tb.l){
+    let pleine=true, vide=true;
+    for(const tk of l.split(' ')){
+      if(tk==='·') continue;
+      vide=false; tot++;
+      if(tokLisible(tk)) ok++; else pleine=false;
+    }
+    if(!vide){ nl++; if(pleine) nlOk++; }
+  }
+  return {sig:Math.round(100*ok/tot), lig:Math.round(100*nlOk/nl)};
+}
+function pctTablette(tb){
+  let tot=0, ok=0;
+  for(const l of tb.l) for(const tk of l.split(' ')){
+    if(tk==='·') continue; tot++; if(tokLisible(tk)) ok++;
+  }
+  return tot? ok/tot : 0;
+}
+
+/* ============================ panneaux ============================ */
+const $=id=>document.getElementById(id);
+function setHTML(el,h){ if(el.__h!==h){ el.__h=h; el.innerHTML=h; } }
+
+function buildInstr(){
+  setHTML($('instr'), INS.map(i=>
+    '<button class="ins" data-ins="'+i.k+'">'+
+      '<span class="nm"><span class="sg"></span><span class="nn"></span></span>'+
+      '<span class="lv"></span><span class="ds"></span><span class="cs"></span>'+
+    '</button>').join(''));
+}
+function paintInstr(){
+  for(const i of INS){
+    const b=$('instr').querySelector('[data-ins="'+i.k+'"]');
+    const open=i.unlock(), c=insCost(i), can=open&&S_.O>=c;
+    b.classList.toggle('locked',!open);
+    b.classList.toggle('afford',can);
+    b.disabled=!can;
+    setHTML(b.querySelector('.sg'), sv(i.sig));
+    const muet={cop:'kal',tab:'im',con:'shen',ate:'mesh'}[i.k];
+    setHTML(b.querySelector('.nn'), (open&&has('ur')) ? i.nom
+      : '<span style="color:var(--dim)">'+sv('dun')+sv(muet)+sv('la')+'</span>');
+    setHTML(b.querySelector('.lv'), open? nf.format(S_.b[i.k]) : '');
+    setHTML(b.querySelector('.ds'), open&&has('im') ? i.ds() : '');
+    setHTML(b.querySelector('.cs'), open ? (readC()? big(c) : numGlyphs(c)) : '');
+  }
+}
+
+function buildLex(){
+  setHTML($('lex'), BR.map(([k,label])=>{
+    const list=GL.filter(g=>g.br===k);
+    return '<div class="branch"><div class="bh">'+label+'</div><div class="chain">'+
+      list.map(g=>'<button class="gcard" data-gl="'+g.id+'">'+
+        '<span class="sig">'+sv(g.id)+'</span>'+
+        '<span class="ttl"></span><span class="cost"></span><span class="eff"></span></button>').join('')+
+    '</div></div>';
+  }).join(''));
+}
+function paintLex(){
+  for(const [k] of BR){
+    const list=GL.filter(g=>g.br===k);
+    let prevDone=true;
+    for(const g of list){
+      const b=$('lex').querySelector('[data-gl="'+g.id+'"]');
+      const done=has(g.id), open=prevDone&&!done, can=open&&S_.C>=g.cost;
+      const cls='gcard'+(done?' done':can?' afford':open?'':' locked');
+      if(b.className!==cls) b.className=cls;
+      b.disabled=!can;
+      setHTML(b.querySelector('.ttl'), done? g.mot : '');
+      setHTML(b.querySelector('.cost'), done? '✓' : open? (readC()? String(g.cost) : numGlyphs(g.cost)) : '');
+      setHTML(b.querySelector('.eff'), (done || (open && has('im'))) ? g.eff : '');
+      if(!done) prevDone=false;
+    }
+  }
+  $('lexr').textContent = S_.gl.length+' / '+NGL;
+}
+
+function paintRes(){
+  const tb=S_.b.tab, cn=S_.b.con;
+  const oNet = oBrut() - tb*1.0, hNet = tb*0.6*M.tabl() - cn*0.5, cNet = cn*0.003*M.con();
+  setHTML($('vl-O'), amount(S_.O, readN()));
+  setHTML($('vl-H'), amount(S_.H, readN()));
+  setHTML($('vl-C'), amount(S_.C, readN()));
+  const rt=(v,el,dry)=>{ setHTML(el, readR()? (v?( (v>0?'+':'−')+f(Math.abs(v),v<0.1&&v!==0?3:2)+'/s'):'') : '');
+    el.classList.toggle('dry',!!dry); };
+  rt(oNet,$('rt-O'), tb>0 && S_.O<1 && oNet<0);
+  rt(hNet,$('rt-H'), cn>0 && S_.H<1 && hNet<0);
+  rt(cNet,$('rt-C'), false);
+}
+
+function paintActs(){
+  const hc=hypCost(), rc=recCost(), cv=clickVal(), rg=recGain();
+  setHTML($('ac-rel'), readC()? ('+'+(cv<10? f(cv,1).replace(',0','') : big(Math.round(cv)))) : ('+'+numGlyphs(Math.round(cv))));
+  setHTML($('ac-hyp'), readC()? hc+' occ.' : numGlyphs(hc));
+  setHTML($('ac-rec'), (readC()? (big(rc.O)+' occ. · '+big(rc.H)+' hyp.') : (numGlyphs(rc.O)+'<span style="width:6px"></span>'+numGlyphs(rc.H)))
+    + (rg>1? '<span style="color:var(--slate)">→ '+(readC()? rg : '')+'</span>' : ''));
+  $('a-hyp').disabled = S_.O < hc;
+  $('a-rec').disabled = S_.O < rc.O || S_.H < rc.H;
+}
+
+let lastPct=-1;
+function paintMeter(){
+  const m=mesures();
+  const key=m.sig*1000+m.lig;
+  if(key===lastPct) return; lastPct=key;
+  $('meter').style.width=m.sig+'%';
+  $('pct').textContent='signes '+m.sig+' % · lignes '+m.lig+' %';
+}
+
+/* ============================ infobulle ============================ */
+/* Une fois un mot traduit, son signe disparaît de l'écran. Le survol le redonne :
+   on peut vérifier ce qu'on lit sans défaire ce qu'on a appris.
+   Sur un signe encore inconnu, l'infobulle donne son nombre d'occurrences dans tout
+   le corpus — mais seulement si on possède une Table de fréquences. L'instrument
+   fait alors visiblement ce que son nom annonce. */
+const FREQ = {};
+for(const tb of CORPUS) for(const l of tb.l) for(const tk of l.split(' ')){
+  if(tk==='·' || tk.charCodeAt(0)===37) continue;
+  FREQ[tk] = (FREQ[tk]||0) + 1;
+}
+const partMot = k => (k==='u1' && has('an')) ? 'un'
+                   : (k==='t10' && has('sela')) ? 'dix'
+                   : (k==='h100' && has('meku')) ? 'cent'
+                   : (byId[k] && has(k)) ? byId[k].mot : null;
+
+function tipHTML(el){
+  if(el.dataset.w !== undefined){
+    const id = el.dataset.w, connu = !!byId[id] && has(id);
+    if(connu){
+      if(COMP[id]){
+        const [a,b] = COMP[id], ma = partMot(a), mb = partMot(b);
+        return sv(a) + '<span class="plus">+</span>' + sv(b)
+             + '<span class="lab">' + (ma&&mb ? ma+' + '+mb : 'signe composé') + '</span>';
+      }
+      return sv(id) + '<span class="lab">' + byId[id].mot + '</span>';
+    }
+    if(S_.b.tab > 0)
+      return sv(id) + '<span class="lab"><b>' + FREQ[id] + '</b> occurrence' + (FREQ[id]>1?'s':'') + '</span>';
+    return null;
+  }
+  if(el.dataset.n !== undefined){
+    const n = +el.dataset.n;
+    if(numLisible(n)) return numGlyphs(n) + '<span class="lab">' + nf.format(n) + '</span>';
+  }
+  return null;
+}
+
+let tipCle = null;
+function tipPlace(x,y){
+  const t=$('tip'), r=t.getBoundingClientRect();
+  let px=x+15, py=y+17;
+  if(px+r.width  > innerWidth  - 8) px = x - r.width  - 13;
+  if(py+r.height > innerHeight - 8) py = y - r.height - 13;
+  t.style.left=Math.max(6,px)+'px'; t.style.top=Math.max(6,py)+'px';
+}
+function tipCacher(){ if(tipCle!==null){ tipCle=null; $('tip').hidden=true; } }
+
+/* ============================ journal ============================ */
+const LOGS=[];
+function pushLog(txt){
+  LOGS.push(txt); if(LOGS.length>2) LOGS.shift();
+  $('log').innerHTML = LOGS.map((t,i)=>'<p'+(i===LOGS.length-1?' class="new"':'')+'>'+t+'</p>').join('');
+}
+
+
+/* « La langue morte » — liaisons, entrées, sauvegarde
+   Scripts classiques, portée globale partagée, chargés dans l'ordre de index.html.
+   Aucune dépendance externe hors les polices Google. */
+"use strict";
+
+/* ============================ liaisons ============================ */
+majSignes();
+buildRail(); buildCorpus(); buildInstr(); buildLex();
+if(S_.gl.length){ paintCorpus(null); pushLog(byId[S_.gl[S_.gl.length-1]].log); }
+if(S_.done) showEnd();
+
+elCorpus.addEventListener('click', e=>{ if(e.target.closest('.tok')) relever(); });
+elCorpus.addEventListener('mousemove', e=>{
+  const el = e.target.closest('.tok');
+  if(!el || el.classList.contains('sep')){ tipCacher(); return; }
+  const cle = (el.dataset.w!==undefined ? 'w'+el.dataset.w : 'n'+el.dataset.n) + ':' + el.__v;
+  if(cle !== tipCle){
+    const h = tipHTML(el);
+    if(!h){ tipCacher(); return; }
+    tipCle = cle; $('tip').innerHTML = h; $('tip').hidden = false;
+  }
+  tipPlace(e.clientX, e.clientY);
+});
+elCorpus.addEventListener('mouseleave', tipCacher);
+elCorpus.addEventListener('scroll', tipCacher, {passive:true});
+$('rail').addEventListener('click', e=>{ const b=e.target.closest('[data-go]'); if(b) versTablette(+b.dataset.go); });
+window.addEventListener('keydown', e=>{
+  if(e.metaKey||e.ctrlKey||e.altKey) return;
+  const k=e.key.toLowerCase();
+  if(k==='j'){ e.preventDefault(); saut(1); }
+  else if(k==='k'){ e.preventDefault(); saut(-1); }
+});
+$('a-rel').addEventListener('click', relever);
+$('instr').addEventListener('click', e=>{ const b=e.target.closest('[data-ins]'); if(b&&!b.disabled) acheterIns(b.dataset.ins); });
+$('lex').addEventListener('click', e=>{ const b=e.target.closest('[data-gl]'); if(b&&!b.disabled) acheterGl(b.dataset.gl); });
+
+function repeat(btn, fn){
+  let iv=null, to=null;
+  const stop=()=>{ clearTimeout(to); clearInterval(iv); iv=to=null; };
+  btn.addEventListener('pointerdown', e=>{ if(btn.disabled) return; fn();
+    to=setTimeout(()=>{ iv=setInterval(()=>{ if(btn.disabled){stop();return;} fn(); },110); },420); });
+  ['pointerup','pointerleave','pointercancel'].forEach(ev=>btn.addEventListener(ev,stop));
+  btn.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); if(!btn.disabled) fn(); } });
+}
+repeat($('a-hyp'), formuler);
+repeat($('a-rec'), recouper);
+
+document.querySelectorAll('[data-spd]').forEach(b=>b.addEventListener('click',()=>{
+  speed=+b.dataset.spd;
+  document.querySelectorAll('[data-spd]').forEach(x=>x.setAttribute('aria-pressed', x===b?'true':'false'));
+}));
+$('reset').addEventListener('click',()=>{
+  S_=fresh(); LOGS.length=0; lastPct=-1; $('end').hidden=true;
+  $('log').innerHTML='<p class="hint">commence</p>';
+  paintCorpus(null); try{localStorage.removeItem(KEY);}catch(e){}
+});
+$('again').addEventListener('click',()=>$('reset').click());
+
+setInterval(()=>{ try{ localStorage.setItem(KEY, JSON.stringify(S_)); }catch(e){} }, 4000);
+window.addEventListener('pagehide',()=>{ try{ localStorage.setItem(KEY, JSON.stringify(S_)); }catch(e){} });
+
+requestAnimationFrame(frame);
+
+</script>
