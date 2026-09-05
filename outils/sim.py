@@ -20,9 +20,9 @@ GL = [('an','nombre',2), ('anna','nombre',5), ('hem','nombre',11), ('sela','nomb
 P = dict(
     cop_b=15,   cop_r=1.12, cop_p=1.0,                 # Copiste          : +1 occ./s
     tab_b=100,  tab_r=1.15, tab_c=1.0,  tab_p=0.6,     # Table de fréq.   : -1 occ./s -> +0,6 hyp./s
-    con_b=450,  con_r=1.18, con_c=0.5,  con_p=0.003,   # Concordance      : -0,5 hyp./s -> +0,003 cert./s
+    con_b=450,  con_r=1.18, con_c=0.5,  con_p=0.0039,  # Concordance      : -0,5 hyp./s -> +0,0039 cert./s
     ate_b=1800, ate_r=1.15, ate_p=25.0,                # Atelier de copie : +25 occ./s
-    rec_o=12, rec_h=3, rec_r=1.12,                     # Recouper : coût de base et croissance
+    rec_o=12, rec_h=3, rec_r=1.18,                     # Recouper : coût de base et croissance
     rec_div=5, rec_max=3,                              # Recouper : gain = min(rec_max, 1 + lexique//rec_div)
     hyp_c=3,                                           # Formuler : 3 occ. -> 1 hyp.
     click_share=0.03,                                  # Relever = (1 + part du débit brut) x mult.

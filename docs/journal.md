@@ -55,7 +55,7 @@ recoupements simulés contre 56 relevés. Le balayage des leviers dit lequel mor
 
 | variante | durée | recoup. | I6 |
 |---|---|---|---|
-| actuel (coût ×1,12/usage) | 53,3 min | 57 | **43,5 %** |
+| avant PT4 (coût ×1,12/usage) | 53,3 min | 57 | **43,5 %** |
 | gain plafonné à 2 | 54,8 min | 58 | 39,2 % |
 | ×1,18 | 58,8 min | 41 | 29,5 % |
 | ×1,18 + concordance +30 % | 52,7 min | 39 | 27,8 % |
@@ -64,7 +64,13 @@ recoupements simulés contre 56 relevés. Le balayage des leviers dit lequel mor
 **Plafonner le gain ne sert à rien** — le joueur recoupe simplement plus souvent. Seule la
 croissance du coût par usage déplace le ratio. `×1,18 + concordance +30 %` est le seul
 réglage qui repasse sous 30 % sans allonger la partie : il rend à la chaîne d'instruments
-ce qu'il retire à la main. **Décision non prise à ce jour.**
+ce qu'il retire à la main.
+
+**R6, 05/09/2026 : réglage adopté.** `REC_R = 1.18` et `CON_P = 0.0039` dans
+`src/economie.js`, répercutés dans `outils/sim.py`. Les deux constantes sont nommées :
+elles servaient à trois endroits chacune, et c'est cette duplication qui avait laissé le
+simulateur diverger du jeu. **À vérifier au prochain playtest** — le simulateur dit
+27,8 % et 52,7 min, mais il fait tourner un acheteur heuristique, pas un joueur.
 
 > Le simulateur avait divergé de `lexique.js` : 12 signes à 203 C au lieu de 13 à 237 C.
 > Il servait d'instrument de contrôle d'I6 (règle 2 de `CLAUDE.md`) tout en mentant.
@@ -181,10 +187,10 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
 |---|---|
 | Relever | (1 + 3 % du débit brut) × mult. |
 | Formuler | 3 occ. → 1 hyp. |
-| Recouper | 12 occ. + 3 hyp. → min(3, 1 + ⌊lexique/5⌋) cert., coût ×1,12 par usage (−25 % avec `champ`) |
+| Recouper | 12 occ. + 3 hyp. → min(3, 1 + ⌊lexique/5⌋) cert., coût ×1,18 par usage (−25 % avec `champ`) |
 | Copiste | 15 occ., ×1,12, +1 occ./s |
 | Table de fréquences | 100 occ., ×1,15, −1 occ./s → +0,6 hyp./s |
-| Concordance | 450 occ., ×1,18, −0,5 hyp./s → +0,003 cert./s |
+| Concordance | 450 occ., ×1,18, −0,5 hyp./s → +0,0039 cert./s |
 | Atelier de copie | 1 800 occ., ×1,15, +25 occ./s |
 | Signes (13) | Nombre 2 · 5 · 11 · 18 · 33 — Matière 3 · 6 · 14 · 22 · 40 — Parole 8 · 27 · 48 = **237 C** |
 | Multiplicateurs | `deux` ×1,25 relevé · `grain` ×1,3 copiste · `tablette` ×1,5 relevé · `eau` ×1,3 table · `champ` −25 % recoupement · `graver` ×1,5 concordance · `copier` ×2 sur tout |

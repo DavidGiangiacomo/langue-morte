@@ -23,18 +23,28 @@ const oBrut = () => (S_.b.cop*1.0 + S_.b.ate*25)*M.cop();
 /* le relevé manuel vaut au minimum 1, puis 3 % du débit : il reste utile sans être la colonne vertébrale */
 const clickVal = () => (1 + 0.03*oBrut()) * M.click();
 
+/* Réglage sorti de PT4. Le recoupement manuel fournissait 43 % de la Certitude, pour un
+   plafond I6 de 30 %. Plafonner son gain ne change rien — le joueur recoupe simplement
+   plus souvent : seule la croissance de son coût mord. Les 30 % rendus à la concordance
+   redonnent à la chaîne d'instruments ce qu'on retire à la main, si bien que la partie ne
+   s'allonge pas. Mesuré : I6 = 27,8 %, 52,7 min (`python outils/sim.py`).
+   Nommées parce qu'elles servaient à trois endroits chacune, et que c'est cette
+   duplication-là qui avait laissé le simulateur diverger du jeu. */
+const REC_R = 1.18;     // croissance du coût du recoupement, par usage
+const CON_P = 0.0039;   // certitude par seconde et par concordance
+
 const INS = [
   {k:'cop', nom:'Copiste',              sig:'sar',  base:15,   r:1.12,
    ds:()=>'+'+f(1.0*M.cop(),1)+' occ./s',  unlock:()=>true},
   {k:'tab', nom:'Table de fréquences',  sig:'tab',  base:100,  r:1.15,
    ds:()=>'−1 occ./s → +'+f(0.6*M.tabl(),2)+' hyp./s', unlock:()=>S_.b.cop>0||S_.O>=70},
   {k:'con', nom:'Concordance',          sig:'gan',  base:450,  r:1.18,
-   ds:()=>'−0,5 hyp./s → +'+f(0.003*M.con(),3)+' cert./s', unlock:()=>S_.b.tab>0||S_.H>=15},
+   ds:()=>'−0,5 hyp./s → +'+f(CON_P*M.con(),4)+' cert./s', unlock:()=>S_.b.tab>0||S_.H>=15},
   {k:'ate', nom:'Atelier de copie',     sig:'kal',  base:1800, r:1.15,
    ds:()=>'+'+f(25*M.cop(),0)+' occ./s',   unlock:()=>S_.b.con>0||S_.O>=900}
 ];
 const insCost = i => Math.ceil(i.base*Math.pow(i.r,S_.b[i.k]));
-const recCost = () => { const m=Math.pow(1.12,S_.rec)*(has('gan')?0.75:1);
+const recCost = () => { const m=Math.pow(REC_R,S_.rec)*(has('gan')?0.75:1);
   return {O:Math.ceil(12*m), H:Math.ceil(3*m)}; };
 const recGain = () => Math.min(3, 1 + Math.floor(S_.gl.length/5));
 const hypCost = () => 3;
@@ -100,7 +110,7 @@ function tick(dt){
   // concordance : consomme des hypothèses
   const wantH = S_.b.con*0.5*dt;
   if(wantH>0){ const canH=Math.min(wantH,S_.H); const fr=canH/wantH;
-    S_.H-=canH; S_.C += S_.b.con*0.003*M.con()*fr*dt; }
+    S_.H-=canH; S_.C += S_.b.con*CON_P*M.con()*fr*dt; }
 }
 let last=performance.now();
 function frame(now){

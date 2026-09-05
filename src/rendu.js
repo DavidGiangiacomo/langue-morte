@@ -192,7 +192,7 @@ function paintLex(){
 
 function paintRes(){
   const tb=S_.b.tab, cn=S_.b.con;
-  const oNet = oBrut() - tb*1.0, hNet = tb*0.6*M.tabl() - cn*0.5, cNet = cn*0.003*M.con();
+  const oNet = oBrut() - tb*1.0, hNet = tb*0.6*M.tabl() - cn*0.5, cNet = cn*CON_P*M.con();
   setHTML($('vl-O'), amount(S_.O, readN()));
   setHTML($('vl-H'), amount(S_.H, readN()));
   setHTML($('vl-C'), amount(S_.C, readN()));
