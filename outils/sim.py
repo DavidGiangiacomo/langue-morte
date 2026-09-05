@@ -10,10 +10,11 @@ Modifier P (constantes) et GL (coûts des glyphes) pour tester une variante.
 import math
 
 # ---- lexique : (id, branche, coût en Certitude) ---------------------------
-GL = [('an','nombre',2), ('anna','nombre',3), ('sela','nombre',8), ('meku','nombre',29),
-      ('tem','matiere',5), ('ur','matiere',6), ('tab','matiere',14), ('kish','matiere',18),
-      ('gan','matiere',23),
-      ('im','parole',11), ('sar','parole',37), ('kal','parole',47)]
+GL = [('an','nombre',2), ('anna','nombre',5), ('hem','nombre',11), ('sela','nombre',18),
+      ('meku','nombre',33),
+      ('tem','matiere',3), ('ur','matiere',6), ('tab','matiere',14), ('kish','matiere',22),
+      ('gan','matiere',40),
+      ('im','parole',8), ('sar','parole',27), ('kal','parole',48)]
 
 # ---- constantes économiques ----------------------------------------------
 P = dict(
@@ -61,7 +62,7 @@ def run(P, cpm=15, cap_min=600):
                     out.append(g); break
         return out
 
-    while len(gl) < 12 and t < 60 * cap_min:
+    while len(gl) < len(GL) and t < 60 * cap_min:
         t += dt
         O += obrut() * dt + cv() * (cpm / 60.0) * dt
         w = b['tab'] * P['tab_c'] * dt

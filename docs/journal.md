@@ -6,11 +6,13 @@ Historique des playtests, des défauts trouvés et des décisions prises. À lir
 
 ## Les trois playtests
 
-| | PT1 | PT2 | PT3 | Cible |
-|---|---|---|---|---|
-| Durée | 145 min | 29 min 27 | 41 min 54 *(dont ~10 min de pause)* | 45 min |
-| Signes relevés à la main | 3 853 | 271 | **45** | — |
-| Recoupements | 67 | 69 | 51 | — |
+| | PT1 | PT2 | PT3 | PT4 | Cible |
+|---|---|---|---|---|---|
+| Durée | 145 min | 29 min 27 | 41 min 54 *(dont ~10 min de pause)* | 42 min 12 | 45 min |
+| Signes relevés à la main | 3 853 | 271 | **45** | 56 | — |
+| Recoupements | 67 | 69 | 51 | **56** | — |
+| Lignes entièrement lues | — | — | — | 26 % | — |
+| Signes déchiffrés | — | — | — | 58 % | — |
 
 ### PT1 — le clic était la colonne vertébrale
 
@@ -37,6 +39,87 @@ Le même défaut, déplacé d'un bouton. Sur-correction.
 Verdict qualitatif, aux trois essais : envie de continuer présente tout du long. Remarque décisive du testeur : *la qualité de ce qui se découvre au fil du jeu sera déterminante* — le risque R4 du design doc, confirmé par le jeu.
 
 ---
+
+### PT4 — l'invariant I6 n'a jamais été respecté
+
+Les trois demandes d'interface de PT3 ont tenu : la numération signe par signe, la barre
+de tablettes et les infobulles se jouent sans accroc, et le marquage ocre est suivi.
+
+Mais PT4 a servi à autre chose : **il a montré que le problème d'équilibrage n'était pas
+clos.** PT3 avait mesuré les *clics* (45) et conclu ; le ratio du recoupement, lui, n'avait
+pas été revérifié depuis la correction de PT2. Il l'est maintenant : **43 %**, pour un
+plafond I6 de 30 %.
+
+`outils/sim.py`, resynchronisé sur `lexique.js`, reproduit la partie de près — 57
+recoupements simulés contre 56 relevés. Le balayage des leviers dit lequel mord :
+
+| variante | durée | recoup. | I6 |
+|---|---|---|---|
+| actuel (coût ×1,12/usage) | 53,3 min | 57 | **43,5 %** |
+| gain plafonné à 2 | 54,8 min | 58 | 39,2 % |
+| ×1,18 | 58,8 min | 41 | 29,5 % |
+| ×1,18 + concordance +30 % | 52,7 min | 39 | 27,8 % |
+| ×1,25 | 62,0 min | 31 | 21,5 % |
+
+**Plafonner le gain ne sert à rien** — le joueur recoupe simplement plus souvent. Seule la
+croissance du coût par usage déplace le ratio. `×1,18 + concordance +30 %` est le seul
+réglage qui repasse sous 30 % sans allonger la partie : il rend à la chaîne d'instruments
+ce qu'il retire à la main. **Décision non prise à ce jour.**
+
+> Le simulateur avait divergé de `lexique.js` : 12 signes à 203 C au lieu de 13 à 237 C.
+> Il servait d'instrument de contrôle d'I6 (règle 2 de `CLAUDE.md`) tout en mentant.
+> Resynchronisé. À revérifier à chaque modification du lexique.
+
+### PT4 — l'achat est un faux choix
+
+Remarque du testeur : « j'ai toujours acheté le truc le moins cher ». Ce n'est pas une
+habitude, c'est la stratégie strictement dominante. Apport marginal mesuré, tous les
+autres signes acquis :
+
+| signe | coût | Δsignes | Δlignes | signes/C |
+|---|---|---|---|---|
+| un | 2 | 687 | 155 | **344** |
+| deux | 5 | 848 | 155 | **170** |
+| grain | 3 | 315 | 69 | **105** |
+| maison | 6 | 266 | 20 | 44 |
+| cinq | 11 | 464 | 121 | 42 |
+| dix | 18 | 746 | 133 | 41 |
+| tablette | 14 | 318 | 66 | 23 |
+| cent | 33 | 137 | 65 | 4,2 |
+| eau | 22 | 70 | 20 | 3,2 |
+| graver | 27 | 56 | 0 | 2,1 |
+| champ | 40 | 49 | 42 | 1,2 |
+| copier | 48 | 57 | 5 | 1,2 |
+| **dire** | **8** | **2** | **0** | **0,2** |
+
+Le rendement va de 344 à 0,2 — **un facteur 1700×** — et il décroît avec le prix. Le prix
+et la récompense vont dans le même sens : il n'y a jamais d'arbitrage.
+
+**Décorréler les bonus des mots ne réglerait rien** : retirer tous les bonus ne change pas
+le classement, parce que la valeur *textuelle* seule range déjà du moins cher au plus cher.
+Et inverser les prix serait faux — un signe fréquent doit être le plus facile à casser,
+c'est l'analyse de fréquences.
+
+Piste ouverte, non tranchée : rendre les branches **non comparables**, trois monnaies au
+lieu d'une. Nombre ouvre des *classes* de nombres (récompense énorme et invisible à un
+comptage d'occurrences : `dix` vaut +746 signes alors que le mot « dix » n'apparaît que
+2 fois dans le corpus). Matière ouvre du texte. Parole ne devrait ouvrir **aucun texte**,
+seulement des *pouvoirs* — c'est déjà à moitié l'intention, mais `dire` à 8 C rapporte
+2 signes sur 3 825, le pire achat du jeu, et le simulateur le place en 5ᵉ position.
+
+Corollaire : le comptage d'occurrences reste un ornement tant qu'il n'apparaît que dans
+l'infobulle. Affiché **sur les signes non achetés du panneau lexique**, il devient l'outil
+de décision — l'arbitrage réel de l'épigraphiste.
+
+### Défauts trouvés en marge de PT4
+
+- **La réinitialisation ne remettait pas la numération à zéro.** `majSignes()` n'était
+  appelé qu'au chargement et à l'achat d'un glyphe : après « réinitialiser », `SU` gardait
+  les signes de la partie précédente et **229 nombres restaient affichés en chiffres** sur
+  une partie censée neuve. Tout playtest lancé par ce bouton démarrait faussé. Corrigé
+  dans `jeu.js`, verrouillé par trois contrôles de `outils/verifier.py`.
+- **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
+  donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
 ## La numération — deux corrections successives
 
@@ -76,7 +159,15 @@ Résultat : **3 825 signes, 58 % lisibles au MVP.**
 
 ### La jauge, et l'invariant I5 retiré
 
-Proposition intermédiaire : faire compter à la jauge les **lignes entièrement lisibles** plutôt que les signes. Mesuré sur une partie complète, la part de lignes reste entre **0 et 2 %** pendant tout le MVP et ne décollerait qu'aux actes IV–V. Comme jauge de progression, démoralisant.
+Proposition intermédiaire : faire compter à la jauge les **lignes entièrement lisibles** plutôt que les signes. Mesuré alors : la part de lignes reste entre **0 et 2 %** pendant tout le MVP. Comme jauge de progression, démoralisant.
+
+> **Corrigé après PT4 — ce chiffre n'est plus vrai.** Il datait d'avant la numération
+> signe par signe. Mesuré à nouveau, la part de lignes atteint **26 %** en fin de MVP :
+> plate de 0 à 2 % pendant les sept premiers signes, elle décolle d'un coup à `dix`
+> (2 % → 12 %), qui ouvre les nombres à deux chiffres et donc les lignes de registre
+> entières (`maison 12 · grain 300`), puis monte à 26 % à `champ`. La décision d'afficher
+> les deux mesures reste bonne ; sa justification était fausse. La forme réelle est
+> meilleure que prévu : vingt minutes de plat, puis une récompense franche.
 
 **Décision** : la barre affiche les **signes**, l'en-tête affiche les deux nombres, la carte de fin aussi.
 
@@ -121,7 +212,11 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
 
 ## Suite
 
-1. **PT4** — partie complète avec la numération signe par signe, la barre et les infobulles. À observer : la lisibilité partielle des nombres donne-t-elle envie de finir la branche Nombre avant les autres ? Le marquage ocre des tablettes touchées est-il suivi ? Le comptage d'occurrences sert-il à quelque chose, ou n'est-il qu'un ornement ?
-2. **Acte III** — branche Temps, `mille`, `zéro` par composition, instruments Grammaire et Élève, et surtout la **datation puis le réordonnancement chronologique** des tablettes. C'est le sommet dramatique : une fois triées, la série de l'eau devient lisible et le déclin apparaît.
+1. **Trancher le réglage du recoupement** (I6 à 43 %). Recommandé : coût ×1,18 par usage
+   + concordance +30 %, seul couple mesuré qui repasse sous 30 % sans allonger la partie.
+2. **Le comptage d'occurrences dans le panneau lexique** — petit, et c'est le test grandeur
+   nature de l'hypothèse « trois monnaies » avant d'y toucher pour de bon.
+3. **PT5**, avec le journal d'actions : on verra enfin *quand* la partie se grippe.
+4. **Acte III** — branche Temps, `mille`, `zéro` par composition, instruments Grammaire et Élève, et surtout la **datation puis le réordonnancement chronologique** des tablettes. C'est le sommet dramatique : une fois triées, la série de l'eau devient lisible et le déclin apparaît.
 3. Puis la mécanique de **composition**, puis les **contradictions** (acte IV).
 4. Trancher le sort de ⟨N1⟩ et ⟨N2⟩ (`docs/corpus.md` §9).

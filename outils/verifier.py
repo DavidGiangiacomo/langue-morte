@@ -120,6 +120,41 @@ def main() -> None:
         verifier("occurrence" in (bulle("#corpus .tok.g") or ""),
                  "signe inconnu avec Table de fréquences : le comptage")
 
+        print("\nréinitialisation")
+        page.evaluate("() => { S_.C = 9999; GL.forEach(g => acheterGl(g.id)); }")
+        page.wait_for_timeout(150)
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(250)
+        # la table de numération doit repartir vide : sinon on rejoue une partie « neuve »
+        # avec les nombres de la précédente encore lisibles à l'écran
+        verifier(page.evaluate("() => SU.size") == 0, "les signes de numération sont oubliés")
+        verifier(page.eval_on_selector_all("#corpus .tok.num", "e => e.length") == 0,
+                 "plus aucun nombre en chiffres")
+        verifier(page.evaluate("() => mesures().sig") == 0, "la jauge repart de 0 %")
+
+        print("\njournal d'actions (hors jeu)")
+        page.evaluate("() => { TR.length = 0; prochainEtat = 0; }")
+        for _ in range(3):
+            page.click("#a-rel")
+        page.click("#corpus .tok:not(.sep)")
+        page.evaluate("() => { S_.O = 0; formuler(); }")                    # doit être ignoré
+        page.evaluate("() => { S_.O = 500; S_.H = 20; formuler(); recouper(); acheterIns('cop'); }")
+        page.evaluate("() => { versTablette(2); versTablette(2); }")        # doublon ignoré
+        page.evaluate("() => { for (let i = 0; i < 30; i++) { S_.t += 3; tick(0.001); } }")
+        lignes = [l for l in page.evaluate("() => tracesTSV()").split("\n")
+                  if l and not l.startswith("#")]
+        genres = [l.split("\t")[2] for l in lignes[1:]]
+        etats = [float(l.split("\t")[1]) for l in lignes[1:] if l.split("\t")[2] == "etat"]
+        verifier(lignes[0].split("\t") == ["temps", "t_s", "genre", "détail"], "en-tête TSV")
+        verifier(sum(1 for l in lignes if l.endswith("\tbouton")) == 3, "3 relevés au bouton")
+        verifier(sum(1 for l in lignes if l.endswith("\tcorpus")) == 1, "1 relevé dans le corpus")
+        verifier(genres.count("formuler") == 1, "l'action sans effet n'est pas journalisée")
+        verifier(genres.count("recouper") == 1 and genres.count("acheterIns") == 1,
+                 "recoupement et instrument journalisés")
+        verifier(genres.count("tablette") == 1, "navigation dédoublonnée")
+        verifier(len(etats) >= 3 and all(etats[i] - etats[i - 1] >= 25 for i in range(1, len(etats))),
+                 f"{len(etats)} relevés d'état espacés de ~30 s")
+
         nav.close()
 
     print("\n" + ("TOUT PASSE" if not echecs else f"{len(echecs)} ÉCHEC(S)"))

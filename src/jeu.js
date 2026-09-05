@@ -9,7 +9,7 @@ buildRail(); buildCorpus(); buildInstr(); buildLex();
 if(S_.gl.length){ paintCorpus(null); pushLog(byId[S_.gl[S_.gl.length-1]].log); }
 if(S_.done) showEnd();
 
-elCorpus.addEventListener('click', e=>{ if(e.target.closest('.tok')) relever(); });
+elCorpus.addEventListener('click', e=>{ if(e.target.closest('.tok')) relever('corpus'); });
 elCorpus.addEventListener('mousemove', e=>{
   const el = e.target.closest('.tok');
   if(!el || el.classList.contains('sep')){ tipCacher(); return; }
@@ -51,6 +51,9 @@ document.querySelectorAll('[data-spd]').forEach(b=>b.addEventListener('click',()
 }));
 $('reset').addEventListener('click',()=>{
   S_=fresh(); LOGS.length=0; lastPct=-1; $('end').hidden=true;
+  /* Sans ceci la table des signes de numération garde ceux de la partie précédente :
+     on repart de zéro glyphe avec 229 nombres encore lisibles à l'écran. */
+  majSignes(); touchees=new Set();
   $('log').innerHTML='<p class="hint">commence</p>';
   paintCorpus(null); try{localStorage.removeItem(KEY);}catch(e){}
 });

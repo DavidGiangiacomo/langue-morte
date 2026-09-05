@@ -35,6 +35,7 @@ src/
   corpus.js     GÉNÉRÉ — ne jamais éditer à la main
   economie.js   état, ressources, instruments, actions, boucle de simulation
   rendu.js      corpus, barre de tablettes, panneaux, infobulle, journal
+  traces.js     HORS JEU — journal d'actions horodaté pour les playtests
   jeu.js        liaisons, entrées clavier, sauvegarde
 outils/
   corpus.py     docs/corpus.md → src/corpus.js
@@ -44,7 +45,7 @@ docs/           design doc, corpus, journal de bord
 dist/           GÉNÉRÉ par build.py
 ```
 
-**L'ordre de chargement compte** : `signes → lexique → corpus → economie → rendu → jeu`. Un `const` déclaré dans l'un est visible dans les suivants.
+**L'ordre de chargement compte** : `signes → lexique → corpus → economie → rendu → traces → jeu`. Un `const` déclaré dans l'un est visible dans les suivants.
 
 ### Commandes
 
@@ -106,5 +107,6 @@ Puis la mécanique de **composition** (acte III), puis les **contradictions** (a
 
 - Commentaires en français, au-dessus de ce qui est non évident. Expliquer **pourquoi**, pas quoi.
 - Les noms de fonctions et variables suivent la fiction quand c'est naturel : `veille()`, `consignes()`, `recouper()`, `tablette`.
-- Le sélecteur de vitesse ×1/×3/×10 et le chronomètre en haut à droite sont des **outils de test**, marqués « hors jeu ». À retirer de toute version publique.
+- Le sélecteur de vitesse ×1/×3/×10, le chronomètre et les boutons `traces`/`copier` en haut à droite sont des **outils de test**, marqués « hors jeu ». À retirer de toute version publique.
+- `src/traces.js` n'édite aucune règle : il **enveloppe** les actions déjà déclarées. Le retirer = supprimer le fichier, sa ligne dans `index.html` et dans `build.py`, et les deux boutons. Ne jamais y mettre de logique de jeu.
 - Écrire les nombres à la française dans l'interface (espace fine insécable, virgule décimale) — `nf` et `f()` s'en chargent.

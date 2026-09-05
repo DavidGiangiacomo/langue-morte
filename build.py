@@ -19,7 +19,7 @@ RACINE = pathlib.Path(__file__).parent
 SRC, DIST = RACINE / "src", RACINE / "dist"
 
 # L'ordre compte : les scripts partagent la portée globale et se lisent de haut en bas.
-SCRIPTS = ["signes.js", "lexique.js", "corpus.js", "economie.js", "rendu.js", "jeu.js"]
+SCRIPTS = ["signes.js", "lexique.js", "corpus.js", "economie.js", "rendu.js", "traces.js", "jeu.js"]
 
 RESET = (
     "<style>html{color-scheme:dark}body{margin:0}img{max-width:100%}"
