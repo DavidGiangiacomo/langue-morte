@@ -113,9 +113,9 @@ comptage d'occurrences : `dix` vaut +746 signes alors que le mot « dix » n'app
 seulement des *pouvoirs* — c'est déjà à moitié l'intention, mais `dire` à 8 C rapporte
 2 signes sur 3 825, le pire achat du jeu, et le simulateur le place en 5ᵉ position.
 
-Corollaire : le comptage d'occurrences reste un ornement tant qu'il n'apparaît que dans
-l'infobulle. Affiché **sur les signes non achetés du panneau lexique**, il devient l'outil
-de décision — l'arbitrage réel de l'épigraphiste.
+Corollaire : le comptage d'occurrences restait un ornement tant qu'il n'apparaissait que
+dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du panneau lexique**
+— voir la section suivante.
 
 ### Défauts trouvés en marge de PT4
 
@@ -126,6 +126,63 @@ de décision — l'arbitrage réel de l'épigraphiste.
   dans `jeu.js`, verrouillé par trois contrôles de `outils/verifier.py`.
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
+
+## Le comptage d'occurrences dans le lexique
+
+Fait après PT4. Chaque tête de branche encore à acheter affiche le nombre d'occurrences de
+son signe dans le corpus, à côté de son coût. Le joueur compare enfin deux grandeurs au
+lieu d'une :
+
+```
+NOMBRE     ⋁  544 occ.   11        MATIÈRE   ⇑  315 occ.    3        PAROLE   ⋔  2 occ.   8
+```
+
+Conditionné à la **Table de fréquences** — l'instrument fait alors visiblement ce que son
+nom annonce, et c'était la seule chose qu'il ne faisait pas.
+
+### Compter les signes, pas les mots
+
+Le piège était là. Les cinq glyphes de la branche Nombre n'apparaissent presque jamais
+comme *mots* dans le corpus — mais leur signe est partout **dans les nombres** :
+
+| | comme mot | comme chiffre | total |
+|---|---|---|---|
+| un | 8 | 1 660 | **1 668** |
+| dix | 2 | 1 456 | **1 458** |
+| cinq | 0 | 544 | **544** |
+| cent | 1 | 184 | **185** |
+| grain | 315 | — | 315 |
+| dire | 2 | — | 2 |
+
+Un comptage des mots seuls aurait affiché **8, 4, 0, 2, 1** sur les cinq glyphes de nombre
+et fait passer la branche la plus rentable du jeu pour la plus pauvre. `freqGlyphe()`
+(`src/rendu.js`) additionne donc les deux, et trois contrôles de `outils/verifier.py`
+verrouillent les valeurs.
+
+### Le point aveugle de `deux`, et pourquoi il ne se voit pas
+
+`deux` est le seul glyphe dont le comptage mentirait vraiment : il n'ouvre aucun signe de
+numération, il ouvre le **principe du redoublement**, qui vaut à lui seul +848 signes
+lisibles. Une table de fréquences ne peut pas savoir ça — c'est une limite honnête de
+l'instrument, pas un défaut à masquer.
+
+Elle ne se voit pas, parce que le comptage est aussi conditionné à `deux` : sans lui le
+nombre affiché serait lui-même illisible. Quand le compteur apparaît, `deux` est déjà
+acquis. La contrainte de lisibilité règle le problème d'équilibrage — heureux hasard,
+mais à ne pas défaire par mégarde.
+
+### Ce que PT5 doit regarder
+
+Le compteur rend visible ce que le tableau des rendements disait : **`dire` coûte 8 C et
+affiche « 2 occ. »**. C'est vrai, et c'est exactement la tension des « trois monnaies » —
+Parole ne rapporte pas du texte, elle rapporte des *pouvoirs* (`dire` fait parler le
+lexique, `maison` nomme les instruments), mais elle est tarifée et présentée comme si elle
+rapportait du texte. Le risque est net : le joueur, muni de l'outil qu'on vient de lui
+donner, contourne durablement la branche Parole.
+
+À observer en PT5 : la branche Parole est-elle repoussée plus loin qu'avant ? Si oui, la
+réponse n'est pas de retirer le compteur — c'est de faire de Parole une vraie troisième
+monnaie, et de cesser de la faire payer au poids du texte.
 
 ## La numération — deux corrections successives
 
@@ -220,9 +277,9 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
 
 1. **Trancher le réglage du recoupement** (I6 à 43 %). Recommandé : coût ×1,18 par usage
    + concordance +30 %, seul couple mesuré qui repasse sous 30 % sans allonger la partie.
-2. **Le comptage d'occurrences dans le panneau lexique** — petit, et c'est le test grandeur
-   nature de l'hypothèse « trois monnaies » avant d'y toucher pour de bon.
-3. **PT5**, avec le journal d'actions : on verra enfin *quand* la partie se grippe.
-4. **Acte III** — branche Temps, `mille`, `zéro` par composition, instruments Grammaire et Élève, et surtout la **datation puis le réordonnancement chronologique** des tablettes. C'est le sommet dramatique : une fois triées, la série de l'eau devient lisible et le déclin apparaît.
+2. **PT5**, avec le journal d'actions et les deux changements ci-dessus. Trois questions :
+   I6 tient-il sous 30 % chez un vrai joueur ? le comptage change-t-il l'ordre d'achat ?
+   la branche Parole est-elle contournée ?
+3. **Acte III** — branche Temps, `mille`, `zéro` par composition, instruments Grammaire et Élève, et surtout la **datation puis le réordonnancement chronologique** des tablettes. C'est le sommet dramatique : une fois triées, la série de l'eau devient lisible et le déclin apparaît.
 3. Puis la mécanique de **composition**, puis les **contradictions** (acte IV).
 4. Trancher le sort de ⟨N1⟩ et ⟨N2⟩ (`docs/corpus.md` §9).

@@ -127,6 +127,9 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .gcard .sig .gl{width:16px;height:21px}
 .gcard .ttl{font-size:15.5px;color:var(--mid)}
 .gcard .cost{font-family:var(--mono);font-size:11px;color:var(--dim);text-align:right;font-variant-numeric:tabular-nums;display:flex;gap:4px;align-items:center;justify-content:flex-end}
+/* Le comptage vient d'un instrument, pas du texte ancien : il se lit en mono et en bleu,
+   comme les débits, et non dans le serif réservé aux mots déchiffrés. */
+.gcard .frq{font-family:var(--mono);font-size:10.5px;color:var(--slate);letter-spacing:.04em;font-variant-numeric:tabular-nums;opacity:.85}
 .gcard .eff{grid-column:2/4;font-family:var(--mono);font-size:9.5px;color:var(--faint);letter-spacing:.02em;line-height:1.45}
 .gcard .eff:empty,.ins .ds:empty{display:none}
 .ins.locked .nm{opacity:.55}

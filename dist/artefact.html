@@ -132,6 +132,9 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .gcard .sig .gl{width:16px;height:21px}
 .gcard .ttl{font-size:15.5px;color:var(--mid)}
 .gcard .cost{font-family:var(--mono);font-size:11px;color:var(--dim);text-align:right;font-variant-numeric:tabular-nums;display:flex;gap:4px;align-items:center;justify-content:flex-end}
+/* Le comptage vient d'un instrument, pas du texte ancien : il se lit en mono et en bleu,
+   comme les débits, et non dans le serif réservé aux mots déchiffrés. */
+.gcard .frq{font-family:var(--mono);font-size:10.5px;color:var(--slate);letter-spacing:.04em;font-variant-numeric:tabular-nums;opacity:.85}
 .gcard .eff{grid-column:2/4;font-family:var(--mono);font-size:9.5px;color:var(--faint);letter-spacing:.02em;line-height:1.45}
 .gcard .eff:empty,.ins .ds:empty{display:none}
 .ins.locked .nm{opacity:.55}
@@ -733,7 +736,15 @@ function paintLex(){
       const cls='gcard'+(done?' done':can?' afford':open?'':' locked');
       if(b.className!==cls) b.className=cls;
       b.disabled=!can;
-      setHTML(b.querySelector('.ttl'), done? g.mot : '');
+      /* Le comptage d'occurrences sur les signes encore à acheter. En infobulle il n'était
+         qu'un ornement ; ici c'est l'arbitrage de l'épigraphiste — 3 C pour 315 signes ou
+         40 C pour 49 ? Conditionné à la Table de fréquences, qui fait alors visiblement ce
+         que son nom annonce, et à `deux`, sans lequel le nombre serait lui-même illisible :
+         du coup la question ne se pose jamais pour `deux`, le seul glyphe dont le comptage
+         mentirait (il n'ouvre aucun signe, il ouvre le principe du redoublement). */
+      const montreFreq = open && S_.b.tab > 0 && readC();
+      setHTML(b.querySelector('.ttl'), done ? g.mot
+        : montreFreq ? '<span class="frq">'+nf.format(freqGlyphe(g.id))+' occ.</span>' : '');
       setHTML(b.querySelector('.cost'), done? '✓' : open? (readC()? String(g.cost) : numGlyphs(g.cost)) : '');
       setHTML(b.querySelector('.eff'), (done || (open && has('im'))) ? g.eff : '');
       if(!done) prevDone=false;
@@ -780,11 +791,18 @@ function paintMeter(){
    Sur un signe encore inconnu, l'infobulle donne son nombre d'occurrences dans tout
    le corpus — mais seulement si on possède une Table de fréquences. L'instrument
    fait alors visiblement ce que son nom annonce. */
-const FREQ = {};
+const FREQ = {}, FREQNUM = {};
 for(const tb of CORPUS) for(const l of tb.l) for(const tk of l.split(' ')){
-  if(tk==='·' || tk.charCodeAt(0)===37) continue;
-  FREQ[tk] = (FREQ[tk]||0) + 1;
+  if(tk==='·') continue;
+  if(tk.charCodeAt(0)===37) for(const k of numSyms(+tk.slice(1))) FREQNUM[k] = (FREQNUM[k]||0) + 1;
+  else FREQ[tk] = (FREQ[tk]||0) + 1;
 }
+/* Ce que la Table de fréquences sait d'un glyphe : les occurrences de son SIGNE, pas de
+   son mot. La distinction ne change rien hors de la branche Nombre, et tout à l'intérieur :
+   ⟨un⟩ n'est écrit que 8 fois comme mot, mais 1 668 fois comme chiffre, dans les nombres.
+   Compter les mots seuls afficherait 8, 4, 0, 2, 1 sur les cinq glyphes de nombre et ferait
+   passer la branche la plus rentable du jeu pour la plus pauvre. */
+const freqGlyphe = id => (FREQ[id]||0) + (NUMSYM[id]||[]).reduce((n,k)=>n+(FREQNUM[k]||0), 0);
 const partMot = k => (k==='u1' && has('an')) ? 'un'
                    : (k==='t10' && has('sela')) ? 'dix'
                    : (k==='h100' && has('meku')) ? 'cent'
@@ -801,8 +819,10 @@ function tipHTML(el){
       }
       return sv(id) + '<span class="lab">' + byId[id].mot + '</span>';
     }
-    if(S_.b.tab > 0)
-      return sv(id) + '<span class="lab"><b>' + FREQ[id] + '</b> occurrence' + (FREQ[id]>1?'s':'') + '</span>';
+    if(S_.b.tab > 0){
+      const n = freqGlyphe(id);
+      return sv(id) + '<span class="lab"><b>' + nf.format(n) + '</b> occurrence' + (n>1?'s':'') + '</span>';
+    }
     return null;
   }
   if(el.dataset.n !== undefined){

@@ -132,6 +132,24 @@ def main() -> None:
                  "plus aucun nombre en chiffres")
         verifier(page.evaluate("() => mesures().sig") == 0, "la jauge repart de 0 %")
 
+        print("\ncomptage d'occurrences dans le lexique")
+        frq = lambda: page.eval_on_selector_all("#lex .frq", "e => e.map(x => x.textContent)")
+        page.evaluate("() => { S_.C = 9999; S_.b.tab = 0; }")
+        page.wait_for_timeout(200)
+        verifier(frq() == [], "rien sans Table de fréquences")
+        page.evaluate("() => { S_.b.tab = 1; }")
+        page.wait_for_timeout(200)
+        verifier(frq() == [], "rien sans « deux » : le nombre serait illisible")
+        page.evaluate("() => { acheterGl('an'); acheterGl('anna'); }")
+        page.wait_for_timeout(250)
+        verifier(len(frq()) == 3, f"un comptage par tête de branche : {frq()}")
+        # le piège : compter les mots seuls donnerait 8 à « un » et 0 à « cinq », alors que
+        # leur signe est partout DANS les nombres. Ce serait dire que la branche la plus
+        # rentable du jeu est la plus pauvre.
+        verifier(page.evaluate("() => freqGlyphe('an')") == 1668, "« un » compte ses chiffres (1 668)")
+        verifier(page.evaluate("() => freqGlyphe('hem')") == 544, "« cinq » compte ses chiffres (544)")
+        verifier(page.evaluate("() => freqGlyphe('tem')") == 315, "« grain », mot seul (315)")
+
         print("\njournal d'actions (hors jeu)")
         page.evaluate("() => { TR.length = 0; prochainEtat = 0; }")
         for _ in range(3):
