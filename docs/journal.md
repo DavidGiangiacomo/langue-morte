@@ -4,15 +4,21 @@ Historique des playtests, des défauts trouvés et des décisions prises. À lir
 
 ---
 
-## Les trois playtests
+## Les playtests
 
-| | PT1 | PT2 | PT3 | PT4 | Cible |
-|---|---|---|---|---|---|
-| Durée | 145 min | 29 min 27 | 41 min 54 *(dont ~10 min de pause)* | 42 min 12 | 45 min |
-| Signes relevés à la main | 3 853 | 271 | **45** | 56 | — |
-| Recoupements | 67 | 69 | 51 | **56** | — |
-| Lignes entièrement lues | — | — | — | 26 % | — |
-| Signes déchiffrés | — | — | — | 58 % | — |
+| | PT1 | PT2 | PT3 | PT4 | PT5 | Cible |
+|---|---|---|---|---|---|---|
+| Durée | 145 min | 29 min 27 | 41 min 54 *(dont ~10 min de pause)* | 42 min 12 | 50 min 37 | 45 min |
+| Signes relevés à la main | 3 853 | 271 | **45** | 56 | **371** | — |
+| Hypothèses formulées à la main | — | — | — | — | 264 | — |
+| Recoupements | 67 | 69 | 51 | **56** | 46 | — |
+| Part manuelle de la Certitude | — | — | — | 43,5 % *(simulé)* | **30,8 %** | < 30 % |
+| Lignes entièrement lues | — | — | — | 26 % | 26 % | — |
+| Signes déchiffrés | — | — | — | 58 % | 57 % | — |
+
+PT1 à PT4 : l'auteur. **PT5 : un second joueur** (mon fils, 06/09/2026), et le premier
+playtest instrumenté par le journal d'actions — d'où le détail de ce qui suit. Tout ce qui
+y est chiffré sort du TSV, pas du souvenir.
 
 ### PT1 — le clic était la colonne vertébrale
 
@@ -171,7 +177,7 @@ nombre affiché serait lui-même illisible. Quand le compteur apparaît, `deux` 
 acquis. La contrainte de lisibilité règle le problème d'équilibrage — heureux hasard,
 mais à ne pas défaire par mégarde.
 
-### Ce que PT5 doit regarder
+### Ce que PT5 devait regarder
 
 Le compteur rend visible ce que le tableau des rendements disait : **`dire` coûte 8 C et
 affiche « 2 occ. »**. C'est vrai, et c'est exactement la tension des « trois monnaies » —
@@ -183,6 +189,119 @@ donner, contourne durablement la branche Parole.
 À observer en PT5 : la branche Parole est-elle repoussée plus loin qu'avant ? Si oui, la
 réponse n'est pas de retirer le compteur — c'est de faire de Parole une vraie troisième
 monnaie, et de cesser de la faire payer au poids du texte.
+
+*Réponse : non, et pour une raison qu'on n'avait pas prévue. Voir PT5 ci-dessous.*
+
+## PT5 — le compteur ne décide rien, et la main non plus
+
+Deux parties : une abandonnée à 10:17, une menée au bout en **50 min 37**, treize glyphes
+sur treize. 1 099 entrées au journal.
+
+### I6 : 30,8 %, et une ouverture à 100 %
+
+| | avant PT4 | réglage R6, simulé | PT5, mesuré |
+|---|---|---|---|
+| durée | 53,3 min | 52,7 min | 50,6 min |
+| recoupements | 57 | — | 46 |
+| part manuelle de la Certitude | 43,5 % | 27,8 % | **30,8 %** |
+
+Le réglage tient : de 43,5 % à 30,8 %, sans allonger la partie — la durée mesurée tombe
+même dans la fenêtre annoncée par le simulateur (50,6 contre 50,6–55,1). Le simulateur
+sous-estime la part manuelle de trois points, ce qui est la bonne direction pour un
+instrument de contrôle : il joue plus proprement qu'un joueur, donc il flatte. **À traiter
+désormais comme un plancher, pas comme une prédiction.**
+
+L'invariant est tenu sur la partie entière et complètement violé sur son ouverture :
+
+> Sur les dix premières minutes, la Certitude produite est de 23 — dont **23 recoupées à la
+> main**. La Concordance n'est achetée qu'à 9:46.
+
+Le jeu ouvre sur dix minutes de cliqueur pur, puis bascule. C'est exactement là que la
+première partie a été abandonnée : cinq glyphes, 20 % de signes, palier suivant à 11 C
+quand un recoupement en rapporte 1. I6 mesuré sur la partie entière ne voit pas ce mur ;
+il faudra le mesurer par tranches.
+
+### Le compteur d'occurrences n'a pas servi
+
+Ordre d'achat : `un → grain → deux → maison → dire → cinq → tablette → eau → dix → graver
+→ cent → champ → copier`. C'est l'ordre du prix croissant, à une inversion près — et
+l'inversion va **contre** le compteur :
+
+| à 27 min | coût | affiché | choix |
+|---|---|---|---|
+| dix | 18 C | 1 458 occ. | — |
+| **eau** | **22 C** | **70 occ.** | **acheté** |
+| graver | 27 C | 56 occ. | — |
+
+`dix` était achetable depuis 26:00. Il a attendu une minute de plus pour prendre `eau`,
+plus cher et vingt fois plus rare. Et `dire` — 2 occurrences, 8 C, le pire rendement
+textuel du jeu — a été acheté à son rang de prix, sans hésitation lisible dans les
+horodatages.
+
+La cause est dans le journal : `dire` est acheté à 10:27, et `dire` **affiche l'effet des
+glyphes non achetés**. À partir de là, la carte porte trois informations — le signe,
+« 70 occ. », et « +30 % à la table de fréquences ». C'est la troisième qu'il a lue.
+
+Ce qui répond à la question laissée ouverte par PT4, mais pas comme on l'attendait :
+**le joueur n'achète déjà pas du texte, il achète un bonus.** Décorréler les bonus des mots
+ne créerait pas le choix — cela déplacerait l'étiquette que le joueur lit, rien de plus. Un
+comptage d'occurrences ne pèse pas contre un pourcentage de production affiché sur la même
+carte ; au mieux il départage deux effets équivalents. Si l'on veut que le texte pèse dans
+l'achat, il faut qu'il y ait quelque chose à gagner *en texte* — c'est-à-dire des glyphes
+sans effet chiffré du tout.
+
+Réserve : un joueur, une partie. À reconfirmer avant d'en tirer une refonte.
+
+### Le relevé manuel est décoratif, et le jeu ne le dit pas
+
+681 actions manuelles en 50 minutes, 13,5 par minute, contre 56 relevés au total en PT4.
+Même jeu, deux joueurs, un facteur sept. Le barème est `1 + 3 % du débit brut`, écrit pour
+que le relevé « reste utile sans être la colonne vertébrale ». Mesuré sur la partie :
+
+| | occurrences produites | part |
+|---|---|---|
+| instruments | 672 433 | 99,4 % |
+| à la main | 4 323 | **0,6 %** |
+
+3 % du débit *par seconde*, c'est **0,06 seconde de production par clic** : il faudrait
+cliquer dix-sept fois par seconde pour égaler les machines. Le commentaire dans
+`economie.js` disait le contraire de ce que la formule fait ; il a été corrigé.
+
+Ce n'est pas un défaut d'équilibrage — le relevé ne produit pas de Certitude, I6 n'est pas
+menacé. C'est un défaut d'information : le bouton **grossit sa récompense affichée** (26
+occurrences à 40 min, contre 1 au départ) exactement pendant qu'elle devient sans effet, et
+rien à l'écran ne dit que la main a cessé de compter. Un enfant a passé un tiers de sa
+session à cliquer un bouton qui ne faisait rien.
+
+Trois issues, **non tranchées** : afficher la part manuelle du débit à côté du bouton ;
+faire plafonner le relevé franchement et l'assumer dans la fiction (une main ne relève pas
+plus vite que ses yeux) ; ou accepter le clic comme défouloir et ne rien changer.
+
+### Ce que le journal montre d'autre
+
+- **La barre de tablettes fait son travail.** 28 navigations, groupées juste après les
+  achats de numération : quatre tablettes après `dix`, **dix tablettes en seize secondes
+  après `cent`**. Nouvelle lisibilité → il va voir. C'est le seul endroit du journal où
+  l'on voit quelqu'un *lire*.
+- **Le milieu de partie est vide.** Entre 15 et 30 minutes : les signes passent de 20 % à
+  33 %, aucun relevé manuel pendant dix minutes, et l'intervalle entre deux glyphes monte à
+  6 min 24. Il attend.
+- **Les Hypothèses deviennent une ressource morte.** À 47:30 : O = 62 595, H = 6 982,
+  C = 12. Vingt-cinq Concordances ne consomment que 12,5 hyp./s ; tout le reste s'entasse.
+  L'explosion des Occurrences est le propos ; celle des Hypothèses est un tuyau bouché.
+- **La courbe des lignes est bien back-chargée** : 0 % pendant seize minutes, 4 % à 27 min,
+  puis 15 / 19 / 26 % avec `dix`, `cent`, `champ`. Et l'écart final signes/lignes — 57 %
+  contre 26 % — reproduit PT4 (58 / 26) à un point près, avec un joueur différent et un
+  style de jeu opposé. L'écart est le propos, et il est stable.
+
+### Défaut trouvé, corrigé
+
+La fenêtre de fin couvrait tout l'écran sans pouvoir se fermer : le bouton `copier` du
+journal d'actions était inatteignable au moment précis où il faut exporter. La fenêtre se
+ferme maintenant (bouton « revenir au corpus », échap, clic sur le fond) et la barre hors
+jeu passe au-dessus d'elle. `tick` ne tourne plus une fois `S_.done` : le corpus derrière
+reste figé sur la partie terminée et se relit tel quel. Recharger la page ramène la
+fenêtre. Six contrôles ajoutés à `outils/verifier.py`.
 
 ## La numération — deux corrections successives
 
@@ -275,11 +394,11 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
 
 ## Suite
 
-1. **Trancher le réglage du recoupement** (I6 à 43 %). Recommandé : coût ×1,18 par usage
-   + concordance +30 %, seul couple mesuré qui repasse sous 30 % sans allonger la partie.
-2. **PT5**, avec le journal d'actions et les deux changements ci-dessus. Trois questions :
-   I6 tient-il sous 30 % chez un vrai joueur ? le comptage change-t-il l'ordre d'achat ?
-   la branche Parole est-elle contournée ?
+1. **Trancher le sort du relevé manuel** — 0,6 % de la production pour un tiers de la
+   session. Le dire, le plafonner, ou l'assumer.
+2. **Le mur des dix premières minutes** : 100 % de la Certitude à la main avant la première
+   Concordance, et c'est là que la partie 1 a été abandonnée. Mesurer I6 par tranches dans
+   `outils/sim.py` plutôt que sur la partie entière.
 3. **Acte III** — branche Temps, `mille`, `zéro` par composition, instruments Grammaire et Élève, et surtout la **datation puis le réordonnancement chronologique** des tablettes. C'est le sommet dramatique : une fois triées, la série de l'eau devient lisible et le déclin apparaît.
 3. Puis la mécanique de **composition**, puis les **contradictions** (acte IV).
 4. Trancher le sort de ⟨N1⟩ et ⟨N2⟩ (`docs/corpus.md` §9).

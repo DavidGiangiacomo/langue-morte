@@ -20,7 +20,11 @@ const M = {
 };
 /* production brute d'occurrences par seconde (sert au barème du relevé manuel) */
 const oBrut = () => (S_.b.cop*1.0 + S_.b.ate*25)*M.cop();
-/* le relevé manuel vaut au minimum 1, puis 3 % du débit : il reste utile sans être la colonne vertébrale */
+/* Le relevé manuel vaut 1, puis 3 % du débit — 3 % du débit *par seconde*, c'est-à-dire
+   0,06 seconde de production par clic une fois les ateliers en route. Il ne « reste pas
+   utile » comme le prétendait ce commentaire : mesuré en PT5, 371 relevés ont fourni 0,6 %
+   des occurrences de la partie. Laissé tel quel pour l'instant — le défaut est d'information
+   et non d'équilibrage, le relevé ne produisant pas de Certitude. Voir docs/journal.md, PT5. */
 const clickVal = () => (1 + 0.03*oBrut()) * M.click();
 
 /* Réglage sorti de PT4. Le recoupement manuel fournissait 43 % de la Certitude, pour un

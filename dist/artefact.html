@@ -25,7 +25,9 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .masthead h1{font-size:22px;font-weight:600;margin:0;letter-spacing:.18em;text-transform:uppercase}
 .masthead .sub{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.08em}
 .masthead .spacer{flex:1}
-.devbar{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.06em}
+/* Au-dessus de la fenêtre de fin (z-index 50) : sans cela le journal d'actions devient
+   inatteignable au moment précis où il faut l'exporter, la partie terminée. */
+.devbar{position:relative;z-index:60;display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.06em}
 .devbar button{border:1px solid var(--line);padding:3px 7px;border-radius:2px;font-family:var(--mono);font-size:10px;color:var(--dim)}
 .devbar button[aria-pressed="true"]{border-color:var(--ochre-d);color:var(--ochre)}
 .devbar button:hover{color:var(--lamp)}
@@ -173,6 +175,9 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .endstats b{color:var(--lamp);font-weight:500;float:right;font-variant-numeric:tabular-nums}
 .endcard .go{border:1px solid var(--ochre-d);color:var(--ochre);padding:9px 18px;border-radius:2px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
 .endcard .go:hover{background:#33261A}
+.endacts{display:flex;align-items:center;gap:10px}
+.endcard .ghost{border:1px solid var(--line);color:var(--dim);padding:9px 14px;border-radius:2px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.endcard .ghost:hover{color:var(--lamp);border-color:var(--line2)}
 
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
@@ -245,7 +250,10 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
     <p>Le corpus s'arrête ici. La suite — la grammaire, la datation des tablettes, la deuxième personne, la composition des glyphes, les contradictions — appartient aux actes III à V.</p>
     <div class="endstats" id="endstats"></div>
     <p style="font-size:15px"><b style="color:var(--lamp);font-weight:500">La seule question qui compte&nbsp;:</b> au moment où les compteurs sont devenus lisibles, est-ce que ça a fait quelque chose&nbsp;? Si non, le concept ne tient pas, et les 32 glyphes restants ne le sauveront pas.</p>
-    <button class="go" id="again">recommencer</button>
+    <div class="endacts">
+      <button class="go" id="again">recommencer</button>
+      <button class="ghost" id="fermer" title="échap — le corpus reste figé sur la partie terminée">revenir au corpus</button>
+    </div>
   </div>
 </div>
 
@@ -449,7 +457,11 @@ const M = {
 };
 /* production brute d'occurrences par seconde (sert au barème du relevé manuel) */
 const oBrut = () => (S_.b.cop*1.0 + S_.b.ate*25)*M.cop();
-/* le relevé manuel vaut au minimum 1, puis 3 % du débit : il reste utile sans être la colonne vertébrale */
+/* Le relevé manuel vaut 1, puis 3 % du débit — 3 % du débit *par seconde*, c'est-à-dire
+   0,06 seconde de production par clic une fois les ateliers en route. Il ne « reste pas
+   utile » comme le prétendait ce commentaire : mesuré en PT5, 371 relevés ont fourni 0,6 %
+   des occurrences de la partie. Laissé tel quel pour l'instant — le défaut est d'information
+   et non d'équilibrage, le relevé ne produisant pas de Certitude. Voir docs/journal.md, PT5. */
 const clickVal = () => (1 + 0.03*oBrut()) * M.click();
 
 /* Réglage sorti de PT4. Le recoupement manuel fournissait 43 % de la Certitude, pour un
@@ -1038,11 +1050,16 @@ elCorpus.addEventListener('mousemove', e=>{
 elCorpus.addEventListener('mouseleave', tipCacher);
 elCorpus.addEventListener('scroll', tipCacher, {passive:true});
 $('rail').addEventListener('click', e=>{ const b=e.target.closest('[data-go]'); if(b) versTablette(+b.dataset.go); });
+/* La fin du prototype ne doit pas être un cul-de-sac : `tick` ne tourne plus une fois
+   `S_.done`, donc le corpus derrière est figé sur la partie terminée et se relit tel quel.
+   Recharger la page ramène la fenêtre. */
+const fermerFin = () => { $('end').hidden = true; };
 window.addEventListener('keydown', e=>{
   if(e.metaKey||e.ctrlKey||e.altKey) return;
   const k=e.key.toLowerCase();
   if(k==='j'){ e.preventDefault(); saut(1); }
   else if(k==='k'){ e.preventDefault(); saut(-1); }
+  else if(k==='escape' && !$('end').hidden){ fermerFin(); }
 });
 $('a-rel').addEventListener('click', relever);
 $('instr').addEventListener('click', e=>{ const b=e.target.closest('[data-ins]'); if(b&&!b.disabled) acheterIns(b.dataset.ins); });
@@ -1072,6 +1089,8 @@ $('reset').addEventListener('click',()=>{
   paintCorpus(null); try{localStorage.removeItem(KEY);}catch(e){}
 });
 $('again').addEventListener('click',()=>$('reset').click());
+$('fermer').addEventListener('click', fermerFin);
+$('end').addEventListener('click', e=>{ if(e.target===$('end')) fermerFin(); });
 
 setInterval(()=>{ try{ localStorage.setItem(KEY, JSON.stringify(S_)); }catch(e){} }, 4000);
 window.addEventListener('pagehide',()=>{ try{ localStorage.setItem(KEY, JSON.stringify(S_)); }catch(e){} });

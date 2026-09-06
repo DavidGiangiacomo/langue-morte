@@ -10,6 +10,7 @@ Contrôle :
   3. l'échelle de la numération : chaque glyphe de nombre ouvre exactement ce qu'il doit
   4. les infobulles répondent dans les quatre cas prévus
   5. le temps de rendu initial reste sous le seuil
+  6. la fenêtre de fin se ferme, et ne couvre pas les outils hors jeu
 
 Prérequis : pip install playwright && playwright install chromium
 """
@@ -149,6 +150,29 @@ def main() -> None:
         verifier(page.evaluate("() => freqGlyphe('an')") == 1668, "« un » compte ses chiffres (1 668)")
         verifier(page.evaluate("() => freqGlyphe('hem')") == 544, "« cinq » compte ses chiffres (544)")
         verifier(page.evaluate("() => freqGlyphe('tem')") == 315, "« grain », mot seul (315)")
+
+        print("\nfenêtre de fin")
+        page.evaluate("() => { S_.C = 9999; GL.forEach(g => acheterGl(g.id)); }")
+        page.wait_for_timeout(200)
+        verifier(page.get_attribute("#end", "hidden") is None,
+                 "elle s'ouvre au treizième signe")
+        # relevé en PT5 : la partie finie, l'overlay couvrait le journal d'actions —
+        # inatteignable au moment précis où il faut l'exporter
+        verifier(page.evaluate("""() => {
+                     const r = document.querySelector('#tr-cp').getBoundingClientRect();
+                     const e = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
+                     return !!e && e.id === 'tr-cp'; }"""),
+                 "le bouton « copier » reste cliquable par-dessus")
+        for fermeture, action in (("« revenir au corpus »", lambda: page.click("#fermer")),
+                                  ("échap", lambda: page.keyboard.press("Escape")),
+                                  ("un clic sur le fond", lambda: page.mouse.click(12, 500))):
+            page.evaluate("() => { $('end').hidden = false; }")
+            page.wait_for_timeout(120)
+            action()
+            page.wait_for_timeout(120)
+            verifier(page.get_attribute("#end", "hidden") is not None, f"{fermeture} la ferme")
+        # le corpus derrière est figé sur la partie terminée, pas remis à zéro
+        verifier(page.evaluate("() => mesures().sig") > 50, "le corpus reste déchiffré derrière")
 
         print("\njournal d'actions (hors jeu)")
         page.evaluate("() => { TR.length = 0; prochainEtat = 0; }")

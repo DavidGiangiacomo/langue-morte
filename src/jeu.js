@@ -24,11 +24,16 @@ elCorpus.addEventListener('mousemove', e=>{
 elCorpus.addEventListener('mouseleave', tipCacher);
 elCorpus.addEventListener('scroll', tipCacher, {passive:true});
 $('rail').addEventListener('click', e=>{ const b=e.target.closest('[data-go]'); if(b) versTablette(+b.dataset.go); });
+/* La fin du prototype ne doit pas être un cul-de-sac : `tick` ne tourne plus une fois
+   `S_.done`, donc le corpus derrière est figé sur la partie terminée et se relit tel quel.
+   Recharger la page ramène la fenêtre. */
+const fermerFin = () => { $('end').hidden = true; };
 window.addEventListener('keydown', e=>{
   if(e.metaKey||e.ctrlKey||e.altKey) return;
   const k=e.key.toLowerCase();
   if(k==='j'){ e.preventDefault(); saut(1); }
   else if(k==='k'){ e.preventDefault(); saut(-1); }
+  else if(k==='escape' && !$('end').hidden){ fermerFin(); }
 });
 $('a-rel').addEventListener('click', relever);
 $('instr').addEventListener('click', e=>{ const b=e.target.closest('[data-ins]'); if(b&&!b.disabled) acheterIns(b.dataset.ins); });
@@ -58,6 +63,8 @@ $('reset').addEventListener('click',()=>{
   paintCorpus(null); try{localStorage.removeItem(KEY);}catch(e){}
 });
 $('again').addEventListener('click',()=>$('reset').click());
+$('fermer').addEventListener('click', fermerFin);
+$('end').addEventListener('click', e=>{ if(e.target===$('end')) fermerFin(); });
 
 setInterval(()=>{ try{ localStorage.setItem(KEY, JSON.stringify(S_)); }catch(e){} }, 4000);
 window.addEventListener('pagehide',()=>{ try{ localStorage.setItem(KEY, JSON.stringify(S_)); }catch(e){} });

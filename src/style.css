@@ -20,7 +20,9 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .masthead h1{font-size:22px;font-weight:600;margin:0;letter-spacing:.18em;text-transform:uppercase}
 .masthead .sub{font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:.08em}
 .masthead .spacer{flex:1}
-.devbar{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.06em}
+/* Au-dessus de la fenêtre de fin (z-index 50) : sans cela le journal d'actions devient
+   inatteignable au moment précis où il faut l'exporter, la partie terminée. */
+.devbar{position:relative;z-index:60;display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;color:var(--faint);letter-spacing:.06em}
 .devbar button{border:1px solid var(--line);padding:3px 7px;border-radius:2px;font-family:var(--mono);font-size:10px;color:var(--dim)}
 .devbar button[aria-pressed="true"]{border-color:var(--ochre-d);color:var(--ochre)}
 .devbar button:hover{color:var(--lamp)}
@@ -168,5 +170,8 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .endstats b{color:var(--lamp);font-weight:500;float:right;font-variant-numeric:tabular-nums}
 .endcard .go{border:1px solid var(--ochre-d);color:var(--ochre);padding:9px 18px;border-radius:2px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
 .endcard .go:hover{background:#33261A}
+.endacts{display:flex;align-items:center;gap:10px}
+.endcard .ghost{border:1px solid var(--line);color:var(--dim);padding:9px 14px;border-radius:2px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.endcard .ghost:hover{color:var(--lamp);border-color:var(--line2)}
 
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
