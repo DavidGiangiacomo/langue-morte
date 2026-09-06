@@ -95,7 +95,7 @@ python build.py && python outils/verifier.py    # tests
 
 **Fait** : actes I et II, 13 signes sur 45, corpus complet des 30 tablettes (678 lignes, 3 825 signes), économie réglée sur cinq playtests, numération signe par signe, barre de navigation entre tablettes, infobulles, comptage d'occurrences dans le lexique, journal d'actions horodaté, relevé dans le corpus avec gisement par tablette.
 
-**Prochain playtest (PT6)** : quatre questions ouvertes dans `docs/journal.md`. La principale — le recoupement coûte désormais deux clics et une navigation là où il coûtait une pression sur un bouton ; `outils/sim.py` ne modélise aucun coût d'interaction et rend donc les mêmes chiffres qu'avant. Seule une partie réelle dira si la durée a bougé.
+**PT6 fait** (06/09/2026) : 43 min 49, la plus courte des six parties menées au bout et la première dans la fenêtre visée ; I6 pile à 30,0 %. Le recoupement dans le corpus tient — 44 rapprochements sur 12 signes, dont 8 qui ne s'achètent pas. Le relevé, lui, est retombé à 0,1 % des occurrences et s'arrête à la quinzième minute : c'est une mécanique d'ouverture, pas un acte de lecture. Question ouverte en tête de la « Suite » du journal.
 
 **Prochaine étape — l'acte III.** C'est là que le corpus change de nature :
 

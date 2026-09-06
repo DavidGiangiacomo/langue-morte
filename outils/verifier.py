@@ -238,6 +238,21 @@ def main() -> None:
             const e = document.querySelector('.tablet:not([hidden]) [data-n]');
             recChoisir(+e.closest('.tablet').dataset.tb, +e.dataset.j, e.dataset.w); }""")
         verifier(page.evaluate("() => recSel === null"), "un nombre n'est pas un signe : rien à recouper")
+        # PT6 : armé sans les ressources, le bouton désactivé enfermait le joueur — il ne
+        # pouvait plus ni désarmer ni relever, et rien ne disait qu'échap existait
+        page.evaluate("() => { S_.O = 0; S_.H = 0; }")
+        page.wait_for_timeout(140)
+        verifier(page.evaluate("() => document.getElementById('a-rec').disabled") is False,
+                 "armé sans ressources, le bouton reste cliquable")
+        verifier("pas de quoi" in page.eval_on_selector("#a-rec .an", "e => e.textContent"),
+                 "et il dit pourquoi")
+        page.click("#a-rec")
+        page.wait_for_timeout(140)
+        verifier(page.evaluate("() => recArme") is False, "un clic désarme malgré tout")
+        verifier(page.evaluate("() => document.getElementById('a-rec').disabled") is True,
+                 "désarmé et sans ressources, il redevient inerte")
+        page.evaluate("() => { S_.O = 500; S_.H = 50; recArmer(true); }")
+        page.wait_for_timeout(140)
         page.keyboard.press("Escape")
         page.wait_for_timeout(140)
         verifier(page.evaluate("() => recArme") is False, "échap désarme")
@@ -286,7 +301,7 @@ def main() -> None:
         verifier(page.evaluate("() => mesures().sig") > 50, "le corpus reste déchiffré derrière")
 
         print("\njournal d'actions (hors jeu)")
-        page.evaluate("() => { TR.length = 0; prochainEtat = 0; }")
+        page.evaluate("() => { TR.length = 0; prochainEtat = 0; S_.t = 0; }")
         jetons = page.query_selector_all("#corpus .tablet:not([hidden]) .tok:not(.sep)")
         for el in jetons[:3]:
             el.click()
@@ -306,8 +321,11 @@ def main() -> None:
         verifier(genres.count("recouper") == 1 and genres.count("acheterIns") == 1,
                  "recoupement et instrument journalisés")
         verifier(genres.count("tablette") == 1, "navigation dédoublonnée")
-        verifier(len(etats) >= 3 and all(etats[i] - etats[i - 1] >= 25 for i in range(1, len(etats))),
-                 f"{len(etats)} relevés d'état espacés de ~30 s")
+        # le premier relevé tombe au démarrage du journal ; c'est à partir du deuxième
+        # que la cadence doit être régulière
+        pas = [round(etats[i] - etats[i - 1]) for i in range(2, len(etats))]
+        verifier(len(etats) >= 3 and all(p == 30 for p in pas),
+                 f"{len(etats)} relevés d'état, cadence {set(pas) or '—'} s")
 
         nav.close()
 

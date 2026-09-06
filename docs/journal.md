@@ -6,15 +6,16 @@ Historique des playtests, des défauts trouvés et des décisions prises. À lir
 
 ## Les playtests
 
-| | PT1 | PT2 | PT3 | PT4 | PT5 | Cible |
-|---|---|---|---|---|---|---|
-| Durée | 145 min | 29 min 27 | 41 min 54 *(dont ~10 min de pause)* | 42 min 12 | 50 min 37 | 45 min |
-| Signes relevés à la main | 3 853 | 271 | **45** | 56 | **371** | — |
-| Hypothèses formulées à la main | — | — | — | — | 264 | — |
-| Recoupements | 67 | 69 | 51 | **56** | 46 | — |
-| Part manuelle de la Certitude | — | — | — | 43,5 % *(simulé)* | **30,8 %** | < 30 % |
-| Lignes entièrement lues | — | — | — | 26 % | 26 % | — |
-| Signes déchiffrés | — | — | — | 58 % | 57 % | — |
+| | PT1 | PT2 | PT3 | PT4 | PT5 | PT6 | Cible |
+|---|---|---|---|---|---|---|---|
+| Durée | 145 min | 29 min 27 | 41 min 54 *(dont ~10 min de pause)* | 42 min 12 | 50 min 37 | **43 min 49** | 45 min |
+| Signes relevés à la main | 3 853 | 271 | **45** | 56 | **371** | 180 | — |
+| Hypothèses formulées à la main | — | — | — | — | 264 | 27 | — |
+| Recoupements | 67 | 69 | 51 | **56** | 46 | 44 | — |
+| Part manuelle de la Certitude | — | — | — | 43,5 % *(simulé)* | **30,8 %** | **30,0 %** | < 30 % |
+| Part manuelle des Occurrences | — | — | — | — | 0,6 % | **0,1 %** | — |
+| Lignes entièrement lues | — | — | — | 26 % | 26 % | 26 % | — |
+| Signes déchiffrés | — | — | — | 58 % | 57 % | 57 % | — |
 
 PT1 à PT4 : l'auteur. **PT5 : un second joueur** (mon fils, 06/09/2026), et le premier
 playtest instrumenté par le journal d'actions — d'où le détail de ce qui suit. Tout ce qui
@@ -132,6 +133,96 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
   dans `jeu.js`, verrouillé par trois contrôles de `outils/verifier.py`.
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
+
+## PT6 — le recoupement tient, le relevé non
+
+Premier playtest des deux actions portées dans le corpus.
+
+### La partie a raccourci
+
+**43 min 49**, la plus courte des six parties menées au bout, et la première dans la fenêtre
+visée. C'était la question ouverte : le recoupement passé de « une pression sur un bouton »
+à « deux clics et une navigation » allait-il allonger la partie ? Le simulateur, qui ne
+modélise aucun coût d'interaction, annonçait 44,4 à 51,3 min. Le joueur réel s'est posé
+**sous** la borne basse.
+
+La réponse est donc non, et mieux que non : la partie a gagné sept minutes sur PT5 tout en
+passant de 681 à **251 actions manuelles** (5,7 par minute contre 13,5). L'enchaînement y
+est pour beaucoup — 21 des 43 intervalles entre deux recoupements tiennent en moins de
+30 secondes.
+
+### I6 = 30,0 %
+
+71 de Certitude recoupée sur 237. Exactement au plafond, sans marge. Le simulateur annonçait
+29 à 30 % et cette fois il a vu juste — en PT5 il sous-estimait de trois points. Un
+instrument qui se trompe dans un sens puis pas dans l'autre n'est pas un instrument de
+précision : il donne l'ordre de grandeur, la mesure tranche.
+
+### Le recoupement fonctionne
+
+44 recoupements sur **12 signes distincts**, en chaînes de 1 à 9 (médiane 2) — le joueur
+suit bien un signe de tablette en tablette comme le geste l'y invite.
+
+| signe | fois | | signe | fois |
+|---|---|---|---|---|
+| en | 9 | | nm5 | 3 |
+| tab | 8 | | gan, lash, imme, zur | 2 |
+| pat | 6 | | shen, nm3 | 1 |
+| tem, ur | 4 | | | |
+
+Et le point qui compte : **8 de ces 12 signes ne sont pas dans le lexique des 13 glyphes.**
+`en`, `pat`, `nm5`, `lash`, `imme`, `zur`, `shen`, `nm3` ne s'achètent pas, ne rapportent
+aucun bonus, n'ouvrent aucun texte. Le joueur les a choisis parce qu'ils étaient commodes à
+retrouver. C'est la première fois qu'un journal de playtest montre quelqu'un travaillant sur
+**le texte** plutôt que sur la liste de courses.
+
+### Le relevé, lui, est retombé à 0,1 %
+
+| | PT5 (bouton) | PT6 (corpus + gisement) |
+|---|---|---|
+| relevés | 371 | 180 |
+| part des occurrences produites | 0,6 % | **0,1 %** |
+| gisement consommé | — | 54 / 398 |
+| dernier relevé | 42,9 min *(sur 50,6)* | **15,5 min** *(sur 43,8)* |
+
+Le déplacement dans le corpus a rendu le relevé **moins** utile, pas plus. La cause est le
+correctif anti-thésaurisation lui-même : le tarif d'une tablette est figé à son dégagement,
+donc les tablettes accessibles tôt — les seules que le joueur relève — valent 1 ou 2
+occurrences pour toujours. Les tarifs mesurés dans cette partie : t1, t2, t3, t4 à **1**,
+t8 à 2, t16 à 25, t10 à 42. Le gisement cher n'apparaît qu'une fois les Occurrences
+devenues sans objet.
+
+Le simulateur annonçait 14 à 19 % parce qu'il modélise un joueur qui vide d'abord la
+tablette la mieux payée et épuise 388 gisements sur 398. Le joueur réel en a consommé 54,
+là où il se trouvait, au début.
+
+Ce n'est pas un échec du geste — c'est un échec de la prétention. Le relevé dans le corpus
+est honnêtement une **mécanique d'ouverture** : il amorce les premiers Copistes, puis on
+l'abandonne. Le vouloir « acte de lecture » était l'erreur ; l'acte de lecture, c'est le
+recoupement, et lui tient. Reste que la machinerie du gisement — tarifs figés, 398
+compteurs, épuisement, extinction dans la barre — est un échafaudage considérable pour
+quelque chose qui ne pèse plus rien après la quinzième minute. **À trancher : re-tarifer une
+tablette à sa première visite plutôt qu'à son dégagement (le trou du thésauriseur revient en
+partie), ou assumer l'ouverture et simplifier.**
+
+### Le blocage volontaire
+
+Partie sacrifiée exprès : cliquer tous les signes et ne formuler que des hypothèses, pour
+voir si l'on peut s'enfermer. **On ne peut pas** — le plancher permet de recliquer le même
+signe indéfiniment. Le garde-fou tient. Mais il tient lentement : dans cette partie, le
+premier Copiste n'est arrivé qu'à **156 minutes** de temps de jeu. Et en partie normale, les
+13 relevés du gisement d'ouverture sont épuisés en **2 min 30**.
+
+### Défauts trouvés
+
+1. **Armé sans les ressources, le joueur était enfermé.** Le bouton désactivé ne pouvait
+   plus désarmer, et le corpus armé ne relevait plus : seule échap sortait, et rien ne le
+   disait. Corrigé — le bouton ne se désactive que pour empêcher d'*armer*, jamais de
+   désarmer, et il annonce « pas de quoi recouper ».
+2. **Un test de `verifier.py` passait par chance.** Le premier relevé d'état est journalisé
+   au démarrage du journal, donc son écart au deuxième valait ce qui restait à courir
+   jusqu'au prochain multiple de 30 — entre 0 et 30 s selon la durée du reste de la
+   vérification. Horloge fixée, régularité contrôlée à partir du deuxième relevé.
 
 ## Le comptage d'occurrences dans le lexique
 
@@ -521,11 +612,8 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
 
 ## Suite
 
-1. **PT6**, pour trancher quatre choses que seul un joueur peut dire : le recoupement à
-   deux clics allonge-t-il la partie (le simulateur ne modélise aucun coût d'interaction) ?
-   I6 tient-il sous 30 %, la marge simulée étant nulle ? le gisement fait-il parcourir le
-   corpus, ou cliquer sans regarder ? le comptage d'occurrences pèse-t-il enfin dans
-   l'achat, maintenant qu'il prédit un effort ?
+1. **Trancher le sort du gisement** (voir PT6) : re-tarifer une tablette à sa première
+   visite, ou assumer que le relevé est une mécanique d'ouverture et simplifier.
 2. **Le mur des dix premières minutes** : 100 % de la Certitude à la main avant la première
    Concordance, et c'est là que la partie 1 de PT5 a été abandonnée. Mesurer I6 par tranches
    dans `outils/sim.py` plutôt que sur la partie entière.

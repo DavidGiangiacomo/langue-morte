@@ -944,11 +944,17 @@ function paintActs(){
   setHTML($('ac-rec'), (readC()? (big(rc.O)+' occ. · '+big(rc.H)+' hyp.') : (numGlyphs(rc.O)+'<span style="width:6px"></span>'+numGlyphs(rc.H)))
     + (rg>1? '<span style="color:var(--slate)">→ '+(readC()? rg : '')+'</span>' : ''));
   /* Le bouton n'exécute plus le recoupement : il l'arme, et dit où en est le geste. */
+  const peutRec = S_.O >= rc.O && S_.H >= rc.H;
   setHTML($('a-rec').querySelector('.an'), !recArme ? 'Recouper deux passages'
+    : !peutRec ? 'pas de quoi recouper'
     : !recSel ? 'choisis un passage dans le corpus' : 'et le même signe, ailleurs');
   $('a-rec').classList.toggle('armed', recArme);
+  $('a-rec').title = recArme ? 'clique pour renoncer — ou échap' : '';
   $('a-hyp').disabled = S_.O < hc;
-  $('a-rec').disabled = S_.O < rc.O || S_.H < rc.H;
+  /* Armé, le bouton reste toujours cliquable : c'est la seule sortie du mode, et le corpus
+     armé ne relève plus. Le désactiver faute de ressources enfermait le joueur — signalé
+     en PT6. Il ne se désactive donc que pour empêcher d'armer, jamais de désarmer. */
+  $('a-rec').disabled = !recArme && !peutRec;
 }
 
 let lastPct=-1;
