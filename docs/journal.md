@@ -369,7 +369,65 @@ rééquilibrage : même coût, même gain, même I6. Seul le geste changerait. E
 comptage d'occurrences enfin opérant, puisque trouver deux attestations est facile pour un
 signe fréquent et difficile pour un signe rare.
 
-**Non fait, non tranché.** C'est le candidat naturel après PT6.
+**R8, 06/09/2026 : fait.** Voir ci-dessous.
+
+## Le recoupement passe dans le corpus
+
+Le bouton n'exécute plus le recoupement : il **arme** le corpus. On choisit alors un passage
+dans le texte, et le rapprochement se fait sur une seconde attestation du même signe, dans
+une autre tablette.
+
+**Rien n'a été rééquilibré.** Même coût (12 occ. + 3 hyp., ×1,18 par usage), même gain
+(min(3, 1 + ⌊lexique/5⌋)), même part dans I6 : le simulateur rend exactement les mêmes
+chiffres qu'avant le changement — 44,4 à 51,3 min, I6 29 à 30 %. Seul le geste a bougé.
+
+### Le geste
+
+1. On arme (le bouton, ou échap pour désarmer).
+2. On choisit un passage. **Toutes les autres attestations du même signe s'allument dans le
+   corpus**, et la barre de tablettes désigne celles où aller les chercher.
+3. On clique l'une d'elles : rapprochement fait.
+4. **Ce second passage devient le point d'appui du suivant.** On suit alors un signe de
+   tablette en tablette, un clic par rapprochement.
+
+La tablette du passage retenu est exclue des attestations allumées. On ne peut donc jamais
+rapprocher deux fois le même endroit : la tournée n'est pas suggérée, elle est forcée.
+
+Sans la barre, choisir un passage lançait une chasse au trésor dans trente tablettes dont
+une seule tient à l'écran. C'est elle qui rend le geste jouable, et c'est enfin l'usage pour
+lequel elle avait été construite : « la relecture devient une tournée guidée ».
+
+### Ce que ça débloque
+
+- **Le comptage d'occurrences devient opérant.** Il ne prédisait rien jusqu'ici (PT5 :
+  `eau`, 70 occ., préféré à `dix`, 1 458 occ.). Il prédit maintenant un effort : trouver deux
+  attestations d'un signe fréquent est immédiat, d'un signe rare c'est un parcours.
+- **La seule ressource rare s'obtient en lisant.** C'était le reproche de fond à PT5 : le
+  relevé porté dans le corpus produisait des Occurrences, dont la partie s'est terminée avec
+  62 595 inutilisées. Le recoupement produit la Certitude.
+- **L'ouverture ne peut pas se bloquer.** Le recoupement fournit 100 % de la Certitude des
+  dix premières minutes ; il fallait vérifier qu'il reste toujours possible. Six signes
+  (`ur`, `kish`, `gan`, `tab`, `tem`, `nur`) sont présents dans **chacune** des quatre
+  tablettes du départ. À trente tablettes, 37 signes sur 46 sont recoupables.
+
+### Ce que le simulateur ne peut pas dire
+
+Le coût du recoupement **en temps de joueur** est passé de zéro — une pression sur un
+bouton, répétable en maintenant — à deux clics et une navigation. L'économie est identique ;
+le temps réel de la partie, peut-être pas. `outils/sim.py` ne modélise aucun coût
+d'interaction et ne verra jamais ce décalage.
+
+C'est la première question de PT6, et le journal d'actions y répondra : chaque recoupement
+note le signe rapproché, et l'intervalle entre deux recoupements se lit dans les
+horodatages.
+
+### Réserve
+
+Choisir un passage allume toutes les attestations de son signe — c'est un outil de recherche
+gratuit dans le corpus. Je le tiens pour une fonctionnalité et non pour une fuite :
+l'analyse de fréquences rendue littérale est le sujet du jeu, et la Table de fréquences
+garde l'exclusivité du *nombre*, quand cet éclairage ne donne que les *positions*. Mais
+c'est gratuit, et à surveiller.
 
 ## La numération — deux corrections successives
 
@@ -432,7 +490,7 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
 | Relever | dans le corpus. Jeton neuf : tarif de la tablette, figé à (1 + 1,2 × débit) × mult. au dégagement. Jeton déjà relevé ou tablette épuisée : le plancher (1 × mult.) |
 | Gisement | ⌈jetons/10⌉ par tablette, **398** en tout, dont 13 ouverts au départ |
 | Formuler | 3 occ. → 1 hyp. |
-| Recouper | 12 occ. + 3 hyp. → min(3, 1 + ⌊lexique/5⌋) cert., coût ×1,18 par usage (−25 % avec `champ`) |
+| Recouper | dans le corpus : deux attestations d'un même signe, dans deux tablettes différentes. 12 occ. + 3 hyp. → min(3, 1 + ⌊lexique/5⌋) cert., coût ×1,18 par usage (−25 % avec `champ`) |
 | Copiste | 15 occ., ×1,12, +1 occ./s |
 | Table de fréquences | 100 occ., ×1,15, −1 occ./s → +0,6 hyp./s |
 | Concordance | 450 occ., ×1,18, −0,5 hyp./s → +0,0039 cert./s |
@@ -463,14 +521,14 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
 
 ## Suite
 
-1. **PT6**, pour trancher trois choses que seul un joueur peut dire : I6 tient-il sous
-   30 % (la marge simulée est nulle) ? le gisement fait-il parcourir le corpus, ou
-   cliquer sans regarder ? la partie tient-elle dans les 45 minutes ?
-2. **Déplacer le recoupement dans le corpus** — l'action qui produit la ressource rare est
-   encore un bouton sans rapport avec le texte. Voir ci-dessus.
-3. **Le mur des dix premières minutes** : 100 % de la Certitude à la main avant la première
+1. **PT6**, pour trancher quatre choses que seul un joueur peut dire : le recoupement à
+   deux clics allonge-t-il la partie (le simulateur ne modélise aucun coût d'interaction) ?
+   I6 tient-il sous 30 %, la marge simulée étant nulle ? le gisement fait-il parcourir le
+   corpus, ou cliquer sans regarder ? le comptage d'occurrences pèse-t-il enfin dans
+   l'achat, maintenant qu'il prédit un effort ?
+2. **Le mur des dix premières minutes** : 100 % de la Certitude à la main avant la première
    Concordance, et c'est là que la partie 1 de PT5 a été abandonnée. Mesurer I6 par tranches
    dans `outils/sim.py` plutôt que sur la partie entière.
-4. **Acte III** — branche Temps, `mille`, `zéro` par composition, instruments Grammaire et Élève, et surtout la **datation puis le réordonnancement chronologique** des tablettes. C'est le sommet dramatique : une fois triées, la série de l'eau devient lisible et le déclin apparaît.
+3. **Acte III** — branche Temps, `mille`, `zéro` par composition, instruments Grammaire et Élève, et surtout la **datation puis le réordonnancement chronologique** des tablettes. C'est le sommet dramatique : une fois triées, la série de l'eau devient lisible et le déclin apparaît.
 3. Puis la mécanique de **composition**, puis les **contradictions** (acte IV).
 4. Trancher le sort de ⟨N1⟩ et ⟨N2⟩ (`docs/corpus.md` §9).

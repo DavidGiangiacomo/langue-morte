@@ -117,7 +117,18 @@ function relever(t, j){
   S_.clicks++;
 }
 function formuler(){ const c=hypCost(); if(S_.O>=c){ S_.O-=c; S_.H+=1; } }
-function recouper(){ const c=recCost(); if(S_.O>=c.O&&S_.H>=c.H){ S_.O-=c.O; S_.H-=c.H; S_.C+=recGain(); S_.rec++; } }
+/* « Recouper deux passages » : le rapprochement de deux attestations d'un même signe,
+   dans deux tablettes différentes. Le choix des deux passages se fait dans le corpus
+   (recChoisir() dans rendu.js) ; ici il ne reste que la transaction, inchangée depuis PT4 —
+   même coût, même gain, même part dans I6. Seul le geste a bougé.
+   `id` ne sert pas à l'économie : il sert au journal d'actions, qui doit pouvoir dire si
+   le joueur recoupe des signes fréquents ou rares. */
+function recouper(id){
+  const c=recCost();
+  if(S_.O<c.O||S_.H<c.H) return false;
+  S_.O-=c.O; S_.H-=c.H; S_.C+=recGain(); S_.rec++;
+  return true;
+}
 function acheterIns(k){ const i=INS.find(x=>x.k===k), c=insCost(i);
   if(i.unlock()&&S_.O>=c){ S_.O-=c; S_.b[k]++; } }
 function acheterGl(id){

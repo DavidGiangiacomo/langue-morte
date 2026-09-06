@@ -14,7 +14,9 @@ if(S_.done) showEnd();
 elCorpus.addEventListener('click', e=>{
   const el = e.target.closest('.tok');
   if(!el || el.classList.contains('sep')) return;
-  relever(+el.closest('.tablet').dataset.tb, +el.dataset.j);
+  const tb = +el.closest('.tablet').dataset.tb, j = +el.dataset.j;
+  if(recArme){ recChoisir(tb, j, el.dataset.w); return; }
+  relever(tb, j);
   el.classList.add('rel'); el.__v += 'r';
 });
 elCorpus.addEventListener('mousemove', e=>{
@@ -40,7 +42,7 @@ window.addEventListener('keydown', e=>{
   const k=e.key.toLowerCase();
   if(k==='j'){ e.preventDefault(); saut(1); }
   else if(k==='k'){ e.preventDefault(); saut(-1); }
-  else if(k==='escape' && !$('end').hidden){ fermerFin(); }
+  else if(k==='escape'){ if(!$('end').hidden) fermerFin(); else if(recArme) recArmer(false); }
 });
 $('instr').addEventListener('click', e=>{ const b=e.target.closest('[data-ins]'); if(b&&!b.disabled) acheterIns(b.dataset.ins); });
 $('lex').addEventListener('click', e=>{ const b=e.target.closest('[data-gl]'); if(b&&!b.disabled) acheterGl(b.dataset.gl); });
@@ -54,7 +56,9 @@ function repeat(btn, fn){
   btn.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); if(!btn.disabled) fn(); } });
 }
 repeat($('a-hyp'), formuler);
-repeat($('a-rec'), recouper);
+/* Pas de `repeat` ici : le recoupement n'est plus une pression, c'est un choix de deux
+   passages. Le bouton ne fait plus qu'armer le corpus. */
+$('a-rec').addEventListener('click', ()=>recArmer(!recArme));
 
 document.querySelectorAll('[data-spd]').forEach(b=>b.addEventListener('click',()=>{
   speed=+b.dataset.spd;
@@ -64,7 +68,7 @@ $('reset').addEventListener('click',()=>{
   S_=fresh(); LOGS.length=0; lastPct=-1; $('end').hidden=true;
   /* Sans ceci la table des signes de numération garde ceux de la partie précédente :
      on repart de zéro glyphe avec 229 nombres encore lisibles à l'écran. */
-  majSignes(); touchees=new Set();
+  majSignes(); touchees=new Set(); recArmer(false);
   $('log').innerHTML='<p class="hint">relève un signe : clique dans le corpus</p>';
   paintCorpus(null); try{localStorage.removeItem(KEY);}catch(e){}
 });

@@ -51,6 +51,8 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .rcell .rb{width:100%;height:3px;background:#443528;border-radius:1px;overflow:hidden}
 .rcell .rb i{display:block;height:100%;background:var(--ochre-d);transition:width .5s ease}
 .rcell.sec{opacity:.42}
+.rcell.cible{opacity:1;border-color:var(--ochre);background:#3E2D1D}
+.rcell.cible .rn{color:var(--lamp)}
 .rcell.ici{border-color:var(--mid)}
 .rcell.touche{border-color:var(--ochre)}
 .rcell.touche .rn{color:var(--ochre)}
@@ -106,6 +108,12 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .act .an{font-size:15.5px;white-space:nowrap}
 .act .ac{margin-left:auto;font-family:var(--mono);font-size:10px;color:var(--dim);display:flex;gap:6px;
   align-items:center;flex-wrap:wrap;justify-content:flex-end;max-width:56%;line-height:1.35}
+/* Corpus armé : le signe retenu, et toutes ses autres attestations qui s'allument. */
+#corpus.armed{cursor:cell}
+#corpus.armed .tok.echo{box-shadow:inset 0 0 0 1px var(--ochre-d)}
+#corpus.armed .tok.pick{background:var(--ochre-d);color:var(--lamp)}
+.act.armed{border-color:var(--ochre);background:#33261A}
+.act.armed .an{color:var(--ochre)}
 .act.prime{border-color:var(--ochre-d);background:#33261A}
 .act.prime:hover{background:#3E2D1D}
 

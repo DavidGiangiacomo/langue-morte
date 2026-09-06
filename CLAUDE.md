@@ -76,7 +76,9 @@ python build.py && python outils/verifier.py    # tests
 
 7. **Ne jamais annoncer un chiffre de rythme sans l'avoir simulé ou mesuré.** Les cinq playtests ont tous invalidé une intuition d'équilibrage.
 
-8. **Le relevé se fait dans le corpus, et le tarif d'une tablette est figé à son dégagement.** Deux versions plus simples ont échoué au simulateur avant d'atteindre le jeu : un gisement qui coupe vraiment verrouille l'ouverture (13 relevés disponibles pour un premier Copiste à 15), et un tarif indexé sur le débit courant se thésaurise (72 % des occurrences au lieu de 17 %). Le gisement, et non la cadence de clic, décide de ce que la main rapporte — c'est ce qui rend impossible le retour du défaut de PT1.
+8. **Les deux actions manuelles se font dans le corpus.** Le relevé, sur un signe ; le recoupement, sur deux attestations d'un même signe dans deux tablettes différentes. Aucun bouton ne produit plus rien directement — c'est le point de bascule entre « un incrémental habillé en déchiffrement » et un jeu où l'on agit en lisant. Ne pas remettre de raccourci qui contourne le texte.
+
+9. **Le relevé : le tarif d'une tablette est figé à son dégagement.** Deux versions plus simples ont échoué au simulateur avant d'atteindre le jeu : un gisement qui coupe vraiment verrouille l'ouverture (13 relevés disponibles pour un premier Copiste à 15), et un tarif indexé sur le débit courant se thésaurise (72 % des occurrences au lieu de 17 %). Le gisement, et non la cadence de clic, décide de ce que la main rapporte — c'est ce qui rend impossible le retour du défaut de PT1.
 
 ---
 
@@ -93,7 +95,7 @@ python build.py && python outils/verifier.py    # tests
 
 **Fait** : actes I et II, 13 signes sur 45, corpus complet des 30 tablettes (678 lignes, 3 825 signes), économie réglée sur cinq playtests, numération signe par signe, barre de navigation entre tablettes, infobulles, comptage d'occurrences dans le lexique, journal d'actions horodaté, relevé dans le corpus avec gisement par tablette.
 
-**Prochain playtest (PT6)** : trois questions ouvertes dans `docs/journal.md` — la marge sur I6 est nulle en simulation, le gisement doit faire *parcourir* le corpus et pas seulement cliquer dedans, et le recoupement reste un bouton sans rapport avec le texte.
+**Prochain playtest (PT6)** : quatre questions ouvertes dans `docs/journal.md`. La principale — le recoupement coûte désormais deux clics et une navigation là où il coûtait une pression sur un bouton ; `outils/sim.py` ne modélise aucun coût d'interaction et rend donc les mêmes chiffres qu'avant. Seule une partie réelle dira si la durée a bougé.
 
 **Prochaine étape — l'acte III.** C'est là que le corpus change de nature :
 

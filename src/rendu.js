@@ -59,7 +59,7 @@ function paintCorpus(flashId){
     el.className='tok '+(lis?'num':'g')+(r?' rel':'');
     el.innerHTML = lis ? nf.format(n) : numGlyphs(n);
   });
-  revealer(); paintRail();
+  revealer(); paintRail(); peindreRec();
 }
 
 /* Un nouveau mot donne envie de relire les 30 tablettes — encore faut-il pouvoir y aller.
@@ -67,6 +67,16 @@ function paintCorpus(flashId){
    acquis elle marque en ocre les tablettes où ce signe apparaît. La relecture devient
    une tournée guidée au lieu d'un défilement. */
 let touchees = new Set();
+
+/* Les tablettes où chaque signe apparaît. Sert à la barre pendant un recoupement :
+   choisir un passage doit désigner où chercher le second, sinon c'est une chasse au
+   trésor dans trente tablettes dont une seule tient à l'écran. */
+const TBSIGNE = {};
+for(const tb of CORPUS) for(const l of tb.l) for(const tk of l.split(' ')){
+  if(tk==='·' || tk.charCodeAt(0)===37) continue;
+  (TBSIGNE[tk] || (TBSIGNE[tk] = new Set())).add(tb.t);
+}
+
 function buildRail(){
   $('rail').innerHTML = TB.map(tb =>
     '<button class="rcell" data-go="'+tb.t+'" title="tablette '+tb.t+'">'+
@@ -90,10 +100,65 @@ function paintRail(){
     /* une tablette dont le gisement est épuisé s'éteint : il n'y a plus rien à y relever */
     const sec = gisReste(t) <= 0;
     if(c.classList.contains('sec')!==sec) c.classList.toggle('sec',sec);
+    const vise = !!recSel && t!==recSel.tb && !!TBSIGNE[recSel.id] && TBSIGNE[recSel.id].has(t);
+    if(c.classList.contains('cible')!==vise) c.classList.toggle('cible',vise);
     const ti = 'tablette '+t+' — gisement '+gisReste(t)+'/'+GISEMENT[t];
     if(c.title!==ti) c.title=ti;
   }
 }
+/* ---- le recoupement, dans le texte ----
+   Armé depuis le bouton, il se joue en deux clics : un premier passage, puis la même
+   attestation ailleurs. Choisir un signe allume toutes ses autres attestations dans le
+   corpus — l'analyse de fréquences rendue littérale, et la seule façon de rendre le
+   comptage d'occurrences opérant plutôt que décoratif.
+   Deux tablettes différentes sont exigées : c'est ce qui fait du recoupement un parcours
+   et non un geste local. Six signes sont présents dans les quatre tablettes du départ,
+   donc l'ouverture n'est jamais bloquée — le recoupement fournit 100 % de la Certitude
+   des dix premières minutes, il ne peut jamais devenir impossible. */
+let recArme = false, recSel = null, recPeints = [];
+
+function peindreRec(){
+  for(const e of recPeints) e.classList.remove('pick','echo');
+  recPeints.length = 0;
+  paintRail();
+  elCorpus.classList.toggle('armed', recArme);
+  if(!recArme || !recSel) return;
+  const tbl = elCorpus.querySelector('.tablet[data-tb="'+recSel.tb+'"]');
+  const sel = tbl && tbl.querySelector('[data-j="'+recSel.j+'"]');
+  if(sel){ sel.classList.add('pick'); recPeints.push(sel); }
+  for(const e of elCorpus.querySelectorAll('[data-w="'+recSel.id+'"]')){
+    const p = e.closest('.tablet');
+    if(p.hidden || p.dataset.tb === String(recSel.tb)) continue;
+    e.classList.add('echo'); recPeints.push(e);
+  }
+}
+
+function recArmer(v){ recArme = v; if(!v) recSel = null; peindreRec(); }
+
+function recChoisir(tb, j, id){
+  if(id === undefined) return;            // un nombre n'est pas un signe : rien à recouper
+  if(recSel && recSel.id === id && recSel.tb !== tb){
+    if(!recouper(id)) return;             // plus les moyens : on garde le premier passage
+    for(const e of recPeints) if(e.classList.contains('pick')) rejouerFlash(e);
+    const tbl = elCorpus.querySelector('.tablet[data-tb="'+tb+'"]');
+    if(tbl) rejouerFlash(tbl.querySelector('[data-j="'+j+'"]'));
+    /* Le second passage devient le point d'appui du suivant : on suit un signe de
+       tablette en tablette. Sa tablette étant exclue des attestations allumées, on ne
+       peut pas rapprocher deux fois le même endroit — la tournée est forcée. */
+    recSel = {id, tb, j};
+  } else {
+    recSel = {id, tb, j};
+  }
+  peindreRec();
+}
+
+/* `.flash` est une animation : il faut la retirer et forcer un reflow pour la rejouer. */
+function rejouerFlash(el){
+  if(!el) return;
+  el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+  setTimeout(()=>el.classList.remove('flash'), 900);
+}
+
 function versTablette(t){
   const el=elCorpus.querySelector('.tablet[data-tb="'+t+'"]');
   if(!el || el.hidden) return;
@@ -244,6 +309,10 @@ function paintActs(){
   setHTML($('ac-hyp'), readC()? hc+' occ.' : numGlyphs(hc));
   setHTML($('ac-rec'), (readC()? (big(rc.O)+' occ. · '+big(rc.H)+' hyp.') : (numGlyphs(rc.O)+'<span style="width:6px"></span>'+numGlyphs(rc.H)))
     + (rg>1? '<span style="color:var(--slate)">→ '+(readC()? rg : '')+'</span>' : ''));
+  /* Le bouton n'exécute plus le recoupement : il l'arme, et dit où en est le geste. */
+  setHTML($('a-rec').querySelector('.an'), !recArme ? 'Recouper deux passages'
+    : !recSel ? 'choisis un passage dans le corpus' : 'et le même signe, ailleurs');
+  $('a-rec').classList.toggle('armed', recArme);
   $('a-hyp').disabled = S_.O < hc;
   $('a-rec').disabled = S_.O < rc.O || S_.H < rc.H;
 }

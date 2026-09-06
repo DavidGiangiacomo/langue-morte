@@ -12,6 +12,7 @@ Contrôle :
   5. le temps de rendu initial reste sous le seuil
   6. la fenêtre de fin se ferme, et ne couvre pas les outils hors jeu
   7. le relevé se fait dans le corpus, et le gisement d'une tablette s'épuise
+  8. le recoupement se fait dans le corpus : deux passages d'un même signe
 
 Prérequis : pip install playwright && playwright install chromium
 """
@@ -175,6 +176,73 @@ def main() -> None:
         verifier(page.evaluate("() => $('rail').children[0].classList.contains('sec')"),
                  "la tablette épuisée s'éteint dans la barre")
         page.evaluate("() => { S_.rel = {}; paintCorpus(null); }")
+
+        print("\nle recoupement, dans le texte")
+        page.evaluate("() => { S_.O = 500; S_.H = 50; S_.C = 0; S_.rec = 0; recArmer(false); }")
+        page.wait_for_timeout(140)
+        page.click("#a-rec")
+        page.wait_for_timeout(140)
+        verifier(page.evaluate("() => recArme") is True and page.evaluate("() => S_.rec") == 0,
+                 "le bouton arme le corpus au lieu de recouper")
+        # choisir un passage allume toutes les autres attestations du même signe
+        page.evaluate("""() => { const e = document.querySelector('.tablet[data-tb="1"] [data-w="tem"]');
+            recChoisir(1, +e.dataset.j, 'tem'); }""")
+        page.wait_for_timeout(140)
+        ec = page.evaluate("""() => [
+            document.querySelectorAll('#corpus .tok.echo').length,
+            document.querySelectorAll('.tablet[data-tb="1"] .tok.echo').length,
+            document.querySelectorAll('#corpus .tok.pick').length,
+            document.querySelectorAll('.tablet[hidden] .tok.echo').length]""")
+        verifier(ec[0] > 0 and ec[2] == 1, f"{ec[0]} attestations allumées ailleurs, 1 passage retenu")
+        verifier(ec[1] == 0, "aucune dans la tablette du passage : il en faut deux")
+        verifier(ec[3] == 0, "aucune dans une tablette non dégagée")
+        # deux passages d'une même tablette ne recoupent pas : ils déplacent le choix
+        avant = page.evaluate("() => S_.rec")
+        page.evaluate("""() => { const l = document.querySelectorAll('.tablet[data-tb="1"] [data-w="tem"]');
+            recChoisir(1, +l[1].dataset.j, 'tem'); }""")
+        page.wait_for_timeout(100)
+        verifier(page.evaluate("() => S_.rec") == avant,
+                 "deux passages d'une même tablette ne recoupent pas")
+        res = page.evaluate("""() => {
+            const a = document.querySelector('.tablet[data-tb="1"] [data-w="tem"]');
+            recChoisir(1, +a.dataset.j, 'tem');
+            const o = S_.O, h = S_.H, c = S_.C, r = S_.rec;
+            const b = document.querySelector('.tablet[data-tb="2"] [data-w="tem"]');
+            recChoisir(2, +b.dataset.j, 'tem');
+            return [S_.rec - r, S_.C - c, o - S_.O, h - S_.H, recArme, recSel.tb]; }""")
+        verifier(res[0] == 1 and res[1] == 1, f"deux tablettes différentes : +{res[1]} certitude")
+        verifier(res[2] == 12 and res[3] == 3, f"coût inchangé : {res[2]} occ. + {res[3]} hyp.")
+        verifier(res[4] is True and res[5] == 2,
+                 "on reste armé, et le second passage devient le point d'appui")
+        # on suit alors le signe de tablette en tablette, un clic par rapprochement
+        suite = page.evaluate("""() => {
+            const r = S_.rec;
+            for (const t of [3, 4, 2]) {
+                const e = document.querySelector('.tablet[data-tb="' + t + '"] [data-w="tem"]');
+                if (e) recChoisir(t, +e.dataset.j, 'tem');
+            }
+            return S_.rec - r; }""")
+        verifier(suite == 3, f"trois clics de suite = trois rapprochements ({suite})")
+        # la barre désigne où chercher : sinon c'est une chasse au trésor dans 30 tablettes
+        cib = page.evaluate("""() => {
+            const c = [...document.querySelectorAll('.rcell.cible')].map(e => e.title);
+            return [c.length, c.some(t => t.startsWith('tablette ' + recSel.tb + ' '))]; }""")
+        verifier(cib[0] > 0, f"{cib[0]} tablettes désignées dans la barre")
+        verifier(cib[1] is False, "sauf celle du passage retenu")
+        # armé, le clic sert au recoupement et ne relève pas
+        page.evaluate("() => { S_.rel = {}; S_.clicks = 0; }")
+        page.click("#corpus .tablet:not([hidden]) .tok:not(.sep)")
+        page.wait_for_timeout(140)
+        verifier(page.evaluate("() => S_.clicks") == 0, "armé, le clic ne relève pas")
+        page.evaluate("""() => { recSel = null;
+            const e = document.querySelector('.tablet:not([hidden]) [data-n]');
+            recChoisir(+e.closest('.tablet').dataset.tb, +e.dataset.j, e.dataset.w); }""")
+        verifier(page.evaluate("() => recSel === null"), "un nombre n'est pas un signe : rien à recouper")
+        page.keyboard.press("Escape")
+        page.wait_for_timeout(140)
+        verifier(page.evaluate("() => recArme") is False, "échap désarme")
+        verifier(page.eval_on_selector_all("#corpus .tok.echo, #corpus .tok.pick", "e => e.length") == 0,
+                 "et éteint les attestations")
 
         print("\ncomptage d'occurrences dans le lexique")
         frq = lambda: page.eval_on_selector_all("#lex .frq", "e => e.map(x => x.textContent)")

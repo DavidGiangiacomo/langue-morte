@@ -57,7 +57,8 @@ const niveaux = () => S_.b.cop + S_.b.tab + S_.b.con + S_.b.ate;
    décide du sort du gisement, et elle ne se lit nulle part ailleurs que dans ce journal. */
 enrober('relever',   () => S_.clicks,     a => 'tablette ' + a[0]);
 enrober('formuler',  () => S_.H);
-enrober('recouper',  () => S_.rec,        () => '+' + recGain() + ' cert.');
+enrober('recouper',  () => S_.rec,        a => '+' + recGain() + ' cert.'
+                                               + (a[0] ? ' · ' + a[0] : ''));
 enrober('acheterIns', niveaux,            a => a[0] + ' n°' + S_.b[a[0]]);
 enrober('acheterGl', () => S_.gl.length,  a => a[0] + ' (' + byId[a[0]].mot + ') ' + byId[a[0]].cost + ' C');
 
