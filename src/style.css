@@ -50,6 +50,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .rcell .rn .gl{width:7px;height:10px;vertical-align:0}
 .rcell .rb{width:100%;height:3px;background:#443528;border-radius:1px;overflow:hidden}
 .rcell .rb i{display:block;height:100%;background:var(--ochre-d);transition:width .5s ease}
+.rcell.sec{opacity:.42}
 .rcell.ici{border-color:var(--mid)}
 .rcell.touche{border-color:var(--ochre)}
 .rcell.touche .rn{color:var(--ochre)}
@@ -66,6 +67,10 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .tok.w{color:var(--lamp);font-size:17px;letter-spacing:.01em}
 .tok.sep{color:var(--faint);padding:0 2px}
 .tok.num{color:var(--grain);font-family:var(--mono);font-size:14px;font-variant-numeric:tabular-nums}
+/* Le signe relevé garde une marque : sur une tablette, on voit d'un coup d'œil le terrain
+   déjà parcouru. Discret — c'est une note de travail, pas une décoration. */
+.tok.rel{box-shadow:inset 0 -1px 0 var(--ochre-d)}
+.tok.g.rel{opacity:.62}
 .tok.flash{animation:flash .85s ease}
 @keyframes flash{0%{background:var(--ochre);color:#14100C}55%{background:#5A3A1A;color:var(--lamp)}100%{background:transparent}}
 .gl{width:13px;height:17px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px}

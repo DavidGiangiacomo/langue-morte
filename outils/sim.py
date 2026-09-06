@@ -6,8 +6,24 @@ de clic paramétrable, pour vérifier le rythme sans avoir à jouer 40 minutes.
 
 Usage :  python3 sim.py
 Modifier P (constantes) et GL (coûts des glyphes) pour tester une variante.
+
+Le relevé manuel n'est plus un débit : il puise dans le gisement d'une tablette, fini,
+qui se débloque au rythme du dégagement. C'est ce qui l'empêche à la fois d'être décoratif
+(PT5 : 0,6 % des occurrences) et de redevenir la colonne vertébrale (PT1 : 3 853 clics).
 """
+import json
 import math
+import pathlib
+import re
+
+# ---- le corpus, lu à la source : ce simulateur a déjà divergé du jeu une fois -----------
+_src = (pathlib.Path(__file__).parent.parent / 'src' / 'corpus.js').read_text(encoding='utf-8')
+_corpus = json.loads(re.search(r'const CORPUS=(\[.*?\]);\n', _src, re.S).group(1))
+_ordre = json.loads(re.search(r'const ORDRE = (\[.*?\]);', _src, re.S).group(1))
+_jetons = {tb['t']: sum(1 for l in tb['l'] for tk in l.split(' ') if tk != '·') for tb in _corpus}
+# ORDRE, et non l'ordre du fichier : les tablettes sortent de terre dans cet ordre-là, et
+# les deux divergent dès la cinquième. C'est lui qui décide du gisement ouvert à un instant.
+TOKENS = [_jetons[n] for n in _ordre]
 
 # ---- lexique : (id, branche, coût en Certitude) ---------------------------
 GL = [('an','nombre',2), ('anna','nombre',5), ('hem','nombre',11), ('sela','nombre',18),
@@ -25,7 +41,10 @@ P = dict(
     rec_o=12, rec_h=3, rec_r=1.18,                     # Recouper : coût de base et croissance
     rec_div=5, rec_max=3,                              # Recouper : gain = min(rec_max, 1 + lexique//rec_div)
     hyp_c=3,                                           # Formuler : 3 occ. -> 1 hyp.
-    click_share=0.03,                                  # Relever = (1 + part du débit brut) x mult.
+    click_share=1.20,                                  # Relevé neuf = (1 + K x débit) x mult.
+    click_floor=1.0,                                   # Relevé sur gisement épuisé : le plancher seul
+    gis_div=10,                                        # Gisement d'une tablette = jetons / gis_div
+    rev_base=4,                                        # tablettes dégagées au départ
 )
 
 BR = {}
@@ -39,13 +58,25 @@ def run(P, cpm=15, cap_min=600):
     b = {'cop': 0, 'tab': 0, 'con': 0, 'ate': 0}
     gl, rec, t, dt = set(), 0, 0.0, 0.1
     marks, c_rec, c_con = [], 0.0, 0.0
+    o_main = o_pass = gis_use = 0.0
     has = lambda x: x in gl
+    GIS = [-(-n // P['gis_div']) for n in TOKENS]   # gisement : jetons / gis_div
+    reste = list(GIS)                               # ce qu'il reste à relever, par tablette
+    prix = [0.0] * len(GIS)                         # tarif verrouillé au dégagement
+    # tablettes dégagées : 4 au départ, les 30 au dernier glyphe (cf. revCount() dans rendu.js)
+    nrev = lambda: min(len(GIS), P['rev_base']
+                       + round(len(gl) * (len(GIS) - P['rev_base']) / len(GL)))
+    ouvert = 0
     mcop   = lambda: (1.3 if has('tem')  else 1) * (2 if has('kal') else 1)
     mtab   = lambda: (1.3 if has('kish') else 1) * (2 if has('kal') else 1)
     mcon   = lambda: (1.5 if has('sar')  else 1) * (2 if has('kal') else 1)
     mclick = lambda: (1.25 if has('anna') else 1) * (1.5 if has('tab') else 1) * (2 if has('kal') else 1)
     obrut  = lambda: (b['cop'] * P['cop_p'] + b['ate'] * P['ate_p']) * mcop()
-    cv     = lambda: (1 + P['click_share'] * obrut()) * mclick()
+    # Un relevé ne vaut plein tarif que sur du terrain neuf. Le gisement épuisé rend le
+    # plancher, jamais zéro : à t=0 le débit est nul, les deux se valent, et l'ouverture
+    # reste possible à la main comme aujourd'hui.
+    tarif  = lambda: (1 + P['click_share'] * obrut()) * mclick()
+    plancher = lambda: P['click_floor'] * mclick()
     cost   = lambda k: math.ceil(P[k + '_b'] * P[k + '_r'] ** b[k])
 
     def reccost():
@@ -64,7 +95,22 @@ def run(P, cpm=15, cap_min=600):
 
     while len(gl) < len(GL) and t < 60 * cap_min:
         t += dt
-        O += obrut() * dt + cv() * (cpm / 60.0) * dt
+        o_pass += obrut() * dt
+        # une tablette qui sort de terre voit son gisement tarifé au débit du moment
+        while ouvert < nrev():
+            prix[ouvert] = tarif(); ouvert += 1
+        # le joueur le plus gourmand vide d'abord la tablette la mieux payée
+        nc = (cpm / 60.0) * dt
+        gain = 0.0
+        while nc > 1e-12:
+            i = max((k for k in range(ouvert) if reste[k] > 0),
+                    key=lambda k: prix[k], default=None)
+            if i is None: break
+            n = min(nc, reste[i])
+            reste[i] -= n; gis_use += n; gain += prix[i] * n; nc -= n
+        gain += plancher() * nc                     # gisement épuisé : le plancher, jamais zéro
+        o_main += gain
+        O += obrut() * dt + gain
         w = b['tab'] * P['tab_c'] * dt
         if w > 0:
             c = min(w, O); fr = c / w; O -= c
@@ -102,7 +148,9 @@ def run(P, cpm=15, cap_min=600):
             C -= g[2]; gl.add(g[0]); marks.append((g[0], t / 60))
 
     return t / 60, marks, b, dict(rec=rec, c_rec=c_rec, c_con=c_con,
-                                  obrut=obrut(), cs=b['con'] * P['con_p'] * mcon())
+                                  obrut=obrut(), cs=b['con'] * P['con_p'] * mcon(),
+                                  o_main=o_main, o_pass=o_pass, gis_use=gis_use,
+                                  gis_tot=sum(-(-n // P['gis_div']) for n in TOKENS))
 
 
 if __name__ == '__main__':
@@ -110,8 +158,11 @@ if __name__ == '__main__':
         tt, marks, b, s = run(P, cpm)
         gaps = [marks[i][1] - marks[i - 1][1] for i in range(1, len(marks))] or [0]
         share = 100 * s['c_rec'] / max(1e-9, s['c_rec'] + s['c_con'])
+        main = 100 * s['o_main'] / max(1e-9, s['o_main'] + s['o_pass'])
         print(f"--- {cpm:>2} clics/min : {tt:5.1f} min · écart max {max(gaps):4.1f} min · "
               f"{s['rec']:>3} recoup. ({share:.0f} % de la Certitude) · "
               f"{s['obrut']:.0f} occ./s · {s['cs']:.3f} cert./s")
+        print(f"     relevés {s['gis_use']:.0f}/{s['gis_tot']} du gisement · "
+              f"la main fournit {main:.1f} % des occurrences")
         print("     " + ", ".join(f"{n} {m:.0f}′" for n, m in marks))
         print(f"     bâtiments {b}")

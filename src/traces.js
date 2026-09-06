@@ -52,11 +52,10 @@ function enrober(nom, temoin, detail){
 
 const niveaux = () => S_.b.cop + S_.b.tab + S_.b.con + S_.b.ate;
 
-/* `relever` reçoit son origine depuis jeu.js — cliquer le bouton et cliquer le texte
-   ne veulent pas dire la même chose : le second est une lecture, le premier une corvée.
-   Le bouton, lui, est lié directement à `relever` et lui passe donc son PointerEvent :
-   d'où le filtre sur le type plutôt qu'un simple `|| 'bouton'`. */
-enrober('relever',   () => S_.clicks,     a => typeof a[0] === 'string' ? a[0] : 'bouton');
+/* `relever` reçoit désormais sa tablette : c'est la seule façon de distinguer un joueur qui
+   parcourt le corpus d'un joueur qui s'installe sur une tablette et martèle. La question
+   décide du sort du gisement, et elle ne se lit nulle part ailleurs que dans ce journal. */
+enrober('relever',   () => S_.clicks,     a => 'tablette ' + a[0]);
 enrober('formuler',  () => S_.H);
 enrober('recouper',  () => S_.rec,        () => '+' + recGain() + ' cert.');
 enrober('acheterIns', niveaux,            a => a[0] + ' n°' + S_.b[a[0]]);
@@ -104,6 +103,7 @@ tick = function(dt){
     const m = mesures();
     tracer('etat', 'O=' + Math.round(S_.O) + ' H=' + Math.round(S_.H) + ' C=' + Math.round(S_.C)
                  + ' signes=' + S_.gl.length + ' sig%=' + m.sig + ' lig%=' + m.lig
+                 + ' gis=' + Object.keys(S_.rel).reduce((n,t)=>n+S_.rel[t].length,0) + '/' + GIS_TOTAL
                  + ' instr=' + [S_.b.cop, S_.b.tab, S_.b.con, S_.b.ate].join('/'));
   }
 };

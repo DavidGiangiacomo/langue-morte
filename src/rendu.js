@@ -13,12 +13,15 @@ function buildCorpus(){
   let h='';
   TB.forEach((tb,i)=>{
     h+='<div class="tablet" data-tb="'+tb.t+'" hidden>';
+    let j=0;
     for(const line of tb.l){
       h+='<div class="ln">';
       for(const tk of line.split(' ')){
+        /* data-j : rang du jeton dans sa tablette. C'est lui qui permet au relevé de savoir
+           si l'on découvre un signe ou si l'on repasse sur ses propres pas. */
         if(tk==='·') h+='<span class="tok sep">·</span>';
-        else if(tk.charCodeAt(0)===37) h+='<span class="tok" data-n="'+tk.slice(1)+'"></span>';
-        else h+='<span class="tok" data-w="'+tk+'"></span>';
+        else if(tk.charCodeAt(0)===37) h+='<span class="tok" data-j="'+(j++)+'" data-n="'+tk.slice(1)+'"></span>';
+        else h+='<span class="tok" data-j="'+(j++)+'" data-w="'+tk+'"></span>';
       }
       h+='</div>';
     }
@@ -28,20 +31,32 @@ function buildCorpus(){
   paintCorpus(null);
 }
 
+/* Un jeton relevé reste marqué : c'est la trace du travail déjà fait, et la seule façon
+   de voir d'un coup d'œil ce qu'il reste à parcourir sur une tablette. */
+function releves(){
+  const s = new Set();
+  for(const t in S_.rel) for(const j of S_.rel[t]) s.add(t+':'+j);
+  return s;
+}
+const cleTok = el => el.closest('.tablet').dataset.tb + ':' + el.dataset.j;
+
 function paintCorpus(flashId){
+  const rel = releves();
   elCorpus.querySelectorAll('[data-w]').forEach(el=>{
     const id=el.dataset.w, known=!!byId[id] && has(id);
-    const want = known ? 'w:'+byId[id].mot : 'g';
+    const r = rel.has(cleTok(el)) ? 'r' : '';
+    const want = (known ? 'w:'+byId[id].mot : 'g') + r;
     if(el.__v===want && flashId!==id) return;
     el.__v=want;
-    el.className='tok '+(known?'w':'g')+(flashId===id?' flash':'');
+    el.className='tok '+(known?'w':'g')+(r?' rel':'')+(flashId===id?' flash':'');
     el.innerHTML = known ? byId[id].mot : sv(id);
   });
   elCorpus.querySelectorAll('[data-n]').forEach(el=>{
-    const n=+el.dataset.n, lis=numLisible(n), want=lis?'n':'g';
+    const n=+el.dataset.n, lis=numLisible(n), r = rel.has(cleTok(el)) ? 'r' : '';
+    const want=(lis?'n':'g')+r;
     if(el.__v===want) return;
     el.__v=want;
-    el.className='tok '+(lis?'num':'g');
+    el.className='tok '+(lis?'num':'g')+(r?' rel':'');
     el.innerHTML = lis ? nf.format(n) : numGlyphs(n);
   });
   revealer(); paintRail();
@@ -72,6 +87,11 @@ function paintRail(){
     if(bar.__v!==p){ bar.__v=p; bar.style.width=p+'%'; }
     const tch = touchees.has(t);
     if(c.classList.contains('touche')!==tch) c.classList.toggle('touche',tch);
+    /* une tablette dont le gisement est épuisé s'éteint : il n'y a plus rien à y relever */
+    const sec = gisReste(t) <= 0;
+    if(c.classList.contains('sec')!==sec) c.classList.toggle('sec',sec);
+    const ti = 'tablette '+t+' — gisement '+gisReste(t)+'/'+GISEMENT[t];
+    if(c.title!==ti) c.title=ti;
   }
 }
 function versTablette(t){
@@ -100,6 +120,9 @@ function revealer(){
   const n = revCount();
   const tabs = elCorpus.querySelectorAll('.tablet');
   for(let i=0;i<tabs.length;i++){ const v = i>=n; if(tabs[i].hidden!==v) tabs[i].hidden=v; }
+  /* Le gisement d'une tablette est tarifé au moment où elle sort de terre, et n'en bouge
+     plus : sinon la stratégie optimale serait d'attendre le débit maximal pour tout vider. */
+  for(let i=0;i<n;i++){ const t=TB[i].t; if(S_.prix[t]===undefined) S_.prix[t]=tarifRel(); }
   if(n>lastRev && lastRev>0) pushLog(n-lastRev>1 ? (n-lastRev)+' tablettes dégagées.' : 'Une tablette dégagée.');
   lastRev = n;
 }
@@ -212,8 +235,12 @@ function paintRes(){
 }
 
 function paintActs(){
-  const hc=hypCost(), rc=recCost(), cv=clickVal(), rg=recGain();
-  setHTML($('ac-rel'), readC()? ('+'+(cv<10? f(cv,1).replace(',0','') : big(Math.round(cv)))) : ('+'+numGlyphs(Math.round(cv))));
+  const hc=hypCost(), rc=recCost(), rg=recGain();
+  /* Ce qu'il reste à relever dans les tablettes dégagées. La main est une ressource finie :
+     le dire, c'est la seule façon d'empêcher qu'on la prenne pour un débit. */
+  let reste=0; const n=revCount();
+  for(let i=0;i<n;i++) reste += gisReste(TB[i].t);
+  setHTML($('gis'), reste? 'gisement '+(readC()? nf.format(reste) : numGlyphs(reste)) : '');
   setHTML($('ac-hyp'), readC()? hc+' occ.' : numGlyphs(hc));
   setHTML($('ac-rec'), (readC()? (big(rc.O)+' occ. · '+big(rc.H)+' hyp.') : (numGlyphs(rc.O)+'<span style="width:6px"></span>'+numGlyphs(rc.H)))
     + (rg>1? '<span style="color:var(--slate)">→ '+(readC()? rg : '')+'</span>' : ''));

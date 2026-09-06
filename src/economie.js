@@ -5,7 +5,8 @@
 
 /* ============================ état ============================ */
 const KEY='langue-morte-mvp-v2';
-const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0},gl:[],t:0,done:false});
+const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0},gl:[],t:0,done:false,
+  rel:{}, prix:{}});   // rel : jetons relevés par tablette · prix : tarif du gisement, verrouillé
 let S_ = fresh(), speed = 1;
 try{ const raw=localStorage.getItem(KEY); if(raw){ const p=JSON.parse(raw);
   if(p&&p.b){ const b=Object.assign({cop:0,tab:0,con:0,ate:0},p.b); S_=Object.assign(fresh(),p); S_.b=b; } } }catch(e){}
@@ -20,12 +21,42 @@ const M = {
 };
 /* production brute d'occurrences par seconde (sert au barème du relevé manuel) */
 const oBrut = () => (S_.b.cop*1.0 + S_.b.ate*25)*M.cop();
-/* Le relevé manuel vaut 1, puis 3 % du débit — 3 % du débit *par seconde*, c'est-à-dire
-   0,06 seconde de production par clic une fois les ateliers en route. Il ne « reste pas
-   utile » comme le prétendait ce commentaire : mesuré en PT5, 371 relevés ont fourni 0,6 %
-   des occurrences de la partie. Laissé tel quel pour l'instant — le défaut est d'information
-   et non d'équilibrage, le relevé ne produisant pas de Certitude. Voir docs/journal.md, PT5. */
-const clickVal = () => (1 + 0.03*oBrut()) * M.click();
+
+/* ---- le relevé, acte de lecture ----
+   PT5 : 414 relevés, tous au bouton, aucun dans le corpus, pour 0,6 % des occurrences de
+   la partie. Le geste ne faisait rien et le texte n'était qu'un décor. Le relevé se fait
+   désormais dans le corpus, sur un signe, et chaque tablette n'offre qu'un gisement fini —
+   un dixième de ses jetons. Il faut donc parcourir le texte, et non marteler un point.
+
+   Trois pièges, tous trouvés au simulateur avant d'écrire une ligne de jeu :
+
+   1. Un gisement qui coupe vraiment verrouille l'ouverture : les quatre tablettes du départ
+      n'offrent que 13 relevés quand le premier Copiste en coûte 15. Épuisé, le gisement
+      rend donc le plancher (1), jamais zéro — et au départ, débit nul, les deux se valent.
+   2. Un tarif indexé sur le débit courant se thésaurise : ne rien relever pendant quarante
+      minutes puis tout vider au débit maximal donnait 72 % des occurrences au lieu de 17 %.
+      Le tarif d'une tablette est donc fixé quand elle sort de terre et n'en bouge plus.
+   3. Le gisement, et non la vitesse de la main, décide de ce que la main rapporte : à 5, 15
+      ou 40 clics/minute la part est la même. Le cliqueur frénétique et le joueur posé
+      convergent — c'est ce qui rend structurellement impossible le défaut de PT1.
+
+   Mesuré (`python outils/sim.py`) : 44,4 à 51,3 min pour une cible de 45, I6 ≤ 29,96 %,
+   la main fournit 14 à 19 % des occurrences contre 0,6 % en PT5. La marge sur I6 est
+   nulle et le simulateur sous-estime de trois points (PT5 : 27,8 % simulé, 30,8 % réel) —
+   à revérifier au premier playtest, c'est la mesure qui tranche. */
+const REL_K = 1.2;      // un relevé neuf vaut 1,5 seconde de production, au tarif de la tablette
+const REL_DIV = 10;     // gisement d'une tablette = ses jetons / REL_DIV
+
+const GISEMENT = {};
+for(const tb of CORPUS) GISEMENT[tb.t] = Math.ceil(
+  tb.l.reduce((n,l)=> n + l.split(' ').filter(tk=>tk!=='·').length, 0) / REL_DIV);
+const GIS_TOTAL = Object.values(GISEMENT).reduce((a,b)=>a+b, 0);
+
+const gisFait  = t => (S_.rel[t] || []).length;
+const gisReste = t => GISEMENT[t] - gisFait(t);
+/* tarif d'un relevé neuf, figé au dégagement de la tablette (cf. revealer() dans rendu.js) */
+const tarifRel = () => (1 + REL_K*oBrut()) * M.click();
+const releveVal = t => (t !== undefined && gisReste(t) > 0) ? (S_.prix[t] || 1) : M.click();
 
 /* Réglage sorti de PT4. Le recoupement manuel fournissait 43 % de la Certitude, pour un
    plafond I6 de 30 %. Plafonner son gain ne change rien — le joueur recoupe simplement
@@ -71,7 +102,20 @@ const readR  = () => has('sela');
 function amount(n, lisible){ return lisible ? big(n) : numGlyphs(n); }
 
 /* ============================ actions ============================ */
-function relever(){ S_.O += clickVal(); S_.clicks++; }
+/* t : numéro de tablette, j : rang du jeton dans cette tablette. Un jeton déjà relevé,
+   ou une tablette épuisée, ne rend que le plancher : c'est le déplacement qui paie. */
+function relever(t, j){
+  const l = S_.rel[t] || (S_.rel[t] = []);
+  const neuf = t !== undefined && l.length < GISEMENT[t] && l.indexOf(j) < 0;
+  S_.O += neuf ? (S_.prix[t] || 1) : M.click();
+  if(neuf){
+    l.push(j);
+    /* Le dire au moment où ça arrive : la cellule qui s'éteint dans la barre est le seul
+       autre signal, et le joueur regarde le texte, pas la barre. */
+    if(l.length === GISEMENT[t]) pushLog('Tablette '+t+' : plus rien à en tirer.');
+  }
+  S_.clicks++;
+}
 function formuler(){ const c=hypCost(); if(S_.O>=c){ S_.O-=c; S_.H+=1; } }
 function recouper(){ const c=recCost(); if(S_.O>=c.O&&S_.H>=c.H){ S_.O-=c.O; S_.H-=c.H; S_.C+=recGain(); S_.rec++; } }
 function acheterIns(k){ const i=INS.find(x=>x.k===k), c=insCost(i);

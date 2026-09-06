@@ -9,7 +9,14 @@ buildRail(); buildCorpus(); buildInstr(); buildLex();
 if(S_.gl.length){ paintCorpus(null); pushLog(byId[S_.gl[S_.gl.length-1]].log); }
 if(S_.done) showEnd();
 
-elCorpus.addEventListener('click', e=>{ if(e.target.closest('.tok')) relever('corpus'); });
+/* Le relevé n'existe plus que là : dans le texte, sur un signe précis. Le bouton « Relever
+   un signe » a disparu — il rapportait 0,6 % des occurrences de PT5 en 414 clics. */
+elCorpus.addEventListener('click', e=>{
+  const el = e.target.closest('.tok');
+  if(!el || el.classList.contains('sep')) return;
+  relever(+el.closest('.tablet').dataset.tb, +el.dataset.j);
+  el.classList.add('rel'); el.__v += 'r';
+});
 elCorpus.addEventListener('mousemove', e=>{
   const el = e.target.closest('.tok');
   if(!el || el.classList.contains('sep')){ tipCacher(); return; }
@@ -35,7 +42,6 @@ window.addEventListener('keydown', e=>{
   else if(k==='k'){ e.preventDefault(); saut(-1); }
   else if(k==='escape' && !$('end').hidden){ fermerFin(); }
 });
-$('a-rel').addEventListener('click', relever);
 $('instr').addEventListener('click', e=>{ const b=e.target.closest('[data-ins]'); if(b&&!b.disabled) acheterIns(b.dataset.ins); });
 $('lex').addEventListener('click', e=>{ const b=e.target.closest('[data-gl]'); if(b&&!b.disabled) acheterGl(b.dataset.gl); });
 
@@ -59,7 +65,7 @@ $('reset').addEventListener('click',()=>{
   /* Sans ceci la table des signes de numération garde ceux de la partie précédente :
      on repart de zéro glyphe avec 229 nombres encore lisibles à l'écran. */
   majSignes(); touchees=new Set();
-  $('log').innerHTML='<p class="hint">commence</p>';
+  $('log').innerHTML='<p class="hint">relève un signe : clique dans le corpus</p>';
   paintCorpus(null); try{localStorage.removeItem(KEY);}catch(e){}
 });
 $('again').addEventListener('click',()=>$('reset').click());

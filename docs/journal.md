@@ -273,9 +273,10 @@ occurrences à 40 min, contre 1 au départ) exactement pendant qu'elle devient s
 rien à l'écran ne dit que la main a cessé de compter. Un enfant a passé un tiers de sa
 session à cliquer un bouton qui ne faisait rien.
 
-Trois issues, **non tranchées** : afficher la part manuelle du débit à côté du bouton ;
-faire plafonner le relevé franchement et l'assumer dans la fiction (une main ne relève pas
-plus vite que ses yeux) ; ou accepter le clic comme défouloir et ne rien changer.
+Trois issues étaient ouvertes : afficher la part manuelle du débit à côté du bouton ;
+faire plafonner le relevé franchement ; ou accepter le clic comme défouloir. Aucune des
+trois n'a été retenue — voir la section suivante, qui déplace le geste au lieu de le
+retarifer.
 
 ### Ce que le journal montre d'autre
 
@@ -302,6 +303,73 @@ ferme maintenant (bouton « revenir au corpus », échap, clic sur le fond) et l
 jeu passe au-dessus d'elle. `tick` ne tourne plus une fois `S_.done` : le corpus derrière
 reste figé sur la partie terminée et se relit tel quel. Recharger la page ramène la
 fenêtre. Six contrôles ajoutés à `outils/verifier.py`.
+
+## Le relevé devient un acte de lecture
+
+**R7, 06/09/2026.** Le bouton « Relever un signe » est supprimé. Le relevé se fait dans le
+corpus, sur un signe, et chaque tablette n'offre qu'un **gisement** fini — un dixième de ses
+jetons, 398 pour les trente tablettes. Un jeton déjà relevé garde une marque ; une tablette
+épuisée s'éteint dans la barre et le dit au journal.
+
+Ce n'est pas un retarifage, c'est un déplacement. Les quatre constats de PT5 n'en faisaient
+qu'un — la main ne fait rien (0,6 %), le corpus n'est jamais cliqué (0 sur 414), le texte ne
+pèse pas dans l'achat, et il y a dix-sept minutes sans une action. Aucun de ces quatre n'est
+un problème d'équilibrage : le joueur n'a simplement **aucune action qui soit de la
+lecture**. Le seul moment de PT5 où on le voit lire, ce sont les seize secondes de balayage
+après `cent`.
+
+### Trois pièges, tous trouvés au simulateur avant d'écrire une ligne de jeu
+
+| | ce qui arrive | correctif |
+|---|---|---|
+| Gisement qui coupe vraiment | **L'ouverture se verrouille** : les 4 tablettes du départ n'offrent que 13 relevés quand le premier Copiste en coûte 15. Le simulateur restait bloqué à 600 min, zéro instrument. | épuisé, le gisement rend le plancher (1), jamais zéro — et au départ, débit nul, le plancher et le tarif se valent : l'ouverture est inchangée |
+| Tarif indexé sur le débit courant | **Se thésaurise** : ne rien relever pendant quarante minutes puis vider les 369 relevés au débit maximal donne **72 %** des occurrences au lieu de 17 %. La stratégie optimale devient « ne pas lire le corpus ». | le tarif d'une tablette est figé quand elle sort de terre et n'en bouge plus |
+| Dégagement dans l'ordre du fichier | `ORDRE` et `CORPUS` divergent dès la cinquième tablette — le simulateur ouvrait les mauvais gisements. | `outils/sim.py` lit `ORDRE`. Deuxième fois que ce simulateur diverge du jeu ; il lit maintenant le corpus à la source. |
+
+### Ce que ça donne
+
+`REL_K = 1.2` : un relevé neuf vaut 1,2 seconde de production, au tarif de sa tablette.
+
+| | avant | après |
+|---|---|---|
+| durée (cible 45 min) | 47,0–52,5 | **44,4–51,3** |
+| I6 | 28,7 % | 29,96 % |
+| part de la main dans les occurrences | 0,6 % *(mesuré PT5)* | **13,7–18,6 %** *(simulé)* |
+
+Et une propriété qu'on ne cherchait pas mais qui vaut mieux que le réglage lui-même :
+**à 5, 15 ou 40 clics par minute, la part de la main est la même.** C'est le gisement qui
+décide de ce que la main rapporte, plus la vitesse du poignet. Le cliqueur frénétique et le
+joueur posé convergent — le défaut de PT1 (3 853 relevés) devient structurellement
+impossible, sans avoir eu à plafonner quoi que ce soit.
+
+### Réserves, à vérifier en PT6
+
+- **La marge sur I6 est nulle** (29,96 % pour un plafond de 30), et le simulateur
+  sous-estime : PT5 a mesuré 30,8 % là où il annonçait 27,8 %. C'est la mesure qui tranchera,
+  pas le simulateur.
+- **Le trou du thésauriseur est réduit, pas fermé.** Le tarif est figé, mais les tablettes
+  tardives sont tarifées plus cher : garder leur gisement pour la fin reste légèrement
+  payant. Le modèle du simulateur vide déjà la tablette la mieux payée d'abord — les
+  chiffres ci-dessus sont donc le pire cas, pas le cas moyen.
+- **Rien ne garantit que le joueur lise pour autant.** Il peut parcourir le corpus en
+  cliquant sans regarder. Le journal d'actions le dira : chaque relevé note sa tablette, et
+  les relevés d'état portent le gisement consommé (`gis=`).
+
+### Ce qui reste ouvert, et qui est plus gros
+
+Le relevé produit des **Occurrences**, c'est-à-dire la ressource dont PT5 a fini avec
+62 595 exemplaires inutilisés. Rendre la main utile dans une ressource déjà sans emploi ne
+peut pas suffire à faire du jeu un jeu de déchiffrement.
+
+L'action qui *devrait* être un acte de lecture, c'est le **recoupement** : il s'appelle
+« recouper deux passages », il produit la seule ressource rare, il est déjà plafonné à 30 %
+par I6 — et c'est un bouton qui n'a aucun rapport avec le texte. Le déplacer dans le corpus
+(cliquer deux attestations d'un même signe dans deux tablettes) ne demanderait aucun
+rééquilibrage : même coût, même gain, même I6. Seul le geste changerait. Et il rendrait le
+comptage d'occurrences enfin opérant, puisque trouver deux attestations est facile pour un
+signe fréquent et difficile pour un signe rare.
+
+**Non fait, non tranché.** C'est le candidat naturel après PT6.
 
 ## La numération — deux corrections successives
 
@@ -361,7 +429,8 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
 
 | | Valeur |
 |---|---|
-| Relever | (1 + 3 % du débit brut) × mult. |
+| Relever | dans le corpus. Jeton neuf : tarif de la tablette, figé à (1 + 1,2 × débit) × mult. au dégagement. Jeton déjà relevé ou tablette épuisée : le plancher (1 × mult.) |
+| Gisement | ⌈jetons/10⌉ par tablette, **398** en tout, dont 13 ouverts au départ |
 | Formuler | 3 occ. → 1 hyp. |
 | Recouper | 12 occ. + 3 hyp. → min(3, 1 + ⌊lexique/5⌋) cert., coût ×1,18 par usage (−25 % avec `champ`) |
 | Copiste | 15 occ., ×1,12, +1 occ./s |
@@ -394,11 +463,14 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
 
 ## Suite
 
-1. **Trancher le sort du relevé manuel** — 0,6 % de la production pour un tiers de la
-   session. Le dire, le plafonner, ou l'assumer.
-2. **Le mur des dix premières minutes** : 100 % de la Certitude à la main avant la première
-   Concordance, et c'est là que la partie 1 a été abandonnée. Mesurer I6 par tranches dans
-   `outils/sim.py` plutôt que sur la partie entière.
-3. **Acte III** — branche Temps, `mille`, `zéro` par composition, instruments Grammaire et Élève, et surtout la **datation puis le réordonnancement chronologique** des tablettes. C'est le sommet dramatique : une fois triées, la série de l'eau devient lisible et le déclin apparaît.
+1. **PT6**, pour trancher trois choses que seul un joueur peut dire : I6 tient-il sous
+   30 % (la marge simulée est nulle) ? le gisement fait-il parcourir le corpus, ou
+   cliquer sans regarder ? la partie tient-elle dans les 45 minutes ?
+2. **Déplacer le recoupement dans le corpus** — l'action qui produit la ressource rare est
+   encore un bouton sans rapport avec le texte. Voir ci-dessus.
+3. **Le mur des dix premières minutes** : 100 % de la Certitude à la main avant la première
+   Concordance, et c'est là que la partie 1 de PT5 a été abandonnée. Mesurer I6 par tranches
+   dans `outils/sim.py` plutôt que sur la partie entière.
+4. **Acte III** — branche Temps, `mille`, `zéro` par composition, instruments Grammaire et Élève, et surtout la **datation puis le réordonnancement chronologique** des tablettes. C'est le sommet dramatique : une fois triées, la série de l'eau devient lisible et le déclin apparaît.
 3. Puis la mécanique de **composition**, puis les **contradictions** (acte IV).
 4. Trancher le sort de ⟨N1⟩ et ⟨N2⟩ (`docs/corpus.md` §9).

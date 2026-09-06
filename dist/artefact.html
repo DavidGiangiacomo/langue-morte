@@ -55,6 +55,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .rcell .rn .gl{width:7px;height:10px;vertical-align:0}
 .rcell .rb{width:100%;height:3px;background:#443528;border-radius:1px;overflow:hidden}
 .rcell .rb i{display:block;height:100%;background:var(--ochre-d);transition:width .5s ease}
+.rcell.sec{opacity:.42}
 .rcell.ici{border-color:var(--mid)}
 .rcell.touche{border-color:var(--ochre)}
 .rcell.touche .rn{color:var(--ochre)}
@@ -71,6 +72,10 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .tok.w{color:var(--lamp);font-size:17px;letter-spacing:.01em}
 .tok.sep{color:var(--faint);padding:0 2px}
 .tok.num{color:var(--grain);font-family:var(--mono);font-size:14px;font-variant-numeric:tabular-nums}
+/* Le signe relevé garde une marque : sur une tablette, on voit d'un coup d'œil le terrain
+   déjà parcouru. Discret — c'est une note de travail, pas une décoration. */
+.tok.rel{box-shadow:inset 0 -1px 0 var(--ochre-d)}
+.tok.g.rel{opacity:.62}
 .tok.flash{animation:flash .85s ease}
 @keyframes flash{0%{background:var(--ochre);color:#14100C}55%{background:#5A3A1A;color:var(--lamp)}100%{background:transparent}}
 .gl{width:13px;height:17px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;vertical-align:-3px}
@@ -201,11 +206,11 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 
   <div class="grid">
     <section class="panel corpus-wrap">
-      <div class="phead"><span>Le corpus</span><span style="color:var(--faint);letter-spacing:.06em">j / k</span><span class="r" id="pct">signes 0 %</span></div>
+      <div class="phead"><span>Le corpus</span><span style="color:var(--faint);letter-spacing:.06em">j / k</span><span class="r" id="gis"></span><span id="pct">signes 0 %</span></div>
       <div class="meter"><i id="meter"></i></div>
       <div class="rail" id="rail" aria-label="Tablettes dégagées. Cliquez pour y aller."></div>
       <div id="corpus" aria-label="Corpus. Cliquez sur les signes pour relever des occurrences."></div>
-      <div class="log" id="log"><p class="hint">commence</p></div>
+      <div class="log" id="log"><p class="hint">relève un signe : clique dans le corpus</p></div>
     </section>
 
     <div style="display:flex;flex-direction:column;gap:16px">
@@ -221,7 +226,6 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
       <section class="panel">
         <div class="phead"><span>À la main</span></div>
         <div class="acts">
-          <button class="act prime" id="a-rel"><span class="an">Relever un signe</span><span class="ac" id="ac-rel"></span></button>
           <button class="act" id="a-hyp"><span class="an">Formuler une hypothèse</span><span class="ac" id="ac-hyp"></span></button>
           <button class="act" id="a-rec"><span class="an">Recouper deux passages</span><span class="ac" id="ac-rec"></span></button>
         </div>
@@ -442,7 +446,8 @@ const TB = ORDRE.map(n => CORPUS.find(t => t.t === n));
 
 /* ============================ état ============================ */
 const KEY='langue-morte-mvp-v2';
-const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0},gl:[],t:0,done:false});
+const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0},gl:[],t:0,done:false,
+  rel:{}, prix:{}});   // rel : jetons relevés par tablette · prix : tarif du gisement, verrouillé
 let S_ = fresh(), speed = 1;
 try{ const raw=localStorage.getItem(KEY); if(raw){ const p=JSON.parse(raw);
   if(p&&p.b){ const b=Object.assign({cop:0,tab:0,con:0,ate:0},p.b); S_=Object.assign(fresh(),p); S_.b=b; } } }catch(e){}
@@ -457,12 +462,42 @@ const M = {
 };
 /* production brute d'occurrences par seconde (sert au barème du relevé manuel) */
 const oBrut = () => (S_.b.cop*1.0 + S_.b.ate*25)*M.cop();
-/* Le relevé manuel vaut 1, puis 3 % du débit — 3 % du débit *par seconde*, c'est-à-dire
-   0,06 seconde de production par clic une fois les ateliers en route. Il ne « reste pas
-   utile » comme le prétendait ce commentaire : mesuré en PT5, 371 relevés ont fourni 0,6 %
-   des occurrences de la partie. Laissé tel quel pour l'instant — le défaut est d'information
-   et non d'équilibrage, le relevé ne produisant pas de Certitude. Voir docs/journal.md, PT5. */
-const clickVal = () => (1 + 0.03*oBrut()) * M.click();
+
+/* ---- le relevé, acte de lecture ----
+   PT5 : 414 relevés, tous au bouton, aucun dans le corpus, pour 0,6 % des occurrences de
+   la partie. Le geste ne faisait rien et le texte n'était qu'un décor. Le relevé se fait
+   désormais dans le corpus, sur un signe, et chaque tablette n'offre qu'un gisement fini —
+   un dixième de ses jetons. Il faut donc parcourir le texte, et non marteler un point.
+
+   Trois pièges, tous trouvés au simulateur avant d'écrire une ligne de jeu :
+
+   1. Un gisement qui coupe vraiment verrouille l'ouverture : les quatre tablettes du départ
+      n'offrent que 13 relevés quand le premier Copiste en coûte 15. Épuisé, le gisement
+      rend donc le plancher (1), jamais zéro — et au départ, débit nul, les deux se valent.
+   2. Un tarif indexé sur le débit courant se thésaurise : ne rien relever pendant quarante
+      minutes puis tout vider au débit maximal donnait 72 % des occurrences au lieu de 17 %.
+      Le tarif d'une tablette est donc fixé quand elle sort de terre et n'en bouge plus.
+   3. Le gisement, et non la vitesse de la main, décide de ce que la main rapporte : à 5, 15
+      ou 40 clics/minute la part est la même. Le cliqueur frénétique et le joueur posé
+      convergent — c'est ce qui rend structurellement impossible le défaut de PT1.
+
+   Mesuré (`python outils/sim.py`) : 44,4 à 51,3 min pour une cible de 45, I6 ≤ 29,96 %,
+   la main fournit 14 à 19 % des occurrences contre 0,6 % en PT5. La marge sur I6 est
+   nulle et le simulateur sous-estime de trois points (PT5 : 27,8 % simulé, 30,8 % réel) —
+   à revérifier au premier playtest, c'est la mesure qui tranche. */
+const REL_K = 1.2;      // un relevé neuf vaut 1,5 seconde de production, au tarif de la tablette
+const REL_DIV = 10;     // gisement d'une tablette = ses jetons / REL_DIV
+
+const GISEMENT = {};
+for(const tb of CORPUS) GISEMENT[tb.t] = Math.ceil(
+  tb.l.reduce((n,l)=> n + l.split(' ').filter(tk=>tk!=='·').length, 0) / REL_DIV);
+const GIS_TOTAL = Object.values(GISEMENT).reduce((a,b)=>a+b, 0);
+
+const gisFait  = t => (S_.rel[t] || []).length;
+const gisReste = t => GISEMENT[t] - gisFait(t);
+/* tarif d'un relevé neuf, figé au dégagement de la tablette (cf. revealer() dans rendu.js) */
+const tarifRel = () => (1 + REL_K*oBrut()) * M.click();
+const releveVal = t => (t !== undefined && gisReste(t) > 0) ? (S_.prix[t] || 1) : M.click();
 
 /* Réglage sorti de PT4. Le recoupement manuel fournissait 43 % de la Certitude, pour un
    plafond I6 de 30 %. Plafonner son gain ne change rien — le joueur recoupe simplement
@@ -508,7 +543,20 @@ const readR  = () => has('sela');
 function amount(n, lisible){ return lisible ? big(n) : numGlyphs(n); }
 
 /* ============================ actions ============================ */
-function relever(){ S_.O += clickVal(); S_.clicks++; }
+/* t : numéro de tablette, j : rang du jeton dans cette tablette. Un jeton déjà relevé,
+   ou une tablette épuisée, ne rend que le plancher : c'est le déplacement qui paie. */
+function relever(t, j){
+  const l = S_.rel[t] || (S_.rel[t] = []);
+  const neuf = t !== undefined && l.length < GISEMENT[t] && l.indexOf(j) < 0;
+  S_.O += neuf ? (S_.prix[t] || 1) : M.click();
+  if(neuf){
+    l.push(j);
+    /* Le dire au moment où ça arrive : la cellule qui s'éteint dans la barre est le seul
+       autre signal, et le joueur regarde le texte, pas la barre. */
+    if(l.length === GISEMENT[t]) pushLog('Tablette '+t+' : plus rien à en tirer.');
+  }
+  S_.clicks++;
+}
 function formuler(){ const c=hypCost(); if(S_.O>=c){ S_.O-=c; S_.H+=1; } }
 function recouper(){ const c=recCost(); if(S_.O>=c.O&&S_.H>=c.H){ S_.O-=c.O; S_.H-=c.H; S_.C+=recGain(); S_.rec++; } }
 function acheterIns(k){ const i=INS.find(x=>x.k===k), c=insCost(i);
@@ -580,12 +628,15 @@ function buildCorpus(){
   let h='';
   TB.forEach((tb,i)=>{
     h+='<div class="tablet" data-tb="'+tb.t+'" hidden>';
+    let j=0;
     for(const line of tb.l){
       h+='<div class="ln">';
       for(const tk of line.split(' ')){
+        /* data-j : rang du jeton dans sa tablette. C'est lui qui permet au relevé de savoir
+           si l'on découvre un signe ou si l'on repasse sur ses propres pas. */
         if(tk==='·') h+='<span class="tok sep">·</span>';
-        else if(tk.charCodeAt(0)===37) h+='<span class="tok" data-n="'+tk.slice(1)+'"></span>';
-        else h+='<span class="tok" data-w="'+tk+'"></span>';
+        else if(tk.charCodeAt(0)===37) h+='<span class="tok" data-j="'+(j++)+'" data-n="'+tk.slice(1)+'"></span>';
+        else h+='<span class="tok" data-j="'+(j++)+'" data-w="'+tk+'"></span>';
       }
       h+='</div>';
     }
@@ -595,20 +646,32 @@ function buildCorpus(){
   paintCorpus(null);
 }
 
+/* Un jeton relevé reste marqué : c'est la trace du travail déjà fait, et la seule façon
+   de voir d'un coup d'œil ce qu'il reste à parcourir sur une tablette. */
+function releves(){
+  const s = new Set();
+  for(const t in S_.rel) for(const j of S_.rel[t]) s.add(t+':'+j);
+  return s;
+}
+const cleTok = el => el.closest('.tablet').dataset.tb + ':' + el.dataset.j;
+
 function paintCorpus(flashId){
+  const rel = releves();
   elCorpus.querySelectorAll('[data-w]').forEach(el=>{
     const id=el.dataset.w, known=!!byId[id] && has(id);
-    const want = known ? 'w:'+byId[id].mot : 'g';
+    const r = rel.has(cleTok(el)) ? 'r' : '';
+    const want = (known ? 'w:'+byId[id].mot : 'g') + r;
     if(el.__v===want && flashId!==id) return;
     el.__v=want;
-    el.className='tok '+(known?'w':'g')+(flashId===id?' flash':'');
+    el.className='tok '+(known?'w':'g')+(r?' rel':'')+(flashId===id?' flash':'');
     el.innerHTML = known ? byId[id].mot : sv(id);
   });
   elCorpus.querySelectorAll('[data-n]').forEach(el=>{
-    const n=+el.dataset.n, lis=numLisible(n), want=lis?'n':'g';
+    const n=+el.dataset.n, lis=numLisible(n), r = rel.has(cleTok(el)) ? 'r' : '';
+    const want=(lis?'n':'g')+r;
     if(el.__v===want) return;
     el.__v=want;
-    el.className='tok '+(lis?'num':'g');
+    el.className='tok '+(lis?'num':'g')+(r?' rel':'');
     el.innerHTML = lis ? nf.format(n) : numGlyphs(n);
   });
   revealer(); paintRail();
@@ -639,6 +702,11 @@ function paintRail(){
     if(bar.__v!==p){ bar.__v=p; bar.style.width=p+'%'; }
     const tch = touchees.has(t);
     if(c.classList.contains('touche')!==tch) c.classList.toggle('touche',tch);
+    /* une tablette dont le gisement est épuisé s'éteint : il n'y a plus rien à y relever */
+    const sec = gisReste(t) <= 0;
+    if(c.classList.contains('sec')!==sec) c.classList.toggle('sec',sec);
+    const ti = 'tablette '+t+' — gisement '+gisReste(t)+'/'+GISEMENT[t];
+    if(c.title!==ti) c.title=ti;
   }
 }
 function versTablette(t){
@@ -667,6 +735,9 @@ function revealer(){
   const n = revCount();
   const tabs = elCorpus.querySelectorAll('.tablet');
   for(let i=0;i<tabs.length;i++){ const v = i>=n; if(tabs[i].hidden!==v) tabs[i].hidden=v; }
+  /* Le gisement d'une tablette est tarifé au moment où elle sort de terre, et n'en bouge
+     plus : sinon la stratégie optimale serait d'attendre le débit maximal pour tout vider. */
+  for(let i=0;i<n;i++){ const t=TB[i].t; if(S_.prix[t]===undefined) S_.prix[t]=tarifRel(); }
   if(n>lastRev && lastRev>0) pushLog(n-lastRev>1 ? (n-lastRev)+' tablettes dégagées.' : 'Une tablette dégagée.');
   lastRev = n;
 }
@@ -779,8 +850,12 @@ function paintRes(){
 }
 
 function paintActs(){
-  const hc=hypCost(), rc=recCost(), cv=clickVal(), rg=recGain();
-  setHTML($('ac-rel'), readC()? ('+'+(cv<10? f(cv,1).replace(',0','') : big(Math.round(cv)))) : ('+'+numGlyphs(Math.round(cv))));
+  const hc=hypCost(), rc=recCost(), rg=recGain();
+  /* Ce qu'il reste à relever dans les tablettes dégagées. La main est une ressource finie :
+     le dire, c'est la seule façon d'empêcher qu'on la prenne pour un débit. */
+  let reste=0; const n=revCount();
+  for(let i=0;i<n;i++) reste += gisReste(TB[i].t);
+  setHTML($('gis'), reste? 'gisement '+(readC()? nf.format(reste) : numGlyphs(reste)) : '');
   setHTML($('ac-hyp'), readC()? hc+' occ.' : numGlyphs(hc));
   setHTML($('ac-rec'), (readC()? (big(rc.O)+' occ. · '+big(rc.H)+' hyp.') : (numGlyphs(rc.O)+'<span style="width:6px"></span>'+numGlyphs(rc.H)))
     + (rg>1? '<span style="color:var(--slate)">→ '+(readC()? rg : '')+'</span>' : ''));
@@ -916,11 +991,10 @@ function enrober(nom, temoin, detail){
 
 const niveaux = () => S_.b.cop + S_.b.tab + S_.b.con + S_.b.ate;
 
-/* `relever` reçoit son origine depuis jeu.js — cliquer le bouton et cliquer le texte
-   ne veulent pas dire la même chose : le second est une lecture, le premier une corvée.
-   Le bouton, lui, est lié directement à `relever` et lui passe donc son PointerEvent :
-   d'où le filtre sur le type plutôt qu'un simple `|| 'bouton'`. */
-enrober('relever',   () => S_.clicks,     a => typeof a[0] === 'string' ? a[0] : 'bouton');
+/* `relever` reçoit désormais sa tablette : c'est la seule façon de distinguer un joueur qui
+   parcourt le corpus d'un joueur qui s'installe sur une tablette et martèle. La question
+   décide du sort du gisement, et elle ne se lit nulle part ailleurs que dans ce journal. */
+enrober('relever',   () => S_.clicks,     a => 'tablette ' + a[0]);
 enrober('formuler',  () => S_.H);
 enrober('recouper',  () => S_.rec,        () => '+' + recGain() + ' cert.');
 enrober('acheterIns', niveaux,            a => a[0] + ' n°' + S_.b[a[0]]);
@@ -968,6 +1042,7 @@ tick = function(dt){
     const m = mesures();
     tracer('etat', 'O=' + Math.round(S_.O) + ' H=' + Math.round(S_.H) + ' C=' + Math.round(S_.C)
                  + ' signes=' + S_.gl.length + ' sig%=' + m.sig + ' lig%=' + m.lig
+                 + ' gis=' + Object.keys(S_.rel).reduce((n,t)=>n+S_.rel[t].length,0) + '/' + GIS_TOTAL
                  + ' instr=' + [S_.b.cop, S_.b.tab, S_.b.con, S_.b.ate].join('/'));
   }
 };
@@ -1035,7 +1110,14 @@ buildRail(); buildCorpus(); buildInstr(); buildLex();
 if(S_.gl.length){ paintCorpus(null); pushLog(byId[S_.gl[S_.gl.length-1]].log); }
 if(S_.done) showEnd();
 
-elCorpus.addEventListener('click', e=>{ if(e.target.closest('.tok')) relever('corpus'); });
+/* Le relevé n'existe plus que là : dans le texte, sur un signe précis. Le bouton « Relever
+   un signe » a disparu — il rapportait 0,6 % des occurrences de PT5 en 414 clics. */
+elCorpus.addEventListener('click', e=>{
+  const el = e.target.closest('.tok');
+  if(!el || el.classList.contains('sep')) return;
+  relever(+el.closest('.tablet').dataset.tb, +el.dataset.j);
+  el.classList.add('rel'); el.__v += 'r';
+});
 elCorpus.addEventListener('mousemove', e=>{
   const el = e.target.closest('.tok');
   if(!el || el.classList.contains('sep')){ tipCacher(); return; }
@@ -1061,7 +1143,6 @@ window.addEventListener('keydown', e=>{
   else if(k==='k'){ e.preventDefault(); saut(-1); }
   else if(k==='escape' && !$('end').hidden){ fermerFin(); }
 });
-$('a-rel').addEventListener('click', relever);
 $('instr').addEventListener('click', e=>{ const b=e.target.closest('[data-ins]'); if(b&&!b.disabled) acheterIns(b.dataset.ins); });
 $('lex').addEventListener('click', e=>{ const b=e.target.closest('[data-gl]'); if(b&&!b.disabled) acheterGl(b.dataset.gl); });
 
@@ -1085,7 +1166,7 @@ $('reset').addEventListener('click',()=>{
   /* Sans ceci la table des signes de numération garde ceux de la partie précédente :
      on repart de zéro glyphe avec 229 nombres encore lisibles à l'écran. */
   majSignes(); touchees=new Set();
-  $('log').innerHTML='<p class="hint">commence</p>';
+  $('log').innerHTML='<p class="hint">relève un signe : clique dans le corpus</p>';
   paintCorpus(null); try{localStorage.removeItem(KEY);}catch(e){}
 });
 $('again').addEventListener('click',()=>$('reset').click());

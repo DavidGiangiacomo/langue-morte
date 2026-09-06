@@ -11,6 +11,7 @@ Contrôle :
   4. les infobulles répondent dans les quatre cas prévus
   5. le temps de rendu initial reste sous le seuil
   6. la fenêtre de fin se ferme, et ne couvre pas les outils hors jeu
+  7. le relevé se fait dans le corpus, et le gisement d'une tablette s'épuise
 
 Prérequis : pip install playwright && playwright install chromium
 """
@@ -133,6 +134,48 @@ def main() -> None:
                  "plus aucun nombre en chiffres")
         verifier(page.evaluate("() => mesures().sig") == 0, "la jauge repart de 0 %")
 
+        print("\nle relevé, acte de lecture")
+        verifier(page.evaluate("() => GIS_TOTAL") == 398, "gisement du corpus : 398 relevés")
+        ouvert = page.evaluate(
+            "() => { let n = 0; for (let i = 0; i < revCount(); i++) n += gisReste(TB[i].t); return n; }")
+        verifier(ouvert == 13, f"13 relevés ouverts au départ ({ouvert})")
+        # le tarif est figé au dégagement : sinon la stratégie optimale est de ne rien
+        # relever pendant quarante minutes puis de tout vider au débit maximal
+        page.evaluate("() => { S_.b.cop = 500; paintCorpus(null); }")
+        page.wait_for_timeout(120)
+        verifier(page.evaluate("() => S_.prix[TB[0].t]") == 1,
+                 "le tarif d'une tablette dégagée ne bouge plus")
+        gains = page.evaluate("""() => {
+            const t = TB[0].t; S_.rel = {}; S_.prix[t] = 100; S_.O = 0;
+            relever(t, 0); const a = S_.O; relever(t, 0); return [a, S_.O - a]; }""")
+        verifier(gains == [100, 1], f"un jeton neuf paie {gains[0]}, le repassage {gains[1]}")
+        # épuisé, le gisement rend le plancher et jamais zéro : sinon l'ouverture se
+        # verrouille, les 4 tablettes du départ n'offrant que 13 relevés pour un Copiste à 15
+        epuise = page.evaluate("""() => {
+            const t = TB[0].t; S_.rel = {}; S_.prix[t] = 100; S_.O = 0;
+            for (let j = 0; j < GISEMENT[t] + 5; j++) relever(t, j);
+            return [gisReste(t), S_.O, GISEMENT[t]]; }""")
+        verifier(epuise[0] == 0, "le gisement d'une tablette s'épuise")
+        verifier("plus rien à en tirer" in page.eval_on_selector("#log", "e => e.textContent"),
+                 "et le journal le dit")
+        verifier(epuise[1] == 100 * epuise[2] + 5, "puis rend le plancher, jamais zéro")
+        page.evaluate("() => { S_.b.cop = 0; S_.rel = {}; S_.O = 0; paintCorpus(null); }")
+        page.wait_for_timeout(120)
+        page.click("#corpus .tok:not(.sep)")
+        page.wait_for_timeout(120)
+        verifier(page.eval_on_selector_all("#corpus .tok.rel", "e => e.length") == 1,
+                 "le jeton relevé reste marqué")
+        page.evaluate("() => paintCorpus(null)")
+        page.wait_for_timeout(120)
+        verifier(page.eval_on_selector_all("#corpus .tok.rel", "e => e.length") == 1,
+                 "et le reste après un repeint complet")
+        page.evaluate("""() => { const t = TB[0].t; S_.rel = {}; S_.rel[t] = [];
+            for (let j = 0; j < GISEMENT[t]; j++) S_.rel[t].push(j); paintCorpus(null); }""")
+        page.wait_for_timeout(120)
+        verifier(page.evaluate("() => $('rail').children[0].classList.contains('sec')"),
+                 "la tablette épuisée s'éteint dans la barre")
+        page.evaluate("() => { S_.rel = {}; paintCorpus(null); }")
+
         print("\ncomptage d'occurrences dans le lexique")
         frq = lambda: page.eval_on_selector_all("#lex .frq", "e => e.map(x => x.textContent)")
         page.evaluate("() => { S_.C = 9999; S_.b.tab = 0; }")
@@ -176,9 +219,9 @@ def main() -> None:
 
         print("\njournal d'actions (hors jeu)")
         page.evaluate("() => { TR.length = 0; prochainEtat = 0; }")
-        for _ in range(3):
-            page.click("#a-rel")
-        page.click("#corpus .tok:not(.sep)")
+        jetons = page.query_selector_all("#corpus .tablet:not([hidden]) .tok:not(.sep)")
+        for el in jetons[:3]:
+            el.click()
         page.evaluate("() => { S_.O = 0; formuler(); }")                    # doit être ignoré
         page.evaluate("() => { S_.O = 500; S_.H = 20; formuler(); recouper(); acheterIns('cop'); }")
         page.evaluate("() => { versTablette(2); versTablette(2); }")        # doublon ignoré
@@ -188,8 +231,9 @@ def main() -> None:
         genres = [l.split("\t")[2] for l in lignes[1:]]
         etats = [float(l.split("\t")[1]) for l in lignes[1:] if l.split("\t")[2] == "etat"]
         verifier(lignes[0].split("\t") == ["temps", "t_s", "genre", "détail"], "en-tête TSV")
-        verifier(sum(1 for l in lignes if l.endswith("\tbouton")) == 3, "3 relevés au bouton")
-        verifier(sum(1 for l in lignes if l.endswith("\tcorpus")) == 1, "1 relevé dans le corpus")
+        verifier(genres.count("relever") == 3, "3 relevés journalisés")
+        verifier(all("tablette " in l.split("\t")[3] for l in lignes if "\trelever\t" in l),
+                 "chaque relevé note sa tablette")
         verifier(genres.count("formuler") == 1, "l'action sans effet n'est pas journalisée")
         verifier(genres.count("recouper") == 1 and genres.count("acheterIns") == 1,
                  "recoupement et instrument journalisés")
