@@ -78,7 +78,7 @@ python build.py && python outils/verifier.py    # tests
 
 8. **Les deux actions manuelles se font dans le corpus.** Le relevé, sur un signe ; le recoupement, sur deux attestations d'un même signe dans deux tablettes différentes. Aucun bouton ne produit plus rien directement — c'est le point de bascule entre « un incrémental habillé en déchiffrement » et un jeu où l'on agit en lisant. Ne pas remettre de raccourci qui contourne le texte.
 
-9. **Le relevé : le tarif d'une tablette est figé à son dégagement.** Deux versions plus simples ont échoué au simulateur avant d'atteindre le jeu : un gisement qui coupe vraiment verrouille l'ouverture (13 relevés disponibles pour un premier Copiste à 15), et un tarif indexé sur le débit courant se thésaurise (72 % des occurrences au lieu de 17 %). Le gisement, et non la cadence de clic, décide de ce que la main rapporte — c'est ce qui rend impossible le retour du défaut de PT1.
+9. **Le relevé : le tarif d'une tablette est figé au premier relevé qu'on y fait**, jamais à son dégagement — le figer au dégagement laisse à 1 occurrence, pour toute la partie, les seules tablettes qu'on atteint tôt (PT6 : la main retombée à 0,1 % des occurrences). Deux versions plus simples ont échoué au simulateur avant d'atteindre le jeu : un gisement qui coupe vraiment verrouille l'ouverture (13 relevés disponibles pour un premier Copiste à 15), et un tarif indexé sur le débit courant se thésaurise (72 % des occurrences au lieu de 17 %). Le gisement, et non la cadence de clic, décide de ce que la main rapporte — c'est ce qui rend impossible le retour du défaut de PT1.
 
 ---
 
@@ -95,7 +95,7 @@ python build.py && python outils/verifier.py    # tests
 
 **Fait** : actes I et II, 13 signes sur 45, corpus complet des 30 tablettes (678 lignes, 3 825 signes), économie réglée sur cinq playtests, numération signe par signe, barre de navigation entre tablettes, infobulles, comptage d'occurrences dans le lexique, journal d'actions horodaté, relevé dans le corpus avec gisement par tablette.
 
-**PT6 fait** (06/09/2026) : 43 min 49, la plus courte des six parties menées au bout et la première dans la fenêtre visée ; I6 pile à 30,0 %. Le recoupement dans le corpus tient — 44 rapprochements sur 12 signes, dont 8 qui ne s'achètent pas. Le relevé, lui, est retombé à 0,1 % des occurrences et s'arrête à la quinzième minute : c'est une mécanique d'ouverture, pas un acte de lecture. Question ouverte en tête de la « Suite » du journal.
+**PT6 fait** (06/09/2026) : 43 min 49, la plus courte des six parties menées au bout et la première dans la fenêtre visée ; I6 pile à 30,0 %. Le recoupement dans le corpus tient — 44 rapprochements sur 12 signes, dont 8 qui ne s'achètent pas. Le relevé, lui, était retombé à 0,1 % des occurrences et s'arrêtait à la quinzième minute ; R9 fige désormais le tarif d'une tablette à la première visite, de sorte qu'en ouvrir une neuve à la trentième minute vaut plus de mille occurrences par relevé. Ni le simulateur ni le rejeu de PT6 ne peuvent dire si le joueur ira : c'est la première question de PT7.
 
 **Prochaine étape — l'acte III.** C'est là que le corpus change de nature :
 

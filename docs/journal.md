@@ -201,9 +201,58 @@ est honnêtement une **mécanique d'ouverture** : il amorce les premiers Copiste
 l'abandonne. Le vouloir « acte de lecture » était l'erreur ; l'acte de lecture, c'est le
 recoupement, et lui tient. Reste que la machinerie du gisement — tarifs figés, 398
 compteurs, épuisement, extinction dans la barre — est un échafaudage considérable pour
-quelque chose qui ne pèse plus rien après la quinzième minute. **À trancher : re-tarifer une
-tablette à sa première visite plutôt qu'à son dégagement (le trou du thésauriseur revient en
-partie), ou assumer l'ouverture et simplifier.**
+quelque chose qui ne pèse plus rien après la quinzième minute. **Tranché : R9, ci-dessous.**
+
+### R9, 06/09/2026 : le tarif se fige à la première visite
+
+Une tablette n'est plus tarifée quand elle sort de terre, mais **au premier relevé qu'on y
+fait**. Arriver sur une tablette restée intacte vaut donc ce que vaut la production du
+moment — et cela change tout ce que la règle propose au joueur :
+
+| ouvrir une tablette neuve… | par relevé | une tablette de 14 gisements |
+|---|---|---|
+| à 0′ (tablettes du départ) | 1 occ. | 14 |
+| à 20′ | 543 occ. | 7 602 |
+| à 30′ | 1 143 occ. | 15 997 |
+| à 40′ | 1 581 occ. | 22 139 |
+
+Dans la partie de PT6, **23 tablettes n'ont jamais été touchées, 322 gisements intacts**.
+Aux tarifs de la trentième minute, elles valaient à elles seules 53 % de la production de
+la partie. La raison de parcourir le corpus après la quinzième minute existe désormais ;
+reste à savoir si elle se voit.
+
+#### Ce que ça règle, et ce que ça ne règle pas
+
+**Rejouer PT6 à comportement identique donne 0,3 % au lieu de 0,1 %.** La règle seule ne
+change presque rien : elle ne vaut que si le joueur change de conduite. C'est une borne
+basse, pas une prédiction — PT6 n'avait aucune raison d'aller ouvrir une tablette neuve,
+puisqu'il n'y avait rien à y gagner.
+
+Le simulateur, dont le flâneur travaille chaque tablette à mesure qu'elle sort, ne bouge
+pas non plus : 43,9 à 51,4 min, I6 28,7 à 30,0 %, la main à 13,9–19,2 %. Pour lui,
+première visite et dégagement tombent au même instant. Il ne peut donc pas trancher cette
+question-là ; c'est PT7 qui le fera.
+
+#### Le thésauriseur, et pourquoi on l'accepte
+
+L'exploit revient : garder les tablettes neuves pour la fin donne **42,5 %** des occurrences
+au lieu de 19, et pousse I6 à **32,5 %**, au-dessus du plafond. Mais il se punit tout seul —
+faute des occurrences du début, le simulateur lui fait finir la partie **4,7 minutes plus
+tard** (48,6 contre 43,9 min). Les Occurrences ne sont pas la condition de victoire ; le
+temps mis à déchiffrer treize signes l'est. Optimiser la mauvaise ressource coûte du temps.
+
+On l'accepte donc, en le sachant, avec deux chiffres à surveiller en PT7 : I6, et la part
+de la main. `REL_K` reste à 1,2 — on ne rerègle pas une constante en même temps qu'on change
+une règle.
+
+#### Le piège qu'elle crée
+
+Relever une seule fois une tablette au début la fige à son tarif de misère, définitivement.
+Les treize relevés d'ouverture condamnent ainsi les quatre premières tablettes. C'est
+cohérent (on ne tarife qu'une fois) mais ce n'est pas intuitif, et rien ne prévient. La
+barre de tablettes annonce maintenant, en infobulle, soit le tarif acquis, soit
+« intacte » — c'est le minimum, et probablement pas assez : **une tablette intacte ne se
+distingue toujours pas d'une tablette travaillée au premier coup d'œil.** À voir en PT7.
 
 ### Le blocage volontaire
 
@@ -578,7 +627,7 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
 
 | | Valeur |
 |---|---|
-| Relever | dans le corpus. Jeton neuf : tarif de la tablette, figé à (1 + 1,2 × débit) × mult. au dégagement. Jeton déjà relevé ou tablette épuisée : le plancher (1 × mult.) |
+| Relever | dans le corpus. Jeton neuf : tarif de la tablette, figé à (1 + 1,2 × débit) × mult. **au premier relevé qu'on y fait**. Jeton déjà relevé ou tablette épuisée : le plancher (1 × mult.) |
 | Gisement | ⌈jetons/10⌉ par tablette, **398** en tout, dont 13 ouverts au départ |
 | Formuler | 3 occ. → 1 hyp. |
 | Recouper | dans le corpus : deux attestations d'un même signe, dans deux tablettes différentes. 12 occ. + 3 hyp. → min(3, 1 + ⌊lexique/5⌋) cert., coût ×1,18 par usage (−25 % avec `champ`) |
@@ -612,8 +661,10 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
 
 ## Suite
 
-1. **Trancher le sort du gisement** (voir PT6) : re-tarifer une tablette à sa première
-   visite, ou assumer que le relevé est une mécanique d'ouverture et simplifier.
+1. **PT7**, pour trancher ce que ni le simulateur ni le rejeu de PT6 ne peuvent dire :
+   le tarif à la première visite donne-t-il envie d'aller ouvrir une tablette neuve en fin
+   de partie ? I6 tient-il, sachant qu'un joueur qui thésaurise le pousse à 32,5 % en
+   simulation ? et une tablette intacte se repère-t-elle assez pour qu'on y aille ?
 2. **Le mur des dix premières minutes** : 100 % de la Certitude à la main avant la première
    Concordance, et c'est là que la partie 1 de PT5 a été abandonnée. Mesurer I6 par tranches
    dans `outils/sim.py` plutôt que sur la partie entière.

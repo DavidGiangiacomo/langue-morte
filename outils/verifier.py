@@ -11,7 +11,7 @@ Contrôle :
   4. les infobulles répondent dans les quatre cas prévus
   5. le temps de rendu initial reste sous le seuil
   6. la fenêtre de fin se ferme, et ne couvre pas les outils hors jeu
-  7. le relevé se fait dans le corpus, et le gisement d'une tablette s'épuise
+  7. le relevé se fait dans le corpus ; le gisement s'épuise et se tarife à la 1re visite
   8. le recoupement se fait dans le corpus : deux passages d'un même signe
 
 Prérequis : pip install playwright && playwright install chromium
@@ -140,12 +140,22 @@ def main() -> None:
         ouvert = page.evaluate(
             "() => { let n = 0; for (let i = 0; i < revCount(); i++) n += gisReste(TB[i].t); return n; }")
         verifier(ouvert == 13, f"13 relevés ouverts au départ ({ouvert})")
-        # le tarif est figé au dégagement : sinon la stratégie optimale est de ne rien
-        # relever pendant quarante minutes puis de tout vider au débit maximal
-        page.evaluate("() => { S_.b.cop = 500; paintCorpus(null); }")
+        # Le tarif se fige à la première visite, pas au dégagement : le figer au dégagement
+        # laissait à 1 occurrence, pour toute la partie, les tablettes qu'on atteint tôt.
+        verifier(page.evaluate("() => Object.keys(S_.prix).length") == 0,
+                 "dégager une tablette ne la tarife pas")
+        page.evaluate("() => { S_.b.cop = 500; S_.rel = {}; S_.prix = {}; S_.O = 0; }")
         page.wait_for_timeout(120)
-        verifier(page.evaluate("() => S_.prix[TB[0].t]") == 1,
-                 "le tarif d'une tablette dégagée ne bouge plus")
+        tar = page.evaluate("""() => {
+            const t = TB[0].t;
+            relever(t, 0); const a = S_.prix[t];
+            S_.b.cop = 5000;                       // le débit décuple entre les deux relevés
+            relever(t, 1);
+            return [Math.round(a), Math.round(S_.prix[t]), Math.round(tarifRel())]; }""")
+        verifier(tar[0] == 601, f"la première visite tarife au débit du moment ({tar[0]})")
+        verifier(tar[0] == tar[1], "et le tarif ne bouge plus ensuite")
+        verifier(tar[2] > tar[1] * 5,
+                 f"même quand le débit a décuplé (il vaudrait {tar[2]} aujourd'hui)")
         gains = page.evaluate("""() => {
             const t = TB[0].t; S_.rel = {}; S_.prix[t] = 100; S_.O = 0;
             relever(t, 0); const a = S_.O; relever(t, 0); return [a, S_.O - a]; }""")

@@ -35,7 +35,15 @@ const oBrut = () => (S_.b.cop*1.0 + S_.b.ate*25)*M.cop();
       rend donc le plancher (1), jamais zéro — et au départ, débit nul, les deux se valent.
    2. Un tarif indexé sur le débit courant se thésaurise : ne rien relever pendant quarante
       minutes puis tout vider au débit maximal donnait 72 % des occurrences au lieu de 17 %.
-      Le tarif d'une tablette est donc fixé quand elle sort de terre et n'en bouge plus.
+      Le tarif d'une tablette est donc figé — mais **au premier relevé qu'on y fait**, et
+      non à son dégagement. Le figer au dégagement laissait à 1 ou 2 occurrences, pour
+      toute la partie, les seules tablettes qu'on atteint tôt : PT6 a mesuré la main à
+      0,1 % des occurrences, moins bien qu'avec le bouton qu'on venait de supprimer.
+      Arriver sur une tablette neuve à la trentième minute vaut maintenant plus de mille
+      occurrences par relevé, et c'est ce qui doit donner envie d'y aller.
+      La thésaurisation reste possible — garder les tablettes neuves pour la fin donne
+      42 % des occurrences au lieu de 19 — mais elle se punit d'elle-même : le simulateur
+      lui fait finir la partie 4,7 minutes plus tard, faute des occurrences du début.
    3. Le gisement, et non la vitesse de la main, décide de ce que la main rapporte : à 5, 15
       ou 40 clics/minute la part est la même. Le cliqueur frénétique et le joueur posé
       convergent — c'est ce qui rend structurellement impossible le défaut de PT1.
@@ -54,7 +62,7 @@ const GIS_TOTAL = Object.values(GISEMENT).reduce((a,b)=>a+b, 0);
 
 const gisFait  = t => (S_.rel[t] || []).length;
 const gisReste = t => GISEMENT[t] - gisFait(t);
-/* tarif d'un relevé neuf, figé au dégagement de la tablette (cf. revealer() dans rendu.js) */
+/* tarif d'un relevé neuf, figé au premier relevé fait sur la tablette (cf. relever()) */
 const tarifRel = () => (1 + REL_K*oBrut()) * M.click();
 const releveVal = t => (t !== undefined && gisReste(t) > 0) ? (S_.prix[t] || 1) : M.click();
 
@@ -107,7 +115,11 @@ function amount(n, lisible){ return lisible ? big(n) : numGlyphs(n); }
 function relever(t, j){
   const l = S_.rel[t] || (S_.rel[t] = []);
   const neuf = t !== undefined && l.length < GISEMENT[t] && l.indexOf(j) < 0;
-  S_.O += neuf ? (S_.prix[t] || 1) : M.click();
+  /* Première visite : la tablette prend le tarif du débit courant, une fois pour toutes.
+     C'est ce qui fait qu'ouvrir une tablette restée intacte vaut de plus en plus cher —
+     et donc qu'il reste une raison de parcourir le corpus après la quinzième minute. */
+  if(neuf && S_.prix[t] === undefined) S_.prix[t] = tarifRel();
+  S_.O += neuf ? S_.prix[t] : M.click();
   if(neuf){
     l.push(j);
     /* Le dire au moment où ça arrive : la cellule qui s'éteint dans la barre est le seul

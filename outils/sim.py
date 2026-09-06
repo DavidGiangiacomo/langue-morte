@@ -41,6 +41,7 @@ P = dict(
     rec_o=12, rec_h=3, rec_r=1.18,                     # Recouper : coût de base et croissance
     rec_div=5, rec_max=3,                              # Recouper : gain = min(rec_max, 1 + lexique//rec_div)
     hyp_c=3,                                           # Formuler : 3 occ. -> 1 hyp.
+    duree_att=45,                                      # durée attendue, pour l'essai du thésauriseur
     click_share=1.20,                                  # Relevé neuf = (1 + K x débit) x mult.
     click_floor=1.0,                                   # Relevé sur gisement épuisé : le plancher seul
     gis_div=10,                                        # Gisement d'une tablette = jetons / gis_div
@@ -52,8 +53,10 @@ for g in GL:
     BR.setdefault(g[1], []).append(g)
 
 
-def run(P, cpm=15, cap_min=600):
-    """cpm = clics manuels par minute. Retourne (durée_min, jalons, bâtiments, stats)."""
+def run(P, cpm=15, cap_min=600, garde=0.0):
+    """cpm = clics manuels par minute. `garde` = fraction de la partie pendant laquelle
+    le joueur s'interdit de relever, pour tarifer ses tablettes au débit maximal —
+    c'est le pire cas contre lequel il faut se prémunir. Retourne (durée, jalons, ...)."""
     O = H = C = 0.0
     b = {'cop': 0, 'tab': 0, 'con': 0, 'ate': 0}
     gl, rec, t, dt = set(), 0, 0.0, 0.1
@@ -62,7 +65,7 @@ def run(P, cpm=15, cap_min=600):
     has = lambda x: x in gl
     GIS = [-(-n // P['gis_div']) for n in TOKENS]   # gisement : jetons / gis_div
     reste = list(GIS)                               # ce qu'il reste à relever, par tablette
-    prix = [0.0] * len(GIS)                         # tarif verrouillé au dégagement
+    prix = [None] * len(GIS)                        # tarif figé au premier relevé
     # tablettes dégagées : 4 au départ, les 30 au dernier glyphe (cf. revCount() dans rendu.js)
     nrev = lambda: min(len(GIS), P['rev_base']
                        + round(len(gl) * (len(GIS) - P['rev_base']) / len(GL)))
@@ -96,15 +99,20 @@ def run(P, cpm=15, cap_min=600):
     while len(gl) < len(GL) and t < 60 * cap_min:
         t += dt
         o_pass += obrut() * dt
-        # une tablette qui sort de terre voit son gisement tarifé au débit du moment
-        while ouvert < nrev():
-            prix[ouvert] = tarif(); ouvert += 1
-        # le joueur le plus gourmand vide d'abord la tablette la mieux payée
+        ouvert = nrev()
+        # Le joueur travaille les tablettes dans l'ordre où elles sortent de terre, et le
+        # tarif de chacune se fige au premier relevé qu'il y fait. `garde` retarde tout :
+        # les tablettes sont alors tarifées au débit de la fin.
         nc = (cpm / 60.0) * dt
+        neuves_ok = t >= garde * 60 * P['duree_att']
         gain = 0.0
         while nc > 1e-12:
-            i = max((k for k in range(ouvert) if reste[k] > 0),
-                    key=lambda k: prix[k], default=None)
+            # d'abord ce qui est déjà tarifé ; une tablette neuve ne s'ouvre qu'ensuite —
+            # et le thésauriseur s'en abstient jusqu'à `garde`, pour les tarifer au maximum
+            i = next((k for k in range(ouvert) if reste[k] > 0 and prix[k] is not None), None)
+            if i is None and neuves_ok:
+                i = next((k for k in range(ouvert) if reste[k] > 0), None)
+                if i is not None: prix[i] = tarif()  # première visite : on tarife
             if i is None: break
             n = min(nc, reste[i])
             reste[i] -= n; gis_use += n; gain += prix[i] * n; nc -= n

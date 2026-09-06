@@ -102,7 +102,11 @@ function paintRail(){
     if(c.classList.contains('sec')!==sec) c.classList.toggle('sec',sec);
     const vise = !!recSel && t!==recSel.tb && !!TBSIGNE[recSel.id] && TBSIGNE[recSel.id].has(t);
     if(c.classList.contains('cible')!==vise) c.classList.toggle('cible',vise);
-    const ti = 'tablette '+t+' — gisement '+gisReste(t)+'/'+GISEMENT[t];
+    /* Le tarif est la seule chose qui distingue une tablette intacte d'une tablette
+       déjà travaillée : sans lui, rien ne dit qu'il vaut la peine d'aller plus loin. */
+    const ti = 'tablette '+t+' — gisement '+gisReste(t)+'/'+GISEMENT[t]
+      + (gisReste(t) ? (S_.prix[t]===undefined ? ' · intacte'
+          : ' · '+nf.format(Math.round(S_.prix[t]))+' occ. par relevé') : '');
     if(c.title!==ti) c.title=ti;
   }
 }
@@ -185,9 +189,6 @@ function revealer(){
   const n = revCount();
   const tabs = elCorpus.querySelectorAll('.tablet');
   for(let i=0;i<tabs.length;i++){ const v = i>=n; if(tabs[i].hidden!==v) tabs[i].hidden=v; }
-  /* Le gisement d'une tablette est tarifé au moment où elle sort de terre, et n'en bouge
-     plus : sinon la stratégie optimale serait d'attendre le débit maximal pour tout vider. */
-  for(let i=0;i<n;i++){ const t=TB[i].t; if(S_.prix[t]===undefined) S_.prix[t]=tarifRel(); }
   if(n>lastRev && lastRev>0) pushLog(n-lastRev>1 ? (n-lastRev)+' tablettes dégagées.' : 'Une tablette dégagée.');
   lastRev = n;
 }
