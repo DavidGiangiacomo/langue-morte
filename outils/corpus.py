@@ -129,7 +129,12 @@ tab(24,[L('tablette 24 · année 201'),L('toi-qui lis · toi ne-pas nous'),L('to
 tab(25,[L('tablette 25 · année 207'),L('grain 110'),L('eau 2'),L('maison 6')]+maisons(6,10,3)+
        [L('champ 1 · ne-pas'),L('champ 2 · ne-pas'),L('champ 3 · grain 21'),L('champ 4 · ne-pas'),
         L('grenier 1 · ne-pas'),L('scribe N5')])
-tab(26,[L('tablette 26 · année 209'),L('grain 98'),L('maison 5')]+veille(209,EAU)+
+# La veille se filtre à la date de la tablette, comme aux tablettes 6 et 15 : la série
+# entière donnait à une scribe de l'an 209 le relevé des années 211 et 213, et datait sa
+# première ligne de 209 en y portant la crue de 213. Une erreur sans conséquence tant que
+# personne ne lisait le bloc comme une série ; la concordance de l'acte III la met au
+# premier plan, deux lignes au-dessus de « avant · tablette 6 · faux ».
+tab(26,[L('tablette 26 · année 209'),L('grain 98'),L('maison 5')]+veille(209,[e for e in EAU if e[0]<=209])+
        [L('avant · tablette 6 · faux'),
         L('avant · tablette 13 · faux'),L('peut-être eau · faux'),L('je grave : faux'),
         L('il-faut faux ne-pas'),L('scribe N5')])
@@ -171,5 +176,8 @@ ORDRE = ("\n/* Ordre de sortie de terre — pas l'ordre chronologique. La tablet
          "const ORDRE = [1,2,3,4,8,5,21,7,6,11,9,16,10,12,17,13,15,22,14,18,19,25,20,23,26,24,27,29,28,30];\n"
          "const TB = ORDRE.map(n => CORPUS.find(t => t.t === n));\n")
 js = EN_TETE + 'const CORPUS=' + json.dumps(T, ensure_ascii=False, separators=(',',':')) + ';\n' + ORDRE
-open(str(__import__('pathlib').Path(__file__).parent.parent/'src'/'corpus.js'),'w').write(js)
+# encoding explicite : sans lui le script meurt sur une console cp1252 (la flèche de
+# l'en-tête suffit), et le corpus généré dépend de la locale de la machine.
+open(str(__import__('pathlib').Path(__file__).parent.parent/'src'/'corpus.js'),'w',
+     encoding='utf-8').write(js)
 print('src/corpus.js :', len(js)//1024, 'Ko')

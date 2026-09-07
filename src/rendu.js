@@ -60,7 +60,7 @@ function paintCorpus(flashId){
     el.className='tok '+(lis?'num':'g')+(r?' rel':'');
     el.innerHTML = lis ? nf.format(n) : numGlyphs(n);
   });
-  ranger(); revealer(); paintRail(); peindreRec();
+  ranger(); revealer(); paintRail(); peindreRec(); peindreConc();
 }
 
 /* ============================ la datation ============================ */
@@ -174,7 +174,7 @@ function paintRail(){
    survol, qui monte aussi, et avec l'ocre de `touche`, qui prend déjà le cadre et le
    numéro. Descendre ne heurte personne.
    Repeinte à part, et non dans `paintRail` : le gisement change à chaque relevé quand la
-   lisibilité ne change qu'à chaque glyphe, et recompter les 3 825 signes du corpus à
+   lisibilité ne change qu'à chaque glyphe, et recompter les 3 809 signes du corpus à
    chaque clic coûterait cent fois ce que coûtent ces deux classes. */
 function peindreGisement(){
   for(const c of $('rail').children){
@@ -254,9 +254,84 @@ function rejouerFlash(el){
   setTimeout(()=>el.classList.remove('flash'), 900);
 }
 
+/* ---- la concordance, dans le texte ----
+   PT8 : le rangement chronologique n'a pas suffi. Soixante lignes du corpus portent un
+   relevé d'eau, sur six cent soixante-seize, et de huit à cinquante-sept lignes de
+   registre séparent deux relevés consécutifs. Ranger les tablettes ordonne les
+   contenants ; ça ne rassemble pas le signal. Le joueur de PT8 est allé sur la tablette
+   26 — le relevé d'eau complet, vingt-deux années dans un seul document — treize secondes
+   après avoir acheté `avant`, y a fait vingt relevés, et n'a pas vu la série. Le défaut
+   n'était donc pas que la donnée soit illisible : c'est que la lecture n'était pas
+   assemblée.
+
+   Une concordance, en philologie, est le relevé de toutes les attestations d'un mot avec
+   leur contexte. L'instrument porte ce nom depuis l'acte II sans rien faire de visible ;
+   il fait maintenant ce qu'il annonce. Choisir un signe replie le corpus sur ses seules
+   attestations, dans l'ordre d'affichage courant, chaque tablette gardant sa première
+   ligne — celle où elle se numérote et se date elle-même (règle 5 : rien d'ajouté).
+   Sur `eau`, corpus rangé, la colonne donne 14 · 13 · 15 · 12 · 11 · 12 · 10 · 9 · 8 …
+   jusqu'à 0, en soixante-dix lignes au lieu de six cent soixante-seize. Personne ne la
+   commente ; c'est au joueur de lire les nombres. */
+let concArme = false, concSel = null, concN = 0;
+
+function concArmer(v){
+  concArme = v;
+  if(v) recArmer(false);          // deux modes se disputeraient le même clic
+  peindreConc();
+}
+/* Un signe inconnu se concorde aussi bien qu'un signe lu — c'est même là que l'instrument
+   sert le plus. Rassembler les contextes d'une forme qu'on ne sait pas encore lire est
+   le geste de l'épigraphiste, et le pendant du comptage d'occurrences de la Table. */
+function concChoisir(id){
+  if(id === undefined) return;    // un nombre n'est pas un signe : rien à concorder
+  concSel = id; concArme = false;
+  peindreConc();
+}
+function concFermer(){ concSel = null; concArme = false; peindreConc(); }
+
+function peindreConc(){
+  elCorpus.classList.toggle('filtre', !!concSel);
+  elCorpus.classList.toggle('conc-arme', concArme);
+  concN = 0;
+  for(const tb of elCorpus.children){
+    if(!concSel){
+      tb.classList.remove('vide');
+      for(const ln of tb.children) ln.classList.remove('off');
+      continue;
+    }
+    let n = 0, premiere = true;
+    for(const ln of tb.children){
+      const a = ln.querySelectorAll('[data-w="'+concSel+'"]').length;
+      n += a;
+      /* La première ligne reste toujours : sans elle, la colonne n'aurait plus de date —
+         et cette date est du texte ancien, pas un en-tête ajouté par le jeu. */
+      ln.classList.toggle('off', !a && !premiere);
+      premiere = false;
+    }
+    tb.classList.toggle('vide', n === 0);
+    if(n && !tb.hidden) concN += n;
+  }
+  majConc();
+}
+
+function majConc(){
+  const b = $('a-con'), ouvert = S_.b.con > 0;
+  if(b.hidden !== !ouvert) b.hidden = !ouvert;
+  if(!ouvert) return;
+  const mot = concSel && byId[concSel] && has(concSel) ? byId[concSel].mot : null;
+  setHTML(b, !concSel ? (concArme ? 'choisis un signe' : 'concorder')
+    : (mot || sv(concSel)) + ' · ' + nf.format(concN)
+      + ' attestation' + (concN > 1 ? 's' : '') + ' ✕');
+  b.classList.toggle('on', concArme || !!concSel);
+}
+
+/* Une tablette repliée par la concordance n'est pas une destination : on ne saute pas
+   dessus au clavier, et la barre n'y mène pas. */
+const repliee = el => el.hidden || el.classList.contains('vide');
+
 function versTablette(t){
   const el=elCorpus.querySelector('.tablet[data-tb="'+t+'"]');
-  if(!el || el.hidden) return;
+  if(!el || repliee(el)) return;
   elCorpus.scrollTo({top: el.offsetTop - elCorpus.firstElementChild.offsetTop - 8, behavior:'smooth'});
   for(const c of $('rail').children) c.classList.toggle('ici', +c.dataset.go===t);
 }
@@ -264,13 +339,13 @@ function tabletteVisible(){
   const y=elCorpus.scrollTop, base=elCorpus.firstElementChild.offsetTop;
   let best=null;
   for(const el of elCorpus.querySelectorAll('.tablet')){
-    if(el.hidden) continue;
+    if(repliee(el)) continue;
     if(el.offsetTop - base <= y + 40) best=el; else break;
   }
   return best;
 }
 function saut(d){
-  const vis=tabletteVisible(); const list=[...elCorpus.querySelectorAll('.tablet')].filter(e=>!e.hidden);
+  const vis=tabletteVisible(); const list=[...elCorpus.querySelectorAll('.tablet')].filter(e=>!repliee(e));
   let i=list.indexOf(vis); i = Math.max(0, Math.min(list.length-1, (i<0?0:i)+d));
   versTablette(+list[i].dataset.tb);
 }
@@ -415,6 +490,7 @@ function paintActs(){
      armé ne relève plus. Le désactiver faute de ressources enfermait le joueur — signalé
      en PT6. Il ne se désactive donc que pour empêcher d'armer, jamais de désarmer. */
   $('a-rec').disabled = !recArme && !peutRec;
+  majConc();   // la première Concordance achetée fait apparaître son bouton
 }
 
 let lastPct=-1;

@@ -64,6 +64,10 @@ enrober('acheterGl', () => S_.gl.length,  a => a[0] + ' (' + byId[a[0]].mot + ')
 /* La nuit ne passe pas par `tick` et n'émettrait donc aucune ligne : une seule, au retour,
    dit ce qu'elle a rapporté. Une partie jouée en plusieurs fois se lit alors sans trou. */
 enrober('veillee',   () => Math.round(S_.O), () => Math.round(S_.O) + ' occ. hors ligne');
+/* La concordance ne coûte rien et ne produit rien : elle ne laisserait aucune trace dans
+   les ressources. C'est pourtant le geste que PT9 doit mesurer — quels signes le joueur
+   rassemble, et s'il le fait du tout. */
+enrober('concChoisir', () => concSel, a => a[0] + ' · ' + concN + ' attest.');
 
 /* Pas de témoin possible pour la fin : `S_.done` est déjà posé quand showEnd() est
    appelée. On remonte donc le relevé jusqu'au dernier « reset » — jeu.js rappelle

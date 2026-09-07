@@ -17,6 +17,8 @@ Contrôle :
  10. le rangement chronologique range l'affichage sans rien dégager de neuf
  11. la Grammaire s'ouvre à « année » et croît avec le lexique
  12. la nuit : 40 % du débit hors ligne, plafonnée, consommée une seule fois
+ 13. la concordance : le corpus se replie sur les attestations d'un signe, et la crue
+     se lit alors de 14 à 0
 
 Prérequis : pip install playwright && playwright install chromium
 """
@@ -32,7 +34,7 @@ except ImportError:
 RACINE = pathlib.Path(__file__).parent.parent
 PAGE = RACINE / "dist" / "langue-morte.html"
 
-SIGNES_ATTENDUS = 3825          # cf. sortie de outils/corpus.py
+SIGNES_ATTENDUS = 3809          # cf. sortie de outils/corpus.py
 RENDU_MAX_S = 4.0
 
 # glyphe acheté -> ensemble exact des nombres du corpus qui doivent devenir lisibles
@@ -141,7 +143,7 @@ def main() -> None:
         verifier(page.evaluate("() => mesures().sig") == 0, "la jauge repart de 0 %")
 
         print("\nle relevé, acte de lecture")
-        verifier(page.evaluate("() => GIS_TOTAL") == 398, "gisement du corpus : 398 relevés")
+        verifier(page.evaluate("() => GIS_TOTAL") == 397, "gisement du corpus : 397 relevés")
         ouvert = page.evaluate(
             "() => { let n = 0; for (let i = 0; i < revCount(); i++) n += gisReste(TB[i].t); return n; }")
         verifier(ouvert == 13, f"13 relevés ouverts au départ ({ouvert})")
@@ -316,8 +318,8 @@ def main() -> None:
         # le piège : compter les mots seuls donnerait 8 à « un » et 0 à « cinq », alors que
         # leur signe est partout DANS les nombres. Ce serait dire que la branche la plus
         # rentable du jeu est la plus pauvre.
-        verifier(page.evaluate("() => freqGlyphe('an')") == 1668, "« un » compte ses chiffres (1 668)")
-        verifier(page.evaluate("() => freqGlyphe('hem')") == 544, "« cinq » compte ses chiffres (544)")
+        verifier(page.evaluate("() => freqGlyphe('an')") == 1661, "« un » compte ses chiffres (1 661)")
+        verifier(page.evaluate("() => freqGlyphe('hem')") == 543, "« cinq » compte ses chiffres (543)")
         verifier(page.evaluate("() => freqGlyphe('tem')") == 315, "« grain », mot seul (315)")
 
         print("\nacte III : la datation, puis le rangement")
@@ -381,6 +383,49 @@ def main() -> None:
         page.wait_for_timeout(200)
         r2 = page.evaluate("() => GRAM_P * gramMul() * M.gram()")
         verifier(r2 > r1 * 1.5, f"trois signes de plus la font passer de {r1:.4f} à {r2:.4f} cert./s")
+
+        print("\nla concordance : rassembler les attestations d'un signe")
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+        verifier(page.get_attribute("#a-con", "hidden") is not None,
+                 "pas de bouton sans Concordance")
+        page.evaluate("() => { S_.b.con = 1; }")
+        page.wait_for_timeout(120)
+        verifier(page.get_attribute("#a-con", "hidden") is None,
+                 "la première Concordance le fait apparaître")
+        # tout le corpus, puis la seule colonne de l'eau
+        page.evaluate("() => { S_.C = 9999; GL.forEach(g => acheterGl(g.id)); $('end').hidden = true; }")
+        page.wait_for_timeout(300)
+        lignes = lambda: page.eval_on_selector_all(
+            "#corpus .tablet:not([hidden]):not(.vide) .ln:not(.off)", "e => e.length")
+        avant = lignes()
+        verifier(avant == 676, f"corpus entier : {avant} lignes")
+        page.evaluate("() => concChoisir('kish')")
+        page.wait_for_timeout(250)
+        apres = lignes()
+        verifier(apres < avant / 6, f"replié sur « eau » : {apres} lignes ({avant} avant)")
+        # chaque tablette gardée montre sa première ligne, celle qui la date : sans elle la
+        # colonne n'aurait plus de dates, et c'est du texte ancien, pas un en-tête ajouté
+        dates = page.evaluate("""() => [...document.querySelectorAll('#corpus .tablet:not([hidden]):not(.vide)')]
+            .map(e => { const l = e.querySelector('.ln'); return l && !l.classList.contains('off'); })""")
+        verifier(all(dates) and len(dates) > 15,
+                 f"les {len(dates)} tablettes retenues gardent leur ligne de date")
+        # la série, dans l'ordre du temps : c'est tout le propos de l'acte III
+        eaux = page.evaluate("""() => [...document.querySelectorAll('#corpus .tablet:not([hidden]):not(.vide)')]
+            .map(e => { const tb = TBN[+e.dataset.tb];
+              for (const l of tb.l) { const m = l.match(/^kish %(\\d+)$/); if (m) return +m[1]; }
+              return null; }).filter(v => v !== null)""")
+        verifier(eaux[0] == 14 and eaux[len(eaux) - 1] == 0,
+                 f"la crue se lit de {eaux[0]} à {eaux[len(eaux)-1]} en {len(eaux)} relevés")
+        verifier(sum(1 for i in range(1, len(eaux)) if eaux[i] > eaux[i - 1]) <= 4,
+                 "elle descend, avec le bruit des bonnes années")
+        # un nombre n'est pas un signe, et fermer rend le corpus entier
+        page.evaluate("() => concChoisir(undefined)")
+        page.wait_for_timeout(120)
+        verifier(lignes() == apres, "un nombre ne se concorde pas")
+        page.evaluate("() => concFermer()")
+        page.wait_for_timeout(200)
+        verifier(lignes() == avant, "fermer rend le corpus entier")
 
         print("\nla nuit : ce que le corpus produit sans le joueur")
         page.evaluate("() => $('reset').click()")

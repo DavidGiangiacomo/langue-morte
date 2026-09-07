@@ -82,7 +82,9 @@ python build.py && python outils/verifier.py    # tests
 
 10. **La date d'une tablette n'est jamais ajoutée par le jeu.** Chaque tablette porte la sienne dans sa première ligne depuis la première seconde ; `année` ne fait que la rendre lisible, et il faut encore savoir lire le nombre, signe par signe. Corollaire : le rangement chronologique ne réordonne que ce que le joueur sait dater — le reste garde l'ordre de sortie de terre. Ne jamais dater depuis une table externe : la vérité est dans `tb.l[0]`.
 
-11. **Le dégagement suit la sortie de terre, l'affichage suit le temps.** `IDX` (rang dans `ORDRE`) décide de ce qui est visible, l'ordre du DOM décide de ce qu'on lit. Les confondre ferait dégager des tablettes en rangeant. `ranger()` déplace les nœuds existants au lieu de les reconstruire — les jetons relevés et les caches de peinture y survivent.
+11. **Un instrument nommé d'après une méthode philologique doit faire cette méthode.** La Table de fréquences compte les occurrences au survol ; la Concordance rassemble les attestations d'un signe. Sans ça le nom ment, et le jeu redevient un incrémental habillé. Corollaire trouvé en PT8 : **ranger n'est pas rassembler** — l'ordre chronologique ne sert à rien tant que 8 à 57 lignes de registre séparent deux relevés de la même série.
+
+12. **Le dégagement suit la sortie de terre, l'affichage suit le temps.** `IDX` (rang dans `ORDRE`) décide de ce qui est visible, l'ordre du DOM décide de ce qu'on lit. Les confondre ferait dégager des tablettes en rangeant. `ranger()` déplace les nœuds existants au lieu de les reconstruire — les jetons relevés et les caches de peinture y survivent.
 
 ---
 
@@ -97,7 +99,7 @@ python build.py && python outils/verifier.py    # tests
 
 ## État actuel et suite
 
-**Fait** : actes I à III (première moitié), **20 signes sur 45**, corpus complet des 30 tablettes (678 lignes, 3 825 signes), économie réglée sur sept playtests, numération signe par signe jusqu'à `mille`, barre de navigation entre tablettes, infobulles, comptage d'occurrences dans le lexique, journal d'actions horodaté, relevé et recoupement dans le corpus avec gisement par tablette, **datation et réordonnancement chronologique**, instrument **Grammaire**, progression **hors ligne**.
+**Fait** : actes I à III (première moitié), **20 signes sur 45**, corpus complet des 30 tablettes (676 lignes, 3 809 signes), économie réglée sur sept playtests, numération signe par signe jusqu'à `mille`, barre de navigation entre tablettes, infobulles, comptage d'occurrences dans le lexique, journal d'actions horodaté, relevé et recoupement dans le corpus avec gisement par tablette, **datation et réordonnancement chronologique**, instrument **Grammaire**, progression **hors ligne**.
 
 **PT7 fait** (07/09/2026) : 44 min 50. R9 est tranché — le tarif figé à la première visite ramène la main de 0,1 % à **17,9 % des occurrences**, sur 22 tablettes au lieu de 3, jusqu'à la quarantième minute au lieu de la quinzième. I6 global à 31,2 %, mais découpé par tranches il montre deux défauts opposés : 83 % au premier quart d'heure (le mur d'ouverture, connu, non réglé) et 103 % aux cinq dernières minutes (5 232 hypothèses que les Concordances ne buvaient pas). D'où la mesure d'I6 par tranches, et la Grammaire.
 
@@ -111,7 +113,11 @@ python build.py && python outils/verifier.py    # tests
 
 Mesuré : **78,6 à 83,5 min** pour les 20 signes, écart max 6,2 min entre deux déblocages, I6 global 5 %.
 
-**Prochaine étape — PT8, puis la seconde moitié de l'acte III.** PT8 doit répondre à une question que ni le simulateur ni le code ne peuvent trancher : **le rangement chronologique se voit-il ?** Le déclin n'est écrit nulle part, et un joueur qui range sans relire la série ne verra rien. Deuxième question : I6 tombant à 5 %, l'acte III se joue-t-il encore *dans le texte* ? Dater et ranger doivent remplacer le geste de lecture qu'on retire au recoupement.
+**PT8 fait** (07/09/2026) : 63 min 12 pour les 20 signes — le simulateur surestimait de 20 %. I6 tombe à 6,0 % et le déversoir de fin de PT7 est réparé. Mais **le rangement chronologique n'a pas suffi** : 60 lignes du corpus portent un relevé d'eau sur 676, et de 8 à 57 lignes de registre séparent deux relevés consécutifs. Trier ordonne les contenants, ça ne rassemble pas le signal — le joueur est allé sur la tablette 26 (le relevé d'eau complet) treize secondes après avoir acheté `avant`, y a fait vingt relevés, et n'a pas vu la série.
+
+**La Concordance fait enfin son métier** (07/09/2026) : choisir un signe replie le corpus sur ses seules attestations, chaque tablette gardant sa première ligne — celle où elle se date elle-même. Sur `eau`, corpus rangé : 92 lignes au lieu de 676, et vingt relevés qui descendent de 14 à 0. Rien d'ajouté, rien de commenté. C'est aussi le geste répétable qui manquait à l'acte III, dont la fin se jouait en attendant (4 min 51 sans une action dans le corpus en PT8).
+
+**Prochaine étape — PT9, puis la seconde moitié de l'acte III.** PT9 repose la question de PT8 : **la crue qui baisse se voit-elle ?** La colonne existe, reste à savoir si le joueur y va. Le journal d'actions note chaque concordance et son signe — si le TSV n'en contient aucune, c'est le bouton qu'il faut reprendre, pas la vue.
 
 Restent ensuite : la mécanique de **composition** (et donc `zéro` = `ne-pas` + `un`), l'instrument **Élève**, la branche **Modalité**, les glyphes de **Parole III** (`lire`, `scribe`, `archive`, `les-lecteurs`), puis les **contradictions** de l'acte IV — voir `docs/design-doc.md` §7 et §8.
 

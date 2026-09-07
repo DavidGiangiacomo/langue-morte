@@ -78,7 +78,7 @@ Les générateurs ne sont pas des bâtiments : ce sont des **méthodes philologi
 | 1 | **Œil** | le clic | I |
 | 2 | **Copiste** | produit des occurrences | I |
 | 3 | **Table de fréquences** | occurrences → hypothèses ; donne aussi le comptage d'occurrences au survol d'un signe inconnu | I |
-| 4 | **Concordance** | hypothèses → certitude | II |
+| 4 | **Concordance** | hypothèses → certitude ; rassemble aussi les attestations d'un signe en une colonne — c'est elle qui rend la série de la crue lisible à l'acte III | II |
 | 5 | **Atelier de copie** | gros producteur d'occurrences | II |
 | 6 | **Grammaire** | hypothèses → certitude, **croît avec la taille du lexique** — la première vraie exponentielle | III |
 | 7 | **Élève** | multiplie tout, **et introduit un taux d'erreur** | III |
