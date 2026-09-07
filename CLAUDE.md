@@ -95,6 +95,11 @@ python build.py && python outils/verifier.py    # tests
 
 **Fait** : actes I et II, 13 signes sur 45, corpus complet des 30 tablettes (678 lignes, 3 825 signes), économie réglée sur cinq playtests, numération signe par signe, barre de navigation entre tablettes, infobulles, comptage d'occurrences dans le lexique, journal d'actions horodaté, relevé dans le corpus avec gisement par tablette.
 
+**La barre porte l'échelle du gisement** (07/09/2026) : intacte, la cellule reste pleine ;
+lue, elle rentre dans le fond ; épuisée, elle s'éteint. C'est la tablette *lue* qui est
+marquée, pas l'intacte — l'intacte est le cas général, et un signe porté par presque tout
+ne signale rien. L'infobulle d'une intacte donne le tarif du moment, calculé au survol.
+
 **PT6 fait** (06/09/2026) : 43 min 49, la plus courte des six parties menées au bout et la première dans la fenêtre visée ; I6 pile à 30,0 %. Le recoupement dans le corpus tient — 44 rapprochements sur 12 signes, dont 8 qui ne s'achètent pas. Le relevé, lui, était retombé à 0,1 % des occurrences et s'arrêtait à la quinzième minute ; R9 fige désormais le tarif d'une tablette à la première visite, de sorte qu'en ouvrir une neuve à la trentième minute vaut plus de mille occurrences par relevé. Ni le simulateur ni le rejeu de PT6 ne peuvent dire si le joueur ira : c'est la première question de PT7.
 
 **Prochaine étape — l'acte III.** C'est là que le corpus change de nature :

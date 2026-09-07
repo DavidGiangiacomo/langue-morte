@@ -50,6 +50,11 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .rcell{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:30px;max-width:64px;
   padding:4px 5px 5px;border:1px solid var(--line);border-radius:2px;background:var(--clay2);
   cursor:pointer;transition:border-color .15s,background .15s}
+/* l'échelle du gisement : intacte, la cellule reste pleine ; lue, elle rentre dans le
+   fond ; épuisée (.sec), elle s'éteint. Placée avant :hover, de même spécificité, pour que
+   survoler une tablette lue la relève quand même. */
+.rcell.lue{background:#1C1610}
+.rcell.lue .rn{color:var(--faint)}
 .rcell:hover{border-color:var(--ochre-d);background:#31261B}
 .rcell .rn{font-family:var(--mono);font-size:10px;color:var(--dim);line-height:1.1;display:flex;align-items:center;gap:1px}
 .rcell .rn .gl{width:7px;height:10px;vertical-align:0}
@@ -743,18 +748,45 @@ function paintRail(){
     if(bar.__v!==p){ bar.__v=p; bar.style.width=p+'%'; }
     const tch = touchees.has(t);
     if(c.classList.contains('touche')!==tch) c.classList.toggle('touche',tch);
-    /* une tablette dont le gisement est épuisé s'éteint : il n'y a plus rien à y relever */
-    const sec = gisReste(t) <= 0;
-    if(c.classList.contains('sec')!==sec) c.classList.toggle('sec',sec);
     const vise = !!recSel && t!==recSel.tb && !!TBSIGNE[recSel.id] && TBSIGNE[recSel.id].has(t);
     if(c.classList.contains('cible')!==vise) c.classList.toggle('cible',vise);
-    /* Le tarif est la seule chose qui distingue une tablette intacte d'une tablette
-       déjà travaillée : sans lui, rien ne dit qu'il vaut la peine d'aller plus loin. */
-    const ti = 'tablette '+t+' — gisement '+gisReste(t)+'/'+GISEMENT[t]
-      + (gisReste(t) ? (S_.prix[t]===undefined ? ' · intacte'
-          : ' · '+nf.format(Math.round(S_.prix[t]))+' occ. par relevé') : '');
-    if(c.title!==ti) c.title=ti;
   }
+  peindreGisement();
+}
+
+/* Une seule échelle sur la cellule, celle du gisement : intacte, la tablette reste pleine ;
+   lue, elle rentre dans le fond ; épuisée, elle s'éteint. C'est la tablette lue qui porte la
+   marque, et non l'intacte, pour deux raisons. La première est que l'intacte est le cas
+   général — PT6 n'a touché que 3 tablettes sur 26 — et qu'un signe porté par presque tout
+   ne signale rien ; ce qui instruit, c'est de voir reculer ce qu'on a lu, donc de
+   comprendre que le corpus s'use et qu'ailleurs il ne l'est pas. La seconde est que marquer
+   l'intacte l'aurait fait monter, et en montant elle serait entrée en conflit avec le
+   survol, qui monte aussi, et avec l'ocre de `touche`, qui prend déjà le cadre et le
+   numéro. Descendre ne heurte personne.
+   Repeinte à part, et non dans `paintRail` : le gisement change à chaque relevé quand la
+   lisibilité ne change qu'à chaque glyphe, et recompter les 3 825 signes du corpus à
+   chaque clic coûterait cent fois ce que coûtent ces deux classes. */
+function peindreGisement(){
+  const cells=$('rail').children, n=revCount();
+  for(let i=0;i<n;i++){
+    const c=cells[i], t=TB[i].t;
+    const sec = gisReste(t) <= 0, lue = !sec && S_.prix[t] !== undefined;
+    if(c.classList.contains('sec')!==sec) c.classList.toggle('sec',sec);
+    if(c.classList.contains('lue')!==lue) c.classList.toggle('lue',lue);
+  }
+}
+
+/* L'infobulle chiffre ce que la marque ne peut que suggérer : sur une tablette intacte, le
+   tarif du moment, c'est-à-dire ce qu'on perd à ne pas y aller. Il suit la production et ne
+   peut donc pas être figé dans l'attribut : il s'écrit au survol (cf. jeu.js). */
+function titreCell(t){
+  const r = gisReste(t);
+  return 'tablette '+t+' — gisement '+r+'/'+GISEMENT[t]
+    + (r <= 0 ? ' · épuisée'
+      : S_.prix[t] === undefined
+        ? " · intacte : "+nf.format(Math.round(tarifRel()))
+          +" occ. par relevé si tu l'ouvres maintenant"
+        : ' · '+nf.format(Math.round(S_.prix[t]))+' occ. par relevé');
 }
 /* ---- le recoupement, dans le texte ----
    Armé depuis le bouton, il se joue en deux clics : un premier passage, puis la même
@@ -1227,6 +1259,7 @@ elCorpus.addEventListener('click', e=>{
   if(recArme){ recChoisir(tb, j, el.dataset.w); return; }
   relever(tb, j);
   el.classList.add('rel'); el.__v += 'r';
+  peindreGisement();          // la tablette vient peut-être de perdre sa marque d'intacte
 });
 elCorpus.addEventListener('mousemove', e=>{
   const el = e.target.closest('.tok');
@@ -1242,6 +1275,8 @@ elCorpus.addEventListener('mousemove', e=>{
 elCorpus.addEventListener('mouseleave', tipCacher);
 elCorpus.addEventListener('scroll', tipCacher, {passive:true});
 $('rail').addEventListener('click', e=>{ const b=e.target.closest('[data-go]'); if(b) versTablette(+b.dataset.go); });
+$('rail').addEventListener('pointerover', e=>{ const b=e.target.closest('[data-go]');
+  if(b) b.title = titreCell(+b.dataset.go); });
 /* La fin du prototype ne doit pas être un cul-de-sac : `tick` ne tourne plus une fois
    `S_.done`, donc le corpus derrière est figé sur la partie terminée et se relit tel quel.
    Recharger la page ramène la fenêtre. */

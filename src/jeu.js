@@ -18,6 +18,7 @@ elCorpus.addEventListener('click', e=>{
   if(recArme){ recChoisir(tb, j, el.dataset.w); return; }
   relever(tb, j);
   el.classList.add('rel'); el.__v += 'r';
+  peindreGisement();          // la tablette vient peut-être de perdre sa marque d'intacte
 });
 elCorpus.addEventListener('mousemove', e=>{
   const el = e.target.closest('.tok');
@@ -33,6 +34,8 @@ elCorpus.addEventListener('mousemove', e=>{
 elCorpus.addEventListener('mouseleave', tipCacher);
 elCorpus.addEventListener('scroll', tipCacher, {passive:true});
 $('rail').addEventListener('click', e=>{ const b=e.target.closest('[data-go]'); if(b) versTablette(+b.dataset.go); });
+$('rail').addEventListener('pointerover', e=>{ const b=e.target.closest('[data-go]');
+  if(b) b.title = titreCell(+b.dataset.go); });
 /* La fin du prototype ne doit pas être un cul-de-sac : `tick` ne tourne plus une fois
    `S_.done`, donc le corpus derrière est figé sur la partie terminée et se relit tel quel.
    Recharger la page ramène la fenêtre. */

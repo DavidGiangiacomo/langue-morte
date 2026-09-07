@@ -97,18 +97,45 @@ function paintRail(){
     if(bar.__v!==p){ bar.__v=p; bar.style.width=p+'%'; }
     const tch = touchees.has(t);
     if(c.classList.contains('touche')!==tch) c.classList.toggle('touche',tch);
-    /* une tablette dont le gisement est épuisé s'éteint : il n'y a plus rien à y relever */
-    const sec = gisReste(t) <= 0;
-    if(c.classList.contains('sec')!==sec) c.classList.toggle('sec',sec);
     const vise = !!recSel && t!==recSel.tb && !!TBSIGNE[recSel.id] && TBSIGNE[recSel.id].has(t);
     if(c.classList.contains('cible')!==vise) c.classList.toggle('cible',vise);
-    /* Le tarif est la seule chose qui distingue une tablette intacte d'une tablette
-       déjà travaillée : sans lui, rien ne dit qu'il vaut la peine d'aller plus loin. */
-    const ti = 'tablette '+t+' — gisement '+gisReste(t)+'/'+GISEMENT[t]
-      + (gisReste(t) ? (S_.prix[t]===undefined ? ' · intacte'
-          : ' · '+nf.format(Math.round(S_.prix[t]))+' occ. par relevé') : '');
-    if(c.title!==ti) c.title=ti;
   }
+  peindreGisement();
+}
+
+/* Une seule échelle sur la cellule, celle du gisement : intacte, la tablette reste pleine ;
+   lue, elle rentre dans le fond ; épuisée, elle s'éteint. C'est la tablette lue qui porte la
+   marque, et non l'intacte, pour deux raisons. La première est que l'intacte est le cas
+   général — PT6 n'a touché que 3 tablettes sur 26 — et qu'un signe porté par presque tout
+   ne signale rien ; ce qui instruit, c'est de voir reculer ce qu'on a lu, donc de
+   comprendre que le corpus s'use et qu'ailleurs il ne l'est pas. La seconde est que marquer
+   l'intacte l'aurait fait monter, et en montant elle serait entrée en conflit avec le
+   survol, qui monte aussi, et avec l'ocre de `touche`, qui prend déjà le cadre et le
+   numéro. Descendre ne heurte personne.
+   Repeinte à part, et non dans `paintRail` : le gisement change à chaque relevé quand la
+   lisibilité ne change qu'à chaque glyphe, et recompter les 3 825 signes du corpus à
+   chaque clic coûterait cent fois ce que coûtent ces deux classes. */
+function peindreGisement(){
+  const cells=$('rail').children, n=revCount();
+  for(let i=0;i<n;i++){
+    const c=cells[i], t=TB[i].t;
+    const sec = gisReste(t) <= 0, lue = !sec && S_.prix[t] !== undefined;
+    if(c.classList.contains('sec')!==sec) c.classList.toggle('sec',sec);
+    if(c.classList.contains('lue')!==lue) c.classList.toggle('lue',lue);
+  }
+}
+
+/* L'infobulle chiffre ce que la marque ne peut que suggérer : sur une tablette intacte, le
+   tarif du moment, c'est-à-dire ce qu'on perd à ne pas y aller. Il suit la production et ne
+   peut donc pas être figé dans l'attribut : il s'écrit au survol (cf. jeu.js). */
+function titreCell(t){
+  const r = gisReste(t);
+  return 'tablette '+t+' — gisement '+r+'/'+GISEMENT[t]
+    + (r <= 0 ? ' · épuisée'
+      : S_.prix[t] === undefined
+        ? " · intacte : "+nf.format(Math.round(tarifRel()))
+          +" occ. par relevé si tu l'ouvres maintenant"
+        : ' · '+nf.format(Math.round(S_.prix[t]))+' occ. par relevé');
 }
 /* ---- le recoupement, dans le texte ----
    Armé depuis le bouton, il se joue en deux clics : un premier passage, puis la même

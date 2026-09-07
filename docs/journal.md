@@ -249,10 +249,47 @@ une règle.
 
 Relever une seule fois une tablette au début la fige à son tarif de misère, définitivement.
 Les treize relevés d'ouverture condamnent ainsi les quatre premières tablettes. C'est
-cohérent (on ne tarife qu'une fois) mais ce n'est pas intuitif, et rien ne prévient. La
-barre de tablettes annonce maintenant, en infobulle, soit le tarif acquis, soit
-« intacte » — c'est le minimum, et probablement pas assez : **une tablette intacte ne se
-distingue toujours pas d'une tablette travaillée au premier coup d'œil.** À voir en PT7.
+cohérent (on ne tarife qu'une fois) mais ce n'est pas intuitif, et rien ne prévient.
+
+### La marque, 07/09/2026 : ce qui a été lu recule
+
+R9 n'était pas testable en l'état. La seule chose qui distinguait une tablette intacte
+d'une tablette travaillée était l'infobulle — il fallait survoler les cellules de la barre
+une par une pour découvrir qu'une différence existait. Jouer PT7 comme ça et n'ouvrir
+aucune tablette neuve n'aurait rien tranché : on n'aurait pas su si c'est la règle qui ne
+tente pas, ou si c'est qu'elle est invisible. Un playtest qui ne peut pas répondre à sa
+propre question ne vaut pas la peine d'être joué.
+
+La barre porte donc désormais l'échelle du gisement en entier : **intacte**, la cellule
+reste pleine ; **lue**, elle rentre dans le fond ; **épuisée**, elle s'éteint comme avant.
+
+C'est la tablette *lue* qui porte la marque, et non l'intacte, contre l'intuition. Deux
+raisons :
+
+- **l'intacte est le cas général** — PT6 n'a touché que 3 tablettes sur 26. Un signe porté
+  par presque tout ne signale rien. Ce qui instruit, c'est de voir reculer ce qu'on a lu :
+  on comprend que le corpus s'use, donc qu'ailleurs il ne l'est pas.
+- **marquer l'intacte l'aurait fait monter**, et en montant elle heurtait le survol, qui
+  monte aussi, et l'ocre de `touche` — la tablette où un signe fraîchement acheté apparaît —
+  qui prend déjà le cadre et le numéro. Or `touche` s'allume exactement au moment où le
+  joueur regarde la barre pour décider où aller : la marque y aurait disparu au pire
+  moment. Descendre ne heurte personne.
+
+L'infobulle chiffre ce que la marque ne peut que suggérer, et pour une intacte elle donne
+le tarif **du moment** : « intacte : 1 143 occ. par relevé si tu l'ouvres maintenant ».
+Ce tarif suit la production et ne peut donc pas être figé dans l'attribut — il s'écrit au
+survol. Accessoirement, cela supprime la reconstruction de trente titres par image.
+
+Au passage, un défaut plus ancien : `paintRail` n'était appelée qu'au chargement et à
+chaque glyphe acquis, jamais sur un relevé. L'extinction d'une tablette épuisée ne se
+voyait donc qu'au glyphe suivant. Les deux axes de la cellule se repeignent maintenant
+séparément — la lisibilité à chaque glyphe (elle recompte les 3 825 signes), le gisement à
+chaque relevé (deux classes) — parce que les recompter à chaque clic coûterait cent fois
+le prix.
+
+**Ce que ça ne fait pas** : la marque dit « ici, c'est lu », pas « là-bas, ça vaut mille
+occurrences ». Le chiffre reste dans l'infobulle, donc derrière un survol. Si PT7 montre
+que le joueur ne va toujours pas ouvrir de tablette neuve, c'est là qu'il faudra regarder.
 
 ### Le blocage volontaire
 
@@ -662,9 +699,10 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
 ## Suite
 
 1. **PT7**, pour trancher ce que ni le simulateur ni le rejeu de PT6 ne peuvent dire :
-   le tarif à la première visite donne-t-il envie d'aller ouvrir une tablette neuve en fin
-   de partie ? I6 tient-il, sachant qu'un joueur qui thésaurise le pousse à 32,5 % en
-   simulation ? et une tablette intacte se repère-t-elle assez pour qu'on y aille ?
+   maintenant que les tablettes lues reculent dans la barre, le tarif à la première visite
+   donne-t-il envie d'aller en ouvrir une neuve en fin de partie ? I6 tient-il, sachant
+   qu'un joueur qui thésaurise le pousse à 32,5 % en simulation ? et faut-il sortir le
+   tarif de l'infobulle pour qu'il compte ?
 2. **Le mur des dix premières minutes** : 100 % de la Certitude à la main avant la première
    Concordance, et c'est là que la partie 1 de PT5 a été abandonnée. Mesurer I6 par tranches
    dans `outils/sim.py` plutôt que sur la partie entière.
