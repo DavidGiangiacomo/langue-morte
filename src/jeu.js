@@ -7,6 +7,10 @@
 majSignes();
 buildRail(); buildCorpus(); buildInstr(); buildLex();
 if(S_.gl.length){ paintCorpus(null); pushLog(byId[S_.gl[S_.gl.length-1]].log); }
+/* `nuit` acquis, le corpus se lit sans le joueur — 40 % du débit, quatre heures au plus.
+   Dit au retour, une seule fois, et seulement s'il s'est passé quelque chose. */
+const nuitPassee = veillee();
+if(nuitPassee > 0) pushLog('La nuit a passé. '+big(Math.round(nuitPassee))+' occurrences relevées sans moi.');
 if(S_.done) showEnd();
 
 /* Le relevé n'existe plus que là : dans le texte, sur un signe précis. Le bouton « Relever
@@ -79,7 +83,10 @@ $('again').addEventListener('click',()=>$('reset').click());
 $('fermer').addEventListener('click', fermerFin);
 $('end').addEventListener('click', e=>{ if(e.target===$('end')) fermerFin(); });
 
-setInterval(()=>{ try{ localStorage.setItem(KEY, JSON.stringify(S_)); }catch(e){} }, 4000);
-window.addEventListener('pagehide',()=>{ try{ localStorage.setItem(KEY, JSON.stringify(S_)); }catch(e){} });
+/* `ts` est l'heure de la dernière sauvegarde : c'est elle, et rien d'autre, qui mesure
+   la nuit au retour. Écrite à chaque enregistrement, y compris à la fermeture. */
+const sauver = () => { try{ S_.ts = Date.now(); localStorage.setItem(KEY, JSON.stringify(S_)); }catch(e){} };
+setInterval(sauver, 4000);
+window.addEventListener('pagehide', sauver);
 
 requestAnimationFrame(frame);

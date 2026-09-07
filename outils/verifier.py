@@ -13,6 +13,10 @@ Contrôle :
   6. la fenêtre de fin se ferme, et ne couvre pas les outils hors jeu
   7. le relevé se fait dans le corpus ; le gisement s'épuise et se tarife à la 1re visite
   8. le recoupement se fait dans le corpus : deux passages d'un même signe
+  9. la datation : une tablette se date quand on sait lire sa date, et pas avant
+ 10. le rangement chronologique range l'affichage sans rien dégager de neuf
+ 11. la Grammaire s'ouvre à « année » et croît avec le lexique
+ 12. la nuit : 40 % du débit hors ligne, plafonnée, consommée une seule fois
 
 Prérequis : pip install playwright && playwright install chromium
 """
@@ -38,6 +42,7 @@ ECHELLE = [
     ("cinq", lambda ns: set(ns) >= set(range(1, 10)) and 50 in ns and 10 not in ns),
     ("dix",  lambda ns: set(ns) >= set(range(1, 100)) and 100 not in ns),
     ("cent", lambda ns: 212 in ns and 756 in ns and 1200 not in ns),
+    ("mille", lambda ns: 1200 in ns),
 ]
 
 echecs = []
@@ -307,7 +312,7 @@ def main() -> None:
         verifier(frq() == [], "rien sans « deux » : le nombre serait illisible")
         page.evaluate("() => { acheterGl('an'); acheterGl('anna'); }")
         page.wait_for_timeout(250)
-        verifier(len(frq()) == 3, f"un comptage par tête de branche : {frq()}")
+        verifier(len(frq()) == 4, f"un comptage par tête de branche : {frq()}")
         # le piège : compter les mots seuls donnerait 8 à « un » et 0 à « cinq », alors que
         # leur signe est partout DANS les nombres. Ce serait dire que la branche la plus
         # rentable du jeu est la plus pauvre.
@@ -315,11 +320,94 @@ def main() -> None:
         verifier(page.evaluate("() => freqGlyphe('hem')") == 544, "« cinq » compte ses chiffres (544)")
         verifier(page.evaluate("() => freqGlyphe('tem')") == 315, "« grain », mot seul (315)")
 
+        print("\nacte III : la datation, puis le rangement")
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+        datees = lambda: page.evaluate("() => TB.filter(tb => datee(tb.t)).length")
+        ordreBarre = lambda: page.eval_on_selector_all("#rail .rcell", "e => e.map(x => +x.dataset.go)")
+        ordreTexte = lambda: page.eval_on_selector_all("#corpus .tablet", "e => e.map(x => +x.dataset.tb)")
+        sortie = page.evaluate("() => ORDRE")
+        verifier(datees() == 0, "aucune tablette datée au départ")
+
+        # les cinq glyphes de nombre ne datent rien : la date est là, illisible faute du mot
+        page.evaluate("""() => { S_.C = 9999;
+            ['an','anna','hem','sela','meku'].forEach(acheterGl); }""")
+        page.wait_for_timeout(250)
+        verifier(datees() == 0, "savoir lire les nombres ne suffit pas à dater")
+        page.evaluate("() => { S_.C = 9999; acheterGl('nur'); }")
+        page.wait_for_timeout(250)
+        verifier(datees() == 28, f"« année » date 28 tablettes ({datees()})")
+        verifier(page.evaluate("""() => document.querySelector('#rail .rcell[data-go="1"] .ry').textContent"""
+                              ) == "9", "la barre porte l'année de la tablette 1")
+        verifier(ordreBarre() == sortie and ordreTexte() == sortie,
+                 "dater ne range pas : l'ordre reste celui de la sortie de terre")
+
+        vues = lambda: page.eval_on_selector_all("#corpus .tablet:not([hidden])", "e => e.map(x => +x.dataset.tb)")
+        page.evaluate("() => { S_.C = 9999; acheterGl('pat'); }")
+        page.wait_for_timeout(250)
+        verifier(ordreBarre() != sortie and ordreTexte() == sortie,
+                 "« avant » range la barre, et elle seule")
+        page.evaluate("() => { S_.C = 9999; acheterGl('zur'); }")
+        page.wait_for_timeout(250)
+        verifier(ordreTexte() != sortie, "« après » range le texte")
+        # le corpus se numérote lui-même dans l'ordre du temps — c'est ce que le rangement
+        # démontre, et personne ne le dit au joueur
+        verifier(ordreTexte()[:28] == sorted(ordreTexte()[:28]),
+                 "les 28 tablettes datées se rangent dans l'ordre de leur numéro")
+        verifier(ordreTexte()[-2:] == [29, 30], "les deux non datées ferment la marche")
+        # le dégagement suit la sortie de terre, le rangement l'affichage : les deux ne
+        # doivent jamais se confondre, sinon ranger dégagerait des tablettes d'avance
+        verifier(sorted(vues()) == sorted(sortie[:len(vues())]),
+                 f"les {len(vues())} dégagées restent les premières sorties de terre")
+        annees = page.evaluate("""() => [...document.querySelectorAll('#corpus .tablet')]
+            .filter(e => datee(+e.dataset.tb) && !ANNEE[+e.dataset.tb].fin)
+            .map(e => ANNEE[+e.dataset.tb].n)""")
+        verifier(annees == sorted(annees), "les années lues à l'écran ne reculent jamais")
+        page.evaluate("() => { S_.C = 9999; ['nurnur','esh','nurhal'].forEach(acheterGl); }")
+        page.wait_for_timeout(250)
+        verifier(datees() == 30, "« dernière-année » date les deux dernières")
+
+        print("\nla Grammaire")
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+        ouverte = lambda: page.evaluate("() => INS.find(i => i.k === 'gram').unlock()")
+        verifier(not ouverte(), "fermée tant qu'on n'a pas « année »")
+        page.evaluate("() => { S_.C = 9999; acheterGl('nur'); }")
+        page.wait_for_timeout(200)
+        verifier(ouverte(), "ouverte par « année »")
+        # son rendement dépend du lexique, et c'est la seule qui ait cette propriété
+        r1 = page.evaluate("() => GRAM_P * gramMul() * M.gram()")
+        page.evaluate("() => { S_.C = 9999; ['an','anna','hem'].forEach(acheterGl); }")
+        page.wait_for_timeout(200)
+        r2 = page.evaluate("() => GRAM_P * gramMul() * M.gram()")
+        verifier(r2 > r1 * 1.5, f"trois signes de plus la font passer de {r1:.4f} à {r2:.4f} cert./s")
+
+        print("\nla nuit : ce que le corpus produit sans le joueur")
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+        page.evaluate("() => { S_.b.cop = 100; S_.O = 0; S_.ts = Date.now() - 3600 * 1000; }")
+        verifier(page.evaluate("() => veillee()") == 0, "sans « nuit », l'absence ne produit rien")
+        page.evaluate("() => { S_.C = 9999; acheterGl('esh'); }")
+        page.wait_for_timeout(200)
+        # une heure d'absence à 40 % du débit = 1 440 s de production, soit 144 000 pour
+        # cent copistes sans aucun bonus
+        nuit = page.evaluate("""() => { S_.O = 0; S_.t = 300; S_.ts = Date.now() - 3600 * 1000;
+            const g = veillee(); return [Math.round(g), Math.round(S_.t)]; }""")
+        verifier(abs(nuit[0] - 144000) < 2000, f"une heure d'absence rend 40 % du débit ({nuit[0]})")
+        verifier(nuit[1] == 300, "et le chronomètre ne bouge pas : c'est du temps de lecture")
+        plafond = page.evaluate("""() => { S_.O = 0; S_.ts = Date.now() - 20 * 3600 * 1000;
+            return Math.round(veillee()); }""")
+        verifier(abs(plafond - 4 * 144000) < 8000, f"vingt heures ne rendent que quatre ({plafond})")
+        verifier(page.evaluate("() => veillee()") == 0, "et l'instant d'après, plus rien")
+        # remettre les cent copistes à zéro : ils rendraient inabordable le Copiste que
+        # la section suivante achète pour vérifier le journal d'actions
+        page.evaluate("() => { S_.b.cop = 0; }")
+
         print("\nfenêtre de fin")
         page.evaluate("() => { S_.C = 9999; GL.forEach(g => acheterGl(g.id)); }")
         page.wait_for_timeout(200)
         verifier(page.get_attribute("#end", "hidden") is None,
-                 "elle s'ouvre au treizième signe")
+                 "elle s'ouvre au vingtième signe")
         # relevé en PT5 : la partie finie, l'overlay couvrait le journal d'actions —
         # inatteignable au moment précis où il faut l'exporter
         verifier(page.evaluate("""() => {

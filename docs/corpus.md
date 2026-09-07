@@ -474,6 +474,15 @@ Les tablettes ne sont **pas** révélées dans l'ordre chronologique. Elles arri
 ```
 *(constante `ORDRE` dans `src/corpus.js`, produite par `outils/corpus.py`)*
 
+> **Implémenté à l'acte III** (07/09/2026). `année` date les tablettes — la date est déjà
+> dans leur première ligne, il suffit de savoir la lire — puis `avant` range la barre et
+> `après` range le corpus. Ce que le rangement démontre n'était pas prévu ici et mérite
+> d'être noté : **l'ordre chronologique est l'ordre des numéros.** Le joueur sait lire les
+> numéros depuis l'acte II et ne peut rien en conclure ; ce sont les dates qui prouvent que
+> la numérotation était chronologique, donc que l'archive avait été rangée exprès. La
+> découverte n'est pas « voici l'ordre caché », c'est « l'ordre était affiché depuis le
+> début et je ne pouvais pas le savoir ».
+
 Deux choix dans cet ordre :
 
 - **La tablette 21 arrive 7ᵉ.** C'est l'abécédaire ; le joueur le lit comme du charabia numérique et ne comprendra qu'à l'acte IV qu'il tenait le mode d'emploi depuis le début.

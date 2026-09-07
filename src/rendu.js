@@ -5,7 +5,8 @@
 
 /* ============================ rendu corpus ============================ */
 const elCorpus=document.getElementById('corpus');
-/* Nombre de tablettes dégagées : 4 au départ, les 30 au douzième glyphe. */
+/* Nombre de tablettes dégagées : 4 au départ, les 30 au dernier glyphe. Le corpus
+   s'ouvre donc sur les trois actes, et non plus sur les deux premiers. */
 const revCount = () => Math.min(TB.length, 4 + Math.round(S_.gl.length * (TB.length-4) / NGL));
 let lastRev = 0;
 
@@ -59,7 +60,55 @@ function paintCorpus(flashId){
     el.className='tok '+(lis?'num':'g')+(r?' rel':'');
     el.innerHTML = lis ? nf.format(n) : numGlyphs(n);
   });
-  revealer(); paintRail(); peindreRec();
+  ranger(); revealer(); paintRail(); peindreRec();
+}
+
+/* ============================ la datation ============================ */
+/* Le jeu n'ajoute aucune date au corpus : chaque tablette porte la sienne dans sa
+   première ligne — « tablette 12 · année 103 » — depuis la première seconde de la partie.
+   Tout ce que `année` change, c'est que le joueur sait la lire ; et il faut encore qu'il
+   sache lire le nombre, signe par signe, comme partout ailleurs. Les deux dernières
+   tablettes ne portent aucun nombre : elles disent « dernière-année », et c'est ce
+   glyphe-là qui les date — après elle, personne n'a plus compté. */
+const ANNEE = {};
+for(const tb of CORPUS){
+  const tk = tb.l[0].split(' '), i = tk.indexOf('nur');
+  if(i >= 0 && tk[i+1] && tk[i+1].charCodeAt(0) === 37) ANNEE[tb.t] = {n:+tk[i+1].slice(1)};
+  else if(tk.indexOf('nurhal') >= 0) ANNEE[tb.t] = {fin:true};
+}
+const datee = t => { const a = ANNEE[t];
+  return !!a && (a.fin ? has('nurhal') : (has('nur') && numLisible(a.n))); };
+
+/* Six années portent deux tablettes — 40, 54, 88, 150, 183, 201 — et la dernière aussi.
+   Le numéro tranche, et c'est le corpus qui le dit : la 16 et la 17 sont toutes deux de
+   l'année 150, dans cet ordre-là.
+   Une tablette qu'on ne sait pas dater ne se range pas : elle reste avec ses pareilles,
+   dans l'ordre où elle est sortie de terre. On n'ordonne que ce qu'on sait lire. */
+const cleTemps = t => (ANNEE[t].fin ? 100000 : ANNEE[t].n)*100 + t;
+function ordre(tri){
+  if(!tri) return TB;
+  return TB.filter(tb=>datee(tb.t)).sort((a,b)=>cleTemps(a.t)-cleTemps(b.t))
+    .concat(TB.filter(tb=>!datee(tb.t)));
+}
+
+/* Ranger déplace les nœuds déjà construits au lieu de les reconstruire : les jetons
+   relevés, les caches de peinture et la marque du gisement survivent au rangement.
+   `avant` range l'index, `après` range le texte — deux gestes d'archiviste, dans cet
+   ordre, et le second est celui qui met deux siècles de crue en colonne. */
+let ordreVu = '';
+function ranger(){
+  const oB = ordre(has('pat')), oC = ordre(has('zur'));
+  const sig = oB.map(t=>t.t).join(',') + '|' + oC.map(t=>t.t).join(',');
+  if(sig === ordreVu) return;
+  const neuf = ordreVu !== '';
+  ordreVu = sig;
+  const rail = $('rail'), cells = {};
+  for(const c of [...rail.children]) cells[c.dataset.go] = c;
+  for(const tb of oB) rail.appendChild(cells[tb.t]);
+  const tabs = {};
+  for(const el of [...elCorpus.children]) tabs[el.dataset.tb] = el;
+  for(const tb of oC) elCorpus.appendChild(tabs[tb.t]);
+  if(neuf) elCorpus.scrollTop = 0;
 }
 
 /* Un nouveau mot donne envie de relire les 30 tablettes — encore faut-il pouvoir y aller.
@@ -77,22 +126,34 @@ for(const tb of CORPUS) for(const l of tb.l) for(const tk of l.split(' ')){
   (TBSIGNE[tk] || (TBSIGNE[tk] = new Set())).add(tb.t);
 }
 
+/* Rang de sortie de terre, fixé une fois pour toutes : c'est lui qui décide de ce qui est
+   dégagé, et le rangement chronologique ne doit pas y toucher. Ce qu'on a sous les yeux
+   change d'ordre ; ce qu'on a sorti de terre, non. */
+const IDX = {}; TB.forEach((tb,i)=>{ IDX[tb.t] = i; });
+const TBN = {}; for(const tb of CORPUS) TBN[tb.t] = tb;
+const degagee = t => IDX[t] < revCount();
+
 function buildRail(){
   $('rail').innerHTML = TB.map(tb =>
     '<button class="rcell" data-go="'+tb.t+'" title="tablette '+tb.t+'">'+
-      '<span class="rn"></span><span class="rb"><i></i></span></button>').join('');
+      '<span class="rn"></span><span class="ry"></span><span class="rb"><i></i></span></button>').join('');
 }
 function paintRail(){
-  const n=revCount(), lisNum=has('tab')&&has('an');
-  const cells=$('rail').children;
-  for(let i=0;i<cells.length;i++){
-    const c=cells[i], t=TB[i].t;
-    const v=i>=n; if(c.hidden!==v) c.hidden=v; if(v) continue;
+  const lisNum=has('tab')&&has('an');
+  for(const c of $('rail').children){
+    const t=+c.dataset.go;
+    const v=!degagee(t); if(c.hidden!==v) c.hidden=v; if(v) continue;
     const num = lisNum ? String(t) : null;
     const wantN = num || 'g';
     const rn=c.querySelector('.rn');
     if(rn.__v!==wantN){ rn.__v=wantN; rn.innerHTML = num || numGlyphs(t); }
-    const p=Math.round(100*pctTablette(TB[i]));
+    /* La date, sous le numéro. Une tablette dont on ne sait pas encore lire l'année garde
+       la ligne vide : la barre montre exactement l'étendue de ce qu'on sait dater. */
+    const ry=c.querySelector('.ry');
+    const wantY = !datee(t) ? '' : ANNEE[t].fin ? 'fin' : String(ANNEE[t].n);
+    if(ry.__v!==wantY){ ry.__v=wantY;
+      ry.innerHTML = wantY==='fin' ? sv('nurhal') : wantY; }
+    const p=Math.round(100*pctTablette(TBN[t]));
     const bar=c.querySelector('.rb i');
     if(bar.__v!==p){ bar.__v=p; bar.style.width=p+'%'; }
     const tch = touchees.has(t);
@@ -116,9 +177,9 @@ function paintRail(){
    lisibilité ne change qu'à chaque glyphe, et recompter les 3 825 signes du corpus à
    chaque clic coûterait cent fois ce que coûtent ces deux classes. */
 function peindreGisement(){
-  const cells=$('rail').children, n=revCount();
-  for(let i=0;i<n;i++){
-    const c=cells[i], t=TB[i].t;
+  for(const c of $('rail').children){
+    if(c.hidden) continue;
+    const t=+c.dataset.go;
     const sec = gisReste(t) <= 0, lue = !sec && S_.prix[t] !== undefined;
     if(c.classList.contains('sec')!==sec) c.classList.toggle('sec',sec);
     if(c.classList.contains('lue')!==lue) c.classList.toggle('lue',lue);
@@ -130,7 +191,10 @@ function peindreGisement(){
    peut donc pas être figé dans l'attribut : il s'écrit au survol (cf. jeu.js). */
 function titreCell(t){
   const r = gisReste(t);
-  return 'tablette '+t+' — gisement '+r+'/'+GISEMENT[t]
+  /* La date est dans le texte de la tablette ; l'infobulle ne fait que la répéter, et
+     seulement quand le joueur sait la lire. */
+  const d = !datee(t) ? '' : ANNEE[t].fin ? ' · dernière année' : ' · année '+ANNEE[t].n;
+  return 'tablette '+t+d+' — gisement '+r+'/'+GISEMENT[t]
     + (r <= 0 ? ' · épuisée'
       : S_.prix[t] === undefined
         ? " · intacte : "+nf.format(Math.round(tarifRel()))
@@ -194,8 +258,7 @@ function versTablette(t){
   const el=elCorpus.querySelector('.tablet[data-tb="'+t+'"]');
   if(!el || el.hidden) return;
   elCorpus.scrollTo({top: el.offsetTop - elCorpus.firstElementChild.offsetTop - 8, behavior:'smooth'});
-  const cells=$('rail').children;
-  for(let i=0;i<cells.length;i++) cells[i].classList.toggle('ici', TB[i].t===t);
+  for(const c of $('rail').children) c.classList.toggle('ici', +c.dataset.go===t);
 }
 function tabletteVisible(){
   const y=elCorpus.scrollTop, base=elCorpus.firstElementChild.offsetTop;
@@ -214,8 +277,9 @@ function saut(d){
 
 function revealer(){
   const n = revCount();
-  const tabs = elCorpus.querySelectorAll('.tablet');
-  for(let i=0;i<tabs.length;i++){ const v = i>=n; if(tabs[i].hidden!==v) tabs[i].hidden=v; }
+  for(const el of elCorpus.querySelectorAll('.tablet')){
+    const v = !degagee(+el.dataset.tb); if(el.hidden!==v) el.hidden=v;
+  }
   if(n>lastRev && lastRev>0) pushLog(n-lastRev>1 ? (n-lastRev)+' tablettes dégagées.' : 'Une tablette dégagée.');
   lastRev = n;
 }
@@ -268,7 +332,7 @@ function paintInstr(){
     b.classList.toggle('afford',can);
     b.disabled=!can;
     setHTML(b.querySelector('.sg'), sv(i.sig));
-    const muet={cop:'kal',tab:'im',con:'shen',ate:'mesh'}[i.k];
+    const muet={cop:'kal',tab:'im',con:'shen',ate:'mesh',gram:'en'}[i.k];
     setHTML(b.querySelector('.nn'), (open&&has('ur')) ? i.nom
       : '<span style="color:var(--dim)">'+sv('dun')+sv(muet)+sv('la')+'</span>');
     setHTML(b.querySelector('.lv'), open? nf.format(S_.b[i.k]) : '');
@@ -315,15 +379,17 @@ function paintLex(){
 }
 
 function paintRes(){
-  const tb=S_.b.tab, cn=S_.b.con;
-  const oNet = oBrut() - tb*1.0, hNet = tb*0.6*M.tabl() - cn*0.5, cNet = cn*CON_P*M.con();
+  const tb=S_.b.tab, cn=S_.b.con, gr=S_.b.gram;
+  const oNet = oBrut() - tb*1.0,
+        hNet = tb*0.6*M.tabl() - cn*0.5 - gr*GRAM_C,
+        cNet = cn*CON_P*M.con() + gr*GRAM_P*gramMul()*M.gram();
   setHTML($('vl-O'), amount(S_.O, readN()));
   setHTML($('vl-H'), amount(S_.H, readN()));
   setHTML($('vl-C'), amount(S_.C, readN()));
   const rt=(v,el,dry)=>{ setHTML(el, readR()? (v?( (v>0?'+':'−')+f(Math.abs(v),v<0.1&&v!==0?3:2)+'/s'):'') : '');
     el.classList.toggle('dry',!!dry); };
   rt(oNet,$('rt-O'), tb>0 && S_.O<1 && oNet<0);
-  rt(hNet,$('rt-H'), cn>0 && S_.H<1 && hNet<0);
+  rt(hNet,$('rt-H'), (cn+gr)>0 && S_.H<1 && hNet<0);
   rt(cNet,$('rt-C'), false);
 }
 

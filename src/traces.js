@@ -44,13 +44,13 @@ function enrober(nom, temoin, detail){
     const avant = temoin(), rang = TR.length;
     const r = orig.apply(this, a);
     /* Insérée à son rang et non à la fin : une action peut en déclencher une autre —
-       le treizième signe termine la partie — et la cause doit précéder l'effet. */
+       le dernier signe termine la partie — et la cause doit précéder l'effet. */
     if(temoin() !== avant) tracer(nom, detail ? detail(a, avant) : '', rang);
     return r;
   };
 }
 
-const niveaux = () => S_.b.cop + S_.b.tab + S_.b.con + S_.b.ate;
+const niveaux = () => S_.b.cop + S_.b.tab + S_.b.con + S_.b.ate + S_.b.gram;
 
 /* `relever` reçoit désormais sa tablette : c'est la seule façon de distinguer un joueur qui
    parcourt le corpus d'un joueur qui s'installe sur une tablette et martèle. La question
@@ -61,6 +61,9 @@ enrober('recouper',  () => S_.rec,        a => '+' + recGain() + ' cert.'
                                                + (a[0] ? ' · ' + a[0] : ''));
 enrober('acheterIns', niveaux,            a => a[0] + ' n°' + S_.b[a[0]]);
 enrober('acheterGl', () => S_.gl.length,  a => a[0] + ' (' + byId[a[0]].mot + ') ' + byId[a[0]].cost + ' C');
+/* La nuit ne passe pas par `tick` et n'émettrait donc aucune ligne : une seule, au retour,
+   dit ce qu'elle a rapporté. Une partie jouée en plusieurs fois se lit alors sans trou. */
+enrober('veillee',   () => Math.round(S_.O), () => Math.round(S_.O) + ' occ. hors ligne');
 
 /* Pas de témoin possible pour la fin : `S_.done` est déjà posé quand showEnd() est
    appelée. On remonte donc le relevé jusqu'au dernier « reset » — jeu.js rappelle
@@ -105,7 +108,7 @@ tick = function(dt){
     tracer('etat', 'O=' + Math.round(S_.O) + ' H=' + Math.round(S_.H) + ' C=' + Math.round(S_.C)
                  + ' signes=' + S_.gl.length + ' sig%=' + m.sig + ' lig%=' + m.lig
                  + ' gis=' + Object.keys(S_.rel).reduce((n,t)=>n+S_.rel[t].length,0) + '/' + GIS_TOTAL
-                 + ' instr=' + [S_.b.cop, S_.b.tab, S_.b.con, S_.b.ate].join('/'));
+                 + ' instr=' + [S_.b.cop, S_.b.tab, S_.b.con, S_.b.ate, S_.b.gram].join('/'));
   }
 };
 

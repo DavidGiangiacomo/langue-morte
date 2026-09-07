@@ -4,23 +4,30 @@
 "use strict";
 
 /* ============================ état ============================ */
-const KEY='langue-morte-mvp-v2';
-const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0},gl:[],t:0,done:false,
+/* Changé à l'ouverture de l'acte III : une partie sauvegardée au MVP est `done` à treize
+   glyphes et rouvrirait sur l'écran de fin, sans moyen de continuer. */
+const KEY='langue-morte-actes-i-iii';
+const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram:0},gl:[],t:0,done:false,
   rel:{}, prix:{}});   // rel : jetons relevés par tablette · prix : tarif du gisement, verrouillé
 let S_ = fresh(), speed = 1;
 try{ const raw=localStorage.getItem(KEY); if(raw){ const p=JSON.parse(raw);
-  if(p&&p.b){ const b=Object.assign({cop:0,tab:0,con:0,ate:0},p.b); S_=Object.assign(fresh(),p); S_.b=b; } } }catch(e){}
+  if(p&&p.b){ const b=Object.assign({cop:0,tab:0,con:0,ate:0,gram:0},p.b); S_=Object.assign(fresh(),p); S_.b=b; } } }catch(e){}
 const has = id => S_.gl.indexOf(id)>=0;
 
 /* ---- économie ---- */
 const M = {
   click:()=> 1*(has('anna')?1.25:1)*(has('tab')?1.5:1)*(has('kal')?2:1),
   cop:  ()=> (has('tem')?1.3:1)*(has('kal')?2:1),
+  /* L'atelier suivait le copiste jusqu'à l'acte III ; les deux bonus de la branche Temps
+     le détachent — c'est le seul instrument qui porte encore l'échelle des occurrences
+     quand la Certitude, elle, passe à la grammaire. */
+  ate:  ()=> (has('tem')?1.3:1)*(has('kal')?2:1)*(has('mille')?1.3:1)*(has('nurhal')?1.5:1),
   tabl: ()=> (has('kish')?1.3:1)*(has('kal')?2:1),
-  con:  ()=> (has('sar')?1.5:1)*(has('kal')?2:1)
+  con:  ()=> (has('sar')?1.5:1)*(has('kal')?2:1),
+  gram: ()=> (has('nurnur')?1.5:1)*(has('kal')?2:1)
 };
 /* production brute d'occurrences par seconde (sert au barème du relevé manuel) */
-const oBrut = () => (S_.b.cop*1.0 + S_.b.ate*25)*M.cop();
+const oBrut = () => S_.b.cop*1.0*M.cop() + S_.b.ate*25*M.ate();
 
 /* ---- le relevé, acte de lecture ----
    PT5 : 414 relevés, tous au bouton, aucun dans le corpus, pour 0,6 % des occurrences de
@@ -76,6 +83,20 @@ const releveVal = t => (t !== undefined && gisReste(t) > 0) ? (S_.prix[t] || 1) 
 const REC_R = 1.18;     // croissance du coût du recoupement, par usage
 const CON_P = 0.0039;   // certitude par seconde et par concordance
 
+/* ---- la Grammaire, instrument de l'acte III ----
+   Les quatre premiers instruments rendent toujours le même service : leur nombre seul
+   décide de ce qu'ils produisent. La Grammaire est le premier dont le rendement dépend
+   de ce que le joueur a compris — chaque signe déchiffré aide à en déchiffrer d'autres,
+   et c'est la première vraie exponentielle du jeu (design doc §5).
+   Elle boit aussi six fois plus d'hypothèses qu'une Concordance, et ce n'est pas un
+   détail d'équilibrage : PT7 a fini avec 5 232 hypothèses en réserve et un joueur qui
+   les convertissait à la main faute d'instrument capable de les absorber — 103 % de la
+   Certitude des cinq dernières minutes venait du recoupement. */
+const GRAM_P = 0.0012;  // certitude par seconde et par grammaire, avant l'effet du lexique
+const GRAM_R = 1.16;    // ... qui croît de 16 % par signe déchiffré
+const GRAM_C = 3.0;     // hypothèses par seconde consommées
+const gramMul = () => Math.pow(GRAM_R, S_.gl.length);
+
 const INS = [
   {k:'cop', nom:'Copiste',              sig:'sar',  base:15,   r:1.12,
    ds:()=>'+'+f(1.0*M.cop(),1)+' occ./s',  unlock:()=>true},
@@ -84,7 +105,10 @@ const INS = [
   {k:'con', nom:'Concordance',          sig:'gan',  base:450,  r:1.18,
    ds:()=>'−0,5 hyp./s → +'+f(CON_P*M.con(),4)+' cert./s', unlock:()=>S_.b.tab>0||S_.H>=15},
   {k:'ate', nom:'Atelier de copie',     sig:'kal',  base:1800, r:1.15,
-   ds:()=>'+'+f(25*M.cop(),0)+' occ./s',   unlock:()=>S_.b.con>0||S_.O>=900}
+   ds:()=>'+'+f(25*M.ate(),0)+' occ./s',   unlock:()=>S_.b.con>0||S_.O>=900},
+  {k:'gram',nom:'Grammaire',            sig:'dun',  base:12000,r:1.20,
+   ds:()=>'−'+f(GRAM_C,0)+' hyp./s → +'+f(GRAM_P*gramMul()*M.gram(),4)+' cert./s',
+   unlock:()=>has('nur')}
 ];
 const insCost = i => Math.ceil(i.base*Math.pow(i.r,S_.b[i.k]));
 const recCost = () => { const m=Math.pow(REC_R,S_.rec)*(has('gan')?0.75:1);
@@ -173,6 +197,11 @@ function showEnd(){
 /* ============================ boucle ============================ */
 function tick(dt){
   S_.t += dt;
+  produire(dt);
+}
+/* La production, séparée du temps de jeu : la nuit passée hors ligne se rattrape par ici
+   sans avancer le chronomètre ni traverser l'horloge instrumentée du journal d'actions. */
+function produire(dt){
   S_.O += oBrut()*dt;
   // table de fréquences : consomme des occurrences
   const wantO = S_.b.tab*1.0*dt;
@@ -182,6 +211,29 @@ function tick(dt){
   const wantH = S_.b.con*0.5*dt;
   if(wantH>0){ const canH=Math.min(wantH,S_.H); const fr=canH/wantH;
     S_.H-=canH; S_.C += S_.b.con*CON_P*M.con()*fr*dt; }
+  // grammaire : en consomme beaucoup plus, et rend d'autant plus qu'on a déchiffré
+  const wantG = S_.b.gram*GRAM_C*dt;
+  if(wantG>0){ const canG=Math.min(wantG,S_.H); const fr=canG/wantG;
+    S_.H-=canG; S_.C += S_.b.gram*GRAM_P*gramMul()*M.gram()*fr*dt; }
+}
+
+/* ---- la nuit ----
+   `nuit` est le seul glyphe dont l'effet se produit quand le jeu est fermé : 40 % du débit,
+   quatre heures au plus (design doc §9). Avant lui il ne se passe rien hors ligne, et c'est
+   diégétique — il n'y a personne pour lire. On rattrape en tranches d'une minute plutôt
+   qu'en un seul bond : les convertisseurs se coupent quand leur intrant manque, et un
+   unique appel de quatre heures leur ferait ignorer cette coupure. */
+function veillee(){
+  if(!has('esh') || S_.done || !S_.ts) return 0;
+  const ecoule = Math.min((Date.now() - S_.ts)/1000, 4*3600);
+  if(ecoule < 60) return 0;
+  const avant = S_.O;
+  let reste = ecoule * 0.4;
+  while(reste > 0){ const pas = Math.min(60, reste); produire(pas); reste -= pas; }
+  /* La nuit est consommée : sans cela, rouvrir deux fois de suite la même sauvegarde la
+     paierait deux fois — la sauvegarde n'horodate que toutes les quatre secondes. */
+  S_.ts = Date.now();
+  return S_.O - avant;
 }
 let last=performance.now();
 function frame(now){

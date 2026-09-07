@@ -45,7 +45,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .meter{height:2px;background:var(--line);position:relative;overflow:hidden}
 .meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ochre-d),var(--ochre));transition:width .5s ease}
 .rail{display:flex;flex-wrap:wrap;gap:3px;padding:8px 12px;border-bottom:1px solid var(--line);
-  max-height:78px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
+  max-height:104px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
 .rcell[hidden]{display:none}
 .rcell{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:30px;max-width:64px;
   padding:4px 5px 5px;border:1px solid var(--line);border-radius:2px;background:var(--clay2);
@@ -58,6 +58,16 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .rcell:hover{border-color:var(--ochre-d);background:#31261B}
 .rcell .rn{font-family:var(--mono);font-size:10px;color:var(--dim);line-height:1.1;display:flex;align-items:center;gap:1px}
 .rcell .rn .gl{width:7px;height:10px;vertical-align:0}
+/* La date, sous le numéro. Tant qu'on ne sait pas la lire, la ligne n'existe pas et la
+   barre garde sa hauteur d'acte I ; elle grandit d'un coup à « année », quand vingt-huit
+   tablettes se datent ensemble. C'est le seul saut de mise en page du jeu, et il tombe
+   exactement là où il faut. */
+.rcell .ry{font-family:var(--mono);font-size:11px;color:var(--grain);line-height:1;
+  display:flex;align-items:center}
+.rcell .ry:empty{display:none}
+.rcell .ry .gl{width:7px;height:11px;vertical-align:0}
+.rcell .ry .gl2{width:14px;height:11px}
+.rcell.lue .ry{color:var(--dim)}
 .rcell .rb{width:100%;height:3px;background:#443528;border-radius:1px;overflow:hidden}
 .rcell .rb i{display:block;height:100%;background:var(--ochre-d);transition:width .5s ease}
 .rcell.sec{opacity:.42}
@@ -203,7 +213,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 <div class="shell">
   <header class="masthead">
     <h1>La langue morte</h1>
-    <span class="sub">prototype · actes I–II · 13 glyphes sur 45</span>
+    <span class="sub">prototype · actes I–III · 20 glyphes sur 45</span>
     <span class="spacer"></span>
     <div class="devbar">
       <span>hors jeu</span>
@@ -221,7 +231,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
     <section class="panel corpus-wrap">
       <div class="phead"><span>Le corpus</span><span style="color:var(--faint);letter-spacing:.06em">j / k</span><span class="r" id="gis"></span><span id="pct">signes 0 %</span></div>
       <div class="meter"><i id="meter"></i></div>
-      <div class="rail" id="rail" aria-label="Tablettes dégagées. Cliquez pour y aller."></div>
+      <div class="rail" id="rail" aria-label="Tablettes dégagées, avec leur date quand elle est lisible. Cliquez pour y aller."></div>
       <div id="corpus" aria-label="Corpus. Cliquez sur les signes pour relever des occurrences."></div>
       <div class="log" id="log"><p class="hint">relève un signe : clique dans le corpus</p></div>
     </section>
@@ -251,7 +261,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
     </div>
 
     <section class="panel">
-      <div class="phead"><span>Lexique</span><span class="r" id="lexr">0 / 12</span></div>
+      <div class="phead"><span>Lexique</span><span class="r" id="lexr">0 / 20</span></div>
       <div class="lex" id="lex"></div>
     </section>
   </div>
@@ -262,11 +272,11 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 <div class="end" id="end" hidden>
   <div class="endcard">
     <h2>Fin du prototype</h2>
-    <div class="k">actes I et II · 13 glyphes sur 45</div>
-    <p class="quote">Copier. Ils ont tout copié — beaucoup plus de fois qu'il n'en fallait pour garder.</p>
-    <p>Le corpus s'arrête ici. La suite — la grammaire, la datation des tablettes, la deuxième personne, la composition des glyphes, les contradictions — appartient aux actes III à V.</p>
+    <div class="k">actes I à III · 20 glyphes sur 45</div>
+    <p class="quote">La dernière année. Elle n'a pas de nombre : après elle, personne n'a plus compté.</p>
+    <p>Le corpus s'arrête ici. La suite — la composition des glyphes, la deuxième personne, les lectures fausses et les contradictions — appartient aux actes IV et V.</p>
     <div class="endstats" id="endstats"></div>
-    <p style="font-size:15px"><b style="color:var(--lamp);font-weight:500">La seule question qui compte&nbsp;:</b> au moment où les compteurs sont devenus lisibles, est-ce que ça a fait quelque chose&nbsp;? Si non, le concept ne tient pas, et les 32 glyphes restants ne le sauveront pas.</p>
+    <p style="font-size:15px"><b style="color:var(--lamp);font-weight:500">La seule question qui compte&nbsp;:</b> au moment où les tablettes se sont rangées dans l'ordre du temps, est-ce que la crue qui baisse s'est vue&nbsp;? Personne ne la commente&nbsp;; elle n'est que dans les chiffres. Si elle passe inaperçue, le sommet de l'acte III est manqué et les 25 glyphes restants ne le rattraperont pas.</p>
     <div class="endacts">
       <button class="go" id="again">recommencer</button>
       <button class="ghost" id="fermer" title="échap — le corpus reste figé sur la partie terminée">revenir au corpus</button>
@@ -398,7 +408,7 @@ function numGlyphs(n){
 }
 
 
-/* « La langue morte » — les 13 glyphes du MVP (actes I-II)
+/* « La langue morte » — les 20 glyphes des actes I à III
    Scripts classiques, portée globale partagée, chargés dans l'ordre de index.html.
    Aucune dépendance externe hors les polices Google. */
 "use strict";
@@ -415,6 +425,8 @@ const GL = [
    log:'La main : dix. Ils comptaient sur les mains, comme tout le monde.'},
   {id:'meku', br:'nombre',  mot:'cent',     cost:33, eff:'nombres jusqu’à 999 · grands nombres repliés · achat ×10',
    log:'Cent. Les récoltes deviennent lisibles. Et elles baissent.'},
+  {id:'mille',br:'nombre',  mot:'mille',    cost:110, eff:'tous les nombres du corpus · +30 % à l’atelier de copie',
+   log:'Mille. Ils comptaient leurs tablettes par milliers, et le grain par dizaines.'},
   {id:'tem',  br:'matiere', mot:'grain',    cost:3,  eff:'+30 % au copiste',
    log:'Du grain. Ce ne sont pas des prières : ce sont des inventaires.'},
   {id:'ur',   br:'matiere', mot:'maison',   cost:6,  eff:'les instruments prennent leur nom',
@@ -430,10 +442,28 @@ const GL = [
   {id:'sar',  br:'parole',  mot:'graver',   cost:27, eff:'+50 % à la concordance',
    log:'Graver. Quelqu’un a tenu ce stylet, et l’a écrit.'},
   {id:'kal',  br:'parole',  mot:'copier',   cost:48, eff:'×2 sur toute la production',
-   log:'Copier. Deux fois, puis dix, puis cent. Bien plus qu’il n’en fallait pour garder.'}
+   log:'Copier. Deux fois, puis dix, puis cent. Bien plus qu’il n’en fallait pour garder.'},
+  /* ---- acte III : le temps ----
+     La branche ne donne pas un bonus de plus, elle donne une dimension. `année` fait
+     apparaître une date que le corpus portait depuis la première seconde ; `avant` range
+     l’index, `après` range le texte lui-même. Ce que ce rangement découvre — la crue qui
+     baisse sur deux siècles — n’est écrit nulle part et n’est commenté par personne :
+     c’est dans les chiffres, et il faut les avoir mis en ordre pour le voir. */
+  {id:'nur',  br:'temps',   mot:'année',    cost:60, eff:'chaque tablette porte sa date · la grammaire devient possible',
+   log:'Année. Chaque tablette est datée depuis le début — je ne savais pas lire la date.'},
+  {id:'pat',  br:'temps',   mot:'avant',    cost:130, eff:'la barre se range dans l’ordre du temps',
+   log:'Avant. Ce qui est sorti de terre en premier n’a pas été gravé en premier.'},
+  {id:'zur',  br:'temps',   mot:'après',    cost:190, eff:'le corpus se range dans l’ordre du temps',
+   log:'Après. Le corpus se remet en ordre. Deux siècles, du premier relevé au dernier.'},
+  {id:'nurnur',br:'temps',  mot:'siècle',   cost:260,eff:'+50 % à la grammaire',
+   log:'Siècle. Ils mesuraient par centaines d’années. Il leur en restait deux.'},
+  {id:'esh',  br:'temps',   mot:'nuit',     cost:360,eff:'la lecture continue hors ligne — 40 % du débit, 4 h au plus',
+   log:'Nuit. Ils gravaient la nuit. Le corpus se lit maintenant sans moi.'},
+  {id:'nurhal',br:'temps',  mot:'dernière-année',cost:500,eff:'les deux dernières tablettes se datent · +50 % à l’atelier de copie',
+   log:'La dernière année. Elle n’a pas de nombre : après elle, personne n’a plus compté.'}
 ];
 const NGL = GL.length;
-const BR = [['nombre','Nombre'],['matiere','Matière'],['parole','Parole']];
+const BR = [['nombre','Nombre'],['matiere','Matière'],['parole','Parole'],['temps','Temps']];
 const byId = Object.fromEntries(GL.map(g=>[g.id,g]));
 
 
@@ -458,23 +488,30 @@ const TB = ORDRE.map(n => CORPUS.find(t => t.t === n));
 "use strict";
 
 /* ============================ état ============================ */
-const KEY='langue-morte-mvp-v2';
-const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0},gl:[],t:0,done:false,
+/* Changé à l'ouverture de l'acte III : une partie sauvegardée au MVP est `done` à treize
+   glyphes et rouvrirait sur l'écran de fin, sans moyen de continuer. */
+const KEY='langue-morte-actes-i-iii';
+const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram:0},gl:[],t:0,done:false,
   rel:{}, prix:{}});   // rel : jetons relevés par tablette · prix : tarif du gisement, verrouillé
 let S_ = fresh(), speed = 1;
 try{ const raw=localStorage.getItem(KEY); if(raw){ const p=JSON.parse(raw);
-  if(p&&p.b){ const b=Object.assign({cop:0,tab:0,con:0,ate:0},p.b); S_=Object.assign(fresh(),p); S_.b=b; } } }catch(e){}
+  if(p&&p.b){ const b=Object.assign({cop:0,tab:0,con:0,ate:0,gram:0},p.b); S_=Object.assign(fresh(),p); S_.b=b; } } }catch(e){}
 const has = id => S_.gl.indexOf(id)>=0;
 
 /* ---- économie ---- */
 const M = {
   click:()=> 1*(has('anna')?1.25:1)*(has('tab')?1.5:1)*(has('kal')?2:1),
   cop:  ()=> (has('tem')?1.3:1)*(has('kal')?2:1),
+  /* L'atelier suivait le copiste jusqu'à l'acte III ; les deux bonus de la branche Temps
+     le détachent — c'est le seul instrument qui porte encore l'échelle des occurrences
+     quand la Certitude, elle, passe à la grammaire. */
+  ate:  ()=> (has('tem')?1.3:1)*(has('kal')?2:1)*(has('mille')?1.3:1)*(has('nurhal')?1.5:1),
   tabl: ()=> (has('kish')?1.3:1)*(has('kal')?2:1),
-  con:  ()=> (has('sar')?1.5:1)*(has('kal')?2:1)
+  con:  ()=> (has('sar')?1.5:1)*(has('kal')?2:1),
+  gram: ()=> (has('nurnur')?1.5:1)*(has('kal')?2:1)
 };
 /* production brute d'occurrences par seconde (sert au barème du relevé manuel) */
-const oBrut = () => (S_.b.cop*1.0 + S_.b.ate*25)*M.cop();
+const oBrut = () => S_.b.cop*1.0*M.cop() + S_.b.ate*25*M.ate();
 
 /* ---- le relevé, acte de lecture ----
    PT5 : 414 relevés, tous au bouton, aucun dans le corpus, pour 0,6 % des occurrences de
@@ -530,6 +567,20 @@ const releveVal = t => (t !== undefined && gisReste(t) > 0) ? (S_.prix[t] || 1) 
 const REC_R = 1.18;     // croissance du coût du recoupement, par usage
 const CON_P = 0.0039;   // certitude par seconde et par concordance
 
+/* ---- la Grammaire, instrument de l'acte III ----
+   Les quatre premiers instruments rendent toujours le même service : leur nombre seul
+   décide de ce qu'ils produisent. La Grammaire est le premier dont le rendement dépend
+   de ce que le joueur a compris — chaque signe déchiffré aide à en déchiffrer d'autres,
+   et c'est la première vraie exponentielle du jeu (design doc §5).
+   Elle boit aussi six fois plus d'hypothèses qu'une Concordance, et ce n'est pas un
+   détail d'équilibrage : PT7 a fini avec 5 232 hypothèses en réserve et un joueur qui
+   les convertissait à la main faute d'instrument capable de les absorber — 103 % de la
+   Certitude des cinq dernières minutes venait du recoupement. */
+const GRAM_P = 0.0012;  // certitude par seconde et par grammaire, avant l'effet du lexique
+const GRAM_R = 1.16;    // ... qui croît de 16 % par signe déchiffré
+const GRAM_C = 3.0;     // hypothèses par seconde consommées
+const gramMul = () => Math.pow(GRAM_R, S_.gl.length);
+
 const INS = [
   {k:'cop', nom:'Copiste',              sig:'sar',  base:15,   r:1.12,
    ds:()=>'+'+f(1.0*M.cop(),1)+' occ./s',  unlock:()=>true},
@@ -538,7 +589,10 @@ const INS = [
   {k:'con', nom:'Concordance',          sig:'gan',  base:450,  r:1.18,
    ds:()=>'−0,5 hyp./s → +'+f(CON_P*M.con(),4)+' cert./s', unlock:()=>S_.b.tab>0||S_.H>=15},
   {k:'ate', nom:'Atelier de copie',     sig:'kal',  base:1800, r:1.15,
-   ds:()=>'+'+f(25*M.cop(),0)+' occ./s',   unlock:()=>S_.b.con>0||S_.O>=900}
+   ds:()=>'+'+f(25*M.ate(),0)+' occ./s',   unlock:()=>S_.b.con>0||S_.O>=900},
+  {k:'gram',nom:'Grammaire',            sig:'dun',  base:12000,r:1.20,
+   ds:()=>'−'+f(GRAM_C,0)+' hyp./s → +'+f(GRAM_P*gramMul()*M.gram(),4)+' cert./s',
+   unlock:()=>has('nur')}
 ];
 const insCost = i => Math.ceil(i.base*Math.pow(i.r,S_.b[i.k]));
 const recCost = () => { const m=Math.pow(REC_R,S_.rec)*(has('gan')?0.75:1);
@@ -627,6 +681,11 @@ function showEnd(){
 /* ============================ boucle ============================ */
 function tick(dt){
   S_.t += dt;
+  produire(dt);
+}
+/* La production, séparée du temps de jeu : la nuit passée hors ligne se rattrape par ici
+   sans avancer le chronomètre ni traverser l'horloge instrumentée du journal d'actions. */
+function produire(dt){
   S_.O += oBrut()*dt;
   // table de fréquences : consomme des occurrences
   const wantO = S_.b.tab*1.0*dt;
@@ -636,6 +695,29 @@ function tick(dt){
   const wantH = S_.b.con*0.5*dt;
   if(wantH>0){ const canH=Math.min(wantH,S_.H); const fr=canH/wantH;
     S_.H-=canH; S_.C += S_.b.con*CON_P*M.con()*fr*dt; }
+  // grammaire : en consomme beaucoup plus, et rend d'autant plus qu'on a déchiffré
+  const wantG = S_.b.gram*GRAM_C*dt;
+  if(wantG>0){ const canG=Math.min(wantG,S_.H); const fr=canG/wantG;
+    S_.H-=canG; S_.C += S_.b.gram*GRAM_P*gramMul()*M.gram()*fr*dt; }
+}
+
+/* ---- la nuit ----
+   `nuit` est le seul glyphe dont l'effet se produit quand le jeu est fermé : 40 % du débit,
+   quatre heures au plus (design doc §9). Avant lui il ne se passe rien hors ligne, et c'est
+   diégétique — il n'y a personne pour lire. On rattrape en tranches d'une minute plutôt
+   qu'en un seul bond : les convertisseurs se coupent quand leur intrant manque, et un
+   unique appel de quatre heures leur ferait ignorer cette coupure. */
+function veillee(){
+  if(!has('esh') || S_.done || !S_.ts) return 0;
+  const ecoule = Math.min((Date.now() - S_.ts)/1000, 4*3600);
+  if(ecoule < 60) return 0;
+  const avant = S_.O;
+  let reste = ecoule * 0.4;
+  while(reste > 0){ const pas = Math.min(60, reste); produire(pas); reste -= pas; }
+  /* La nuit est consommée : sans cela, rouvrir deux fois de suite la même sauvegarde la
+     paierait deux fois — la sauvegarde n'horodate que toutes les quatre secondes. */
+  S_.ts = Date.now();
+  return S_.O - avant;
 }
 let last=performance.now();
 function frame(now){
@@ -656,7 +738,8 @@ function frame(now){
 
 /* ============================ rendu corpus ============================ */
 const elCorpus=document.getElementById('corpus');
-/* Nombre de tablettes dégagées : 4 au départ, les 30 au douzième glyphe. */
+/* Nombre de tablettes dégagées : 4 au départ, les 30 au dernier glyphe. Le corpus
+   s'ouvre donc sur les trois actes, et non plus sur les deux premiers. */
 const revCount = () => Math.min(TB.length, 4 + Math.round(S_.gl.length * (TB.length-4) / NGL));
 let lastRev = 0;
 
@@ -710,7 +793,55 @@ function paintCorpus(flashId){
     el.className='tok '+(lis?'num':'g')+(r?' rel':'');
     el.innerHTML = lis ? nf.format(n) : numGlyphs(n);
   });
-  revealer(); paintRail(); peindreRec();
+  ranger(); revealer(); paintRail(); peindreRec();
+}
+
+/* ============================ la datation ============================ */
+/* Le jeu n'ajoute aucune date au corpus : chaque tablette porte la sienne dans sa
+   première ligne — « tablette 12 · année 103 » — depuis la première seconde de la partie.
+   Tout ce que `année` change, c'est que le joueur sait la lire ; et il faut encore qu'il
+   sache lire le nombre, signe par signe, comme partout ailleurs. Les deux dernières
+   tablettes ne portent aucun nombre : elles disent « dernière-année », et c'est ce
+   glyphe-là qui les date — après elle, personne n'a plus compté. */
+const ANNEE = {};
+for(const tb of CORPUS){
+  const tk = tb.l[0].split(' '), i = tk.indexOf('nur');
+  if(i >= 0 && tk[i+1] && tk[i+1].charCodeAt(0) === 37) ANNEE[tb.t] = {n:+tk[i+1].slice(1)};
+  else if(tk.indexOf('nurhal') >= 0) ANNEE[tb.t] = {fin:true};
+}
+const datee = t => { const a = ANNEE[t];
+  return !!a && (a.fin ? has('nurhal') : (has('nur') && numLisible(a.n))); };
+
+/* Six années portent deux tablettes — 40, 54, 88, 150, 183, 201 — et la dernière aussi.
+   Le numéro tranche, et c'est le corpus qui le dit : la 16 et la 17 sont toutes deux de
+   l'année 150, dans cet ordre-là.
+   Une tablette qu'on ne sait pas dater ne se range pas : elle reste avec ses pareilles,
+   dans l'ordre où elle est sortie de terre. On n'ordonne que ce qu'on sait lire. */
+const cleTemps = t => (ANNEE[t].fin ? 100000 : ANNEE[t].n)*100 + t;
+function ordre(tri){
+  if(!tri) return TB;
+  return TB.filter(tb=>datee(tb.t)).sort((a,b)=>cleTemps(a.t)-cleTemps(b.t))
+    .concat(TB.filter(tb=>!datee(tb.t)));
+}
+
+/* Ranger déplace les nœuds déjà construits au lieu de les reconstruire : les jetons
+   relevés, les caches de peinture et la marque du gisement survivent au rangement.
+   `avant` range l'index, `après` range le texte — deux gestes d'archiviste, dans cet
+   ordre, et le second est celui qui met deux siècles de crue en colonne. */
+let ordreVu = '';
+function ranger(){
+  const oB = ordre(has('pat')), oC = ordre(has('zur'));
+  const sig = oB.map(t=>t.t).join(',') + '|' + oC.map(t=>t.t).join(',');
+  if(sig === ordreVu) return;
+  const neuf = ordreVu !== '';
+  ordreVu = sig;
+  const rail = $('rail'), cells = {};
+  for(const c of [...rail.children]) cells[c.dataset.go] = c;
+  for(const tb of oB) rail.appendChild(cells[tb.t]);
+  const tabs = {};
+  for(const el of [...elCorpus.children]) tabs[el.dataset.tb] = el;
+  for(const tb of oC) elCorpus.appendChild(tabs[tb.t]);
+  if(neuf) elCorpus.scrollTop = 0;
 }
 
 /* Un nouveau mot donne envie de relire les 30 tablettes — encore faut-il pouvoir y aller.
@@ -728,22 +859,34 @@ for(const tb of CORPUS) for(const l of tb.l) for(const tk of l.split(' ')){
   (TBSIGNE[tk] || (TBSIGNE[tk] = new Set())).add(tb.t);
 }
 
+/* Rang de sortie de terre, fixé une fois pour toutes : c'est lui qui décide de ce qui est
+   dégagé, et le rangement chronologique ne doit pas y toucher. Ce qu'on a sous les yeux
+   change d'ordre ; ce qu'on a sorti de terre, non. */
+const IDX = {}; TB.forEach((tb,i)=>{ IDX[tb.t] = i; });
+const TBN = {}; for(const tb of CORPUS) TBN[tb.t] = tb;
+const degagee = t => IDX[t] < revCount();
+
 function buildRail(){
   $('rail').innerHTML = TB.map(tb =>
     '<button class="rcell" data-go="'+tb.t+'" title="tablette '+tb.t+'">'+
-      '<span class="rn"></span><span class="rb"><i></i></span></button>').join('');
+      '<span class="rn"></span><span class="ry"></span><span class="rb"><i></i></span></button>').join('');
 }
 function paintRail(){
-  const n=revCount(), lisNum=has('tab')&&has('an');
-  const cells=$('rail').children;
-  for(let i=0;i<cells.length;i++){
-    const c=cells[i], t=TB[i].t;
-    const v=i>=n; if(c.hidden!==v) c.hidden=v; if(v) continue;
+  const lisNum=has('tab')&&has('an');
+  for(const c of $('rail').children){
+    const t=+c.dataset.go;
+    const v=!degagee(t); if(c.hidden!==v) c.hidden=v; if(v) continue;
     const num = lisNum ? String(t) : null;
     const wantN = num || 'g';
     const rn=c.querySelector('.rn');
     if(rn.__v!==wantN){ rn.__v=wantN; rn.innerHTML = num || numGlyphs(t); }
-    const p=Math.round(100*pctTablette(TB[i]));
+    /* La date, sous le numéro. Une tablette dont on ne sait pas encore lire l'année garde
+       la ligne vide : la barre montre exactement l'étendue de ce qu'on sait dater. */
+    const ry=c.querySelector('.ry');
+    const wantY = !datee(t) ? '' : ANNEE[t].fin ? 'fin' : String(ANNEE[t].n);
+    if(ry.__v!==wantY){ ry.__v=wantY;
+      ry.innerHTML = wantY==='fin' ? sv('nurhal') : wantY; }
+    const p=Math.round(100*pctTablette(TBN[t]));
     const bar=c.querySelector('.rb i');
     if(bar.__v!==p){ bar.__v=p; bar.style.width=p+'%'; }
     const tch = touchees.has(t);
@@ -767,9 +910,9 @@ function paintRail(){
    lisibilité ne change qu'à chaque glyphe, et recompter les 3 825 signes du corpus à
    chaque clic coûterait cent fois ce que coûtent ces deux classes. */
 function peindreGisement(){
-  const cells=$('rail').children, n=revCount();
-  for(let i=0;i<n;i++){
-    const c=cells[i], t=TB[i].t;
+  for(const c of $('rail').children){
+    if(c.hidden) continue;
+    const t=+c.dataset.go;
     const sec = gisReste(t) <= 0, lue = !sec && S_.prix[t] !== undefined;
     if(c.classList.contains('sec')!==sec) c.classList.toggle('sec',sec);
     if(c.classList.contains('lue')!==lue) c.classList.toggle('lue',lue);
@@ -781,7 +924,10 @@ function peindreGisement(){
    peut donc pas être figé dans l'attribut : il s'écrit au survol (cf. jeu.js). */
 function titreCell(t){
   const r = gisReste(t);
-  return 'tablette '+t+' — gisement '+r+'/'+GISEMENT[t]
+  /* La date est dans le texte de la tablette ; l'infobulle ne fait que la répéter, et
+     seulement quand le joueur sait la lire. */
+  const d = !datee(t) ? '' : ANNEE[t].fin ? ' · dernière année' : ' · année '+ANNEE[t].n;
+  return 'tablette '+t+d+' — gisement '+r+'/'+GISEMENT[t]
     + (r <= 0 ? ' · épuisée'
       : S_.prix[t] === undefined
         ? " · intacte : "+nf.format(Math.round(tarifRel()))
@@ -845,8 +991,7 @@ function versTablette(t){
   const el=elCorpus.querySelector('.tablet[data-tb="'+t+'"]');
   if(!el || el.hidden) return;
   elCorpus.scrollTo({top: el.offsetTop - elCorpus.firstElementChild.offsetTop - 8, behavior:'smooth'});
-  const cells=$('rail').children;
-  for(let i=0;i<cells.length;i++) cells[i].classList.toggle('ici', TB[i].t===t);
+  for(const c of $('rail').children) c.classList.toggle('ici', +c.dataset.go===t);
 }
 function tabletteVisible(){
   const y=elCorpus.scrollTop, base=elCorpus.firstElementChild.offsetTop;
@@ -865,8 +1010,9 @@ function saut(d){
 
 function revealer(){
   const n = revCount();
-  const tabs = elCorpus.querySelectorAll('.tablet');
-  for(let i=0;i<tabs.length;i++){ const v = i>=n; if(tabs[i].hidden!==v) tabs[i].hidden=v; }
+  for(const el of elCorpus.querySelectorAll('.tablet')){
+    const v = !degagee(+el.dataset.tb); if(el.hidden!==v) el.hidden=v;
+  }
   if(n>lastRev && lastRev>0) pushLog(n-lastRev>1 ? (n-lastRev)+' tablettes dégagées.' : 'Une tablette dégagée.');
   lastRev = n;
 }
@@ -919,7 +1065,7 @@ function paintInstr(){
     b.classList.toggle('afford',can);
     b.disabled=!can;
     setHTML(b.querySelector('.sg'), sv(i.sig));
-    const muet={cop:'kal',tab:'im',con:'shen',ate:'mesh'}[i.k];
+    const muet={cop:'kal',tab:'im',con:'shen',ate:'mesh',gram:'en'}[i.k];
     setHTML(b.querySelector('.nn'), (open&&has('ur')) ? i.nom
       : '<span style="color:var(--dim)">'+sv('dun')+sv(muet)+sv('la')+'</span>');
     setHTML(b.querySelector('.lv'), open? nf.format(S_.b[i.k]) : '');
@@ -966,15 +1112,17 @@ function paintLex(){
 }
 
 function paintRes(){
-  const tb=S_.b.tab, cn=S_.b.con;
-  const oNet = oBrut() - tb*1.0, hNet = tb*0.6*M.tabl() - cn*0.5, cNet = cn*CON_P*M.con();
+  const tb=S_.b.tab, cn=S_.b.con, gr=S_.b.gram;
+  const oNet = oBrut() - tb*1.0,
+        hNet = tb*0.6*M.tabl() - cn*0.5 - gr*GRAM_C,
+        cNet = cn*CON_P*M.con() + gr*GRAM_P*gramMul()*M.gram();
   setHTML($('vl-O'), amount(S_.O, readN()));
   setHTML($('vl-H'), amount(S_.H, readN()));
   setHTML($('vl-C'), amount(S_.C, readN()));
   const rt=(v,el,dry)=>{ setHTML(el, readR()? (v?( (v>0?'+':'−')+f(Math.abs(v),v<0.1&&v!==0?3:2)+'/s'):'') : '');
     el.classList.toggle('dry',!!dry); };
   rt(oNet,$('rt-O'), tb>0 && S_.O<1 && oNet<0);
-  rt(hNet,$('rt-H'), cn>0 && S_.H<1 && hNet<0);
+  rt(hNet,$('rt-H'), (cn+gr)>0 && S_.H<1 && hNet<0);
   rt(cNet,$('rt-C'), false);
 }
 
@@ -1122,13 +1270,13 @@ function enrober(nom, temoin, detail){
     const avant = temoin(), rang = TR.length;
     const r = orig.apply(this, a);
     /* Insérée à son rang et non à la fin : une action peut en déclencher une autre —
-       le treizième signe termine la partie — et la cause doit précéder l'effet. */
+       le dernier signe termine la partie — et la cause doit précéder l'effet. */
     if(temoin() !== avant) tracer(nom, detail ? detail(a, avant) : '', rang);
     return r;
   };
 }
 
-const niveaux = () => S_.b.cop + S_.b.tab + S_.b.con + S_.b.ate;
+const niveaux = () => S_.b.cop + S_.b.tab + S_.b.con + S_.b.ate + S_.b.gram;
 
 /* `relever` reçoit désormais sa tablette : c'est la seule façon de distinguer un joueur qui
    parcourt le corpus d'un joueur qui s'installe sur une tablette et martèle. La question
@@ -1139,6 +1287,9 @@ enrober('recouper',  () => S_.rec,        a => '+' + recGain() + ' cert.'
                                                + (a[0] ? ' · ' + a[0] : ''));
 enrober('acheterIns', niveaux,            a => a[0] + ' n°' + S_.b[a[0]]);
 enrober('acheterGl', () => S_.gl.length,  a => a[0] + ' (' + byId[a[0]].mot + ') ' + byId[a[0]].cost + ' C');
+/* La nuit ne passe pas par `tick` et n'émettrait donc aucune ligne : une seule, au retour,
+   dit ce qu'elle a rapporté. Une partie jouée en plusieurs fois se lit alors sans trou. */
+enrober('veillee',   () => Math.round(S_.O), () => Math.round(S_.O) + ' occ. hors ligne');
 
 /* Pas de témoin possible pour la fin : `S_.done` est déjà posé quand showEnd() est
    appelée. On remonte donc le relevé jusqu'au dernier « reset » — jeu.js rappelle
@@ -1183,7 +1334,7 @@ tick = function(dt){
     tracer('etat', 'O=' + Math.round(S_.O) + ' H=' + Math.round(S_.H) + ' C=' + Math.round(S_.C)
                  + ' signes=' + S_.gl.length + ' sig%=' + m.sig + ' lig%=' + m.lig
                  + ' gis=' + Object.keys(S_.rel).reduce((n,t)=>n+S_.rel[t].length,0) + '/' + GIS_TOTAL
-                 + ' instr=' + [S_.b.cop, S_.b.tab, S_.b.con, S_.b.ate].join('/'));
+                 + ' instr=' + [S_.b.cop, S_.b.tab, S_.b.con, S_.b.ate, S_.b.gram].join('/'));
   }
 };
 
@@ -1248,6 +1399,10 @@ window.addEventListener('pagehide', sauverTraces);
 majSignes();
 buildRail(); buildCorpus(); buildInstr(); buildLex();
 if(S_.gl.length){ paintCorpus(null); pushLog(byId[S_.gl[S_.gl.length-1]].log); }
+/* `nuit` acquis, le corpus se lit sans le joueur — 40 % du débit, quatre heures au plus.
+   Dit au retour, une seule fois, et seulement s'il s'est passé quelque chose. */
+const nuitPassee = veillee();
+if(nuitPassee > 0) pushLog('La nuit a passé. '+big(Math.round(nuitPassee))+' occurrences relevées sans moi.');
 if(S_.done) showEnd();
 
 /* Le relevé n'existe plus que là : dans le texte, sur un signe précis. Le bouton « Relever
@@ -1320,8 +1475,11 @@ $('again').addEventListener('click',()=>$('reset').click());
 $('fermer').addEventListener('click', fermerFin);
 $('end').addEventListener('click', e=>{ if(e.target===$('end')) fermerFin(); });
 
-setInterval(()=>{ try{ localStorage.setItem(KEY, JSON.stringify(S_)); }catch(e){} }, 4000);
-window.addEventListener('pagehide',()=>{ try{ localStorage.setItem(KEY, JSON.stringify(S_)); }catch(e){} });
+/* `ts` est l'heure de la dernière sauvegarde : c'est elle, et rien d'autre, qui mesure
+   la nuit au retour. Écrite à chaque enregistrement, y compris à la fermeture. */
+const sauver = () => { try{ S_.ts = Date.now(); localStorage.setItem(KEY, JSON.stringify(S_)); }catch(e){} };
+setInterval(sauver, 4000);
+window.addEventListener('pagehide', sauver);
 
 requestAnimationFrame(frame);
 

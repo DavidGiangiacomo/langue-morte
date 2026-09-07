@@ -1,4 +1,4 @@
-/* « La langue morte » — les 13 glyphes du MVP (actes I-II)
+/* « La langue morte » — les 20 glyphes des actes I à III
    Scripts classiques, portée globale partagée, chargés dans l'ordre de index.html.
    Aucune dépendance externe hors les polices Google. */
 "use strict";
@@ -15,6 +15,8 @@ const GL = [
    log:'La main : dix. Ils comptaient sur les mains, comme tout le monde.'},
   {id:'meku', br:'nombre',  mot:'cent',     cost:33, eff:'nombres jusqu’à 999 · grands nombres repliés · achat ×10',
    log:'Cent. Les récoltes deviennent lisibles. Et elles baissent.'},
+  {id:'mille',br:'nombre',  mot:'mille',    cost:110, eff:'tous les nombres du corpus · +30 % à l’atelier de copie',
+   log:'Mille. Ils comptaient leurs tablettes par milliers, et le grain par dizaines.'},
   {id:'tem',  br:'matiere', mot:'grain',    cost:3,  eff:'+30 % au copiste',
    log:'Du grain. Ce ne sont pas des prières : ce sont des inventaires.'},
   {id:'ur',   br:'matiere', mot:'maison',   cost:6,  eff:'les instruments prennent leur nom',
@@ -30,8 +32,26 @@ const GL = [
   {id:'sar',  br:'parole',  mot:'graver',   cost:27, eff:'+50 % à la concordance',
    log:'Graver. Quelqu’un a tenu ce stylet, et l’a écrit.'},
   {id:'kal',  br:'parole',  mot:'copier',   cost:48, eff:'×2 sur toute la production',
-   log:'Copier. Deux fois, puis dix, puis cent. Bien plus qu’il n’en fallait pour garder.'}
+   log:'Copier. Deux fois, puis dix, puis cent. Bien plus qu’il n’en fallait pour garder.'},
+  /* ---- acte III : le temps ----
+     La branche ne donne pas un bonus de plus, elle donne une dimension. `année` fait
+     apparaître une date que le corpus portait depuis la première seconde ; `avant` range
+     l’index, `après` range le texte lui-même. Ce que ce rangement découvre — la crue qui
+     baisse sur deux siècles — n’est écrit nulle part et n’est commenté par personne :
+     c’est dans les chiffres, et il faut les avoir mis en ordre pour le voir. */
+  {id:'nur',  br:'temps',   mot:'année',    cost:60, eff:'chaque tablette porte sa date · la grammaire devient possible',
+   log:'Année. Chaque tablette est datée depuis le début — je ne savais pas lire la date.'},
+  {id:'pat',  br:'temps',   mot:'avant',    cost:130, eff:'la barre se range dans l’ordre du temps',
+   log:'Avant. Ce qui est sorti de terre en premier n’a pas été gravé en premier.'},
+  {id:'zur',  br:'temps',   mot:'après',    cost:190, eff:'le corpus se range dans l’ordre du temps',
+   log:'Après. Le corpus se remet en ordre. Deux siècles, du premier relevé au dernier.'},
+  {id:'nurnur',br:'temps',  mot:'siècle',   cost:260,eff:'+50 % à la grammaire',
+   log:'Siècle. Ils mesuraient par centaines d’années. Il leur en restait deux.'},
+  {id:'esh',  br:'temps',   mot:'nuit',     cost:360,eff:'la lecture continue hors ligne — 40 % du débit, 4 h au plus',
+   log:'Nuit. Ils gravaient la nuit. Le corpus se lit maintenant sans moi.'},
+  {id:'nurhal',br:'temps',  mot:'dernière-année',cost:500,eff:'les deux dernières tablettes se datent · +50 % à l’atelier de copie',
+   log:'La dernière année. Elle n’a pas de nombre : après elle, personne n’a plus compté.'}
 ];
 const NGL = GL.length;
-const BR = [['nombre','Nombre'],['matiere','Matière'],['parole','Parole']];
+const BR = [['nombre','Nombre'],['matiere','Matière'],['parole','Parole'],['temps','Temps']];
 const byId = Object.fromEntries(GL.map(g=>[g.id,g]));
