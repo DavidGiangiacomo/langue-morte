@@ -144,6 +144,11 @@ def main() -> None:
         # laissait à 1 occurrence, pour toute la partie, les tablettes qu'on atteint tôt.
         verifier(page.evaluate("() => Object.keys(S_.prix).length") == 0,
                  "dégager une tablette ne la tarife pas")
+        marq = page.evaluate("""() => { const c = $('rail').children, n = revCount();
+            let m = 0; for (let i = 0; i < n; i++) if (c[i].classList.contains('lue')) m++;
+            return [m, n]; }""")
+        verifier(marq[0] == 0,
+                 f"et aucune des {marq[1]} tablettes du départ n'est marquée lue ({marq[0]})")
         page.evaluate("() => { S_.b.cop = 500; S_.rel = {}; S_.prix = {}; S_.O = 0; }")
         page.wait_for_timeout(120)
         tar = page.evaluate("""() => {
@@ -156,6 +161,24 @@ def main() -> None:
         verifier(tar[0] == tar[1], "et le tarif ne bouge plus ensuite")
         verifier(tar[2] > tar[1] * 5,
                  f"même quand le débit a décuplé (il vaudrait {tar[2]} aujourd'hui)")
+        mk = page.evaluate("""() => { peindreGisement(); const c = $('rail').children;
+            return [c[0].classList.contains('lue'), c[1].classList.contains('lue'),
+                    titreCell(TB[0].t), titreCell(TB[1].t)]; }""")
+        verifier(mk[0] is True and mk[1] is False,
+                 "le premier relevé marque sa tablette comme lue, et elle seule")
+        verifier("intacte :" in mk[3] and "si tu l'ouvres maintenant" in mk[3],
+                 "l'infobulle d'une intacte chiffre le tarif du moment")
+        verifier("occ. par relevé" in mk[2] and "intacte" not in mk[2],
+                 "celle d'une tablette travaillée donne son tarif acquis")
+        # le tarif d'une intacte suit la production : figé dans l'attribut, il serait faux
+        suit = page.evaluate("""() => { const a = titreCell(TB[1].t);
+            S_.b.cop *= 4; return [a, titreCell(TB[1].t)]; }""")
+        verifier(suit[0] != suit[1], "et il suit la production, au lieu d'être figé")
+        page.hover('#rail .rcell:nth-child(2)')
+        page.wait_for_timeout(120)
+        verifier("intacte :" in page.eval_on_selector("#rail .rcell:nth-child(2)",
+                                                      "e => e.title"),
+                 "le survol l'écrit sur la cellule")
         gains = page.evaluate("""() => {
             const t = TB[0].t; S_.rel = {}; S_.prix[t] = 100; S_.O = 0;
             relever(t, 0); const a = S_.O; relever(t, 0); return [a, S_.O - a]; }""")
@@ -185,6 +208,11 @@ def main() -> None:
         page.wait_for_timeout(120)
         verifier(page.evaluate("() => $('rail').children[0].classList.contains('sec')"),
                  "la tablette épuisée s'éteint dans la barre")
+        # les deux bouts de l'échelle ne se cumulent pas : éteinte, elle n'est pas en plus assombrie
+        cl = page.evaluate("() => $('rail').children[0].className")
+        verifier("lue" not in cl, "et cesse d'être seulement marquée lue")
+        verifier("épuisée" in page.evaluate("() => titreCell(TB[0].t)"),
+                 "son infobulle le dit")
         page.evaluate("() => { S_.rel = {}; paintCorpus(null); }")
 
         print("\nle recoupement, dans le texte")
