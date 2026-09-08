@@ -50,6 +50,7 @@ P = dict(
     click_floor=1.0,                                   # Relevé sur gisement épuisé : le plancher seul
     gis_div=10,                                        # Gisement d'une tablette = jetons / gis_div
     rev_base=4,                                        # tablettes dégagées au départ
+    ate_socle=30,                                      # Copistes avant d'épargner pour l'Atelier (PT9 : 22 au premier, 35 à la 14e min)
 )
 
 BR = {}
@@ -153,11 +154,22 @@ def run(P, cpm=15, cap_min=600, garde=0.0):
             # La Grammaire passe avant la Concordance dès qu'elle est ouverte : elle rend
             # plus par occurrence dépensée, et surtout elle boit les hypothèses que la
             # chaîne laissait s'entasser.
+            # Producteur : celui qui rend le plus par occurrence dépensée — et quand c'est
+            # l'Atelier, on ÉPARGNE pour lui au lieu d'acheter ce qui est payable tout de
+            # suite. L'acheteur d'avant prenait ce qui passait sous sa main : premier Atelier
+            # à la 24e minute, 84 Copistes en fin de partie, et vingt pour cent de trop sur
+            # la durée simulée, deux playtests de suite (PT8, PT9). Le joueur réel prend son
+            # premier Atelier à la dixième minute, sur un socle d'une vingtaine de Copistes,
+            # et n'achète plus un Copiste passé la 33e.
+            eff_cop = cost('cop') / (P['cop_p'] * mcop())
+            eff_ate = cost('ate') / (P['ate_p'] * mate())
+            prod = 'ate' if b['cop'] >= P['ate_socle'] and eff_ate <= eff_cop else 'cop'
+            epargne = prod == 'ate' and O < cost('ate')
             if has('nur') and netH >= P['gram_c'] and O >= cost('gram'):     k = 'gram'
+            elif epargne:                                                    break
             elif netH >= P['con_c'] and O >= cost('con'):                    k = 'con'
             elif netO >= P['tab_c'] and O >= cost('tab') and b['cop'] > 0:   k = 'tab'
-            elif O >= cost('ate') and (b['con'] > 0 or O >= P['ate_b'] * 1.5): k = 'ate'
-            elif O >= cost('cop'):                                           k = 'cop'
+            elif O >= cost(prod):                                            k = prod
             if k is None: break
             O -= cost(k); b[k] += 1
 

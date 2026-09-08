@@ -74,7 +74,7 @@ python build.py && python outils/verifier.py    # tests
 
 6. **Pas de dépendance externe, pas de framework.** Un seul fichier doit rester distribuable.
 
-7. **Ne jamais annoncer un chiffre de rythme sans l'avoir simulé ou mesuré.** Les sept playtests ont tous invalidé une intuition d'équilibrage.
+7. **Ne jamais annoncer un chiffre de rythme sans l'avoir simulé ou mesuré.** Les neuf playtests ont tous invalidé une intuition d'équilibrage — le simulateur lui-même, deux fois.
 
 8. **Les deux actions manuelles se font dans le corpus.** Le relevé, sur un signe ; le recoupement, sur deux attestations d'un même signe dans deux tablettes différentes. Aucun bouton ne produit plus rien directement — c'est le point de bascule entre « un incrémental habillé en déchiffrement » et un jeu où l'on agit en lisant. Ne pas remettre de raccourci qui contourne le texte.
 
@@ -99,7 +99,7 @@ python build.py && python outils/verifier.py    # tests
 
 ## État actuel et suite
 
-**Fait** : actes I à III (première moitié), **20 signes sur 45**, corpus complet des 30 tablettes (676 lignes, 3 809 signes), économie réglée sur sept playtests, numération signe par signe jusqu'à `mille`, barre de navigation entre tablettes, infobulles, comptage d'occurrences dans le lexique, journal d'actions horodaté, relevé et recoupement dans le corpus avec gisement par tablette, **datation et réordonnancement chronologique**, instrument **Grammaire**, progression **hors ligne**.
+**Fait** : actes I à III (première moitié), **20 signes sur 45**, corpus complet des 30 tablettes (676 lignes, 3 809 signes), économie réglée sur neuf playtests, numération signe par signe jusqu'à `mille`, barre de navigation entre tablettes, infobulles, comptage d'occurrences dans le lexique, journal d'actions horodaté, relevé et recoupement dans le corpus avec gisement par tablette, **datation et réordonnancement chronologique**, instrument **Grammaire**, progression **hors ligne**.
 
 **PT7 fait** (07/09/2026) : 44 min 50. R9 est tranché — le tarif figé à la première visite ramène la main de 0,1 % à **17,9 % des occurrences**, sur 22 tablettes au lieu de 3, jusqu'à la quarantième minute au lieu de la quinzième. I6 global à 31,2 %, mais découpé par tranches il montre deux défauts opposés : 83 % au premier quart d'heure (le mur d'ouverture, connu, non réglé) et 103 % aux cinq dernières minutes (5 232 hypothèses que les Concordances ne buvaient pas). D'où la mesure d'I6 par tranches, et la Grammaire.
 
@@ -111,13 +111,15 @@ python build.py && python outils/verifier.py    # tests
 - instrument **Grammaire** : `0,0012 × 1,16^lexique` cert./s, −3 hyp./s, fermé jusqu'à `année`. Première vraie exponentielle, et la seule chose capable d'absorber les hypothèses que PT7 laissait s'entasser.
 - **hors ligne** par `nuit` : 40 % du débit, 4 h au plus.
 
-Mesuré : **78,6 à 83,5 min** pour les 20 signes, écart max 6,2 min entre deux déblocages, I6 global 5 %.
+Mesuré : **78,6 à 83,5 min** pour les 20 signes, écart max 6,2 min entre deux déblocages, I6 global 5 %. Avec l'acheteur d'avant PT9 : recalé, le simulateur donne **71 à 77 min**, écart max 5,7.
 
 **PT8 fait** (07/09/2026) : 63 min 12 pour les 20 signes — le simulateur surestimait de 20 %. I6 tombe à 6,0 % et le déversoir de fin de PT7 est réparé. Mais **le rangement chronologique n'a pas suffi** : 60 lignes du corpus portent un relevé d'eau sur 676, et de 8 à 57 lignes de registre séparent deux relevés consécutifs. Trier ordonne les contenants, ça ne rassemble pas le signal — le joueur est allé sur la tablette 26 (le relevé d'eau complet) treize secondes après avoir acheté `avant`, y a fait vingt relevés, et n'a pas vu la série.
 
 **La Concordance fait enfin son métier** (07/09/2026) : choisir un signe replie le corpus sur ses seules attestations, chaque tablette gardant sa première ligne — celle où elle se date elle-même. Sur `eau`, corpus rangé : 92 lignes au lieu de 676, et vingt relevés qui descendent de 14 à 0. Rien d'ajouté, rien de commenté. C'est aussi le geste répétable qui manquait à l'acte III, dont la fin se jouait en attendant (4 min 51 sans une action dans le corpus en PT8).
 
-**Prochaine étape — PT9, puis la seconde moitié de l'acte III.** PT9 repose la question de PT8 : **la crue qui baisse se voit-elle ?** La colonne existe, reste à savoir si le joueur y va. Le journal d'actions note chaque concordance et son signe — si le TSV n'en contient aucune, c'est le bouton qu'il faut reprendre, pas la vue.
+**PT9 fait** (08/09/2026) : 66 min 49 pour les 20 signes. **La crue qui baisse se voit** — le joueur a concordé `eau` 23 secondes après `avant` et 5 secondes après `après`, et l'a dit. Mais c'est l'auteur qui jouait : la question se repose à un autre joueur. I6 à 8,2 %, toutes les tranches sous 30 % sauf l'ouverture (75 %). L'idle de fin d'acte de PT8 a disparu, rempli par le relevé (219 des 393 relevés de gisement après `année`) et non par la concordance, qui reste un geste de lecture. La main fournit **36,3 % des occurrences** — le chiffre du thésauriseur, sans thésauriser : les quatorze dernières tablettes valent 11 996 par relevé, une tablette neuve vaut une Grammaire. À surveiller, pas à régler. Le simulateur surestimait de 20 % deux fois de suite : c'était son acheteur, qui ne prenait jamais d'Atelier tant qu'un Copiste était payable — recalé, il donne 71 à 77 min.
+
+**Prochaine étape — PT10 avec un autre joueur, puis la seconde moitié de l'acte III.** Même question qu'en PT8 et PT9, posée à quelqu'un qui ne sait pas ce qu'il cherche. Dans le même TSV : la part manuelle des occurrences (au-delà de 40 %, plafonner `REL_K`) et le stock d'hypothèses entre `année` et la dixième Grammaire (27 090 en PT9).
 
 Restent ensuite : la mécanique de **composition** (et donc `zéro` = `ne-pas` + `un`), l'instrument **Élève**, la branche **Modalité**, les glyphes de **Parole III** (`lire`, `scribe`, `archive`, `les-lecteurs`), puis les **contradictions** de l'acte IV — voir `docs/design-doc.md` §7 et §8.
 
