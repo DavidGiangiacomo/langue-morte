@@ -6,16 +6,21 @@ Historique des playtests, des défauts trouvés et des décisions prises. À lir
 
 ## Les playtests
 
-| | PT1 | PT2 | PT3 | PT4 | PT5 | PT6 | Cible |
-|---|---|---|---|---|---|---|---|
-| Durée | 145 min | 29 min 27 | 41 min 54 *(dont ~10 min de pause)* | 42 min 12 | 50 min 37 | **43 min 49** | 45 min |
-| Signes relevés à la main | 3 853 | 271 | **45** | 56 | **371** | 180 | — |
-| Hypothèses formulées à la main | — | — | — | — | 264 | 27 | — |
-| Recoupements | 67 | 69 | 51 | **56** | 46 | 44 | — |
-| Part manuelle de la Certitude | — | — | — | 43,5 % *(simulé)* | **30,8 %** | **30,0 %** | < 30 % |
-| Part manuelle des Occurrences | — | — | — | — | 0,6 % | **0,1 %** | — |
-| Lignes entièrement lues | — | — | — | 26 % | 26 % | 26 % | — |
-| Signes déchiffrés | — | — | — | 58 % | 57 % | 57 % | — |
+| | PT4 | PT5 | PT6 | PT7 | PT8 | Cible |
+|---|---|---|---|---|---|---|
+| Durée | 42 min 12 | 50 min 37 | 43 min 49 | 44 min 50 | **63 min 12** *(20 signes)* | 45 min *(13 signes)* |
+| Signes relevés à la main | 56 | **371** | 180 | **422** | — | — |
+| Hypothèses formulées à la main | — | 264 | 27 | 7 | — | — |
+| Recoupements | **56** | 46 | 44 | 39 | 46 | — |
+| Part manuelle de la Certitude | 43,5 % *(simulé)* | **30,8 %** | **30,0 %** | **31,2 %** | **6,0 %** | < 30 % par tranche de 10 min |
+| Part manuelle des Occurrences | — | 0,6 % | **0,1 %** | **17,9 %** | — | — |
+| Gisement consommé | — | — | 54 / 398 | 293 / 398 | **394 / 398** | — |
+| Lignes entièrement lues | 26 % | 26 % | 26 % | 26 % | **34 %** | — |
+| Signes déchiffrés | 58 % | 57 % | 57 % | 57 % | **69 %** | — |
+
+PT1 à PT3 sortent du tableau : ils datent d'avant le journal d'actions, et leurs chiffres
+vivent dans les sections qui les dépouillent. PT8 est la première partie des trois actes —
+sa durée et ses parts ne se comparent pas aux précédentes, qui s'arrêtaient à 13 signes.
 
 PT1 à PT4 : l'auteur. **PT5 : un second joueur** (mon fils, 06/09/2026), et le premier
 playtest instrumenté par le journal d'actions — d'où le détail de ce qui suit. Tout ce qui
@@ -133,6 +138,299 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
   dans `jeu.js`, verrouillé par trois contrôles de `outils/verifier.py`.
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
+
+## La concordance — l'instrument fait enfin ce que son nom annonce
+
+Réponse au défaut central de PT8 : **le rangement chronologique n'a pas suffi.** Il ordonne
+les contenants, il ne rassemble pas le signal.
+
+### Le chiffre qui explique l'échec
+
+**Soixante lignes du corpus portent un relevé d'eau, sur six cent soixante-seize.** Entre
+deux relevés consécutifs, le corpus rangé intercale de **huit à cinquante-sept lignes** de
+registre. Trier les tablettes met les eaux dans le bon ordre ; ça ne les met pas côte à
+côte, et une série ne se lit pas à un relevé par écran.
+
+Et le journal d'actions donne mieux qu'une hypothèse : à **44:57**, treize secondes après
+avoir acheté `avant`, le joueur est allé sur la **tablette 26** — le relevé d'eau complet,
+vingt-deux années dans un seul document, lisible depuis la 38ᵉ minute — et y a fait vingt
+relevés sans voir la série. **Le défaut n'était donc pas que la donnée soit illisible :
+c'est que la lecture n'était pas assemblée.**
+
+### Ce que fait la Concordance
+
+Une concordance, en philologie, est le relevé de toutes les attestations d'un mot avec leur
+contexte. L'instrument porte ce nom depuis l'acte II, on en achète trente-huit dans une
+partie, et il ne faisait rien de visible. Il fait maintenant son métier : **choisir un signe
+replie le corpus sur ses seules attestations**, dans l'ordre d'affichage courant, chaque
+tablette gardant sa première ligne — celle où elle se numérote et se date elle-même.
+
+Rien n'est ajouté, rien n'est commenté (règle 5 tenue : la date affichée est du texte
+ancien). Sur `eau`, corpus rangé, la colonne donne :
+
+```
+tablette 1 · année 9        eau 14
+tablette 2 · année 12       eau 13
+tablette 3 · année 19       eau 15
+tablette 4 · année 27       eau 12
+tablette 7 · année 54       eau 11
+…
+tablette 25 · année 207     eau 2
+tablette 27 · année 211     eau 1
+tablette 29 · dernière-année  eau 0
+```
+
+**92 lignes au lieu de 676**, et vingt relevés qui descendent de 14 à 0. Le bruit des bonnes
+années reste — 15 en 19, 12 en 71, 10 en 112, 6 en 183 : c'est une vraie série, pas une
+pente.
+
+Trois décisions dans le détail :
+
+- **Un signe inconnu se concorde aussi bien qu'un signe lu.** C'est même là que l'instrument
+  sert le plus : rassembler les contextes d'une forme qu'on ne sait pas encore lire est le
+  geste de l'épigraphiste, et le pendant du comptage d'occurrences de la Table de fréquences.
+- **Le bouton vit dans l'en-tête du corpus, pas dans « À la main ».** Ce n'est pas le joueur
+  qui rassemble les attestations, c'est son instrument — et il n'existe qu'à partir de la
+  première Concordance achetée.
+- **Le rangement reste la condition.** Sans `avant`/`après`, la concordance de `eau` donne
+  la même colonne dans l'ordre de sortie de terre, où elle ne dit rien. L'acte III garde
+  donc ses deux temps : dater, ranger — puis rassembler.
+
+### Deux défauts de contenu, trouvés en écrivant la vue
+
+1. **La tablette 26 citait son propre avenir.** `veille(209, EAU)` recevait la série entière
+   au lieu de la filtrer à la date de la tablette, comme le font les tablettes 6 et 15 : une
+   scribe de l'an 209 y relevait les années 211 et 213, et sa première ligne se datait de
+   209 en portant la crue de 213. Sans conséquence tant que personne ne lisait le bloc comme
+   une série ; la concordance le met au premier plan, deux lignes au-dessus de « avant ·
+   tablette 6 · faux ». Corrigé. Le corpus passe de 678 à **676 lignes**, de 3 825 à
+   **3 809 signes**, et le gisement total de 398 à **397**.
+2. **`outils/corpus.py` ne pouvait pas écrire sur une console cp1252** — la flèche de
+   l'en-tête généré suffisait à le tuer. Le script qui produit `src/corpus.js` dépendait de
+   la locale de la machine. `encoding='utf-8'` explicite.
+
+---
+
+## PT8 — le rangement ne suffit pas
+
+Première partie des trois actes, **63 min 12** pour les vingt signes.
+
+### Le simulateur surestime de 20 %
+
+Il annonçait 78,6 à 83,5 minutes. C'est le premier écart franc dans ce sens : jusqu'ici il
+sous-estimait (PT5) ou tombait juste (PT6). Écart maximal entre deux déblocages : **5 min
+32** — I4 tient. L'acte III seul (de `année` à `dernière-année`) : 24 min 46 pour sept
+signes, 3,5 min chacun.
+
+### I6 = 6,0 %, et le simulateur a vu juste
+
+114 de Certitude recoupée sur ~1 902 produites, contre 5 % annoncés. Par tranches de dix
+minutes :
+
+| tranche | 0–10 | 10–20 | 20–30 | 30–40 | 40–50 | 50–60 | 60–63 |
+|---|---|---|---|---|---|---|---|
+| part de la main | **63 %** | 0 % | 33 % | 28 % | 2,6 % | 0 % | 1,9 % |
+
+**Le déversoir de fin de PT7 est réparé** — la Grammaire absorbe les hypothèses que les
+Concordances laissaient s'entasser, et la part manuelle des cinq dernières minutes passe de
+103 % à 1,9 %. Le mur d'ouverture reste, à 63 % (contre 83 % en PT7, mais par différence de
+conduite : ce joueur-là n'a recoupé que cinq fois avant la dixième minute).
+
+### L'acte III finit en idle — le risque annoncé s'est réalisé
+
+Les trois derniers signes se paient en attendant. **Entre 49:32 et 54:23, puis entre 54:28
+et 58:20, aucune action dans le corpus** — 4 min 51, puis 3 min 52. Le joueur achète des
+Grammaires, regarde monter la Certitude, achète un signe, recommence.
+
+C'était la réserve n°2 posée en livrant l'acte III : *« I6 tombe à 5 % ; ce n'est acceptable
+que si dater et ranger remplacent le geste de lecture qu'on retire au recoupement. »* Ils ne
+l'ont pas remplacé, parce que dater et ranger sont des gestes qu'on fait **une fois**. La
+concordance est un geste qu'on refait — et c'est à ce titre autant qu'au titre de la trame
+qu'elle entre dans le jeu.
+
+### Ce que le gisement dit
+
+**394 relevés de gisement consommés sur 398** (293 en PT7) : le relevé va maintenant au bout
+du corpus. R9 tient, et la main reste un vrai moteur d'occurrences jusqu'à la fin. *(Les
+comptes d'actions par genre n'ont pas été extraits cette fois : les chiffres ci-dessus
+sortent des lignes d'état et des achats, pas d'un dépouillement complet du TSV.)*
+
+---
+
+## L'acte III — le temps, et le corpus qui se range
+
+Première moitié de l'acte : la branche **Temps** (six glyphes), `mille`, l'instrument
+**Grammaire**, et le sommet dramatique — la datation puis le réordonnancement chronologique
+des tablettes. Le lexique passe de 13 à **20 signes sur 45**.
+
+### Pourquoi la datation d'abord
+
+Trois raisons, dans cet ordre :
+
+1. **C'est le risque.** Si le rangement chronologique ne fait rien au joueur, le reste de
+   l'acte est de la décoration. Les sept playtests ont tous servi à tester la chose risquée
+   tôt ; celle-ci ne fait pas exception.
+2. **Elle ne coûte aucun texte neuf.** Chaque tablette portait déjà sa date dans sa
+   première ligne — « tablette 12 · année 103 » — depuis la première seconde du prototype.
+   Le jeu n'ajoute rien : il rend lisible ce qui était là. C'est la règle 5 respectée à la
+   lettre, et c'est aussi ce qui rend le moment juste.
+3. **La brique existait.** La barre de tablettes a été faite pour ça (07/09/2026).
+
+### Ce que `année` change, et ce qu'elle ne change pas
+
+Une tablette est datée quand le joueur sait lire sa date : le mot **et** chacun des signes
+du nombre. Les cinq glyphes de nombre étant acquis à la fin de l'acte II, les vingt-huit
+dates tombent d'un coup à l'achat d'`année`. Les deux dernières ne portent aucun nombre —
+elles disent « dernière-année », et c'est ce glyphe-là, dernier de la branche, qui les date.
+*Après elle, personne n'a plus compté.*
+
+**Dater ne range pas.** `avant` range l'index, `après` range le texte. Deux gestes
+d'archiviste, dans cet ordre : on trie ses fiches avant de déplacer les tablettes. Le
+premier est bon marché et déjà spectaculaire ; le second est celui qui met deux siècles de
+crue en colonne.
+
+### Ce que le rangement démontre
+
+Une fois trié, l'ordre chronologique **est** l'ordre des numéros : 1, 2, 3 … 30. Le corpus
+se numérote lui-même dans l'ordre où il a été gravé.
+
+Ce n'est pas un raccourci d'implémentation, c'est le fond du sujet, et il fallait le voir
+pour le comprendre : le joueur savait lire les numéros depuis `tablette` (acte II) et n'en
+pouvait rien conclure — un numéro peut être un rang d'étagère, un ordre d'inventaire,
+n'importe quoi. Ce sont les dates qui prouvent que la numérotation était chronologique,
+donc que l'archive était **ordonnée**, donc que quelqu'un l'avait rangée exprès. La
+découverte n'est pas « voici l'ordre caché » mais « l'ordre était affiché depuis le début
+et je ne pouvais pas le savoir ». C'est exactement la thèse du jeu, et c'est le seul
+endroit du prototype où elle se démontre au lieu de s'énoncer.
+
+Le déclin de la crue, lui, n'est commenté nulle part : 14, 13, 15, 12, 13, 11, 12, 10, 9,
+10, 8, 7, 8, 6, 5… c'est dans les chiffres, et il faut les avoir mis en ordre pour le voir.
+La carte de fin ne pose plus qu'une question, et c'est celle-là.
+
+### La Grammaire, et ce qu'elle répare
+
+Premier instrument dont le rendement dépend de ce que le joueur a **compris** :
+`0,0012 × 1,16^lexique` certitude par seconde et par unité — la première vraie exponentielle
+du jeu (design doc §5). À 13 signes elle vaut une Concordance ; à 20, quatre.
+
+Elle boit surtout **six fois plus d'hypothèses** qu'une Concordance (3/s contre 0,5), et
+c'est le correctif du défaut mesuré en PT7 : la chaîne produisait plus d'hypothèses que les
+Concordances n'en consommaient, le stock est monté à 5 232, et le joueur l'a vidé à la main
+en douze recoupements. Sans instrument capable d'absorber ce débit, l'action manuelle
+redevient la soupape — c'est le mode de défaillance de PT1 et PT2, sous une troisième forme.
+
+Elle reste fermée jusqu'à `année` : **on n'a pas de grammaire avant d'avoir un temps.**
+
+### La nuit
+
+`nuit` débloque la progression hors ligne — 40 % du débit, quatre heures au plus. C'était le
+dernier écart assumé du MVP (« pas de progression hors-ligne, conforme : `nuit` est un signe
+d'acte III ») ; il est refermé. La nuit est consommée à son crédit, sinon rouvrir deux fois
+la même sauvegarde la paierait deux fois. Elle ne passe pas par l'horloge du jeu : le
+chronomètre mesure du temps de lecture, pas du temps d'absence.
+
+### Mesures (`python outils/sim.py`)
+
+| | 5 clics/min | 15 | 40 |
+|---|---|---|---|
+| durée, 20 glyphes | 83,5 min | 79,9 min | 78,6 min |
+| écart max entre deux signes | 6,2 min | 6,2 min | 6,2 min |
+| part manuelle des Occurrences | 23,5 % | 20,3 % | 20,4 % |
+| I6 sur la partie entière | 5 % | 5 % | 5 % |
+
+I4 tient — jamais plus de 8 minutes sans déblocage. L'acte III ajoute une trentaine de
+minutes pour sept signes : 4,3 min par signe, dans la fourchette visée.
+
+**Le thésauriseur reste puni** : garder les tablettes neuves pour la fin donne 36 % des
+occurrences au lieu de 20, et coûte 2,4 minutes. C'était 42,5 % avant l'acte III.
+
+### I6 tombe à 5 %, et ce n'est pas une bonne nouvelle en soi
+
+Le plafond est un plafond, pas un plancher — mais la Grammaire écrase à ce point la
+production de Certitude que le recoupement, seul geste de lecture des actes I et II, ne pèse
+plus rien après la cinquantième minute. **C'est acceptable à une condition** : que l'acte III
+apporte son propre geste de lecture, et il l'apporte — dater, ranger, relire la série. Si
+PT8 montre un acte III qui se joue sans jamais toucher au texte, c'est ce point-là qu'il
+faudra reprendre, et non le plafond.
+
+### Ce qui reste de l'acte III
+
+- **`zéro` et la composition** (`ne-pas` + `un`) — la grille de composition n'existe pas
+  encore ; `zéro` n'est accessible que par elle et ne peut donc pas être livré avant.
+- **L'Élève**, instrument ambivalent : il multiplie tout et se trompe. Il appartient au même
+  chantier que les lectures fausses (acte IV) et n'a pas de sens sans elles.
+- **Les quatre glyphes de Parole III** (`lire`, `scribe`, `archive`, `les-lecteurs`) et la
+  branche **Modalité** — c'est la seconde moitié de l'acte, et c'est du texte à écrire avant
+  d'être du code.
+
+---
+
+## PT7 — R9 tranché : la main revient dans le corpus
+
+Playtest du 07/09/2026, 44 min 50. La question posée à PT7 était celle de R9 : le tarif figé
+à la première visite donne-t-il envie d'aller ouvrir une tablette neuve en fin de partie ?
+Ni le simulateur ni le rejeu de PT6 ne pouvaient le dire.
+
+### Oui, et largement
+
+| | PT6 | PT7 |
+|---|---|---|
+| relevés | 180 | 422 |
+| part des occurrences produites | 0,1 % | **17,9 %** |
+| tablettes touchées | 3 | **22** |
+| gisement consommé | 54 / 398 | **293 / 398** |
+| dernier relevé | 15,5 min | **40,1 min** |
+
+Les tarifs figés, mesurés dans la partie : t1 à **1** occurrence par relevé, t16 (23ᵉ min) à
+**128**, t22 à 484, t10 (31ᵉ min) à **777**, t25 à 1 216, t18 (40ᵉ min) à **1 362**.
+**95 % des occurrences relevées à la main l'ont été après la vingt-cinquième minute** — la
+raison de parcourir le corpus tard existe, et elle se voit sans qu'on l'explique. Le
+simulateur annonçait 14 à 19 % ; le joueur réel s'est posé à 17,9 %, alors même que le
+simulateur ne pouvait pas modéliser le changement de conduite qu'il mesurait.
+
+### I6 = 31,2 %, et la moyenne ne veut plus rien dire
+
+74 de Certitude recoupée sur 237. Premier dépassement depuis PT4 — mais découpé par
+tranches de dix minutes, le nombre global se révèle être une moyenne qui cache deux défauts
+opposés :
+
+| tranche | C recoupée | C produite | part |
+|---|---|---|---|
+| 0–10 min | 10 | ~12 | **83 %** |
+| 10–20 | 14 | ~30 | 47 % |
+| 20–30 | 14 | ~44 | 32 % |
+| 30–40 | 0 | ~68 | **0 %** |
+| 40–45 | 36 | ~35 | **103 %** |
+
+1. **Le mur des dix premières minutes**, déjà noté après PT5, maintenant chiffré sur un
+   joueur réel : 83 %. Aucune Concordance n'existe encore ; toute la Certitude est à la main.
+2. **Un déversoir en fin de partie** : les hypothèses montent à **5 232** à la quarantième
+   minute — vingt-neuf Concordances n'en boivent que 14,5 par seconde quand trente-six
+   Tables en produisent 28 — et le joueur les convertit à la main en douze recoupements sur
+   quatre minutes. **C'est ce seul creux qui fait passer I6 de 29 à 31,2 %.** La Grammaire
+   de l'acte III est la réponse.
+
+**Décision : I6 se mesure désormais par tranches de dix minutes**, dans `outils/sim.py`
+comme dans le dépouillement. Un invariant qui se pose à 30,0 % en PT6 en cachant un 83 % et
+un 103 % n'est pas un instrument, c'est une moyenne. La règle 2 de `CLAUDE.md` est réécrite
+en conséquence.
+
+### Un tiers des relevés tombe dans le vide
+
+**129 relevés sur 422 portent sur un gisement épuisé** et ne rendent que le plancher — t7 :
+64 relevés pour 27 gisements. La barre éteint bien la cellule d'une tablette épuisée, mais
+dans le texte rien ne dit qu'un jeton ne rapporte plus rien. Le rythme d'actions remonte à
+10,4 par minute contre 5,7 en PT6, dont un tiers de clics vides. À traiter : c'est un défaut
+de retour d'interface, pas d'équilibrage.
+
+### Le recoupement tient toujours le texte
+
+39 recoupements sur 8 signes distincts — `nur` (8), `shen` (6), `la` (6), `tem`, `sar`,
+`tab`, `kish` (4 chacun), `zur` (3). **Quatre de ces huit ne s'achètent pas** : le joueur
+les a choisis parce qu'ils étaient commodes à retrouver, comme en PT6. Écart médian entre
+deux recoupements : 12 secondes.
+
+---
 
 ## PT6 — le recoupement tient, le relevé non
 
@@ -283,7 +581,7 @@ survol. Accessoirement, cela supprime la reconstruction de trente titres par ima
 Au passage, un défaut plus ancien : `paintRail` n'était appelée qu'au chargement et à
 chaque glyphe acquis, jamais sur un relevé. L'extinction d'une tablette épuisée ne se
 voyait donc qu'au glyphe suivant. Les deux axes de la cellule se repeignent maintenant
-séparément — la lisibilité à chaque glyphe (elle recompte les 3 825 signes), le gisement à
+séparément — la lisibilité à chaque glyphe (elle recompte les 3 809 signes), le gisement à
 chaque relevé (deux classes) — parce que les recompter à chaque clic coûterait cent fois
 le prix.
 
@@ -665,15 +963,19 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
 | | Valeur |
 |---|---|
 | Relever | dans le corpus. Jeton neuf : tarif de la tablette, figé à (1 + 1,2 × débit) × mult. **au premier relevé qu'on y fait**. Jeton déjà relevé ou tablette épuisée : le plancher (1 × mult.) |
-| Gisement | ⌈jetons/10⌉ par tablette, **398** en tout, dont 13 ouverts au départ |
+| Gisement | ⌈jetons/10⌉ par tablette, **397** en tout, dont 13 ouverts au départ |
 | Formuler | 3 occ. → 1 hyp. |
 | Recouper | dans le corpus : deux attestations d'un même signe, dans deux tablettes différentes. 12 occ. + 3 hyp. → min(3, 1 + ⌊lexique/5⌋) cert., coût ×1,18 par usage (−25 % avec `champ`) |
 | Copiste | 15 occ., ×1,12, +1 occ./s |
 | Table de fréquences | 100 occ., ×1,15, −1 occ./s → +0,6 hyp./s |
 | Concordance | 450 occ., ×1,18, −0,5 hyp./s → +0,0039 cert./s |
 | Atelier de copie | 1 800 occ., ×1,15, +25 occ./s |
-| Signes (13) | Nombre 2 · 5 · 11 · 18 · 33 — Matière 3 · 6 · 14 · 22 · 40 — Parole 8 · 27 · 48 = **237 C** |
-| Multiplicateurs | `deux` ×1,25 relevé · `grain` ×1,3 copiste · `tablette` ×1,5 relevé · `eau` ×1,3 table · `champ` −25 % recoupement · `graver` ×1,5 concordance · `copier` ×2 sur tout |
+| Grammaire *(acte III)* | 12 000 occ., ×1,20, −3 hyp./s → +0,0012 × 1,16^lexique cert./s. Fermée jusqu'à `année` |
+| Hors ligne *(acte III)* | `nuit` : 40 % du débit, 4 h au plus, consommé au crédit |
+| Signes (20) | Nombre 2 · 5 · 11 · 18 · 33 · 110 — Matière 3 · 6 · 14 · 22 · 40 — Parole 8 · 27 · 48 — Temps 60 · 130 · 190 · 260 · 360 · 500 = **1 847 C** |
+| Multiplicateurs | `deux` ×1,25 relevé · `grain` ×1,3 copiste · `tablette` ×1,5 relevé · `eau` ×1,3 table · `champ` −25 % recoupement · `graver` ×1,5 concordance · `copier` ×2 sur tout · `mille` ×1,3 atelier · `siècle` ×1,5 grammaire · `dernière-année` ×1,5 atelier |
+| Datation | une tablette se date quand on sait lire `année` **et** chacun des signes de son nombre. Les deux dernières attendent `dernière-année`. `avant` range la barre, `après` range le corpus |
+| Concordance *(effet visible)* | choisir un signe replie le corpus sur ses attestations, chaque tablette gardant sa première ligne. Ouvert dès la première Concordance achetée ; marche aussi sur un signe inconnu |
 
 ---
 
@@ -684,9 +986,12 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
 3. **Lexique à 45 signes au lieu de 44** : la branche Nombre gagne `cinq` et `mille`, perd `vingt` (redondant), pour que chaque signe ouvre un rang de numération — ou, pour `deux`, le principe du redoublement.
 4. **17 composés au lieu de 9.** En dessinant les signes, presque tout le lexique tardif s'est révélé composable (`nous-fûmes` = nous + finir, `scribe` = dire + graver). La mécanique de composition de l'acte III en devient plus riche — et `zéro`, composé `ne-pas` + `un`, s'affiche dans les compteurs du joueur dès la première seconde, des heures avant qu'il puisse le lire.
 5. **Invariant I5 retiré**, invariant I6 ajouté.
-6. **La Table de fréquences a un effet visible** (comptage d'occurrences au survol), en plus de son rôle économique.
+6. **La Table de fréquences et la Concordance ont un effet visible** — le comptage d'occurrences pour l'une, le rassemblement des attestations pour l'autre — en plus de leur rôle économique. Un instrument nommé d'après une méthode philologique doit faire cette méthode, sinon le nom ment.
 7. **Le chrome de l'interface est en français dès t=0.** L'idéal du doc — un seul mot français à l'écran — rend le prototype injouable sans onboarding. À réexaminer une fois qu'il y en aura un.
-8. **Pas de progression hors-ligne** (conforme : `nuit` est un signe d'acte III).
+8. ~~Pas de progression hors-ligne.~~ **Refermé à l'acte III** : `nuit` la débloque, 40 % du débit, 4 h au plus.
+9. **L'acte III est livré par moitiés.** La branche Temps, `mille`, la Grammaire et le
+   réordonnancement d'abord ; la composition (donc `zéro`), l'Élève, la Parole III et la
+   Modalité ensuite. Le doc décrit l'acte entier, le code en tient la première moitié.
 
 ---
 
@@ -698,14 +1003,20 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
 
 ## Suite
 
-1. **PT7**, pour trancher ce que ni le simulateur ni le rejeu de PT6 ne peuvent dire :
-   maintenant que les tablettes lues reculent dans la barre, le tarif à la première visite
-   donne-t-il envie d'aller en ouvrir une neuve en fin de partie ? I6 tient-il, sachant
-   qu'un joueur qui thésaurise le pousse à 32,5 % en simulation ? et faut-il sortir le
-   tarif de l'infobulle pour qu'il compte ?
-2. **Le mur des dix premières minutes** : 100 % de la Certitude à la main avant la première
-   Concordance, et c'est là que la partie 1 de PT5 a été abandonnée. Mesurer I6 par tranches
-   dans `outils/sim.py` plutôt que sur la partie entière.
-3. **Acte III** — branche Temps, `mille`, `zéro` par composition, instruments Grammaire et Élève, et surtout la **datation puis le réordonnancement chronologique** des tablettes. C'est le sommet dramatique : une fois triées, la série de l'eau devient lisible et le déclin apparaît.
-3. Puis la mécanique de **composition**, puis les **contradictions** (acte IV).
-4. Trancher le sort de ⟨N1⟩ et ⟨N2⟩ (`docs/corpus.md` §9).
+1. **PT9**, la première partie avec la concordance. Une seule question, et elle est la même
+   que celle de PT8 : **la crue qui baisse se voit-elle ?** La colonne existe maintenant,
+   elle tient en quatre-vingt-douze lignes, elle descend de 14 à 0 — reste à savoir si le
+   joueur y va, et ce qu'il concorde. Le journal d'actions note désormais chaque
+   concordance et son signe : si le TSV n'en contient aucune, l'instrument est invisible et
+   c'est le bouton qu'il faut reprendre, pas la vue.
+   Deux questions secondaires : les quatre minutes d'idle de la fin d'acte reculent-elles ?
+   et le simulateur, qui a surestimé PT8 de 20 %, doit-il être recalé ?
+2. **Le mur des dix premières minutes** : 83 % de la Certitude à la main avant la première
+   Concordance en PT7, 63 % en PT8 — et c'est là que la partie 1 de PT5 a été abandonnée.
+   Le seul défaut d'équilibrage connu qui ne soit pas réglé. Il se traite par l'ouverture (un
+   instrument plus tôt, ou un premier signe moins cher), pas par le recoupement.
+3. **Le clic vide** : un tiers des relevés de PT7 tombent sur un gisement épuisé. Le texte
+   doit dire ce que la barre dit déjà.
+4. **Seconde moitié de l'acte III** — composition (donc `zéro`), Élève, Parole III,
+   Modalité. Puis les **contradictions** (acte IV).
+5. Trancher le sort de ⟨N1⟩ et ⟨N2⟩ (`docs/corpus.md` §9).

@@ -45,7 +45,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .meter{height:2px;background:var(--line);position:relative;overflow:hidden}
 .meter i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--ochre-d),var(--ochre));transition:width .5s ease}
 .rail{display:flex;flex-wrap:wrap;gap:3px;padding:8px 12px;border-bottom:1px solid var(--line);
-  max-height:78px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
+  max-height:104px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
 .rcell[hidden]{display:none}
 .rcell{display:flex;flex-direction:column;align-items:center;gap:4px;min-width:30px;max-width:64px;
   padding:4px 5px 5px;border:1px solid var(--line);border-radius:2px;background:var(--clay2);
@@ -58,6 +58,16 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .rcell:hover{border-color:var(--ochre-d);background:#31261B}
 .rcell .rn{font-family:var(--mono);font-size:10px;color:var(--dim);line-height:1.1;display:flex;align-items:center;gap:1px}
 .rcell .rn .gl{width:7px;height:10px;vertical-align:0}
+/* La date, sous le numéro. Tant qu'on ne sait pas la lire, la ligne n'existe pas et la
+   barre garde sa hauteur d'acte I ; elle grandit d'un coup à « année », quand vingt-huit
+   tablettes se datent ensemble. C'est le seul saut de mise en page du jeu, et il tombe
+   exactement là où il faut. */
+.rcell .ry{font-family:var(--mono);font-size:11px;color:var(--grain);line-height:1;
+  display:flex;align-items:center}
+.rcell .ry:empty{display:none}
+.rcell .ry .gl{width:7px;height:11px;vertical-align:0}
+.rcell .ry .gl2{width:14px;height:11px}
+.rcell.lue .ry{color:var(--dim)}
 .rcell .rb{width:100%;height:3px;background:#443528;border-radius:1px;overflow:hidden}
 .rcell .rb i{display:block;height:100%;background:var(--ochre-d);transition:width .5s ease}
 .rcell.sec{opacity:.42}
@@ -67,8 +77,28 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .rcell.touche{border-color:var(--ochre)}
 .rcell.touche .rn{color:var(--ochre)}
 .rcell.touche .rb i{background:var(--ochre)}
+/* La concordance vit dans l'en-tête du corpus et non dans « À la main » : ce n'est pas le
+   joueur qui rassemble les attestations, c'est son instrument. Le bouton n'existe donc
+   qu'à partir de la première Concordance achetée. */
+.conc{font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--dim);border:1px solid var(--line);border-radius:2px;padding:2px 7px;
+  display:inline-flex;align-items:center;gap:5px;transition:border-color .15s,color .15s}
+.conc:hover{color:var(--lamp);border-color:var(--ochre-d)}
+.conc.on{color:var(--ochre);border-color:var(--ochre-d);background:#31261B}
+.conc .gl{width:9px;height:12px;vertical-align:0}
+.conc .gl2{width:16px}
 #corpus{padding:14px 16px 20px;overflow-y:auto;max-height:min(74vh,780px);cursor:crosshair;
   scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
+/* Repliée sur un signe, une tablette n'est plus qu'une date et quelques lignes : le trait
+   qui sépare deux tablettes porte alors tout, et il faut le resserrer. */
+#corpus.filtre .ln.off{display:none}
+#corpus.filtre .tablet.vide{display:none}
+/* Resserré : une concordance ne se lit pas comme une tablette. C'est une colonne, et il
+   faut qu'elle tienne dans le regard — 14, 13, 15, 12, 11, 12, 10, 9 ne veut rien dire si
+   les nombres sont à deux écrans les uns des autres. */
+#corpus.filtre .tablet{padding:7px 0 8px}
+#corpus.filtre .ln{padding:1px 0;line-height:1.5}
+#corpus.conc-arme{cursor:cell}
 .tablet{padding:14px 0 16px;border-bottom:1px dashed var(--line);margin-bottom:4px}
 .tablet:last-child{border-bottom:none}
 .tlabel{font-family:var(--mono);font-size:9.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-bottom:7px}
@@ -203,7 +233,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 <div class="shell">
   <header class="masthead">
     <h1>La langue morte</h1>
-    <span class="sub">prototype · actes I–II · 13 glyphes sur 45</span>
+    <span class="sub">prototype · actes I–III · 20 glyphes sur 45</span>
     <span class="spacer"></span>
     <div class="devbar">
       <span>hors jeu</span>
@@ -219,9 +249,9 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 
   <div class="grid">
     <section class="panel corpus-wrap">
-      <div class="phead"><span>Le corpus</span><span style="color:var(--faint);letter-spacing:.06em">j / k</span><span class="r" id="gis"></span><span id="pct">signes 0 %</span></div>
+      <div class="phead"><span>Le corpus</span><span style="color:var(--faint);letter-spacing:.06em">j / k</span><button class="conc" id="a-con" title="rassembler les attestations d'un signe — c pour ouvrir, échap pour fermer" hidden></button><span class="r" id="gis"></span><span id="pct">signes 0 %</span></div>
       <div class="meter"><i id="meter"></i></div>
-      <div class="rail" id="rail" aria-label="Tablettes dégagées. Cliquez pour y aller."></div>
+      <div class="rail" id="rail" aria-label="Tablettes dégagées, avec leur date quand elle est lisible. Cliquez pour y aller."></div>
       <div id="corpus" aria-label="Corpus. Cliquez sur les signes pour relever des occurrences."></div>
       <div class="log" id="log"><p class="hint">relève un signe : clique dans le corpus</p></div>
     </section>
@@ -251,7 +281,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
     </div>
 
     <section class="panel">
-      <div class="phead"><span>Lexique</span><span class="r" id="lexr">0 / 12</span></div>
+      <div class="phead"><span>Lexique</span><span class="r" id="lexr">0 / 20</span></div>
       <div class="lex" id="lex"></div>
     </section>
   </div>
@@ -262,11 +292,11 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 <div class="end" id="end" hidden>
   <div class="endcard">
     <h2>Fin du prototype</h2>
-    <div class="k">actes I et II · 13 glyphes sur 45</div>
-    <p class="quote">Copier. Ils ont tout copié — beaucoup plus de fois qu'il n'en fallait pour garder.</p>
-    <p>Le corpus s'arrête ici. La suite — la grammaire, la datation des tablettes, la deuxième personne, la composition des glyphes, les contradictions — appartient aux actes III à V.</p>
+    <div class="k">actes I à III · 20 glyphes sur 45</div>
+    <p class="quote">La dernière année. Elle n'a pas de nombre : après elle, personne n'a plus compté.</p>
+    <p>Le corpus s'arrête ici. La suite — la composition des glyphes, la deuxième personne, les lectures fausses et les contradictions — appartient aux actes IV et V.</p>
     <div class="endstats" id="endstats"></div>
-    <p style="font-size:15px"><b style="color:var(--lamp);font-weight:500">La seule question qui compte&nbsp;:</b> au moment où les compteurs sont devenus lisibles, est-ce que ça a fait quelque chose&nbsp;? Si non, le concept ne tient pas, et les 32 glyphes restants ne le sauveront pas.</p>
+    <p style="font-size:15px"><b style="color:var(--lamp);font-weight:500">La seule question qui compte&nbsp;:</b> au moment où les tablettes se sont rangées dans l'ordre du temps, est-ce que la crue qui baisse s'est vue&nbsp;? Personne ne la commente&nbsp;; elle n'est que dans les chiffres. Si elle passe inaperçue, le sommet de l'acte III est manqué et les 25 glyphes restants ne le rattraperont pas.</p>
     <div class="endacts">
       <button class="go" id="again">recommencer</button>
       <button class="ghost" id="fermer" title="échap — le corpus reste figé sur la partie terminée">revenir au corpus</button>
@@ -398,7 +428,7 @@ function numGlyphs(n){
 }
 
 
-/* « La langue morte » — les 13 glyphes du MVP (actes I-II)
+/* « La langue morte » — les 20 glyphes des actes I à III
    Scripts classiques, portée globale partagée, chargés dans l'ordre de index.html.
    Aucune dépendance externe hors les polices Google. */
 "use strict";
@@ -415,6 +445,8 @@ const GL = [
    log:'La main : dix. Ils comptaient sur les mains, comme tout le monde.'},
   {id:'meku', br:'nombre',  mot:'cent',     cost:33, eff:'nombres jusqu’à 999 · grands nombres repliés · achat ×10',
    log:'Cent. Les récoltes deviennent lisibles. Et elles baissent.'},
+  {id:'mille',br:'nombre',  mot:'mille',    cost:110, eff:'tous les nombres du corpus · +30 % à l’atelier de copie',
+   log:'Mille. Ils comptaient leurs tablettes par milliers, et le grain par dizaines.'},
   {id:'tem',  br:'matiere', mot:'grain',    cost:3,  eff:'+30 % au copiste',
    log:'Du grain. Ce ne sont pas des prières : ce sont des inventaires.'},
   {id:'ur',   br:'matiere', mot:'maison',   cost:6,  eff:'les instruments prennent leur nom',
@@ -430,10 +462,28 @@ const GL = [
   {id:'sar',  br:'parole',  mot:'graver',   cost:27, eff:'+50 % à la concordance',
    log:'Graver. Quelqu’un a tenu ce stylet, et l’a écrit.'},
   {id:'kal',  br:'parole',  mot:'copier',   cost:48, eff:'×2 sur toute la production',
-   log:'Copier. Deux fois, puis dix, puis cent. Bien plus qu’il n’en fallait pour garder.'}
+   log:'Copier. Deux fois, puis dix, puis cent. Bien plus qu’il n’en fallait pour garder.'},
+  /* ---- acte III : le temps ----
+     La branche ne donne pas un bonus de plus, elle donne une dimension. `année` fait
+     apparaître une date que le corpus portait depuis la première seconde ; `avant` range
+     l’index, `après` range le texte lui-même. Ce que ce rangement découvre — la crue qui
+     baisse sur deux siècles — n’est écrit nulle part et n’est commenté par personne :
+     c’est dans les chiffres, et il faut les avoir mis en ordre pour le voir. */
+  {id:'nur',  br:'temps',   mot:'année',    cost:60, eff:'chaque tablette porte sa date · la grammaire devient possible',
+   log:'Année. Chaque tablette est datée depuis le début — je ne savais pas lire la date.'},
+  {id:'pat',  br:'temps',   mot:'avant',    cost:130, eff:'la barre se range dans l’ordre du temps',
+   log:'Avant. Ce qui est sorti de terre en premier n’a pas été gravé en premier.'},
+  {id:'zur',  br:'temps',   mot:'après',    cost:190, eff:'le corpus se range dans l’ordre du temps',
+   log:'Après. Le corpus se remet en ordre. Deux siècles, du premier relevé au dernier.'},
+  {id:'nurnur',br:'temps',  mot:'siècle',   cost:260,eff:'+50 % à la grammaire',
+   log:'Siècle. Ils mesuraient par centaines d’années. Il leur en restait deux.'},
+  {id:'esh',  br:'temps',   mot:'nuit',     cost:360,eff:'la lecture continue hors ligne — 40 % du débit, 4 h au plus',
+   log:'Nuit. Ils gravaient la nuit. Le corpus se lit maintenant sans moi.'},
+  {id:'nurhal',br:'temps',  mot:'dernière-année',cost:500,eff:'les deux dernières tablettes se datent · +50 % à l’atelier de copie',
+   log:'La dernière année. Elle n’a pas de nombre : après elle, personne n’a plus compté.'}
 ];
 const NGL = GL.length;
-const BR = [['nombre','Nombre'],['matiere','Matière'],['parole','Parole']];
+const BR = [['nombre','Nombre'],['matiere','Matière'],['parole','Parole'],['temps','Temps']];
 const byId = Object.fromEntries(GL.map(g=>[g.id,g]));
 
 
@@ -443,7 +493,7 @@ const byId = Object.fromEntries(GL.map(g=>[g.id,g]));
 
 "use strict";
 
-const CORPUS=[{"t":1,"l":["tab %1 · nur %9","gan %1 · tem %212","gan %2 · tem %198","gan %3 · tem %140","gan %4 · tem %206","tem %756","kish %14","ur %31"]},{"t":2,"l":["tab %2 · nur %12","gan %1 · tem %205","gan %2 · tem %191","gan %3 · tem %138","gan %4 · tem %208","tem %742","kish %13","ur %31"]},{"t":3,"l":["tab %3 · nur %19","gan %1 · tem %224","gan %2 · tem %210","gan %3 · tem %152","gan %4 · tem %215","tem %801","kish %15","ur %33"]},{"t":4,"l":["tab %4 · nur %27","gan %1 · tem %190","gan %2 · tem %176","gan %3 · tem %130","gan %4 · tem %194","tem %690","kish %12","ur %30","urtem %1 · tem %690","imme nm3"]},{"t":5,"l":["tab %5 · nur %40","urtem %1 · tem %705","ur %1 · tem %20 · zur · nash · dun","ur %2 · tem %20 · en la · enla","ur %3 · tem %20 · pat · nur la · en shen","ur %4 · tem %20 · en la · enla","ur %5 · tem %20 · imme · esh · dun sar","ur %6 · tem %20 · pat · nur la · en shen","ur %7 · tem %20 · en mesh · dun la · zur","ur %8 · tem %20 · en la · enla","ur %9 · tem %20 · pat · nur la · en shen","ur %10 · tem %20 · imme · esh · dun sar","ur %11 · tem %20 · en la · enla","ur %12 · tem %20 · pat · nur la · en shen","ur %13 · tem %20 · zur · nash · dun","ur %14 · tem %20 · en mesh · dun la · zur","ur %15 · tem %20 · imme · esh · dun sar","ur %16 · tem %20 · en la · enla","ur %17 · tem %20 · zur · nash · dun","ur %18 · tem %20 · pat · nur la · en shen","ur %19 · tem %20 · en la · enla","ur %20 · tem %20 · imme · esh · dun sar","ur %21 · tem %20 · en mesh · dun la · zur","ur %22 · tem %20 · en la · enla","ur %23 · tem %20 · en la · enla","ur %24 · tem %20 · pat · nur la · en shen","ur %25 · tem %20 · imme · esh · dun sar","ur %26 · tem %20 · en la · enla","ur %27 · tem %20 · pat · nur la · en shen","ur %28 · tem %20 · en mesh · dun la · zur","ur %29 · tem %20 · zur · nash · dun","ur %30 · tem %20 · imme · esh · dun sar","ur %31 · tem %20 · en la · enla","tem %620","urtem %1 · tem %85","mesh %60","tem %25","imme nm3"]},{"t":6,"l":["tab %6 · nur %40","nur %40 · kish %13","pat · nur %27 · kish %12 · en la · enla","pat · nur %19 · kish %15 · en la · enla","pat · nur %12 · kish %13 · en la · enla","pat · nur %9 · kish %14 · en la · enla","dun shen · kish","mik kish · mik la","zur · dun shen","imme nm3"]},{"t":7,"l":["tab %7 · nur %54","gan %1 · tem %180","gan %2 · tem %168","gan %3 · tem %124","gan %4 · tem %176","tem %648","kish %11","ur %29","ur %1 · tem %20 · zur · nash · dun","ur %2 · tem %20 · en la · enla","ur %3 · tem %20 · pat · nur la · en shen","ur %4 · tem %20 · en la · enla","ur %5 · tem %20 · imme · esh · dun sar","ur %6 · tem %20 · pat · nur la · en shen","ur %7 · tem %20 · en mesh · dun la · zur","ur %8 · tem %20 · en la · enla","ur %9 · tem %20 · pat · nur la · en shen","ur %10 · tem %20 · imme · esh · dun sar","ur %11 · tem %20 · en la · enla","ur %12 · tem %20 · pat · nur la · en shen","ur %13 · tem %20 · zur · nash · dun","ur %14 · tem %20 · en mesh · dun la · zur","ur %15 · tem %20 · imme · esh · dun sar","ur %16 · tem %20 · en la · enla","ur %17 · tem %20 · zur · nash · dun","ur %18 · tem %20 · pat · nur la · en shen","ur %19 · tem %20 · en la · enla","ur %20 · tem %20 · imme · esh · dun sar","ur %21 · tem %20 · en mesh · dun la · zur","ur %22 · tem %20 · en la · enla","ur %23 · tem %20 · en la · enla","ur %24 · tem %20 · pat · nur la · en shen","ur %25 · tem %20 · imme · esh · dun sar","ur %26 · tem %20 · en la · enla","ur %27 · tem %20 · pat · nur la · en shen","ur %28 · tem %20 · en mesh · dun la · zur","ur %29 · tem %20 · zur · nash · dun","tem %580","urtem %1 · tem %62"]},{"t":8,"l":["tab %8 · nur %54","tabsar %1","tab %1 · tab %2 · tab %3 · tab %4","dun kal · en la · enla","tab %5 · tab %6 · tab %7 · tab %8","tab %9 · tab %10 · tab %11 · tab %12","esh · kal · zur","tab %13 · tab %14 · tab %15 · tab %16","dun kal · en la · enla","tab %17 · tab %18 · tab %19 · tab %20","tab %21 · tab %22 · tab %23 · tab %24","dun kal tab","kal %2","en kal · la lash","en lash · dun la","esh · dun sar","zur · dun shen","imme nm3"]},{"t":9,"l":["tab %9 · nur %71","gan %1 · tem %184","gan %2 · tem %171","gan %3 · tem %126","gan %4 · tem %180","tem %661","kish %12","ur %30","ur %1 · tem %20 · zur · nash · dun","ur %2 · tem %20 · en la · enla","ur %3 · tem %20 · pat · nur la · en shen","ur %4 · tem %20 · en la · enla","ur %5 · tem %20 · imme · esh · dun sar","ur %6 · tem %20 · pat · nur la · en shen","ur %7 · tem %20 · en mesh · dun la · zur","ur %8 · tem %20 · en la · enla","ur %9 · tem %20 · pat · nur la · en shen","ur %10 · tem %20 · imme · esh · dun sar","ur %11 · tem %20 · en la · enla","ur %12 · tem %20 · pat · nur la · en shen","ur %13 · tem %20 · zur · nash · dun","ur %14 · tem %20 · en mesh · dun la · zur","ur %15 · tem %20 · imme · esh · dun sar","ur %16 · tem %20 · en la · enla","ur %17 · tem %20 · zur · nash · dun","ur %18 · tem %20 · pat · nur la · en shen","ur %19 · tem %20 · en la · enla","ur %20 · tem %20 · imme · esh · dun sar","ur %21 · tem %20 · en mesh · dun la · zur","ur %22 · tem %20 · en la · enla","ur %23 · tem %20 · en la · enla","ur %24 · tem %20 · pat · nur la · en shen","ur %25 · tem %20 · imme · esh · dun sar","ur %26 · tem %20 · en la · enla","ur %27 · tem %20 · pat · nur la · en shen","ur %28 · tem %20 · en mesh · dun la · zur","ur %29 · tem %20 · zur · nash · dun","ur %30 · tem %20 · imme · esh · dun sar","tem %600","urtem %1 · tem %1"]},{"t":10,"l":["tab %10 · nur %88","gan %1 · tem %165","gan %2 · tem %153","gan %3 · tem %112","gan %4 · tem %160","tem %590","kish %10","ur %27","mesh %60","ur %1 · tem %20 · zur · nash · dun","ur %2 · tem %20 · en la · enla","ur %3 · tem %20 · pat · nur la · en shen","ur %4 · tem %20 · en la · enla","ur %5 · tem %20 · imme · esh · dun sar","ur %6 · tem %20 · pat · nur la · en shen","ur %7 · tem %20 · en mesh · dun la · zur","ur %8 · tem %20 · en la · enla","ur %9 · tem %20 · pat · nur la · en shen","ur %10 · tem %20 · imme · esh · dun sar","ur %11 · tem %20 · en la · enla","ur %12 · tem %20 · pat · nur la · en shen","ur %13 · tem %20 · zur · nash · dun","ur %14 · tem %20 · en mesh · dun la · zur","ur %15 · tem %20 · imme · esh · dun sar","ur %16 · tem %20 · en la · enla","ur %17 · tem %20 · zur · nash · dun","ur %18 · tem %20 · pat · nur la · en shen","ur %19 · tem %20 · en la · enla","ur %20 · tem %20 · imme · esh · dun sar","ur %21 · tem %20 · en mesh · dun la · zur","ur %22 · tem %20 · en la · enla","ur %23 · tem %20 · en la · enla","ur %24 · tem %20 · pat · nur la · en shen","ur %25 · tem %20 · imme · esh · dun sar","ur %26 · tem %20 · en la · enla","ur %27 · tem %20 · pat · nur la · en shen","urtem %1 · tem %0"]},{"t":11,"l":["tab %11 · nur %88","imme nm3 hal","tabsar %1 · tab %11","dun kal tab","kal %2","en kal · la lash","en lash · dun la","esh · dun sar","zur · dun shen","imme nm4"]},{"t":12,"l":["tab %12 · nur %103","gan %1 · tem %146","gan %2 · tem %135","gan %3 · tem %99","gan %4 · tem %142","tem %522","kish %9","ur %24","mesh %80","ur %1 · tem %20 · zur · nash · dun","ur %2 · tem %20 · en la · enla","ur %3 · tem %20 · pat · nur la · en shen","ur %4 · tem %20 · en la · enla","ur %5 · tem %20 · imme · esh · dun sar","ur %6 · tem %20 · pat · nur la · en shen","ur %7 · tem %20 · en mesh · dun la · zur","ur %8 · tem %20 · en la · enla","ur %9 · tem %20 · pat · nur la · en shen","ur %10 · tem %20 · imme · esh · dun sar","ur %11 · tem %20 · en la · enla","ur %12 · tem %20 · pat · nur la · en shen","ur %13 · tem %20 · zur · nash · dun","ur %14 · tem %20 · en mesh · dun la · zur","ur %15 · tem %20 · imme · esh · dun sar","ur %16 · tem %20 · en la · enla","ur %17 · tem %20 · zur · nash · dun","ur %18 · tem %20 · pat · nur la · en shen","ur %19 · tem %20 · en la · enla","ur %20 · tem %20 · imme · esh · dun sar","ur %21 · tem %20 · en mesh · dun la · zur","ur %22 · tem %20 · en la · enla","ur %23 · tem %20 · en la · enla","ur %24 · la · urtem la · pat · nur la","urtem %1 · tem %12"]},{"t":13,"l":["tab %13 · nur %112","gan %1 · tem %153","gan %2 · tem %142","gan %3 · tem %104","gan %4 · tem %149","tem %548","kish %10","ur %25","zur · nur %103 · tem %522","zur · nur %112 · tem %548","mik kish","ur %1 · tem %20 · zur · nash · dun","ur %2 · tem %20 · en la · enla","ur %3 · tem %20 · pat · nur la · en shen","ur %4 · tem %20 · en la · enla","ur %5 · tem %20 · imme · esh · dun sar","ur %6 · tem %20 · pat · nur la · en shen","ur %7 · tem %20 · en mesh · dun la · zur","ur %8 · tem %20 · en la · enla","ur %9 · tem %20 · pat · nur la · en shen","ur %10 · tem %20 · imme · esh · dun sar","ur %11 · tem %20 · en la · enla","ur %12 · tem %20 · pat · nur la · en shen","ur %13 · tem %20 · zur · nash · dun","ur %14 · tem %20 · en mesh · dun la · zur","ur %15 · tem %20 · imme · esh · dun sar","ur %16 · tem %20 · en la · enla","ur %17 · tem %20 · zur · nash · dun","ur %18 · tem %20 · pat · nur la · en shen","ur %19 · tem %20 · en la · enla","ur %20 · tem %20 · imme · esh · dun sar","ur %21 · tem %20 · en mesh · dun la · zur","ur %22 · tem %20 · en la · enla","ur %23 · tem %20 · en la · enla","ur %24 · tem %20 · pat · nur la · en shen","ur %25 · la · urtem la · pat · nur la","imme nm4"]},{"t":14,"l":["tab %14 · nur %126","tem %470","kish %8","ur %22","mesh %100","urtem %1 · tem %0","ur %1 · tem %20 · zur · nash · dun","ur %2 · tem %20 · en la · enla","ur %3 · tem %20 · pat · nur la · en shen","ur %4 · tem %20 · en la · enla","ur %5 · tem %20 · imme · esh · dun sar","ur %6 · tem %20 · pat · nur la · en shen","ur %7 · tem %20 · en mesh · dun la · zur","ur %8 · tem %20 · en la · enla","ur %9 · tem %20 · pat · nur la · en shen","ur %10 · tem %20 · imme · esh · dun sar","ur %11 · tem %20 · en la · enla","ur %12 · tem %20 · pat · nur la · en shen","ur %13 · tem %20 · zur · nash · dun","ur %14 · tem %20 · en mesh · dun la · zur","ur %15 · tem %20 · imme · esh · dun sar","ur %16 · tem %20 · en la · enla","ur %17 · tem %20 · zur · nash · dun","ur %18 · tem %20 · pat · nur la · en shen","ur %19 · tem %20 · en la · enla","ur %20 · tem %20 · imme · esh · dun sar","ur %21 · la · urtem la · pat · nur la","ur %22 · la · urtem la · pat · nur la","tem %440","tem %30","dun kal tab","kal %10","en kal · la lash","en lash · dun la","esh · dun sar","zur · dun shen"]},{"t":15,"l":["tab %15 · nur %139","tem %401","ur %19","nurnur %1 · zur","pat · nurnur %1 · kish %14","nur %139 · kish %7","pat · nur %126 · kish %8 · en la · enla","pat · nur %112 · kish %10 · en la · enla","pat · nur %103 · kish %9 · en la · enla","pat · nur %88 · kish %10 · en la · enla","pat · nur %71 · kish %12 · en la · enla","pat · nur %54 · kish %11 · en la · enla","pat · nur %40 · kish %13 · en la · enla","pat · nur %27 · kish %12 · en la · enla","pat · nur %19 · kish %15 · en la · enla","pat · nur %12 · kish %13 · en la · enla","pat · nur %9 · kish %14 · en la · enla","dun shen · kish","mik kish · mik la","zur · dun shen","dun shen · tem","imme nm4"]},{"t":16,"l":["tab %16 · nur %150","tabsar %1 · tab %300","tab %1 · tab %2 · tab %3 · tab %4","dun kal · en la · enla","tab %5 · tab %6 · tab %7 · tab %8","tab %9 · tab %10 · tab %11 · tab %12","esh · kal · zur","tab %13 · tab %14 · tab %15 · tab %16","dun kal · en la · enla","tab %17 · tab %18 · tab %19 · tab %20","tab %21 · tab %22 · tab %23 · tab %24","tab %25 · tab %26 · tab %27 · tab %28","dun kal · en la · enla","esh · kal · zur","tab %29 · tab %30 · tab %31 · tab %32","tab %33 · tab %34 · tab %35 · tab %36","tab %37 · tab %38 · tab %39 · tab %40","dun kal · en la · enla","tab %41 · tab %42 · tab %43 · tab %44","esh · kal · zur","tab %45 · tab %46 · tab %47 · tab %48","tab %49 · tab %50 · tab %51 · tab %52","dun kal · en la · enla","tab %53 · tab %54 · tab %55 · tab %56","tab %57 · tab %58 · tab %59 · tab %60","esh · kal · zur","tab %61 · tab %62 · tab %63 · tab %64","dun kal · en la · enla","tab %65 · tab %66 · tab %67 · tab %68","tab %69 · tab %70 · tab %71 · tab %72","tab %73 · tab %74 · tab %75 · tab %76","dun kal · en la · enla","esh · kal · zur","tab %77 · tab %78 · tab %79 · tab %80","tab %81 · tab %82 · tab %83 · tab %84","tab %85 · tab %86 · tab %87 · tab %88","dun kal · en la · enla","tab %89 · tab %90 · tab %91 · tab %92","esh · kal · zur","tab %93 · tab %94 · tab %95 · tab %96","dun kal tab","kal %10","en kal · la lash","en lash · dun la","esh · dun sar","zur · dun shen","ur %17 · imme %6","tem %418","kish %8"]},{"t":17,"l":["tab %17 · nur %150","tab · en kal · dun","tab · en la kal · enla","tem · la tab","kish · la tab","dun tab · shen","dun tab · ke shen","imme nm4"]},{"t":18,"l":["tab %18 · nur %164","tem %352","kish %6","ur %17","nash · shenu","pat · nash · shenu","zur · nash · shenu","en la shen · nash la","imme nm4"]},{"t":19,"l":["tab %19 · nur %177","gan %1 · tem %80","gan %2 · tem %74","gan %3 · tem %54","gan %4 · tem %79","tem %287","kish %5","ur %14","ur %1 · tem %20 · zur · nash · dun","ur %2 · tem %20 · en la · enla","ur %3 · tem %20 · pat · nur la · en shen","ur %4 · tem %20 · en la · enla","ur %5 · tem %20 · imme · esh · dun sar","ur %6 · tem %20 · pat · nur la · en shen","ur %7 · tem %20 · en mesh · dun la · zur","ur %8 · tem %20 · en la · enla","ur %9 · tem %20 · pat · nur la · en shen","ur %10 · tem %20 · imme · esh · dun sar","ur %11 · tem %20 · en la · enla","ur %12 · tem %20 · pat · nur la · en shen","ur %13 · la · urtem la · pat · nur la","ur %14 · la · urtem la · pat · nur la","imme nm4 hal","imme nm5"]},{"t":20,"l":["tab %20 · nur %183","tem %301","kish %6","ur %15","ur %1 · tem %20 · zur · nash · dun","ur %2 · tem %20 · en la · enla","ur %3 · tem %20 · pat · nur la · en shen","ur %4 · tem %20 · en la · enla","ur %5 · tem %20 · imme · esh · dun sar","ur %6 · tem %20 · pat · nur la · en shen","ur %7 · tem %20 · en mesh · dun la · zur","ur %8 · tem %20 · en la · enla","ur %9 · tem %20 · pat · nur la · en shen","ur %10 · tem %20 · imme · esh · dun sar","ur %11 · tem %20 · en la · enla","ur %12 · tem %20 · pat · nur la · en shen","ur %13 · tem %20 · zur · nash · dun","ur %14 · la · urtem la · pat · nur la","ur %15 · la · urtem la · pat · nur la","ta · shen","taru shen · ta","mu sar · ta shen","mik ta","imme nm5"]},{"t":21,"l":["tab %21 · nur %183","dun sar · an","dun sar · an · anna · an","dun sar · sela","tab %1 · tab %1 · tab %1","en shen an · zur shen anna","dun · lash la","imme nm5"]},{"t":22,"l":["tab %22 · nur %195","tem %224","kish %4","ur %11","mesh %100","tem la","ur %1 · tem %15 · zur · nash · dun","ur %2 · tem %15 · en la · enla","ur %3 · tem %15 · pat · nur la · en shen","ur %4 · tem %15 · en la · enla","ur %5 · tem %15 · imme · esh · dun sar","ur %6 · tem %15 · pat · nur la · en shen","ur %7 · tem %15 · en mesh · dun la · zur","ur %8 · tem %15 · en la · enla","ur %9 · la · urtem la · pat · nur la","ur %10 · la · urtem la · pat · nur la","ur %11 · la · urtem la · pat · nur la","en mesh · la meshke","en tab · meshke","imme nm5"]},{"t":23,"l":["tab %23 · nur %201","tem %166","kish %3","ur %9 · imme %5","tabsar %1 · tab %900","tab %1 · tab %2 · tab %3 · tab %4","dun kal · en la · enla","tab %9 · tab %10 · tab %11 · tab %12","tab %17 · tab %18 · tab %19 · tab %20","esh · kal · zur","tab %25 · tab %26 · tab %27 · tab %28","dun kal · en la · enla","tab %33 · tab %34 · tab %35 · tab %36","tab %41 · tab %42 · tab %43 · tab %44","tab %49 · tab %50 · tab %51 · tab %52","dun kal · en la · enla","esh · kal · zur","tab %57 · tab %58 · tab %59 · tab %60","tab %65 · tab %66 · tab %67 · tab %68","tab %73 · tab %74 · tab %75 · tab %76","dun kal · en la · enla","tab %81 · tab %82 · tab %83 · tab %84","esh · kal · zur","tab %89 · tab %90 · tab %91 · tab %92","tab %97 · tab %98 · tab %99 · tab %100","dun kal · en la · enla","tab %105 · tab %106 · tab %107 · tab %108","tab %113 · tab %114 · tab %115 · tab %116","esh · kal · zur","ur %1 · tem %15 · zur · nash · dun","ur %2 · tem %15 · en la · enla","ur %3 · tem %15 · pat · nur la · en shen","ur %4 · tem %15 · en la · enla","ur %5 · tem %15 · imme · esh · dun sar","ur %6 · tem %15 · pat · nur la · en shen","ur %7 · tem %15 · en mesh · dun la · zur","ur %8 · tem %15 · en la · enla","ur %9 · tem %15 · pat · nur la · en shen","dun kal tab","kal %100","en kal · la lash","en lash · dun la","esh · dun sar","zur · dun shen","en kal %100 · an ke","imme nm5"]},{"t":24,"l":["tab %24 · nur %201","taru shen · ta la nash","taru shen · ta zur","en ta shen · nash la hal","en ta la shen · nash hal","dun ta","imme nm5"]},{"t":25,"l":["tab %25 · nur %207","tem %110","kish %2","ur %6","ur %1 · tem %10 · zur · nash · dun","ur %2 · tem %10 · en la · enla","ur %3 · tem %10 · pat · nur la · en shen","ur %4 · la · urtem la · pat · nur la","ur %5 · la · urtem la · pat · nur la","ur %6 · la · urtem la · pat · nur la","gan %1 · la","gan %2 · la","gan %3 · tem %21","gan %4 · la","urtem %1 · la","imme nm5"]},{"t":26,"l":["tab %26 · nur %209","tem %98","ur %5","nur %209 · kish %1","pat · nur %211 · kish %1 · en la · enla","pat · nur %209 · kish %2 · en la · enla","pat · nur %207 · kish %2 · en la · enla","pat · nur %201 · kish %3 · en la · enla","pat · nur %195 · kish %4 · en la · enla","pat · nur %183 · kish %6 · en la · enla","pat · nur %177 · kish %5 · en la · enla","pat · nur %164 · kish %6 · en la · enla","pat · nur %150 · kish %8 · en la · enla","pat · nur %139 · kish %7 · en la · enla","pat · nur %126 · kish %8 · en la · enla","pat · nur %112 · kish %10 · en la · enla","pat · nur %103 · kish %9 · en la · enla","pat · nur %88 · kish %10 · en la · enla","pat · nur %71 · kish %12 · en la · enla","pat · nur %54 · kish %11 · en la · enla","pat · nur %40 · kish %13 · en la · enla","pat · nur %27 · kish %12 · en la · enla","pat · nur %19 · kish %15 · en la · enla","pat · nur %12 · kish %13 · en la · enla","pat · nur %9 · kish %14 · en la · enla","dun shen · kish","mik kish · mik la","zur · dun shen","pat · tab %6 · lash","pat · tab %13 · lash","mik kish · lash","mu sar · lash","dun lash la","imme nm5"]},{"t":27,"l":["tab %27 · nur %211","tem %54","kish %1","ur %3","mesh · la tem","mesh · tab","tab · shenke","en tab shen · tab meshke","nash · mesh","imme nm5"]},{"t":28,"l":["tab %28 · nur %213","tem %29","kish %1","ur %2","nash sar · tab","nash sar · tab · en shen · ke","an · anna · sela · meku · lan","tem · kish · gan · ur","shen · sar · kal","en ta shen an · ta shen tem","en ta shen tem · ta shen nash","dun tab · en an · zur anna","mik ta · zur nurnur","imme nm5"]},{"t":29,"l":["tab %29 · nurhal","gan %1 · %0","gan %2 · %0","gan %3 · %0","gan %4 · %0","tem %0","kish %0","ur %0","urtem %0","mesh %0","tab %1 · tab %2 · tab %3 · tab %4","dun kal · en la · enla","tab %9 · tab %10 · tab %11 · tab %12","tab %17 · tab %18 · tab %19 · tab %20","esh · kal · zur","tab %25 · tab %26 · tab %27 · tab %28","dun kal · en la · enla","tab %33 · tab %34 · tab %35 · tab %36","tab %41 · tab %42 · tab %43 · tab %44","tab %49 · tab %50 · tab %51 · tab %52","dun kal · en la · enla","esh · kal · zur","tab %57 · tab %58 · tab %59 · tab %60","tab %65 · tab %66 · tab %67 · tab %68","tab %73 · tab %74 · tab %75 · tab %76","dun kal · en la · enla","tab %81 · tab %82 · tab %83 · tab %84","esh · kal · zur","tab %89 · tab %90 · tab %91 · tab %92","tab %97 · tab %98 · tab %99 · tab %100","dun kal · en la · enla","tab %105 · tab %106 · tab %107 · tab %108","tab %113 · tab %114 · tab %115 · tab %116","esh · kal · zur","tab %121 · tab %122 · tab %123 · tab %124","dun kal · en la · enla","tab %129 · tab %130 · tab %131 · tab %132","tab %137 · tab %138 · tab %139 · tab %140","tab %145 · tab %146 · tab %147 · tab %148","dun kal · en la · enla","esh · kal · zur","tab %153 · tab %154 · tab %155 · tab %156","tabsar %1 · tab %1200","imme %1"]},{"t":30,"l":["tab %30 · nurhal","mu sar · halan","imme nm5","nm6 shen","nm6 shen · esh","mu la im nm6 · im hal","mu sar nm6 · sar la hal","halnash · la","taru shen · ta ke","nashal"]}];
+const CORPUS=[{"t":1,"l":["tab %1 · nur %9","gan %1 · tem %212","gan %2 · tem %198","gan %3 · tem %140","gan %4 · tem %206","tem %756","kish %14","ur %31"]},{"t":2,"l":["tab %2 · nur %12","gan %1 · tem %205","gan %2 · tem %191","gan %3 · tem %138","gan %4 · tem %208","tem %742","kish %13","ur %31"]},{"t":3,"l":["tab %3 · nur %19","gan %1 · tem %224","gan %2 · tem %210","gan %3 · tem %152","gan %4 · tem %215","tem %801","kish %15","ur %33"]},{"t":4,"l":["tab %4 · nur %27","gan %1 · tem %190","gan %2 · tem %176","gan %3 · tem %130","gan %4 · tem %194","tem %690","kish %12","ur %30","urtem %1 · tem %690","imme nm3"]},{"t":5,"l":["tab %5 · nur %40","urtem %1 · tem %705","ur %1 · tem %20 · zur · nash · dun","ur %2 · tem %20 · en la · enla","ur %3 · tem %20 · pat · nur la · en shen","ur %4 · tem %20 · en la · enla","ur %5 · tem %20 · imme · esh · dun sar","ur %6 · tem %20 · pat · nur la · en shen","ur %7 · tem %20 · en mesh · dun la · zur","ur %8 · tem %20 · en la · enla","ur %9 · tem %20 · pat · nur la · en shen","ur %10 · tem %20 · imme · esh · dun sar","ur %11 · tem %20 · en la · enla","ur %12 · tem %20 · pat · nur la · en shen","ur %13 · tem %20 · zur · nash · dun","ur %14 · tem %20 · en mesh · dun la · zur","ur %15 · tem %20 · imme · esh · dun sar","ur %16 · tem %20 · en la · enla","ur %17 · tem %20 · zur · nash · dun","ur %18 · tem %20 · pat · nur la · en shen","ur %19 · tem %20 · en la · enla","ur %20 · tem %20 · imme · esh · dun sar","ur %21 · tem %20 · en mesh · dun la · zur","ur %22 · tem %20 · en la · enla","ur %23 · tem %20 · en la · enla","ur %24 · tem %20 · pat · nur la · en shen","ur %25 · tem %20 · imme · esh · dun sar","ur %26 · tem %20 · en la · enla","ur %27 · tem %20 · pat · nur la · en shen","ur %28 · tem %20 · en mesh · dun la · zur","ur %29 · tem %20 · zur · nash · dun","ur %30 · tem %20 · imme · esh · dun sar","ur %31 · tem %20 · en la · enla","tem %620","urtem %1 · tem %85","mesh %60","tem %25","imme nm3"]},{"t":6,"l":["tab %6 · nur %40","nur %40 · kish %13","pat · nur %27 · kish %12 · en la · enla","pat · nur %19 · kish %15 · en la · enla","pat · nur %12 · kish %13 · en la · enla","pat · nur %9 · kish %14 · en la · enla","dun shen · kish","mik kish · mik la","zur · dun shen","imme nm3"]},{"t":7,"l":["tab %7 · nur %54","gan %1 · tem %180","gan %2 · tem %168","gan %3 · tem %124","gan %4 · tem %176","tem %648","kish %11","ur %29","ur %1 · tem %20 · zur · nash · dun","ur %2 · tem %20 · en la · enla","ur %3 · tem %20 · pat · nur la · en shen","ur %4 · tem %20 · en la · enla","ur %5 · tem %20 · imme · esh · dun sar","ur %6 · tem %20 · pat · nur la · en shen","ur %7 · tem %20 · en mesh · dun la · zur","ur %8 · tem %20 · en la · enla","ur %9 · tem %20 · pat · nur la · en shen","ur %10 · tem %20 · imme · esh · dun sar","ur %11 · tem %20 · en la · enla","ur %12 · tem %20 · pat · nur la · en shen","ur %13 · tem %20 · zur · nash · dun","ur %14 · tem %20 · en mesh · dun la · zur","ur %15 · tem %20 · imme · esh · dun sar","ur %16 · tem %20 · en la · enla","ur %17 · tem %20 · zur · nash · dun","ur %18 · tem %20 · pat · nur la · en shen","ur %19 · tem %20 · en la · enla","ur %20 · tem %20 · imme · esh · dun sar","ur %21 · tem %20 · en mesh · dun la · zur","ur %22 · tem %20 · en la · enla","ur %23 · tem %20 · en la · enla","ur %24 · tem %20 · pat · nur la · en shen","ur %25 · tem %20 · imme · esh · dun sar","ur %26 · tem %20 · en la · enla","ur %27 · tem %20 · pat · nur la · en shen","ur %28 · tem %20 · en mesh · dun la · zur","ur %29 · tem %20 · zur · nash · dun","tem %580","urtem %1 · tem %62"]},{"t":8,"l":["tab %8 · nur %54","tabsar %1","tab %1 · tab %2 · tab %3 · tab %4","dun kal · en la · enla","tab %5 · tab %6 · tab %7 · tab %8","tab %9 · tab %10 · tab %11 · tab %12","esh · kal · zur","tab %13 · tab %14 · tab %15 · tab %16","dun kal · en la · enla","tab %17 · tab %18 · tab %19 · tab %20","tab %21 · tab %22 · tab %23 · tab %24","dun kal tab","kal %2","en kal · la lash","en lash · dun la","esh · dun sar","zur · dun shen","imme nm3"]},{"t":9,"l":["tab %9 · nur %71","gan %1 · tem %184","gan %2 · tem %171","gan %3 · tem %126","gan %4 · tem %180","tem %661","kish %12","ur %30","ur %1 · tem %20 · zur · nash · dun","ur %2 · tem %20 · en la · enla","ur %3 · tem %20 · pat · nur la · en shen","ur %4 · tem %20 · en la · enla","ur %5 · tem %20 · imme · esh · dun sar","ur %6 · tem %20 · pat · nur la · en shen","ur %7 · tem %20 · en mesh · dun la · zur","ur %8 · tem %20 · en la · enla","ur %9 · tem %20 · pat · nur la · en shen","ur %10 · tem %20 · imme · esh · dun sar","ur %11 · tem %20 · en la · enla","ur %12 · tem %20 · pat · nur la · en shen","ur %13 · tem %20 · zur · nash · dun","ur %14 · tem %20 · en mesh · dun la · zur","ur %15 · tem %20 · imme · esh · dun sar","ur %16 · tem %20 · en la · enla","ur %17 · tem %20 · zur · nash · dun","ur %18 · tem %20 · pat · nur la · en shen","ur %19 · tem %20 · en la · enla","ur %20 · tem %20 · imme · esh · dun sar","ur %21 · tem %20 · en mesh · dun la · zur","ur %22 · tem %20 · en la · enla","ur %23 · tem %20 · en la · enla","ur %24 · tem %20 · pat · nur la · en shen","ur %25 · tem %20 · imme · esh · dun sar","ur %26 · tem %20 · en la · enla","ur %27 · tem %20 · pat · nur la · en shen","ur %28 · tem %20 · en mesh · dun la · zur","ur %29 · tem %20 · zur · nash · dun","ur %30 · tem %20 · imme · esh · dun sar","tem %600","urtem %1 · tem %1"]},{"t":10,"l":["tab %10 · nur %88","gan %1 · tem %165","gan %2 · tem %153","gan %3 · tem %112","gan %4 · tem %160","tem %590","kish %10","ur %27","mesh %60","ur %1 · tem %20 · zur · nash · dun","ur %2 · tem %20 · en la · enla","ur %3 · tem %20 · pat · nur la · en shen","ur %4 · tem %20 · en la · enla","ur %5 · tem %20 · imme · esh · dun sar","ur %6 · tem %20 · pat · nur la · en shen","ur %7 · tem %20 · en mesh · dun la · zur","ur %8 · tem %20 · en la · enla","ur %9 · tem %20 · pat · nur la · en shen","ur %10 · tem %20 · imme · esh · dun sar","ur %11 · tem %20 · en la · enla","ur %12 · tem %20 · pat · nur la · en shen","ur %13 · tem %20 · zur · nash · dun","ur %14 · tem %20 · en mesh · dun la · zur","ur %15 · tem %20 · imme · esh · dun sar","ur %16 · tem %20 · en la · enla","ur %17 · tem %20 · zur · nash · dun","ur %18 · tem %20 · pat · nur la · en shen","ur %19 · tem %20 · en la · enla","ur %20 · tem %20 · imme · esh · dun sar","ur %21 · tem %20 · en mesh · dun la · zur","ur %22 · tem %20 · en la · enla","ur %23 · tem %20 · en la · enla","ur %24 · tem %20 · pat · nur la · en shen","ur %25 · tem %20 · imme · esh · dun sar","ur %26 · tem %20 · en la · enla","ur %27 · tem %20 · pat · nur la · en shen","urtem %1 · tem %0"]},{"t":11,"l":["tab %11 · nur %88","imme nm3 hal","tabsar %1 · tab %11","dun kal tab","kal %2","en kal · la lash","en lash · dun la","esh · dun sar","zur · dun shen","imme nm4"]},{"t":12,"l":["tab %12 · nur %103","gan %1 · tem %146","gan %2 · tem %135","gan %3 · tem %99","gan %4 · tem %142","tem %522","kish %9","ur %24","mesh %80","ur %1 · tem %20 · zur · nash · dun","ur %2 · tem %20 · en la · enla","ur %3 · tem %20 · pat · nur la · en shen","ur %4 · tem %20 · en la · enla","ur %5 · tem %20 · imme · esh · dun sar","ur %6 · tem %20 · pat · nur la · en shen","ur %7 · tem %20 · en mesh · dun la · zur","ur %8 · tem %20 · en la · enla","ur %9 · tem %20 · pat · nur la · en shen","ur %10 · tem %20 · imme · esh · dun sar","ur %11 · tem %20 · en la · enla","ur %12 · tem %20 · pat · nur la · en shen","ur %13 · tem %20 · zur · nash · dun","ur %14 · tem %20 · en mesh · dun la · zur","ur %15 · tem %20 · imme · esh · dun sar","ur %16 · tem %20 · en la · enla","ur %17 · tem %20 · zur · nash · dun","ur %18 · tem %20 · pat · nur la · en shen","ur %19 · tem %20 · en la · enla","ur %20 · tem %20 · imme · esh · dun sar","ur %21 · tem %20 · en mesh · dun la · zur","ur %22 · tem %20 · en la · enla","ur %23 · tem %20 · en la · enla","ur %24 · la · urtem la · pat · nur la","urtem %1 · tem %12"]},{"t":13,"l":["tab %13 · nur %112","gan %1 · tem %153","gan %2 · tem %142","gan %3 · tem %104","gan %4 · tem %149","tem %548","kish %10","ur %25","zur · nur %103 · tem %522","zur · nur %112 · tem %548","mik kish","ur %1 · tem %20 · zur · nash · dun","ur %2 · tem %20 · en la · enla","ur %3 · tem %20 · pat · nur la · en shen","ur %4 · tem %20 · en la · enla","ur %5 · tem %20 · imme · esh · dun sar","ur %6 · tem %20 · pat · nur la · en shen","ur %7 · tem %20 · en mesh · dun la · zur","ur %8 · tem %20 · en la · enla","ur %9 · tem %20 · pat · nur la · en shen","ur %10 · tem %20 · imme · esh · dun sar","ur %11 · tem %20 · en la · enla","ur %12 · tem %20 · pat · nur la · en shen","ur %13 · tem %20 · zur · nash · dun","ur %14 · tem %20 · en mesh · dun la · zur","ur %15 · tem %20 · imme · esh · dun sar","ur %16 · tem %20 · en la · enla","ur %17 · tem %20 · zur · nash · dun","ur %18 · tem %20 · pat · nur la · en shen","ur %19 · tem %20 · en la · enla","ur %20 · tem %20 · imme · esh · dun sar","ur %21 · tem %20 · en mesh · dun la · zur","ur %22 · tem %20 · en la · enla","ur %23 · tem %20 · en la · enla","ur %24 · tem %20 · pat · nur la · en shen","ur %25 · la · urtem la · pat · nur la","imme nm4"]},{"t":14,"l":["tab %14 · nur %126","tem %470","kish %8","ur %22","mesh %100","urtem %1 · tem %0","ur %1 · tem %20 · zur · nash · dun","ur %2 · tem %20 · en la · enla","ur %3 · tem %20 · pat · nur la · en shen","ur %4 · tem %20 · en la · enla","ur %5 · tem %20 · imme · esh · dun sar","ur %6 · tem %20 · pat · nur la · en shen","ur %7 · tem %20 · en mesh · dun la · zur","ur %8 · tem %20 · en la · enla","ur %9 · tem %20 · pat · nur la · en shen","ur %10 · tem %20 · imme · esh · dun sar","ur %11 · tem %20 · en la · enla","ur %12 · tem %20 · pat · nur la · en shen","ur %13 · tem %20 · zur · nash · dun","ur %14 · tem %20 · en mesh · dun la · zur","ur %15 · tem %20 · imme · esh · dun sar","ur %16 · tem %20 · en la · enla","ur %17 · tem %20 · zur · nash · dun","ur %18 · tem %20 · pat · nur la · en shen","ur %19 · tem %20 · en la · enla","ur %20 · tem %20 · imme · esh · dun sar","ur %21 · la · urtem la · pat · nur la","ur %22 · la · urtem la · pat · nur la","tem %440","tem %30","dun kal tab","kal %10","en kal · la lash","en lash · dun la","esh · dun sar","zur · dun shen"]},{"t":15,"l":["tab %15 · nur %139","tem %401","ur %19","nurnur %1 · zur","pat · nurnur %1 · kish %14","nur %139 · kish %7","pat · nur %126 · kish %8 · en la · enla","pat · nur %112 · kish %10 · en la · enla","pat · nur %103 · kish %9 · en la · enla","pat · nur %88 · kish %10 · en la · enla","pat · nur %71 · kish %12 · en la · enla","pat · nur %54 · kish %11 · en la · enla","pat · nur %40 · kish %13 · en la · enla","pat · nur %27 · kish %12 · en la · enla","pat · nur %19 · kish %15 · en la · enla","pat · nur %12 · kish %13 · en la · enla","pat · nur %9 · kish %14 · en la · enla","dun shen · kish","mik kish · mik la","zur · dun shen","dun shen · tem","imme nm4"]},{"t":16,"l":["tab %16 · nur %150","tabsar %1 · tab %300","tab %1 · tab %2 · tab %3 · tab %4","dun kal · en la · enla","tab %5 · tab %6 · tab %7 · tab %8","tab %9 · tab %10 · tab %11 · tab %12","esh · kal · zur","tab %13 · tab %14 · tab %15 · tab %16","dun kal · en la · enla","tab %17 · tab %18 · tab %19 · tab %20","tab %21 · tab %22 · tab %23 · tab %24","tab %25 · tab %26 · tab %27 · tab %28","dun kal · en la · enla","esh · kal · zur","tab %29 · tab %30 · tab %31 · tab %32","tab %33 · tab %34 · tab %35 · tab %36","tab %37 · tab %38 · tab %39 · tab %40","dun kal · en la · enla","tab %41 · tab %42 · tab %43 · tab %44","esh · kal · zur","tab %45 · tab %46 · tab %47 · tab %48","tab %49 · tab %50 · tab %51 · tab %52","dun kal · en la · enla","tab %53 · tab %54 · tab %55 · tab %56","tab %57 · tab %58 · tab %59 · tab %60","esh · kal · zur","tab %61 · tab %62 · tab %63 · tab %64","dun kal · en la · enla","tab %65 · tab %66 · tab %67 · tab %68","tab %69 · tab %70 · tab %71 · tab %72","tab %73 · tab %74 · tab %75 · tab %76","dun kal · en la · enla","esh · kal · zur","tab %77 · tab %78 · tab %79 · tab %80","tab %81 · tab %82 · tab %83 · tab %84","tab %85 · tab %86 · tab %87 · tab %88","dun kal · en la · enla","tab %89 · tab %90 · tab %91 · tab %92","esh · kal · zur","tab %93 · tab %94 · tab %95 · tab %96","dun kal tab","kal %10","en kal · la lash","en lash · dun la","esh · dun sar","zur · dun shen","ur %17 · imme %6","tem %418","kish %8"]},{"t":17,"l":["tab %17 · nur %150","tab · en kal · dun","tab · en la kal · enla","tem · la tab","kish · la tab","dun tab · shen","dun tab · ke shen","imme nm4"]},{"t":18,"l":["tab %18 · nur %164","tem %352","kish %6","ur %17","nash · shenu","pat · nash · shenu","zur · nash · shenu","en la shen · nash la","imme nm4"]},{"t":19,"l":["tab %19 · nur %177","gan %1 · tem %80","gan %2 · tem %74","gan %3 · tem %54","gan %4 · tem %79","tem %287","kish %5","ur %14","ur %1 · tem %20 · zur · nash · dun","ur %2 · tem %20 · en la · enla","ur %3 · tem %20 · pat · nur la · en shen","ur %4 · tem %20 · en la · enla","ur %5 · tem %20 · imme · esh · dun sar","ur %6 · tem %20 · pat · nur la · en shen","ur %7 · tem %20 · en mesh · dun la · zur","ur %8 · tem %20 · en la · enla","ur %9 · tem %20 · pat · nur la · en shen","ur %10 · tem %20 · imme · esh · dun sar","ur %11 · tem %20 · en la · enla","ur %12 · tem %20 · pat · nur la · en shen","ur %13 · la · urtem la · pat · nur la","ur %14 · la · urtem la · pat · nur la","imme nm4 hal","imme nm5"]},{"t":20,"l":["tab %20 · nur %183","tem %301","kish %6","ur %15","ur %1 · tem %20 · zur · nash · dun","ur %2 · tem %20 · en la · enla","ur %3 · tem %20 · pat · nur la · en shen","ur %4 · tem %20 · en la · enla","ur %5 · tem %20 · imme · esh · dun sar","ur %6 · tem %20 · pat · nur la · en shen","ur %7 · tem %20 · en mesh · dun la · zur","ur %8 · tem %20 · en la · enla","ur %9 · tem %20 · pat · nur la · en shen","ur %10 · tem %20 · imme · esh · dun sar","ur %11 · tem %20 · en la · enla","ur %12 · tem %20 · pat · nur la · en shen","ur %13 · tem %20 · zur · nash · dun","ur %14 · la · urtem la · pat · nur la","ur %15 · la · urtem la · pat · nur la","ta · shen","taru shen · ta","mu sar · ta shen","mik ta","imme nm5"]},{"t":21,"l":["tab %21 · nur %183","dun sar · an","dun sar · an · anna · an","dun sar · sela","tab %1 · tab %1 · tab %1","en shen an · zur shen anna","dun · lash la","imme nm5"]},{"t":22,"l":["tab %22 · nur %195","tem %224","kish %4","ur %11","mesh %100","tem la","ur %1 · tem %15 · zur · nash · dun","ur %2 · tem %15 · en la · enla","ur %3 · tem %15 · pat · nur la · en shen","ur %4 · tem %15 · en la · enla","ur %5 · tem %15 · imme · esh · dun sar","ur %6 · tem %15 · pat · nur la · en shen","ur %7 · tem %15 · en mesh · dun la · zur","ur %8 · tem %15 · en la · enla","ur %9 · la · urtem la · pat · nur la","ur %10 · la · urtem la · pat · nur la","ur %11 · la · urtem la · pat · nur la","en mesh · la meshke","en tab · meshke","imme nm5"]},{"t":23,"l":["tab %23 · nur %201","tem %166","kish %3","ur %9 · imme %5","tabsar %1 · tab %900","tab %1 · tab %2 · tab %3 · tab %4","dun kal · en la · enla","tab %9 · tab %10 · tab %11 · tab %12","tab %17 · tab %18 · tab %19 · tab %20","esh · kal · zur","tab %25 · tab %26 · tab %27 · tab %28","dun kal · en la · enla","tab %33 · tab %34 · tab %35 · tab %36","tab %41 · tab %42 · tab %43 · tab %44","tab %49 · tab %50 · tab %51 · tab %52","dun kal · en la · enla","esh · kal · zur","tab %57 · tab %58 · tab %59 · tab %60","tab %65 · tab %66 · tab %67 · tab %68","tab %73 · tab %74 · tab %75 · tab %76","dun kal · en la · enla","tab %81 · tab %82 · tab %83 · tab %84","esh · kal · zur","tab %89 · tab %90 · tab %91 · tab %92","tab %97 · tab %98 · tab %99 · tab %100","dun kal · en la · enla","tab %105 · tab %106 · tab %107 · tab %108","tab %113 · tab %114 · tab %115 · tab %116","esh · kal · zur","ur %1 · tem %15 · zur · nash · dun","ur %2 · tem %15 · en la · enla","ur %3 · tem %15 · pat · nur la · en shen","ur %4 · tem %15 · en la · enla","ur %5 · tem %15 · imme · esh · dun sar","ur %6 · tem %15 · pat · nur la · en shen","ur %7 · tem %15 · en mesh · dun la · zur","ur %8 · tem %15 · en la · enla","ur %9 · tem %15 · pat · nur la · en shen","dun kal tab","kal %100","en kal · la lash","en lash · dun la","esh · dun sar","zur · dun shen","en kal %100 · an ke","imme nm5"]},{"t":24,"l":["tab %24 · nur %201","taru shen · ta la nash","taru shen · ta zur","en ta shen · nash la hal","en ta la shen · nash hal","dun ta","imme nm5"]},{"t":25,"l":["tab %25 · nur %207","tem %110","kish %2","ur %6","ur %1 · tem %10 · zur · nash · dun","ur %2 · tem %10 · en la · enla","ur %3 · tem %10 · pat · nur la · en shen","ur %4 · la · urtem la · pat · nur la","ur %5 · la · urtem la · pat · nur la","ur %6 · la · urtem la · pat · nur la","gan %1 · la","gan %2 · la","gan %3 · tem %21","gan %4 · la","urtem %1 · la","imme nm5"]},{"t":26,"l":["tab %26 · nur %209","tem %98","ur %5","nur %209 · kish %2","pat · nur %207 · kish %2 · en la · enla","pat · nur %201 · kish %3 · en la · enla","pat · nur %195 · kish %4 · en la · enla","pat · nur %183 · kish %6 · en la · enla","pat · nur %177 · kish %5 · en la · enla","pat · nur %164 · kish %6 · en la · enla","pat · nur %150 · kish %8 · en la · enla","pat · nur %139 · kish %7 · en la · enla","pat · nur %126 · kish %8 · en la · enla","pat · nur %112 · kish %10 · en la · enla","pat · nur %103 · kish %9 · en la · enla","pat · nur %88 · kish %10 · en la · enla","pat · nur %71 · kish %12 · en la · enla","pat · nur %54 · kish %11 · en la · enla","pat · nur %40 · kish %13 · en la · enla","pat · nur %27 · kish %12 · en la · enla","pat · nur %19 · kish %15 · en la · enla","pat · nur %12 · kish %13 · en la · enla","pat · nur %9 · kish %14 · en la · enla","dun shen · kish","mik kish · mik la","zur · dun shen","pat · tab %6 · lash","pat · tab %13 · lash","mik kish · lash","mu sar · lash","dun lash la","imme nm5"]},{"t":27,"l":["tab %27 · nur %211","tem %54","kish %1","ur %3","mesh · la tem","mesh · tab","tab · shenke","en tab shen · tab meshke","nash · mesh","imme nm5"]},{"t":28,"l":["tab %28 · nur %213","tem %29","kish %1","ur %2","nash sar · tab","nash sar · tab · en shen · ke","an · anna · sela · meku · lan","tem · kish · gan · ur","shen · sar · kal","en ta shen an · ta shen tem","en ta shen tem · ta shen nash","dun tab · en an · zur anna","mik ta · zur nurnur","imme nm5"]},{"t":29,"l":["tab %29 · nurhal","gan %1 · %0","gan %2 · %0","gan %3 · %0","gan %4 · %0","tem %0","kish %0","ur %0","urtem %0","mesh %0","tab %1 · tab %2 · tab %3 · tab %4","dun kal · en la · enla","tab %9 · tab %10 · tab %11 · tab %12","tab %17 · tab %18 · tab %19 · tab %20","esh · kal · zur","tab %25 · tab %26 · tab %27 · tab %28","dun kal · en la · enla","tab %33 · tab %34 · tab %35 · tab %36","tab %41 · tab %42 · tab %43 · tab %44","tab %49 · tab %50 · tab %51 · tab %52","dun kal · en la · enla","esh · kal · zur","tab %57 · tab %58 · tab %59 · tab %60","tab %65 · tab %66 · tab %67 · tab %68","tab %73 · tab %74 · tab %75 · tab %76","dun kal · en la · enla","tab %81 · tab %82 · tab %83 · tab %84","esh · kal · zur","tab %89 · tab %90 · tab %91 · tab %92","tab %97 · tab %98 · tab %99 · tab %100","dun kal · en la · enla","tab %105 · tab %106 · tab %107 · tab %108","tab %113 · tab %114 · tab %115 · tab %116","esh · kal · zur","tab %121 · tab %122 · tab %123 · tab %124","dun kal · en la · enla","tab %129 · tab %130 · tab %131 · tab %132","tab %137 · tab %138 · tab %139 · tab %140","tab %145 · tab %146 · tab %147 · tab %148","dun kal · en la · enla","esh · kal · zur","tab %153 · tab %154 · tab %155 · tab %156","tabsar %1 · tab %1200","imme %1"]},{"t":30,"l":["tab %30 · nurhal","mu sar · halan","imme nm5","nm6 shen","nm6 shen · esh","mu la im nm6 · im hal","mu sar nm6 · sar la hal","halnash · la","taru shen · ta ke","nashal"]}];
 
 /* Ordre de sortie de terre — pas l'ordre chronologique. La tablette 21 (l'abécédaire)
    arrive 7e et ne sera comprise qu'à l'acte IV ; la 29 (le registre de zéros) arrive
@@ -458,23 +508,30 @@ const TB = ORDRE.map(n => CORPUS.find(t => t.t === n));
 "use strict";
 
 /* ============================ état ============================ */
-const KEY='langue-morte-mvp-v2';
-const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0},gl:[],t:0,done:false,
+/* Changé à l'ouverture de l'acte III : une partie sauvegardée au MVP est `done` à treize
+   glyphes et rouvrirait sur l'écran de fin, sans moyen de continuer. */
+const KEY='langue-morte-actes-i-iii';
+const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram:0},gl:[],t:0,done:false,
   rel:{}, prix:{}});   // rel : jetons relevés par tablette · prix : tarif du gisement, verrouillé
 let S_ = fresh(), speed = 1;
 try{ const raw=localStorage.getItem(KEY); if(raw){ const p=JSON.parse(raw);
-  if(p&&p.b){ const b=Object.assign({cop:0,tab:0,con:0,ate:0},p.b); S_=Object.assign(fresh(),p); S_.b=b; } } }catch(e){}
+  if(p&&p.b){ const b=Object.assign({cop:0,tab:0,con:0,ate:0,gram:0},p.b); S_=Object.assign(fresh(),p); S_.b=b; } } }catch(e){}
 const has = id => S_.gl.indexOf(id)>=0;
 
 /* ---- économie ---- */
 const M = {
   click:()=> 1*(has('anna')?1.25:1)*(has('tab')?1.5:1)*(has('kal')?2:1),
   cop:  ()=> (has('tem')?1.3:1)*(has('kal')?2:1),
+  /* L'atelier suivait le copiste jusqu'à l'acte III ; les deux bonus de la branche Temps
+     le détachent — c'est le seul instrument qui porte encore l'échelle des occurrences
+     quand la Certitude, elle, passe à la grammaire. */
+  ate:  ()=> (has('tem')?1.3:1)*(has('kal')?2:1)*(has('mille')?1.3:1)*(has('nurhal')?1.5:1),
   tabl: ()=> (has('kish')?1.3:1)*(has('kal')?2:1),
-  con:  ()=> (has('sar')?1.5:1)*(has('kal')?2:1)
+  con:  ()=> (has('sar')?1.5:1)*(has('kal')?2:1),
+  gram: ()=> (has('nurnur')?1.5:1)*(has('kal')?2:1)
 };
 /* production brute d'occurrences par seconde (sert au barème du relevé manuel) */
-const oBrut = () => (S_.b.cop*1.0 + S_.b.ate*25)*M.cop();
+const oBrut = () => S_.b.cop*1.0*M.cop() + S_.b.ate*25*M.ate();
 
 /* ---- le relevé, acte de lecture ----
    PT5 : 414 relevés, tous au bouton, aucun dans le corpus, pour 0,6 % des occurrences de
@@ -530,6 +587,20 @@ const releveVal = t => (t !== undefined && gisReste(t) > 0) ? (S_.prix[t] || 1) 
 const REC_R = 1.18;     // croissance du coût du recoupement, par usage
 const CON_P = 0.0039;   // certitude par seconde et par concordance
 
+/* ---- la Grammaire, instrument de l'acte III ----
+   Les quatre premiers instruments rendent toujours le même service : leur nombre seul
+   décide de ce qu'ils produisent. La Grammaire est le premier dont le rendement dépend
+   de ce que le joueur a compris — chaque signe déchiffré aide à en déchiffrer d'autres,
+   et c'est la première vraie exponentielle du jeu (design doc §5).
+   Elle boit aussi six fois plus d'hypothèses qu'une Concordance, et ce n'est pas un
+   détail d'équilibrage : PT7 a fini avec 5 232 hypothèses en réserve et un joueur qui
+   les convertissait à la main faute d'instrument capable de les absorber — 103 % de la
+   Certitude des cinq dernières minutes venait du recoupement. */
+const GRAM_P = 0.0012;  // certitude par seconde et par grammaire, avant l'effet du lexique
+const GRAM_R = 1.16;    // ... qui croît de 16 % par signe déchiffré
+const GRAM_C = 3.0;     // hypothèses par seconde consommées
+const gramMul = () => Math.pow(GRAM_R, S_.gl.length);
+
 const INS = [
   {k:'cop', nom:'Copiste',              sig:'sar',  base:15,   r:1.12,
    ds:()=>'+'+f(1.0*M.cop(),1)+' occ./s',  unlock:()=>true},
@@ -538,7 +609,10 @@ const INS = [
   {k:'con', nom:'Concordance',          sig:'gan',  base:450,  r:1.18,
    ds:()=>'−0,5 hyp./s → +'+f(CON_P*M.con(),4)+' cert./s', unlock:()=>S_.b.tab>0||S_.H>=15},
   {k:'ate', nom:'Atelier de copie',     sig:'kal',  base:1800, r:1.15,
-   ds:()=>'+'+f(25*M.cop(),0)+' occ./s',   unlock:()=>S_.b.con>0||S_.O>=900}
+   ds:()=>'+'+f(25*M.ate(),0)+' occ./s',   unlock:()=>S_.b.con>0||S_.O>=900},
+  {k:'gram',nom:'Grammaire',            sig:'dun',  base:12000,r:1.20,
+   ds:()=>'−'+f(GRAM_C,0)+' hyp./s → +'+f(GRAM_P*gramMul()*M.gram(),4)+' cert./s',
+   unlock:()=>has('nur')}
 ];
 const insCost = i => Math.ceil(i.base*Math.pow(i.r,S_.b[i.k]));
 const recCost = () => { const m=Math.pow(REC_R,S_.rec)*(has('gan')?0.75:1);
@@ -627,6 +701,11 @@ function showEnd(){
 /* ============================ boucle ============================ */
 function tick(dt){
   S_.t += dt;
+  produire(dt);
+}
+/* La production, séparée du temps de jeu : la nuit passée hors ligne se rattrape par ici
+   sans avancer le chronomètre ni traverser l'horloge instrumentée du journal d'actions. */
+function produire(dt){
   S_.O += oBrut()*dt;
   // table de fréquences : consomme des occurrences
   const wantO = S_.b.tab*1.0*dt;
@@ -636,6 +715,29 @@ function tick(dt){
   const wantH = S_.b.con*0.5*dt;
   if(wantH>0){ const canH=Math.min(wantH,S_.H); const fr=canH/wantH;
     S_.H-=canH; S_.C += S_.b.con*CON_P*M.con()*fr*dt; }
+  // grammaire : en consomme beaucoup plus, et rend d'autant plus qu'on a déchiffré
+  const wantG = S_.b.gram*GRAM_C*dt;
+  if(wantG>0){ const canG=Math.min(wantG,S_.H); const fr=canG/wantG;
+    S_.H-=canG; S_.C += S_.b.gram*GRAM_P*gramMul()*M.gram()*fr*dt; }
+}
+
+/* ---- la nuit ----
+   `nuit` est le seul glyphe dont l'effet se produit quand le jeu est fermé : 40 % du débit,
+   quatre heures au plus (design doc §9). Avant lui il ne se passe rien hors ligne, et c'est
+   diégétique — il n'y a personne pour lire. On rattrape en tranches d'une minute plutôt
+   qu'en un seul bond : les convertisseurs se coupent quand leur intrant manque, et un
+   unique appel de quatre heures leur ferait ignorer cette coupure. */
+function veillee(){
+  if(!has('esh') || S_.done || !S_.ts) return 0;
+  const ecoule = Math.min((Date.now() - S_.ts)/1000, 4*3600);
+  if(ecoule < 60) return 0;
+  const avant = S_.O;
+  let reste = ecoule * 0.4;
+  while(reste > 0){ const pas = Math.min(60, reste); produire(pas); reste -= pas; }
+  /* La nuit est consommée : sans cela, rouvrir deux fois de suite la même sauvegarde la
+     paierait deux fois — la sauvegarde n'horodate que toutes les quatre secondes. */
+  S_.ts = Date.now();
+  return S_.O - avant;
 }
 let last=performance.now();
 function frame(now){
@@ -656,7 +758,8 @@ function frame(now){
 
 /* ============================ rendu corpus ============================ */
 const elCorpus=document.getElementById('corpus');
-/* Nombre de tablettes dégagées : 4 au départ, les 30 au douzième glyphe. */
+/* Nombre de tablettes dégagées : 4 au départ, les 30 au dernier glyphe. Le corpus
+   s'ouvre donc sur les trois actes, et non plus sur les deux premiers. */
 const revCount = () => Math.min(TB.length, 4 + Math.round(S_.gl.length * (TB.length-4) / NGL));
 let lastRev = 0;
 
@@ -710,7 +813,55 @@ function paintCorpus(flashId){
     el.className='tok '+(lis?'num':'g')+(r?' rel':'');
     el.innerHTML = lis ? nf.format(n) : numGlyphs(n);
   });
-  revealer(); paintRail(); peindreRec();
+  ranger(); revealer(); paintRail(); peindreRec(); peindreConc();
+}
+
+/* ============================ la datation ============================ */
+/* Le jeu n'ajoute aucune date au corpus : chaque tablette porte la sienne dans sa
+   première ligne — « tablette 12 · année 103 » — depuis la première seconde de la partie.
+   Tout ce que `année` change, c'est que le joueur sait la lire ; et il faut encore qu'il
+   sache lire le nombre, signe par signe, comme partout ailleurs. Les deux dernières
+   tablettes ne portent aucun nombre : elles disent « dernière-année », et c'est ce
+   glyphe-là qui les date — après elle, personne n'a plus compté. */
+const ANNEE = {};
+for(const tb of CORPUS){
+  const tk = tb.l[0].split(' '), i = tk.indexOf('nur');
+  if(i >= 0 && tk[i+1] && tk[i+1].charCodeAt(0) === 37) ANNEE[tb.t] = {n:+tk[i+1].slice(1)};
+  else if(tk.indexOf('nurhal') >= 0) ANNEE[tb.t] = {fin:true};
+}
+const datee = t => { const a = ANNEE[t];
+  return !!a && (a.fin ? has('nurhal') : (has('nur') && numLisible(a.n))); };
+
+/* Six années portent deux tablettes — 40, 54, 88, 150, 183, 201 — et la dernière aussi.
+   Le numéro tranche, et c'est le corpus qui le dit : la 16 et la 17 sont toutes deux de
+   l'année 150, dans cet ordre-là.
+   Une tablette qu'on ne sait pas dater ne se range pas : elle reste avec ses pareilles,
+   dans l'ordre où elle est sortie de terre. On n'ordonne que ce qu'on sait lire. */
+const cleTemps = t => (ANNEE[t].fin ? 100000 : ANNEE[t].n)*100 + t;
+function ordre(tri){
+  if(!tri) return TB;
+  return TB.filter(tb=>datee(tb.t)).sort((a,b)=>cleTemps(a.t)-cleTemps(b.t))
+    .concat(TB.filter(tb=>!datee(tb.t)));
+}
+
+/* Ranger déplace les nœuds déjà construits au lieu de les reconstruire : les jetons
+   relevés, les caches de peinture et la marque du gisement survivent au rangement.
+   `avant` range l'index, `après` range le texte — deux gestes d'archiviste, dans cet
+   ordre, et le second est celui qui met deux siècles de crue en colonne. */
+let ordreVu = '';
+function ranger(){
+  const oB = ordre(has('pat')), oC = ordre(has('zur'));
+  const sig = oB.map(t=>t.t).join(',') + '|' + oC.map(t=>t.t).join(',');
+  if(sig === ordreVu) return;
+  const neuf = ordreVu !== '';
+  ordreVu = sig;
+  const rail = $('rail'), cells = {};
+  for(const c of [...rail.children]) cells[c.dataset.go] = c;
+  for(const tb of oB) rail.appendChild(cells[tb.t]);
+  const tabs = {};
+  for(const el of [...elCorpus.children]) tabs[el.dataset.tb] = el;
+  for(const tb of oC) elCorpus.appendChild(tabs[tb.t]);
+  if(neuf) elCorpus.scrollTop = 0;
 }
 
 /* Un nouveau mot donne envie de relire les 30 tablettes — encore faut-il pouvoir y aller.
@@ -728,22 +879,34 @@ for(const tb of CORPUS) for(const l of tb.l) for(const tk of l.split(' ')){
   (TBSIGNE[tk] || (TBSIGNE[tk] = new Set())).add(tb.t);
 }
 
+/* Rang de sortie de terre, fixé une fois pour toutes : c'est lui qui décide de ce qui est
+   dégagé, et le rangement chronologique ne doit pas y toucher. Ce qu'on a sous les yeux
+   change d'ordre ; ce qu'on a sorti de terre, non. */
+const IDX = {}; TB.forEach((tb,i)=>{ IDX[tb.t] = i; });
+const TBN = {}; for(const tb of CORPUS) TBN[tb.t] = tb;
+const degagee = t => IDX[t] < revCount();
+
 function buildRail(){
   $('rail').innerHTML = TB.map(tb =>
     '<button class="rcell" data-go="'+tb.t+'" title="tablette '+tb.t+'">'+
-      '<span class="rn"></span><span class="rb"><i></i></span></button>').join('');
+      '<span class="rn"></span><span class="ry"></span><span class="rb"><i></i></span></button>').join('');
 }
 function paintRail(){
-  const n=revCount(), lisNum=has('tab')&&has('an');
-  const cells=$('rail').children;
-  for(let i=0;i<cells.length;i++){
-    const c=cells[i], t=TB[i].t;
-    const v=i>=n; if(c.hidden!==v) c.hidden=v; if(v) continue;
+  const lisNum=has('tab')&&has('an');
+  for(const c of $('rail').children){
+    const t=+c.dataset.go;
+    const v=!degagee(t); if(c.hidden!==v) c.hidden=v; if(v) continue;
     const num = lisNum ? String(t) : null;
     const wantN = num || 'g';
     const rn=c.querySelector('.rn');
     if(rn.__v!==wantN){ rn.__v=wantN; rn.innerHTML = num || numGlyphs(t); }
-    const p=Math.round(100*pctTablette(TB[i]));
+    /* La date, sous le numéro. Une tablette dont on ne sait pas encore lire l'année garde
+       la ligne vide : la barre montre exactement l'étendue de ce qu'on sait dater. */
+    const ry=c.querySelector('.ry');
+    const wantY = !datee(t) ? '' : ANNEE[t].fin ? 'fin' : String(ANNEE[t].n);
+    if(ry.__v!==wantY){ ry.__v=wantY;
+      ry.innerHTML = wantY==='fin' ? sv('nurhal') : wantY; }
+    const p=Math.round(100*pctTablette(TBN[t]));
     const bar=c.querySelector('.rb i');
     if(bar.__v!==p){ bar.__v=p; bar.style.width=p+'%'; }
     const tch = touchees.has(t);
@@ -764,12 +927,12 @@ function paintRail(){
    survol, qui monte aussi, et avec l'ocre de `touche`, qui prend déjà le cadre et le
    numéro. Descendre ne heurte personne.
    Repeinte à part, et non dans `paintRail` : le gisement change à chaque relevé quand la
-   lisibilité ne change qu'à chaque glyphe, et recompter les 3 825 signes du corpus à
+   lisibilité ne change qu'à chaque glyphe, et recompter les 3 809 signes du corpus à
    chaque clic coûterait cent fois ce que coûtent ces deux classes. */
 function peindreGisement(){
-  const cells=$('rail').children, n=revCount();
-  for(let i=0;i<n;i++){
-    const c=cells[i], t=TB[i].t;
+  for(const c of $('rail').children){
+    if(c.hidden) continue;
+    const t=+c.dataset.go;
     const sec = gisReste(t) <= 0, lue = !sec && S_.prix[t] !== undefined;
     if(c.classList.contains('sec')!==sec) c.classList.toggle('sec',sec);
     if(c.classList.contains('lue')!==lue) c.classList.toggle('lue',lue);
@@ -781,7 +944,10 @@ function peindreGisement(){
    peut donc pas être figé dans l'attribut : il s'écrit au survol (cf. jeu.js). */
 function titreCell(t){
   const r = gisReste(t);
-  return 'tablette '+t+' — gisement '+r+'/'+GISEMENT[t]
+  /* La date est dans le texte de la tablette ; l'infobulle ne fait que la répéter, et
+     seulement quand le joueur sait la lire. */
+  const d = !datee(t) ? '' : ANNEE[t].fin ? ' · dernière année' : ' · année '+ANNEE[t].n;
+  return 'tablette '+t+d+' — gisement '+r+'/'+GISEMENT[t]
     + (r <= 0 ? ' · épuisée'
       : S_.prix[t] === undefined
         ? " · intacte : "+nf.format(Math.round(tarifRel()))
@@ -841,32 +1007,107 @@ function rejouerFlash(el){
   setTimeout(()=>el.classList.remove('flash'), 900);
 }
 
+/* ---- la concordance, dans le texte ----
+   PT8 : le rangement chronologique n'a pas suffi. Soixante lignes du corpus portent un
+   relevé d'eau, sur six cent soixante-seize, et de huit à cinquante-sept lignes de
+   registre séparent deux relevés consécutifs. Ranger les tablettes ordonne les
+   contenants ; ça ne rassemble pas le signal. Le joueur de PT8 est allé sur la tablette
+   26 — le relevé d'eau complet, vingt-deux années dans un seul document — treize secondes
+   après avoir acheté `avant`, y a fait vingt relevés, et n'a pas vu la série. Le défaut
+   n'était donc pas que la donnée soit illisible : c'est que la lecture n'était pas
+   assemblée.
+
+   Une concordance, en philologie, est le relevé de toutes les attestations d'un mot avec
+   leur contexte. L'instrument porte ce nom depuis l'acte II sans rien faire de visible ;
+   il fait maintenant ce qu'il annonce. Choisir un signe replie le corpus sur ses seules
+   attestations, dans l'ordre d'affichage courant, chaque tablette gardant sa première
+   ligne — celle où elle se numérote et se date elle-même (règle 5 : rien d'ajouté).
+   Sur `eau`, corpus rangé, la colonne donne 14 · 13 · 15 · 12 · 11 · 12 · 10 · 9 · 8 …
+   jusqu'à 0, en soixante-dix lignes au lieu de six cent soixante-seize. Personne ne la
+   commente ; c'est au joueur de lire les nombres. */
+let concArme = false, concSel = null, concN = 0;
+
+function concArmer(v){
+  concArme = v;
+  if(v) recArmer(false);          // deux modes se disputeraient le même clic
+  peindreConc();
+}
+/* Un signe inconnu se concorde aussi bien qu'un signe lu — c'est même là que l'instrument
+   sert le plus. Rassembler les contextes d'une forme qu'on ne sait pas encore lire est
+   le geste de l'épigraphiste, et le pendant du comptage d'occurrences de la Table. */
+function concChoisir(id){
+  if(id === undefined) return;    // un nombre n'est pas un signe : rien à concorder
+  concSel = id; concArme = false;
+  peindreConc();
+}
+function concFermer(){ concSel = null; concArme = false; peindreConc(); }
+
+function peindreConc(){
+  elCorpus.classList.toggle('filtre', !!concSel);
+  elCorpus.classList.toggle('conc-arme', concArme);
+  concN = 0;
+  for(const tb of elCorpus.children){
+    if(!concSel){
+      tb.classList.remove('vide');
+      for(const ln of tb.children) ln.classList.remove('off');
+      continue;
+    }
+    let n = 0, premiere = true;
+    for(const ln of tb.children){
+      const a = ln.querySelectorAll('[data-w="'+concSel+'"]').length;
+      n += a;
+      /* La première ligne reste toujours : sans elle, la colonne n'aurait plus de date —
+         et cette date est du texte ancien, pas un en-tête ajouté par le jeu. */
+      ln.classList.toggle('off', !a && !premiere);
+      premiere = false;
+    }
+    tb.classList.toggle('vide', n === 0);
+    if(n && !tb.hidden) concN += n;
+  }
+  majConc();
+}
+
+function majConc(){
+  const b = $('a-con'), ouvert = S_.b.con > 0;
+  if(b.hidden !== !ouvert) b.hidden = !ouvert;
+  if(!ouvert) return;
+  const mot = concSel && byId[concSel] && has(concSel) ? byId[concSel].mot : null;
+  setHTML(b, !concSel ? (concArme ? 'choisis un signe' : 'concorder')
+    : (mot || sv(concSel)) + ' · ' + nf.format(concN)
+      + ' attestation' + (concN > 1 ? 's' : '') + ' ✕');
+  b.classList.toggle('on', concArme || !!concSel);
+}
+
+/* Une tablette repliée par la concordance n'est pas une destination : on ne saute pas
+   dessus au clavier, et la barre n'y mène pas. */
+const repliee = el => el.hidden || el.classList.contains('vide');
+
 function versTablette(t){
   const el=elCorpus.querySelector('.tablet[data-tb="'+t+'"]');
-  if(!el || el.hidden) return;
+  if(!el || repliee(el)) return;
   elCorpus.scrollTo({top: el.offsetTop - elCorpus.firstElementChild.offsetTop - 8, behavior:'smooth'});
-  const cells=$('rail').children;
-  for(let i=0;i<cells.length;i++) cells[i].classList.toggle('ici', TB[i].t===t);
+  for(const c of $('rail').children) c.classList.toggle('ici', +c.dataset.go===t);
 }
 function tabletteVisible(){
   const y=elCorpus.scrollTop, base=elCorpus.firstElementChild.offsetTop;
   let best=null;
   for(const el of elCorpus.querySelectorAll('.tablet')){
-    if(el.hidden) continue;
+    if(repliee(el)) continue;
     if(el.offsetTop - base <= y + 40) best=el; else break;
   }
   return best;
 }
 function saut(d){
-  const vis=tabletteVisible(); const list=[...elCorpus.querySelectorAll('.tablet')].filter(e=>!e.hidden);
+  const vis=tabletteVisible(); const list=[...elCorpus.querySelectorAll('.tablet')].filter(e=>!repliee(e));
   let i=list.indexOf(vis); i = Math.max(0, Math.min(list.length-1, (i<0?0:i)+d));
   versTablette(+list[i].dataset.tb);
 }
 
 function revealer(){
   const n = revCount();
-  const tabs = elCorpus.querySelectorAll('.tablet');
-  for(let i=0;i<tabs.length;i++){ const v = i>=n; if(tabs[i].hidden!==v) tabs[i].hidden=v; }
+  for(const el of elCorpus.querySelectorAll('.tablet')){
+    const v = !degagee(+el.dataset.tb); if(el.hidden!==v) el.hidden=v;
+  }
   if(n>lastRev && lastRev>0) pushLog(n-lastRev>1 ? (n-lastRev)+' tablettes dégagées.' : 'Une tablette dégagée.');
   lastRev = n;
 }
@@ -919,7 +1160,7 @@ function paintInstr(){
     b.classList.toggle('afford',can);
     b.disabled=!can;
     setHTML(b.querySelector('.sg'), sv(i.sig));
-    const muet={cop:'kal',tab:'im',con:'shen',ate:'mesh'}[i.k];
+    const muet={cop:'kal',tab:'im',con:'shen',ate:'mesh',gram:'en'}[i.k];
     setHTML(b.querySelector('.nn'), (open&&has('ur')) ? i.nom
       : '<span style="color:var(--dim)">'+sv('dun')+sv(muet)+sv('la')+'</span>');
     setHTML(b.querySelector('.lv'), open? nf.format(S_.b[i.k]) : '');
@@ -966,15 +1207,17 @@ function paintLex(){
 }
 
 function paintRes(){
-  const tb=S_.b.tab, cn=S_.b.con;
-  const oNet = oBrut() - tb*1.0, hNet = tb*0.6*M.tabl() - cn*0.5, cNet = cn*CON_P*M.con();
+  const tb=S_.b.tab, cn=S_.b.con, gr=S_.b.gram;
+  const oNet = oBrut() - tb*1.0,
+        hNet = tb*0.6*M.tabl() - cn*0.5 - gr*GRAM_C,
+        cNet = cn*CON_P*M.con() + gr*GRAM_P*gramMul()*M.gram();
   setHTML($('vl-O'), amount(S_.O, readN()));
   setHTML($('vl-H'), amount(S_.H, readN()));
   setHTML($('vl-C'), amount(S_.C, readN()));
   const rt=(v,el,dry)=>{ setHTML(el, readR()? (v?( (v>0?'+':'−')+f(Math.abs(v),v<0.1&&v!==0?3:2)+'/s'):'') : '');
     el.classList.toggle('dry',!!dry); };
   rt(oNet,$('rt-O'), tb>0 && S_.O<1 && oNet<0);
-  rt(hNet,$('rt-H'), cn>0 && S_.H<1 && hNet<0);
+  rt(hNet,$('rt-H'), (cn+gr)>0 && S_.H<1 && hNet<0);
   rt(cNet,$('rt-C'), false);
 }
 
@@ -1000,6 +1243,7 @@ function paintActs(){
      armé ne relève plus. Le désactiver faute de ressources enfermait le joueur — signalé
      en PT6. Il ne se désactive donc que pour empêcher d'armer, jamais de désarmer. */
   $('a-rec').disabled = !recArme && !peutRec;
+  majConc();   // la première Concordance achetée fait apparaître son bouton
 }
 
 let lastPct=-1;
@@ -1122,13 +1366,13 @@ function enrober(nom, temoin, detail){
     const avant = temoin(), rang = TR.length;
     const r = orig.apply(this, a);
     /* Insérée à son rang et non à la fin : une action peut en déclencher une autre —
-       le treizième signe termine la partie — et la cause doit précéder l'effet. */
+       le dernier signe termine la partie — et la cause doit précéder l'effet. */
     if(temoin() !== avant) tracer(nom, detail ? detail(a, avant) : '', rang);
     return r;
   };
 }
 
-const niveaux = () => S_.b.cop + S_.b.tab + S_.b.con + S_.b.ate;
+const niveaux = () => S_.b.cop + S_.b.tab + S_.b.con + S_.b.ate + S_.b.gram;
 
 /* `relever` reçoit désormais sa tablette : c'est la seule façon de distinguer un joueur qui
    parcourt le corpus d'un joueur qui s'installe sur une tablette et martèle. La question
@@ -1139,6 +1383,13 @@ enrober('recouper',  () => S_.rec,        a => '+' + recGain() + ' cert.'
                                                + (a[0] ? ' · ' + a[0] : ''));
 enrober('acheterIns', niveaux,            a => a[0] + ' n°' + S_.b[a[0]]);
 enrober('acheterGl', () => S_.gl.length,  a => a[0] + ' (' + byId[a[0]].mot + ') ' + byId[a[0]].cost + ' C');
+/* La nuit ne passe pas par `tick` et n'émettrait donc aucune ligne : une seule, au retour,
+   dit ce qu'elle a rapporté. Une partie jouée en plusieurs fois se lit alors sans trou. */
+enrober('veillee',   () => Math.round(S_.O), () => Math.round(S_.O) + ' occ. hors ligne');
+/* La concordance ne coûte rien et ne produit rien : elle ne laisserait aucune trace dans
+   les ressources. C'est pourtant le geste que PT9 doit mesurer — quels signes le joueur
+   rassemble, et s'il le fait du tout. */
+enrober('concChoisir', () => concSel, a => a[0] + ' · ' + concN + ' attest.');
 
 /* Pas de témoin possible pour la fin : `S_.done` est déjà posé quand showEnd() est
    appelée. On remonte donc le relevé jusqu'au dernier « reset » — jeu.js rappelle
@@ -1183,7 +1434,7 @@ tick = function(dt){
     tracer('etat', 'O=' + Math.round(S_.O) + ' H=' + Math.round(S_.H) + ' C=' + Math.round(S_.C)
                  + ' signes=' + S_.gl.length + ' sig%=' + m.sig + ' lig%=' + m.lig
                  + ' gis=' + Object.keys(S_.rel).reduce((n,t)=>n+S_.rel[t].length,0) + '/' + GIS_TOTAL
-                 + ' instr=' + [S_.b.cop, S_.b.tab, S_.b.con, S_.b.ate].join('/'));
+                 + ' instr=' + [S_.b.cop, S_.b.tab, S_.b.con, S_.b.ate, S_.b.gram].join('/'));
   }
 };
 
@@ -1248,6 +1499,10 @@ window.addEventListener('pagehide', sauverTraces);
 majSignes();
 buildRail(); buildCorpus(); buildInstr(); buildLex();
 if(S_.gl.length){ paintCorpus(null); pushLog(byId[S_.gl[S_.gl.length-1]].log); }
+/* `nuit` acquis, le corpus se lit sans le joueur — 40 % du débit, quatre heures au plus.
+   Dit au retour, une seule fois, et seulement s'il s'est passé quelque chose. */
+const nuitPassee = veillee();
+if(nuitPassee > 0) pushLog('La nuit a passé. '+big(Math.round(nuitPassee))+' occurrences relevées sans moi.');
 if(S_.done) showEnd();
 
 /* Le relevé n'existe plus que là : dans le texte, sur un signe précis. Le bouton « Relever
@@ -1256,6 +1511,7 @@ elCorpus.addEventListener('click', e=>{
   const el = e.target.closest('.tok');
   if(!el || el.classList.contains('sep')) return;
   const tb = +el.closest('.tablet').dataset.tb, j = +el.dataset.j;
+  if(concArme){ concChoisir(el.dataset.w); return; }
   if(recArme){ recChoisir(tb, j, el.dataset.w); return; }
   relever(tb, j);
   el.classList.add('rel'); el.__v += 'r';
@@ -1286,7 +1542,12 @@ window.addEventListener('keydown', e=>{
   const k=e.key.toLowerCase();
   if(k==='j'){ e.preventDefault(); saut(1); }
   else if(k==='k'){ e.preventDefault(); saut(-1); }
-  else if(k==='escape'){ if(!$('end').hidden) fermerFin(); else if(recArme) recArmer(false); }
+  /* La concordance a sa touche : c'est le geste qu'on refait le plus souvent une fois le
+     corpus rangé, et il n'a pas à passer par la souris. */
+  else if(k==='c'){ e.preventDefault(); if(S_.b.con>0){ if(concSel||concArme) concFermer(); else concArmer(true); } }
+  else if(k==='escape'){ if(!$('end').hidden) fermerFin();
+    else if(recArme) recArmer(false);
+    else if(concArme || concSel) concFermer(); }
 });
 $('instr').addEventListener('click', e=>{ const b=e.target.closest('[data-ins]'); if(b&&!b.disabled) acheterIns(b.dataset.ins); });
 $('lex').addEventListener('click', e=>{ const b=e.target.closest('[data-gl]'); if(b&&!b.disabled) acheterGl(b.dataset.gl); });
@@ -1303,6 +1564,8 @@ repeat($('a-hyp'), formuler);
 /* Pas de `repeat` ici : le recoupement n'est plus une pression, c'est un choix de deux
    passages. Le bouton ne fait plus qu'armer le corpus. */
 $('a-rec').addEventListener('click', ()=>recArmer(!recArme));
+/* Le bouton ouvre le mode, puis referme la concordance : un aller-retour, jamais un piège. */
+$('a-con').addEventListener('click', ()=> concSel ? concFermer() : concArmer(!concArme));
 
 document.querySelectorAll('[data-spd]').forEach(b=>b.addEventListener('click',()=>{
   speed=+b.dataset.spd;
@@ -1312,7 +1575,7 @@ $('reset').addEventListener('click',()=>{
   S_=fresh(); LOGS.length=0; lastPct=-1; $('end').hidden=true;
   /* Sans ceci la table des signes de numération garde ceux de la partie précédente :
      on repart de zéro glyphe avec 229 nombres encore lisibles à l'écran. */
-  majSignes(); touchees=new Set(); recArmer(false);
+  majSignes(); touchees=new Set(); recArmer(false); concFermer();
   $('log').innerHTML='<p class="hint">relève un signe : clique dans le corpus</p>';
   paintCorpus(null); try{localStorage.removeItem(KEY);}catch(e){}
 });
@@ -1320,8 +1583,11 @@ $('again').addEventListener('click',()=>$('reset').click());
 $('fermer').addEventListener('click', fermerFin);
 $('end').addEventListener('click', e=>{ if(e.target===$('end')) fermerFin(); });
 
-setInterval(()=>{ try{ localStorage.setItem(KEY, JSON.stringify(S_)); }catch(e){} }, 4000);
-window.addEventListener('pagehide',()=>{ try{ localStorage.setItem(KEY, JSON.stringify(S_)); }catch(e){} });
+/* `ts` est l'heure de la dernière sauvegarde : c'est elle, et rien d'autre, qui mesure
+   la nuit au retour. Écrite à chaque enregistrement, y compris à la fermeture. */
+const sauver = () => { try{ S_.ts = Date.now(); localStorage.setItem(KEY, JSON.stringify(S_)); }catch(e){} };
+setInterval(sauver, 4000);
+window.addEventListener('pagehide', sauver);
 
 requestAnimationFrame(frame);
 

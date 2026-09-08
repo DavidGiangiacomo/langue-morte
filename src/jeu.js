@@ -7,6 +7,10 @@
 majSignes();
 buildRail(); buildCorpus(); buildInstr(); buildLex();
 if(S_.gl.length){ paintCorpus(null); pushLog(byId[S_.gl[S_.gl.length-1]].log); }
+/* `nuit` acquis, le corpus se lit sans le joueur — 40 % du débit, quatre heures au plus.
+   Dit au retour, une seule fois, et seulement s'il s'est passé quelque chose. */
+const nuitPassee = veillee();
+if(nuitPassee > 0) pushLog('La nuit a passé. '+big(Math.round(nuitPassee))+' occurrences relevées sans moi.');
 if(S_.done) showEnd();
 
 /* Le relevé n'existe plus que là : dans le texte, sur un signe précis. Le bouton « Relever
@@ -15,6 +19,7 @@ elCorpus.addEventListener('click', e=>{
   const el = e.target.closest('.tok');
   if(!el || el.classList.contains('sep')) return;
   const tb = +el.closest('.tablet').dataset.tb, j = +el.dataset.j;
+  if(concArme){ concChoisir(el.dataset.w); return; }
   if(recArme){ recChoisir(tb, j, el.dataset.w); return; }
   relever(tb, j);
   el.classList.add('rel'); el.__v += 'r';
@@ -45,7 +50,12 @@ window.addEventListener('keydown', e=>{
   const k=e.key.toLowerCase();
   if(k==='j'){ e.preventDefault(); saut(1); }
   else if(k==='k'){ e.preventDefault(); saut(-1); }
-  else if(k==='escape'){ if(!$('end').hidden) fermerFin(); else if(recArme) recArmer(false); }
+  /* La concordance a sa touche : c'est le geste qu'on refait le plus souvent une fois le
+     corpus rangé, et il n'a pas à passer par la souris. */
+  else if(k==='c'){ e.preventDefault(); if(S_.b.con>0){ if(concSel||concArme) concFermer(); else concArmer(true); } }
+  else if(k==='escape'){ if(!$('end').hidden) fermerFin();
+    else if(recArme) recArmer(false);
+    else if(concArme || concSel) concFermer(); }
 });
 $('instr').addEventListener('click', e=>{ const b=e.target.closest('[data-ins]'); if(b&&!b.disabled) acheterIns(b.dataset.ins); });
 $('lex').addEventListener('click', e=>{ const b=e.target.closest('[data-gl]'); if(b&&!b.disabled) acheterGl(b.dataset.gl); });
@@ -62,6 +72,8 @@ repeat($('a-hyp'), formuler);
 /* Pas de `repeat` ici : le recoupement n'est plus une pression, c'est un choix de deux
    passages. Le bouton ne fait plus qu'armer le corpus. */
 $('a-rec').addEventListener('click', ()=>recArmer(!recArme));
+/* Le bouton ouvre le mode, puis referme la concordance : un aller-retour, jamais un piège. */
+$('a-con').addEventListener('click', ()=> concSel ? concFermer() : concArmer(!concArme));
 
 document.querySelectorAll('[data-spd]').forEach(b=>b.addEventListener('click',()=>{
   speed=+b.dataset.spd;
@@ -71,7 +83,7 @@ $('reset').addEventListener('click',()=>{
   S_=fresh(); LOGS.length=0; lastPct=-1; $('end').hidden=true;
   /* Sans ceci la table des signes de numération garde ceux de la partie précédente :
      on repart de zéro glyphe avec 229 nombres encore lisibles à l'écran. */
-  majSignes(); touchees=new Set(); recArmer(false);
+  majSignes(); touchees=new Set(); recArmer(false); concFermer();
   $('log').innerHTML='<p class="hint">relève un signe : clique dans le corpus</p>';
   paintCorpus(null); try{localStorage.removeItem(KEY);}catch(e){}
 });
@@ -79,7 +91,10 @@ $('again').addEventListener('click',()=>$('reset').click());
 $('fermer').addEventListener('click', fermerFin);
 $('end').addEventListener('click', e=>{ if(e.target===$('end')) fermerFin(); });
 
-setInterval(()=>{ try{ localStorage.setItem(KEY, JSON.stringify(S_)); }catch(e){} }, 4000);
-window.addEventListener('pagehide',()=>{ try{ localStorage.setItem(KEY, JSON.stringify(S_)); }catch(e){} });
+/* `ts` est l'heure de la dernière sauvegarde : c'est elle, et rien d'autre, qui mesure
+   la nuit au retour. Écrite à chaque enregistrement, y compris à la fermeture. */
+const sauver = () => { try{ S_.ts = Date.now(); localStorage.setItem(KEY, JSON.stringify(S_)); }catch(e){} };
+setInterval(sauver, 4000);
+window.addEventListener('pagehide', sauver);
 
 requestAnimationFrame(frame);

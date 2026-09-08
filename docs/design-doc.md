@@ -2,7 +2,7 @@
 
 *Format visé : partie unique, 3 h à 3 h 30, pas de prestige. Cadrage : Universal Paperclips (durée, arc, brutalité de la fin), Cifi (texture textuelle).*
 
-> **Ce document décrit la cible, pas l'état du code.** Les écarts assumés entre la vision et l'implémentation sont listés dans `docs/journal.md` — le lire avant de « corriger » le code pour le faire coïncider avec ce doc. Deux points de ce document sont explicitement **caducs** : l'invariant I5 (§9) et le compte de 44 signes (§6, désormais 45).
+> **Ce document décrit la cible, pas l'état du code.** Les écarts assumés entre la vision et l'implémentation sont listés dans `docs/journal.md` — le lire avant de « corriger » le code pour le faire coïncider avec ce doc. Trois points de ce document sont explicitement **caducs** : l'invariant I5 (§9), le compte de 44 signes (§6, désormais 45), et la formulation d'I6 (§9), qui se mesure depuis PT7 par tranches de dix minutes et non sur la partie entière.
 
 ---
 
@@ -78,14 +78,14 @@ Les générateurs ne sont pas des bâtiments : ce sont des **méthodes philologi
 | 1 | **Œil** | le clic | I |
 | 2 | **Copiste** | produit des occurrences | I |
 | 3 | **Table de fréquences** | occurrences → hypothèses ; donne aussi le comptage d'occurrences au survol d'un signe inconnu | I |
-| 4 | **Concordance** | hypothèses → certitude | II |
+| 4 | **Concordance** | hypothèses → certitude ; rassemble aussi les attestations d'un signe en une colonne — c'est elle qui rend la série de la crue lisible à l'acte III | II |
 | 5 | **Atelier de copie** | gros producteur d'occurrences | II |
 | 6 | **Grammaire** | hypothèses → certitude, **croît avec la taille du lexique** — la première vraie exponentielle | III |
 | 7 | **Élève** | multiplie tout, **et introduit un taux d'erreur** | III |
 | 8 | **Corpus jumeau** | une deuxième inscription est trouvée | IV |
 | 9 | **Le Lecteur** | acheté avant qu'on sache ce que c'est. On découvre à l'acte V que ce n'est pas un instrument : c'est le corpus qui a commencé à lire. | V |
 
-*(Valeurs numériques : voir `docs/journal.md` § Réglages actuels pour les 1 à 5, qui sont implémentés et équilibrés sur trois playtests.)*
+*(Valeurs numériques : voir `docs/journal.md` § Réglages actuels pour les 1 à 6, qui sont implémentés et équilibrés sur sept playtests. La Grammaire est arrivée avec l'acte III ; l'Élève attend les lectures fausses de l'acte IV, sans lesquelles son taux d'erreur n'a rien à fausser.)*
 
 **L'Élève** est le premier générateur *ambivalent*. Il multiplie tout, mais il déchiffre aussi tout seul, et il se trompe. Le joueur qui empile les Élèves déchiffre vite et faux. C'est l'arbitrage central de la seconde moitié du jeu.
 
@@ -176,7 +176,7 @@ Le piège est délibéré : se tromper *paie mieux à court terme*. C'est du bia
 
 **Invariant ajouté après les playtests 1 et 2 :**
 
-- **I6** — Aucune action manuelle répétée ne doit fournir plus de **30 %** de la Certitude produite sur une partie. Mesuré par `outils/sim.py`. Deux playtests de suite, c'est ce qui a cassé le jeu.
+- **I6** — Aucune action manuelle répétée ne doit fournir plus de **30 %** de la Certitude produite, **sur aucune tranche de dix minutes**. Mesuré par `outils/sim.py`. Deux playtests de suite, c'est ce qui a cassé le jeu ; et le ratio sur la partie entière, mesuré à 30,0 % en PT6, cachait un 83 % au premier quart d'heure et un 103 % aux cinq dernières minutes (PT7). Une moyenne n'est pas un invariant.
 
 ### Hors-ligne
 

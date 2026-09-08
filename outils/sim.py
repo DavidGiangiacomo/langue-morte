@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Simulateur d'économie — « La langue morte », MVP actes I-II.
+Simulateur d'économie — « La langue morte », actes I à III.
 Rejoue la boucle du prototype avec un acheteur heuristique et une cadence
 de clic paramétrable, pour vérifier le rythme sans avoir à jouer 40 minutes.
 
@@ -27,10 +27,12 @@ TOKENS = [_jetons[n] for n in _ordre]
 
 # ---- lexique : (id, branche, coût en Certitude) ---------------------------
 GL = [('an','nombre',2), ('anna','nombre',5), ('hem','nombre',11), ('sela','nombre',18),
-      ('meku','nombre',33),
+      ('meku','nombre',33), ('mille','nombre',110),
       ('tem','matiere',3), ('ur','matiere',6), ('tab','matiere',14), ('kish','matiere',22),
       ('gan','matiere',40),
-      ('im','parole',8), ('sar','parole',27), ('kal','parole',48)]
+      ('im','parole',8), ('sar','parole',27), ('kal','parole',48),
+      ('nur','temps',60), ('pat','temps',130), ('zur','temps',190), ('nurnur','temps',260),
+      ('esh','temps',360), ('nurhal','temps',500)]
 
 # ---- constantes économiques ----------------------------------------------
 P = dict(
@@ -38,6 +40,8 @@ P = dict(
     tab_b=100,  tab_r=1.15, tab_c=1.0,  tab_p=0.6,     # Table de fréq.   : -1 occ./s -> +0,6 hyp./s
     con_b=450,  con_r=1.18, con_c=0.5,  con_p=0.0039,  # Concordance      : -0,5 hyp./s -> +0,0039 cert./s
     ate_b=1800, ate_r=1.15, ate_p=25.0,                # Atelier de copie : +25 occ./s
+    gram_b=12000, gram_r=1.20, gram_c=3.0,             # Grammaire (acte III) : -3 hyp./s ...
+    gram_p=0.0012, gram_g=1.16,                        # ... -> gram_p x gram_g^lexique cert./s
     rec_o=12, rec_h=3, rec_r=1.18,                     # Recouper : coût de base et croissance
     rec_div=5, rec_max=3,                              # Recouper : gain = min(rec_max, 1 + lexique//rec_div)
     hyp_c=3,                                           # Formuler : 3 occ. -> 1 hyp.
@@ -58,9 +62,13 @@ def run(P, cpm=15, cap_min=600, garde=0.0):
     le joueur s'interdit de relever, pour tarifer ses tablettes au débit maximal —
     c'est le pire cas contre lequel il faut se prémunir. Retourne (durée, jalons, ...)."""
     O = H = C = 0.0
-    b = {'cop': 0, 'tab': 0, 'con': 0, 'ate': 0}
+    b = {'cop': 0, 'tab': 0, 'con': 0, 'ate': 0, 'gram': 0}
     gl, rec, t, dt = set(), 0, 0.0, 0.1
     marks, c_rec, c_con = [], 0.0, 0.0
+    # I6 par tranche de dix minutes : PT7 s'est posé à 31,2 % sur la partie entière en
+    # cachant un 83 % au premier quart d'heure et un 103 % aux cinq dernières minutes.
+    # La moyenne d'une partie ne dit rien de la partie ; les tranches, si.
+    tr_rec, tr_ins = [0.0]*12, [0.0]*12
     o_main = o_pass = gis_use = 0.0
     has = lambda x: x in gl
     GIS = [-(-n // P['gis_div']) for n in TOKENS]   # gisement : jetons / gis_div
@@ -71,10 +79,13 @@ def run(P, cpm=15, cap_min=600, garde=0.0):
                        + round(len(gl) * (len(GIS) - P['rev_base']) / len(GL)))
     ouvert = 0
     mcop   = lambda: (1.3 if has('tem')  else 1) * (2 if has('kal') else 1)
+    mate   = lambda: mcop() * (1.3 if has('mille') else 1) * (1.5 if has('nurhal') else 1)
     mtab   = lambda: (1.3 if has('kish') else 1) * (2 if has('kal') else 1)
     mcon   = lambda: (1.5 if has('sar')  else 1) * (2 if has('kal') else 1)
+    mgram  = lambda: (1.5 if has('nurnur') else 1) * (2 if has('kal') else 1)
+    gramp  = lambda: P['gram_p'] * (P['gram_g'] ** len(gl)) * mgram()
     mclick = lambda: (1.25 if has('anna') else 1) * (1.5 if has('tab') else 1) * (2 if has('kal') else 1)
-    obrut  = lambda: (b['cop'] * P['cop_p'] + b['ate'] * P['ate_p']) * mcop()
+    obrut  = lambda: b['cop'] * P['cop_p'] * mcop() + b['ate'] * P['ate_p'] * mate()
     # Un relevé ne vaut plein tarif que sur du terrain neuf. Le gisement épuisé rend le
     # plancher, jamais zéro : à t=0 le débit est nul, les deux se valent, et l'ouverture
     # reste possible à la main comme aujourd'hui.
@@ -127,14 +138,23 @@ def run(P, cpm=15, cap_min=600, garde=0.0):
         if w > 0:
             c = min(w, H); fr = c / w; H -= c
             g = b['con'] * P['con_p'] * mcon() * fr * dt
-            C += g; c_con += g
+            C += g; c_con += g; tr_ins[min(11, int(t // 600))] += g
+        w = b['gram'] * P['gram_c'] * dt
+        if w > 0:
+            c = min(w, H); fr = c / w; H -= c
+            g = b['gram'] * gramp() * fr * dt
+            C += g; c_con += g; tr_ins[min(11, int(t // 600))] += g
 
         # achats d'instruments : garder la chaîne alimentée avant de l'allonger
         for _ in range(60):
             netO = obrut() - b['tab'] * P['tab_c']
-            netH = b['tab'] * P['tab_p'] * mtab() - b['con'] * P['con_c']
+            netH = b['tab'] * P['tab_p'] * mtab() - b['con'] * P['con_c'] - b['gram'] * P['gram_c']
             k = None
-            if netH >= P['con_c'] and O >= cost('con'):                      k = 'con'
+            # La Grammaire passe avant la Concordance dès qu'elle est ouverte : elle rend
+            # plus par occurrence dépensée, et surtout elle boit les hypothèses que la
+            # chaîne laissait s'entasser.
+            if has('nur') and netH >= P['gram_c'] and O >= cost('gram'):     k = 'gram'
+            elif netH >= P['con_c'] and O >= cost('con'):                    k = 'con'
             elif netO >= P['tab_c'] and O >= cost('tab') and b['cop'] > 0:   k = 'tab'
             elif O >= cost('ate') and (b['con'] > 0 or O >= P['ate_b'] * 1.5): k = 'ate'
             elif O >= cost('cop'):                                           k = 'cop'
@@ -146,6 +166,7 @@ def run(P, cpm=15, cap_min=600, garde=0.0):
         while O >= rc[0] * 4 and H >= rc[1] * 4 and rc[0] < O * 0.25:
             O -= rc[0]; H -= rc[1]
             C += recgain(); c_rec += recgain(); rec += 1
+            tr_rec[min(11, int(t // 600))] += recgain()
             rc = reccost()
 
         # achat de glyphes : le moins cher disponible d'abord
@@ -158,6 +179,7 @@ def run(P, cpm=15, cap_min=600, garde=0.0):
     return t / 60, marks, b, dict(rec=rec, c_rec=c_rec, c_con=c_con,
                                   obrut=obrut(), cs=b['con'] * P['con_p'] * mcon(),
                                   o_main=o_main, o_pass=o_pass, gis_use=gis_use,
+                                  tr_rec=tr_rec, tr_ins=tr_ins,
                                   gis_tot=sum(-(-n // P['gis_div']) for n in TOKENS))
 
 
@@ -174,3 +196,9 @@ if __name__ == '__main__':
               f"la main fournit {main:.1f} % des occurrences")
         print("     " + ", ".join(f"{n} {m:.0f}′" for n, m in marks))
         print(f"     bâtiments {b}")
+        tr = []
+        for i in range(12):
+            r, ins = s['tr_rec'][i], s['tr_ins'][i]
+            if r + ins < 0.5: continue
+            tr.append(f"{i*10}-{i*10+10}′ {100*r/(r+ins):.0f} %")
+        print("     I6 par tranche : " + " · ".join(tr))

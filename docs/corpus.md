@@ -17,7 +17,7 @@ Trois conséquences de production :
 - **Tout le corpus tient dans 45 mots** plus les nombres et six noms propres jamais déchiffrés. Cette contrainte n'est pas une limite subie : c'est elle qui produit le style. Un peuple qui n'a que « ne-pas » pour dire l'absence écrit « eau ne-pas », et c'est plus dur que n'importe quelle phrase qu'on pourrait écrire à sa place.
 - **Le français lu est télégraphique.** Pas d'articles, pas de prépositions, pas d'accord. La couche d'affichage n'ajoute rien. « champ 3 · grain 140 » est le texte, pas un résumé du texte.
 
-**Réalisé** : 678 lignes, **3 825 signes**, dont 58 % lisibles avec les 13 signes du MVP.
+**Réalisé** : 676 lignes, **3 809 signes**, dont 58 % lisibles avec les 13 signes du MVP.
 
 ---
 
@@ -473,6 +473,15 @@ Les tablettes ne sont **pas** révélées dans l'ordre chronologique. Elles arri
 · 22 · 14 · 18 · 19 · 25 · 20 · 23 · 26 · 24 · 27 · 29 · 28 · 30
 ```
 *(constante `ORDRE` dans `src/corpus.js`, produite par `outils/corpus.py`)*
+
+> **Implémenté à l'acte III** (07/09/2026). `année` date les tablettes — la date est déjà
+> dans leur première ligne, il suffit de savoir la lire — puis `avant` range la barre et
+> `après` range le corpus. Ce que le rangement démontre n'était pas prévu ici et mérite
+> d'être noté : **l'ordre chronologique est l'ordre des numéros.** Le joueur sait lire les
+> numéros depuis l'acte II et ne peut rien en conclure ; ce sont les dates qui prouvent que
+> la numérotation était chronologique, donc que l'archive avait été rangée exprès. La
+> découverte n'est pas « voici l'ordre caché », c'est « l'ordre était affiché depuis le
+> début et je ne pouvais pas le savoir ».
 
 Deux choix dans cet ordre :
 
