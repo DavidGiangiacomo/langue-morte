@@ -15,6 +15,8 @@ import json
 import math
 import pathlib
 import re
+import sys
+
 
 # ---- le corpus, lu à la source : ce simulateur a déjà divergé du jeu une fois -----------
 _src = (pathlib.Path(__file__).parent.parent / 'src' / 'corpus.js').read_text(encoding='utf-8')
@@ -196,6 +198,9 @@ def run(P, cpm=15, cap_min=600, garde=0.0):
 
 
 if __name__ == '__main__':
+    # force l'encodage des sorties pour ne pas dépendre de la machine (windows utilise cp1252 par défaut)
+    # certains caractères comme U+2032 qui est utilisé ici vont faire planter l'exécution en voulant faire l'affichage
+    sys.stdout.reconfigure(encoding='utf-8')
     for cpm in (5, 15, 40):
         tt, marks, b, s = run(P, cpm)
         gaps = [marks[i][1] - marks[i - 1][1] for i in range(1, len(marks))] or [0]
