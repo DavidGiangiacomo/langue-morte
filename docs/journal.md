@@ -6,21 +6,23 @@ Historique des playtests, des défauts trouvés et des décisions prises. À lir
 
 ## Les playtests
 
-| | PT4 | PT5 | PT6 | PT7 | PT8 | Cible |
-|---|---|---|---|---|---|---|
-| Durée | 42 min 12 | 50 min 37 | 43 min 49 | 44 min 50 | **63 min 12** *(20 signes)* | 45 min *(13 signes)* |
-| Signes relevés à la main | 56 | **371** | 180 | **422** | — | — |
-| Hypothèses formulées à la main | — | 264 | 27 | 7 | — | — |
-| Recoupements | **56** | 46 | 44 | 39 | 46 | — |
-| Part manuelle de la Certitude | 43,5 % *(simulé)* | **30,8 %** | **30,0 %** | **31,2 %** | **6,0 %** | < 30 % par tranche de 10 min |
-| Part manuelle des Occurrences | — | 0,6 % | **0,1 %** | **17,9 %** | — | — |
-| Gisement consommé | — | — | 54 / 398 | 293 / 398 | **394 / 398** | — |
-| Lignes entièrement lues | 26 % | 26 % | 26 % | 26 % | **34 %** | — |
-| Signes déchiffrés | 58 % | 57 % | 57 % | 57 % | **69 %** | — |
+| | PT4 | PT5 | PT6 | PT7 | PT8 | PT9 | Cible |
+|---|---|---|---|---|---|---|---|
+| Durée | 42 min 12 | 50 min 37 | 43 min 49 | 44 min 50 | **63 min 12** *(20 signes)* | **66 min 49** *(20 signes)* | 45 min *(13 signes)* |
+| Signes relevés à la main | 56 | **371** | 180 | **422** | — | **429** | — |
+| Hypothèses formulées à la main | — | 264 | 27 | 7 | — | 6 | — |
+| Recoupements | **56** | 46 | 44 | 39 | 46 | 49 | — |
+| Part manuelle de la Certitude | 43,5 % *(simulé)* | **30,8 %** | **30,0 %** | **31,2 %** | **6,0 %** | **8,2 %** | < 30 % par tranche de 10 min |
+| Part manuelle des Occurrences | — | 0,6 % | **0,1 %** | **17,9 %** | — | **36,3 %** | — |
+| Gisement consommé | — | — | 54 / 398 | 293 / 398 | **394 / 398** | 393 / 397 | — |
+| Lignes entièrement lues | 26 % | 26 % | 26 % | 26 % | **34 %** | 34 % | — |
+| Signes déchiffrés | 58 % | 57 % | 57 % | 57 % | **69 %** | 69 % | — |
 
 PT1 à PT3 sortent du tableau : ils datent d'avant le journal d'actions, et leurs chiffres
 vivent dans les sections qui les dépouillent. PT8 est la première partie des trois actes —
 sa durée et ses parts ne se comparent pas aux précédentes, qui s'arrêtaient à 13 signes.
+PT9 : 429 relevés et 49 recoupements sortent du TSV ; la carte de fin collée au-dessus du
+TSV (29 min 27, 271, 69, « corpus lisible 68 % ») était celle de PT2, et n'a pas été retenue.
 
 PT1 à PT4 : l'auteur. **PT5 : un second joueur** (mon fils, 06/09/2026), et le premier
 playtest instrumenté par le journal d'actions — d'où le détail de ce qui suit. Tout ce qui
@@ -139,6 +141,129 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## PT9 — la concordance est allée voir l'eau
+
+Playtest du 08/09/2026, **66 min 49** pour les vingt signes. La question posée était celle de
+PT8 : *la crue qui baisse se voit-elle ?*
+
+### Oui — pour ce joueur
+
+Six concordances dans la partie, et les deux qui comptent arrivent au bon moment :
+
+| | achat | concordance | délai |
+|---|---|---|---|
+| `avant` (la barre se range) | 48:41 | `eau` · 64 attestations | **23 s** |
+| `après` (le corpus se range) | 52:54 | `eau` · 64 attestations | **5 s** |
+
+Les quatre autres sont de l'exploration — `grain` (308 attestations), `copier` (44, puis 57
+en fin de partie), et le composé `grenier` (23), concordé alors qu'il n'est pas lu. Remarque
+du testeur : *« si on choisit de concorder sur eau, le fait qu'il y ait de moins en moins
+d'eau devient évident »*. Le bouton est visible, il est allé chercher le bon signe, et la
+colonne a dit ce qu'elle devait dire.
+
+Réserve, posée par le testeur lui-même : c'est un joueur qui connaissait la réponse. La
+question de PT8 n'est tranchée que pour lui ; elle se repose telle quelle à un joueur qui ne
+sait pas ce qu'il cherche.
+
+### I6 = 8,2 %, et toutes les tranches sont sous 30 sauf la première
+
+111 de Certitude recoupée sur 1 347 produites.
+
+| tranche | 0–10 | 10–20 | 20–30 | 30–40 | 40–50 | 50–60 | 60–67 |
+|---|---|---|---|---|---|---|---|
+| part de la main | **75 %** | 26 % | 21 % | 22 % | 12 % | 1,4 % | 0 % |
+
+Le mur d'ouverture reste : 75 % (83 en PT7, 63 en PT8), neuf de Certitude à la main sur douze
+avant la dixième minute. Six hypothèses formulées à la main, les seules de la partie — c'est
+le seul usage qui reste au bouton `formuler` : payer les deux premiers recoupements avant
+qu'une Table existe.
+
+### L'idle de fin d'acte a disparu — mais c'est le relevé qui l'a rempli
+
+PT8 finissait sur 4 min 51 puis 3 min 52 sans une action dans le corpus. PT9 : **aucun trou
+de plus de 2 min 06 après la trentième minute.** Le plus long trou de la partie est
+maintenant dans l'acte II — 5 min 34, de 16:28 à 22:02, à acheter des Ateliers et des Tables.
+
+Mais ce n'est pas la concordance qui a occupé l'acte III, c'est le relevé : **219 des 393
+relevés de gisement tombent après `année`**, sur quinze tablettes ouvertes dans les
+vingt-trois dernières minutes. La concordance est un geste de lecture, pas une boucle — six
+usages, dont trois dans les deux minutes qui suivent `avant`. C'est son rôle, et le journal
+ne lui en demande pas d'autre.
+
+### La main fournit 36 % des occurrences — le chiffre du thésauriseur
+
+Reconstruction des tarifs figés depuis le TSV : 2,90 millions d'occurrences relevées à la main
+sur 7,98 produites, **36,3 %** — deux fois PT7 (17,9 %) et exactement ce que le simulateur
+donnait au *thésauriseur* qui garde ses tablettes neuves pour la fin. Ce joueur n'a pas
+thésaurisé exprès : à la trentième minute, dix-sept tablettes étaient dégagées et il n'en
+avait ouvert que huit. Le tarif des quatorze dernières est le même, **11 996** par relevé —
+il ne bouge plus parce que le joueur n'achète plus un producteur passé 42:31 (dernier
+Copiste à 33:06) : tout va aux Tables et aux Grammaires. **99,6 % des occurrences relevées à
+la main l'ont été après la vingt-cinquième minute.** Une tablette neuve vaut alors une
+Grammaire : t23, 28 relevés, 336 000 occurrences, quand la dix-septième Grammaire en coûte
+221 000.
+
+Ce n'est pas un défaut d'I6 — ces occurrences traversent les Tables et les Grammaires, et
+la Certitude qui en sort n'est pas manuelle. C'est un chiffre à surveiller : R9 voulait que
+la tablette tardive vaille plus, et elle vaut maintenant un instrument. Si un second joueur
+passe 40 %, c'est `REL_K` qu'il faudra plafonner, pas le geste.
+
+### Le clic vide recule
+
+**36 relevés à vide sur 429** (8 %), contre 129 sur 422 (31 %) en PT7 — première mesure
+depuis la marque de la barre (07/09/2026). Ils se concentrent sur quatre tablettes épuisées
+en fin de rafale (t15, t23, t26 : 7 à 8 chacune). Le point 3 de la suite descend d'un cran.
+
+### Le recoupement est devenu la soupape des hypothèses — et c'est sans conséquence
+
+Le stock d'hypothèses monte à **27 090** à 45:00, cinq fois les 5 232 de PT7 : entre `année`
+(43:12) et la dixième Grammaire (44:15), quarante-sept Tables produisent 73 hyp./s pour
+30 Concordances et 10 Grammaires qui en boivent 45. Le joueur vide le stock comme en PT7,
+à la main : six recoupements de `en` à 48:00 (−14 000 hypothèses en dix secondes), deux de
+`nash` à 53:36 (−10 000), un de `la` à 59:46 (−6 000). Le 49ᵉ recoupement coûte 6 343
+hypothèses pour 3 de Certitude quand une Grammaire les rend pour 170 — trente-sept fois
+moins bien, et il le fait quand même.
+
+La différence avec PT7 : ça ne pèse rien — 1,4 % de la Certitude de la tranche. La
+Grammaire répare le déversoir dès qu'il y en a assez ; les cinq minutes qui suivent `année`
+n'en ont pas encore assez. 49 recoupements sur onze signes (`en` 11, `nuit` 8, `shen` 7),
+sept des onze ne s'achètent pas, comme en PT6 et PT7.
+
+### Le simulateur surestimait de 20 %, et c'était son acheteur
+
+Deuxième écart franc dans le même sens : 78,6 à 83,5 min annoncées pour 66:49 (PT9) et
+63:12 (PT8). Ce n'est pas la main — faire thésauriser le simulateur déplace la durée de
+moins de deux minutes. C'est l'**acheteur** : il prenait ce qui passait sous sa main, donc
+jamais un Atelier à 1 800 tant qu'un Copiste, une Table ou une Concordance à 900 était
+payable. Premier Atelier simulé à la 24ᵉ minute contre la 10ᵉ pour le joueur ; 84 Copistes
+en fin de partie contre 50 ; 16 Grammaires contre 22.
+
+**Recalé (08/09/2026)** : l'acheteur compare le rendement par occurrence du Copiste et de
+l'Atelier, et **épargne** pour l'Atelier quand il rend plus — sur un socle de 30 Copistes
+(`ate_socle` ; le joueur en avait 22 au premier Atelier, 35 à la 14ᵉ minute). Une première
+version sans socle bloquait toute la chaîne à 18 occ./s pendant quatre-vingts minutes :
+épargner, c'est aussi ne rien acheter d'autre.
+
+| `python outils/sim.py` | 5 clics/min | 15 | 40 |
+|---|---|---|---|
+| durée, 20 glyphes | 76,6 min | 72,4 min | 71,0 min |
+| écart max entre deux signes | 5,7 min | 5,7 min | 5,7 min |
+| part manuelle des Occurrences | 24,9 % | 21,6 % | 21,5 % |
+| I6, tranche 0–10 | 100 % | 85 % | 81 % |
+| I6, tranches suivantes | ≤ 36 % | ≤ 35 % | ≤ 31 % |
+
+L'écart passe de +20 % à **+6 à 15 %**, et les bâtiments de fin (56/56/38/36/18) ressemblent
+enfin à ceux d'une partie (50/60/30/30/22). Le thésauriseur coûte maintenant 2,1 minutes
+pour 24,2 % des occurrences. Ce qu'il ne reproduit toujours pas : les 36 % de la main — il
+ouvre les tablettes à mesure qu'elles sortent, au tarif du moment.
+
+### Ce que le gisement dit
+
+393 sur 397 : seule la tablette 30 reste intacte, et elle ne se dégage qu'au vingtième signe.
+Vingt-neuf tablettes relevées, 23 sauts de barre. Rythme d'actions : 10,9 par minute.
+
+---
+
 ## La concordance — l'instrument fait enfin ce que son nom annonce
 
 Réponse au défaut central de PT8 : **le rangement chronologique n'a pas suffi.** Il ordonne
@@ -228,7 +353,7 @@ signes, 3,5 min chacun.
 minutes :
 
 | tranche | 0–10 | 10–20 | 20–30 | 30–40 | 40–50 | 50–60 | 60–63 |
-|---|---|---|---|---|---|---|---|
+|---|---|---|---|---|---|---|---|---|
 | part de la main | **63 %** | 0 % | 33 % | 28 % | 2,6 % | 0 % | 1,9 % |
 
 **Le déversoir de fin de PT7 est réparé** — la Grammaire absorbe les hypothèses que les
@@ -1003,20 +1128,18 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
 
 ## Suite
 
-1. **PT9**, la première partie avec la concordance. Une seule question, et elle est la même
-   que celle de PT8 : **la crue qui baisse se voit-elle ?** La colonne existe maintenant,
-   elle tient en quatre-vingt-douze lignes, elle descend de 14 à 0 — reste à savoir si le
-   joueur y va, et ce qu'il concorde. Le journal d'actions note désormais chaque
-   concordance et son signe : si le TSV n'en contient aucune, l'instrument est invisible et
-   c'est le bouton qu'il faut reprendre, pas la vue.
-   Deux questions secondaires : les quatre minutes d'idle de la fin d'acte reculent-elles ?
-   et le simulateur, qui a surestimé PT8 de 20 %, doit-il être recalé ?
+1. **PT10, avec un autre joueur.** PT9 a répondu oui à la question de PT8 — la crue qui baisse
+   se voit — mais pour un testeur qui savait quoi chercher. La question se repose mot pour
+   mot à quelqu'un qui ne le sait pas ; le journal d'actions dira s'il concorde, et sur quoi.
+   À surveiller dans le même TSV : la part manuelle des occurrences (36,3 % en PT9 ; au-delà
+   de 40 %, plafonner `REL_K`) et le stock d'hypothèses entre `année` et la dixième Grammaire.
 2. **Le mur des dix premières minutes** : 83 % de la Certitude à la main avant la première
-   Concordance en PT7, 63 % en PT8 — et c'est là que la partie 1 de PT5 a été abandonnée.
-   Le seul défaut d'équilibrage connu qui ne soit pas réglé. Il se traite par l'ouverture (un
-   instrument plus tôt, ou un premier signe moins cher), pas par le recoupement.
-3. **Le clic vide** : un tiers des relevés de PT7 tombent sur un gisement épuisé. Le texte
-   doit dire ce que la barre dit déjà.
-4. **Seconde moitié de l'acte III** — composition (donc `zéro`), Élève, Parole III,
+   Concordance en PT7, 63 % en PT8, 75 % en PT9 — et c'est là que la partie 1 de PT5 a été
+   abandonnée. Le seul défaut d'équilibrage connu qui ne soit pas réglé. Il se traite par
+   l'ouverture (un instrument plus tôt, ou un premier signe moins cher), pas par le
+   recoupement.
+3. **Seconde moitié de l'acte III** — composition (donc `zéro`), Élève, Parole III,
    Modalité. Puis les **contradictions** (acte IV).
+4. **Le clic vide** est descendu à 8 % des relevés (PT9) depuis la marque de la barre ; le
+   texte ne dit toujours pas ce que la barre dit. Peut attendre.
 5. Trancher le sort de ⟨N1⟩ et ⟨N2⟩ (`docs/corpus.md` §9).
