@@ -54,6 +54,7 @@ dist/           GÉNÉRÉ par build.py
 python build.py                 # src/ → dist/langue-morte.html et dist/artefact.html
 python outils/corpus.py         # regénère src/corpus.js après modification des tablettes
 python outils/sim.py            # simule le rythme d'une partie
+python outils/balayage.py       # balaie une grille de constantes, filtre sur les garde-fous
 python build.py && python outils/verifier.py    # tests
 ```
 
@@ -65,7 +66,11 @@ python build.py && python outils/verifier.py    # tests
 
 1. **`src/corpus.js` est généré.** Toute modification du texte se fait dans `outils/corpus.py` (transcription exécutable de `docs/corpus.md`), puis `python outils/corpus.py`, puis `python build.py`. Éditer `corpus.js` à la main, c'est perdre le travail au prochain build.
 
-2. **Aucune action manuelle ne doit dépasser 30 % de la Certitude produite, sur aucune tranche de dix minutes.** C'est le mode de défaillance par défaut du jeu : la Certitude est rare, le joueur cherche le chemin le plus court, et deux playtests de suite une action répétée (le clic, puis le recoupement) est devenue la source principale de la ressource centrale. **Mesuré par tranches depuis PT7** : le ratio sur la partie entière s'était posé à 30,0 % en PT6 en cachant un 83 % au premier quart d'heure et un 103 % aux cinq dernières minutes — une moyenne, pas un instrument. `outils/sim.py` affiche les tranches ; les vérifier à chaque ajout d'instrument. La tranche 0–10 min est le seul dépassement connu et non réglé (voir `docs/journal.md`, « le mur des dix premières minutes »).
+2. **Aucune action manuelle ne doit dépasser 30 % de la Certitude produite, sur aucune tranche de dix minutes.** C'est le mode de défaillance par défaut du jeu : la Certitude est rare, le joueur cherche le chemin le plus court, et deux playtests de suite une action répétée (le clic, puis le recoupement) est devenue la source principale de la ressource centrale. **Mesuré par tranches depuis PT7** : le ratio sur la partie entière s'était posé à 30,0 % en PT6 en cachant un 83 % au premier quart d'heure et un 103 % aux cinq dernières minutes — une moyenne, pas un instrument. `outils/sim.py` affiche les tranches ; les vérifier à chaque ajout d'instrument.
+
+    **Sauf la tranche d'ouverture, qui ne se mesure pas tant qu'aucun instrument n'a produit.** Avant la première Concordance, le recoupement est la seule source de Certitude du jeu — la Grammaire reste fermée jusqu'à `année`. Le ratio y vaut donc 100 % par construction, quel que soit le réglage : ce n'est pas un mauvais score, c'est une division par zéro. Balayé le 08/09/2026 sur 27 combinaisons de `cop_b`/`tab_b`/`con_b`, trois cadences chacune : 0–10 min ne descend jamais sous 65 %, tous prix au plancher, et son chiffre ne suit que la date du premier achat de Concordance — 10,0′ au réglage actuel, 3,3′ à `cop_b = 5`. C'est le prix du Copiste qui la déplace de sept minutes, pas celui de la Concordance. D'où `i6_tranches()` dans `outils/balayage.py`, qui rend `None` sous une demi-certitude produite et exclut l'ouverture du verdict. **Ne pas régler contre ce chiffre** : il date un achat, il ne mesure pas un équilibre.
+
+    **Le vrai dépassement est ailleurs** : la tranche 20–30 min tient 28 à 37 % dans les 27 combinaisons, sans jamais passer sous 28 — et son dénominateur, lui, existe. C'est elle qui reste à régler (voir `docs/journal.md`, « le mur des dix premières minutes »).
 
 3. **La numération s'acquiert signe par signe, jamais d'un bloc.** Un nombre du corpus ne passe en chiffres que si le joueur connaît *chacun* de ses signes — et `deux` n'ouvre aucun signe, il ouvre le principe du redoublement (sans lui, on ne lit qu'un nombre où chaque signe apparaît une seule fois). Voir `numLisible()` dans `signes.js` et le tableau dans `docs/journal.md`.
 
