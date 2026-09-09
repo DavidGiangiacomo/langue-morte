@@ -19,7 +19,7 @@ from sim import P, run
 # Une combinaison est jouée aux trois cadences et notée sur son pire cas : un réglage qui
 # ne tient qu'à 40 clics/minute ne tient pas.
 CADENCES = (5, 15, 40)
-GRILLE = dict(cop_b=(5, 10, 15), tab_b=(80, 90, 100), con_b=(350, 400, 450))
+GRILLE = dict(rec_r=(1.26, 1.30, 1.35), con_b=(350, 400, 450), cop_b=(10, 15))
 
 # Garde-fous. Durée et écart viennent de PT9 : 66 min 49 mesurées, 71 à 77 simulées par
 # l'acheteur recalé. Le plafond par tranche est la règle 2 du CLAUDE.md.

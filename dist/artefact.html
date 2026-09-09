@@ -581,10 +581,23 @@ const releveVal = t => (t !== undefined && gisReste(t) > 0) ? (S_.prix[t] || 1) 
    plafond I6 de 30 %. Plafonner son gain ne change rien — le joueur recoupe simplement
    plus souvent : seule la croissance de son coût mord. Les 30 % rendus à la concordance
    redonnent à la chaîne d'instruments ce qu'on retire à la main, si bien que la partie ne
-   s'allonge pas. Mesuré : I6 = 27,8 %, 52,7 min (`python outils/sim.py`).
+   s'allonge pas. Mesuré alors, à REC_R = 1,18 : I6 = 27,8 %, 52,7 min.
    Nommées parce qu'elles servaient à trois endroits chacune, et que c'est cette
-   duplication-là qui avait laissé le simulateur diverger du jeu. */
-const REC_R = 1.18;     // croissance du coût du recoupement, par usage
+   duplication-là qui avait laissé le simulateur diverger du jeu.
+
+   09/09/2026 — REC_R passe à 1,30. La tranche 20-30 min tenait 36 % et résistait à toute la
+   famille des prix : 27 combinaisons de cop_b/tab_b/con_b, aucune sous 28 %. Une analyse de
+   sensibilité, une constante à la fois, confirme la phrase ci-dessus cinq playtests plus
+   tard — rec_o, rec_h et rec_max sont inertes, seul REC_R déplace la tranche. Et on sait
+   maintenant pourquoi : le joueur recoupe tant que le coût reste sous une fraction de son
+   stock, lequel croît exponentiellement. Un coût de base doublé, c'est quelques secondes de
+   retard que l'exponentielle efface ; seul le taux mord. Vrai de toute cette économie.
+   Renchérir le recoupement allonge la partie — d'où le premier Copiste ramené de 15 à 10,
+   qui la raccourcit d'autant. Mesuré : 71,8-76,1 min, écart max 5,6, toutes les tranches à
+   partir de dix minutes sous 26 %, 32 recoupements au lieu de 49 (`python outils/sim.py`).
+   Aucun playtest derrière : PT10 doit compter les recoupements. Sous une vingtaine sur la
+   partie, ce réglage a vidé un des deux gestes manuels (règle 8) et il faut le défaire. */
+const REC_R = 1.30;     // croissance du coût du recoupement, par usage
 const CON_P = 0.0039;   // certitude par seconde et par concordance
 
 /* ---- la Grammaire, instrument de l'acte III ----
@@ -602,7 +615,7 @@ const GRAM_C = 3.0;     // hypothèses par seconde consommées
 const gramMul = () => Math.pow(GRAM_R, S_.gl.length);
 
 const INS = [
-  {k:'cop', nom:'Copiste',              sig:'sar',  base:15,   r:1.12,
+  {k:'cop', nom:'Copiste',              sig:'sar',  base:10,   r:1.12,
    ds:()=>'+'+f(1.0*M.cop(),1)+' occ./s',  unlock:()=>true},
   {k:'tab', nom:'Table de fréquences',  sig:'tab',  base:100,  r:1.15,
    ds:()=>'−1 occ./s → +'+f(0.6*M.tabl(),2)+' hyp./s', unlock:()=>S_.b.cop>0||S_.O>=70},
