@@ -38,6 +38,7 @@ src/
   traces.js     HORS JEU — journal d'actions horodaté pour les playtests
   jeu.js        liaisons, entrées clavier, sauvegarde
 outils/
+  balayage.py   simule l'économie avec un ensemble de paramètres
   corpus.py     docs/corpus.md → src/corpus.js
   sim.py        simulateur d'économie (rythme sans jouer 40 min)
   verifier.py   tests bout en bout (Playwright)

@@ -81,6 +81,10 @@ def run(P, cpm=15, cap_min=600, garde=0.0):
     nrev = lambda: min(len(GIS), P['rev_base']
                        + round(len(gl) * (len(GIS) - P['rev_base']) / len(GL)))
     ouvert = 0
+    # La date du premier achat, et non son débit : le mur des dix premières minutes est
+    # un problème de seuil, pas de taux — I6 y vaut 100 % tant que la première
+    # Concordance n'est pas posée, quelle que soit la cadence de clic.
+    premier = {}
     mcop   = lambda: (1.3 if has('tem')  else 1) * (2 if has('kal') else 1)
     mate   = lambda: mcop() * (1.3 if has('mille') else 1) * (1.5 if has('nurhal') else 1)
     mtab   = lambda: (1.3 if has('kish') else 1) * (2 if has('kal') else 1)
@@ -174,6 +178,7 @@ def run(P, cpm=15, cap_min=600, garde=0.0):
             elif O >= cost(prod):                                            k = prod
             if k is None: break
             O -= cost(k); b[k] += 1
+            premier.setdefault(k, t / 60)
 
         # recoupement manuel tant qu'il reste franchement rentable
         rc = reccost()
@@ -193,7 +198,7 @@ def run(P, cpm=15, cap_min=600, garde=0.0):
     return t / 60, marks, b, dict(rec=rec, c_rec=c_rec, c_con=c_con,
                                   obrut=obrut(), cs=b['con'] * P['con_p'] * mcon(),
                                   o_main=o_main, o_pass=o_pass, gis_use=gis_use,
-                                  tr_rec=tr_rec, tr_ins=tr_ins,
+                                  tr_rec=tr_rec, tr_ins=tr_ins, premier=premier,
                                   gis_tot=sum(-(-n // P['gis_div']) for n in TOKENS))
 
 
