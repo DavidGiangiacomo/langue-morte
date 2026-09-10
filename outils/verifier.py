@@ -21,6 +21,7 @@ Contrôle :
      se lit alors de 14 à 0
  14. la composition : la grille s'ouvre à « année », l'ordre compte, l'échec ne coûte
      jamais de Certitude, et un composé secret n'avance pas la progression de l'arbre
+ 15. une partie commencée avant une mécanique neuve se rouvre sans rien perdre
 
 Prérequis : pip install playwright && playwright install chromium
 """
@@ -575,6 +576,36 @@ def main() -> None:
         pas = [round(etats[i] - etats[i - 1]) for i in range(2, len(etats))]
         verifier(len(etats) >= 3 and all(p == 30 for p in pas),
                  f"{len(etats)} relevés d'état, cadence {set(pas) or '—'} s")
+
+        # ---- une sauvegarde d'avant la mécanique neuve doit se rouvrir ----
+        # La clé a déjà changé une fois, et toutes les parties en cours ont été perdues. Un
+        # champ neuf est censé se migrer tout seul (`Object.assign(fresh(), p)`) ; ce test le
+        # vérifie au lieu de le supposer. L'injection passe par un contexte neuf : recharger
+        # l'onglet ferait sauvegarder la page courante par-dessus, via `pagehide`.
+        print("\nune partie d'avant la composition se rouvre")
+        ancienne = ('{"O":5000,"H":300,"C":120,"rec":9,"clicks":40,'
+                    '"b":{"cop":12,"tab":8,"con":3,"ate":1,"gram":0},'
+                    '"gl":["an","anna","tem","ur","im"],"t":900,"done":false,'
+                    '"rel":{"1":[0,1]},"prix":{"1":7}}')
+        ctx = nav.new_context()
+        ctx.add_init_script("localStorage.setItem('langue-morte-actes-i-iii', %r)" % ancienne)
+        vieille = ctx.new_page()
+        casses = []
+        vieille.on("pageerror", lambda e: casses.append(str(e)))
+        vieille.goto(PAGE.resolve().as_uri())
+        vieille.wait_for_timeout(700)
+        verifier(not casses, f"aucune erreur au chargement : {casses[:1] or '—'}")
+        etat = vieille.evaluate("() => [S_.gl.length, Math.round(S_.C), S_.rec, S_.b.cop]")
+        verifier(etat == [5, 120, 9, 12], f"la partie est reprise telle quelle : {etat}")
+        neufs = vieille.evaluate("() => [Array.isArray(S_.carnet), S_.carnet.length, S_.comp]")
+        verifier(neufs == [True, 0, 0], f"les champs neufs arrivent vides : {neufs}")
+        verifier(vieille.text_content("#lexr").strip() == "5 / 20", "le lexique compte cinq signes")
+        r = vieille.evaluate("""() => { S_.C = 9999; acheterGl('nur'); S_.H = 99999;
+            const i = composer('tem','im'); sauver();
+            const p = JSON.parse(localStorage.getItem('langue-morte-actes-i-iii'));
+            return [i, p.carnet, p.comp]; }""")
+        verifier(r == ["rate", ["tem+im"], 1], f"et la composition s'y enregistre : {r}")
+        ctx.close()
 
         nav.close()
 
