@@ -19,6 +19,8 @@ Contrôle :
  12. la nuit : 40 % du débit hors ligne, plafonnée, consommée une seule fois
  13. la concordance : le corpus se replie sur les attestations d'un signe, et la crue
      se lit alors de 14 à 0
+ 14. la composition : la grille s'ouvre à « année », l'ordre compte, l'échec ne coûte
+     jamais de Certitude, et un composé secret n'avance pas la progression de l'arbre
 
 Prérequis : pip install playwright && playwright install chromium
 """
@@ -383,6 +385,82 @@ def main() -> None:
         page.wait_for_timeout(200)
         r2 = page.evaluate("() => GRAM_P * gramMul() * M.gram()")
         verifier(r2 > r1 * 1.5, f"trois signes de plus la font passer de {r1:.4f} à {r2:.4f} cert./s")
+
+        print("\nla composition : poser un signe sur un autre")
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+        verifier(page.get_attribute("#pcomp", "hidden") is not None,
+                 "pas de grille tant qu'on n'a pas « année »")
+        # Les recettes sont dérivées de COMP, dont les valeurs sont des clés de TRACÉ : elles
+        # ne valent comme règle du jeu qu'une fois traduites en glyphes, et filtrées sur ceux
+        # qui existent. `selanna` (vingt) reste dessinable mais a été retiré du lexique.
+        rec = page.evaluate("() => RECETTES")
+        verifier(set(rec) == {"anna", "urtem", "nurnur"},
+                 f"trois recettes ouvertes aujourd'hui : {sorted(rec)}")
+        verifier("selanna" not in rec, "« vingt » n'est proposé par aucune recette")
+        verifier("nurhal" not in rec,
+                 "« dernière-année » non plus : `finir` n'est pas encore un glyphe")
+
+        page.evaluate("() => { S_.C = 9999; ['nur','ur','tem'].forEach(acheterGl); S_.C = 500; }")
+        page.wait_for_timeout(250)
+        verifier(page.get_attribute("#pcomp", "hidden") is None, "« année » ouvre la grille")
+        vus = page.eval_on_selector_all("#comp-choix .pion:not([hidden])", "e => e.length")
+        verifier(vus == 3, f"on ne peut poser que ce qu'on sait lire : {vus} signes")
+
+        # L'ordre compte : ⟨grenier⟩ porte la maison à gauche et le grain à droite, et le
+        # corpus le montre depuis la première seconde. Le mauvais sens ne donne rien.
+        page.evaluate("() => { S_.H = 100000; }")
+        page.wait_for_timeout(120)
+        base_h = page.evaluate("() => compCost()")
+        r = page.evaluate("""() => { const c = S_.C, h = S_.H;
+            const issue = composer('tem', 'ur');
+            return [issue, c - S_.C, h - S_.H, S_.carnet.slice(), has('urtem')]; }""")
+        verifier(r[0] == "rate" and r[4] is False, "grain + maison ne donne rien")
+        verifier(r[1] == 0, "et ne coûte AUCUNE certitude — jamais (R3)")
+        verifier(r[2] == base_h, f"seulement des hypothèses : {r[2]}")
+        verifier(r[3] == ["tem+ur"], f"la paire entre au carnet : {r[3]}")
+
+        r = page.evaluate("""() => { const h = S_.H, n = S_.comp;
+            const issue = composer('tem', 'ur');
+            return [issue, h - S_.H, S_.comp - n]; }""")
+        verifier(r == ["refus", 0, 0], "la même paire retentée ne coûte plus rien")
+
+        page.wait_for_timeout(150)
+        verifier(page.get_attribute("#carnet", "hidden") is None,
+                 "le carnet apparaît après la première tentative")
+        c2 = page.evaluate("() => compCost()")
+        verifier(c2 > base_h,
+                 f"la tentative suivante coûte plus cher : {c2} contre {base_h}")
+
+        # Le bon sens, lui, acquiert le composé au coût normal en Certitude.
+        avant_rev = page.eval_on_selector_all("#corpus .tablet:not([hidden])", "e => e.length")
+        r = page.evaluate("""() => { const c = S_.C, h = S_.H, n = nArbre();
+            const issue = composer('ur', 'tem');
+            return [issue, c - S_.C, h - S_.H, nArbre() - n, has('urtem')]; }""")
+        page.wait_for_timeout(280)
+        verifier(r[0] == "acquis" and r[4] is True, "maison + grain donne le grenier")
+        verifier(r[1] == 60 and r[2] == 0,
+                 f"au coût normal en certitude ({r[1]} C), sans toucher aux hypothèses")
+        # Ce qui suit protège une économie réglée sur neuf playtests : un composé secret
+        # s'ajoute à ce que le joueur SAIT, jamais à ce que l'arbre a rendu.
+        verifier(r[3] == 0, "le compte de l'arbre ne bouge pas")
+        verifier(page.text_content("#lexr").strip() == "3 / 20", "le lexique affiche « 3 / 20 »")
+        apres_rev = page.eval_on_selector_all("#corpus .tablet:not([hidden])", "e => e.length")
+        verifier(apres_rev == avant_rev, "et aucune tablette n'est dégagée en composant")
+
+        lus = page.eval_on_selector_all("#corpus .tok[data-w=urtem]",
+                                        "e => e.filter(x => x.textContent.trim() === 'grenier').length")
+        verifier(lus == 24, f"les {lus} attestations du grenier passent en français")
+        verifier(page.get_attribute("#lexsec", "hidden") is None,
+                 "le bloc « Composés » du lexique s'ouvre")
+        verifier(page.evaluate("() => $('lex').querySelector('[data-gl=urtem]').disabled") is True,
+                 "et sa carte ne s'achète pas : on ne l'achète pas, on l'a posée")
+
+        r = page.evaluate("""() => [composer('ur','tem'), composer('kish','tem'),
+                                    composer('nur','nur')]""")
+        verifier(r[0] == "refus", "le grenier ne se recompose pas")
+        verifier(r[1] == "refus", "un signe qu'on ne sait pas lire ne se pose pas")
+        verifier(r[2] == "acquis", "année + année donne le siècle, sans passer par la branche")
 
         print("\nla concordance : rassembler les attestations d'un signe")
         page.evaluate("() => $('reset').click()")

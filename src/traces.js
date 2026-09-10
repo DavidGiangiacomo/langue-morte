@@ -68,6 +68,12 @@ enrober('veillee',   () => Math.round(S_.O), () => Math.round(S_.O) + ' occ. hor
    les ressources. C'est pourtant le geste que PT9 doit mesurer — quels signes le joueur
    rassemble, et s'il le fait du tout. */
 enrober('concChoisir', () => concSel, a => a[0] + ' · ' + concN + ' attest.');
+/* La composition. Le témoin est le compteur de tentatives et non la longueur du carnet : une
+   paire juste qu'on n'a pas les moyens de payer n'y entre pas, et son essai passerait à la
+   trappe. PT10 doit pouvoir compter les tentatives, voir sur quelles paires, et à quelle
+   minute — c'est la seule façon de savoir si ⟨grenier⟩ se trouve en lisant. */
+enrober('composer', () => S_.comp, a => a[0] + ' + ' + a[1]
+                                        + (has(recetteDe(a[0], a[1]) || '') ? ' ✓' : ''));
 
 /* Pas de témoin possible pour la fin : `S_.done` est déjà posé quand showEnd() est
    appelée. On remonte donc le relevé jusqu'au dernier « reset » — jeu.js rappelle

@@ -58,6 +58,25 @@
         <div class="phead"><span>Instruments</span></div>
         <div class="instr" id="instr"></div>
       </section>
+
+      <!-- La grille de composition. Elle n'apparaît qu'avec `année` : c'est l'acte III qui
+           l'ouvre, comme la Grammaire. Rien n'y dit quelles paires existent — l'aperçu montre
+           le signe qu'on propose, et c'est au corpus de l'avoir déjà montré. -->
+      <section class="panel" id="pcomp" hidden>
+        <div class="phead"><span>Composer</span></div>
+        <div class="comp">
+          <div class="pose">
+            <button class="slot" data-slot="0" title="poser un signe"></button>
+            <span class="op">+</span>
+            <button class="slot" data-slot="1" title="poser un second signe"></button>
+            <span class="op eq">=</span>
+            <span class="apercu" id="comp-ap"></span>
+          </div>
+          <div class="choix" id="comp-choix" aria-label="Les signes que vous savez lire. Cliquez pour en poser un."></div>
+          <button class="act" id="a-comp"><span class="an">Poser un signe sur l’autre</span><span class="ac" id="ac-comp"></span></button>
+          <div class="carnet" id="carnet" hidden></div>
+        </div>
+      </section>
     </div>
 
     <section class="panel">
@@ -74,7 +93,7 @@
     <h2>Fin du prototype</h2>
     <div class="k">actes I à III · 20 glyphes sur 45</div>
     <p class="quote">La dernière année. Elle n'a pas de nombre : après elle, personne n'a plus compté.</p>
-    <p>Le corpus s'arrête ici. La suite — la composition des glyphes, la deuxième personne, les lectures fausses et les contradictions — appartient aux actes IV et V.</p>
+    <p>Le corpus s'arrête ici. La suite — la deuxième personne, les lectures fausses et les contradictions — appartient aux actes IV et V.</p>
     <div class="endstats" id="endstats"></div>
     <p style="font-size:15px"><b style="color:var(--lamp);font-weight:500">La seule question qui compte&nbsp;:</b> au moment où les tablettes se sont rangées dans l'ordre du temps, est-ce que la crue qui baisse s'est vue&nbsp;? Personne ne la commente&nbsp;; elle n'est que dans les chiffres. Si elle passe inaperçue, le sommet de l'acte III est manqué et les 25 glyphes restants ne le rattraperont pas.</p>
     <div class="endacts">

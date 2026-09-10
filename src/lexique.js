@@ -1,4 +1,4 @@
-/* « La langue morte » — les 20 glyphes des actes I à III
+/* « La langue morte » — les glyphes des actes I à III
    Scripts classiques, portée globale partagée, chargés dans l'ordre de index.html.
    Aucune dépendance externe hors les polices Google. */
 "use strict";
@@ -50,8 +50,39 @@ const GL = [
   {id:'esh',  br:'temps',   mot:'nuit',     cost:360,eff:'la lecture continue hors ligne — 40 % du débit, 4 h au plus',
    log:'Nuit. Ils gravaient la nuit. Le corpus se lit maintenant sans moi.'},
   {id:'nurhal',br:'temps',  mot:'dernière-année',cost:500,eff:'les deux dernières tablettes se datent · +50 % à l’atelier de copie',
-   log:'La dernière année. Elle n’a pas de nombre : après elle, personne n’a plus compté.'}
+   log:'La dernière année. Elle n’a pas de nombre : après elle, personne n’a plus compté.'},
+  /* ---- les composés secrets ----
+     `sec` veut dire : aucune branche ne l’offre, il ne s’obtient qu’en le composant. Il ne
+     compte donc pas dans la progression de l’arbre — ni pour la fin de partie, ni pour les
+     tablettes dégagées, ni pour la Grammaire (voir `nArbre()` dans economie.js). Le seul
+     effet de `grenier` est qu’on le lit : vingt-quatre attestations qui passent en français,
+     et rien de plus. Un joueur peut finir la partie sans jamais le trouver. */
+  {id:'urtem',br:'matiere', sec:true, mot:'grenier', cost:60, eff:'le grenier se lit — un mot qu’aucune branche n’offrait',
+   log:'Le grenier — la maison du grain. Personne ne me l’a appris : c’était écrit dans le signe.'}
 ];
-const NGL = GL.length;
+/* Le lexique compte ce que l’arbre offre. Un composé secret s’ajoute au savoir du joueur sans
+   s’ajouter à sa progression : le compteur reste « x / 20 », et l’économie mesurée sur neuf
+   playtests ne bouge pas parce qu’on a trouvé un signe de plus. */
+const NGL = GL.filter(g=>!g.sec).length;
 const BR = [['nombre','Nombre'],['matiere','Matière'],['parole','Parole'],['temps','Temps']];
 const byId = Object.fromEntries(GL.map(g=>[g.id,g]));
+
+/* ============================ recettes ============================ */
+/* `COMP` dit comment un signe se DESSINE : ses valeurs sont des clés de tracé, et la branche
+   Nombre y paraît sous son chiffre (`u1` pour ⟨un⟩, `t10` pour ⟨dix⟩). Une recette dit ce qu’on
+   peut POSER : deux glyphes du lexique. La traduction se fait une fois, ici.
+
+   Le filtre est ce qui empêche la grille d’offrir un signe qui n’existe pas — `selanna`
+   (vingt) reste dessinable mais a été retiré du lexique, et les composés des actes IV et V
+   n’ont pas encore leurs parties. Chaque recette apparaîtra d’elle-même le jour où sa cible et
+   ses deux parties seront au lexique : il n’y a aucune liste à tenir à jour. */
+const RECETTES = {};
+for(const cible in COMP){
+  const [a, b] = COMP[cible].map(k => GLTRACE[k] || k);
+  if(byId[cible] && byId[a] && byId[b]) RECETTES[cible] = [a, b];
+}
+/* L’ordre fait partie de la recette : `notre-fin` et `nous-fûmes` sont les deux mêmes signes
+   dans les deux sens. Le corpus le dit — ⟨grenier⟩ porte la maison à gauche et le grain à
+   droite depuis la première seconde. Qui lit, voit l’ordre. */
+const PAIRES = Object.fromEntries(Object.entries(RECETTES).map(([c,[a,b]]) => [a+'+'+b, c]));
+const recetteDe = (a, b) => PAIRES[a+'+'+b];

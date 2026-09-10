@@ -34,7 +34,14 @@ GL = [('an','nombre',2), ('anna','nombre',5), ('hem','nombre',11), ('sela','nomb
       ('gan','matiere',40),
       ('im','parole',8), ('sar','parole',27), ('kal','parole',48),
       ('nur','temps',60), ('pat','temps',130), ('zur','temps',190), ('nurnur','temps',260),
-      ('esh','temps',360), ('nurhal','temps',500)]
+      ('esh','temps',360), ('nurhal','temps',500),
+      # Composés secrets : offerts par aucune branche, ils ne s'obtiennent qu'à la grille de
+      # composition. Ils comptent dans ce que le joueur SAIT, jamais dans ce que l'arbre a
+      # rendu — d'où `ARBRE`, qui est le compte dont dépendent le dégagement des tablettes, la
+      # Grammaire et la fin de partie. Confondre les deux ferait avancer le jeu en composant.
+      ('urtem','matiere',60)]
+SECRETS = {'urtem'}
+ARBRE = [g for g in GL if g[0] not in SECRETS]
 
 # ---- constantes économiques ----------------------------------------------
 P = dict(
@@ -56,11 +63,11 @@ P = dict(
 )
 
 BR = {}
-for g in GL:
+for g in ARBRE:
     BR.setdefault(g[1], []).append(g)
 
 
-def run(P, cpm=15, cap_min=600, garde=0.0):
+def run(P, cpm=15, cap_min=600, garde=0.0, compose=False):
     """cpm = clics manuels par minute. `garde` = fraction de la partie pendant laquelle
     le joueur s'interdit de relever, pour tarifer ses tablettes au débit maximal —
     c'est le pire cas contre lequel il faut se prémunir. Retourne (durée, jalons, ...)."""
@@ -68,6 +75,7 @@ def run(P, cpm=15, cap_min=600, garde=0.0):
     b = {'cop': 0, 'tab': 0, 'con': 0, 'ate': 0, 'gram': 0}
     gl, rec, t, dt = set(), 0, 0.0, 0.1
     marks, c_rec, c_con = [], 0.0, 0.0
+    hyp_gl, comp_faits = {}, 0     # stock d'hypothèses à chaque jalon · compositions faites
     # I6 par tranche de dix minutes : PT7 s'est posé à 31,2 % sur la partie entière en
     # cachant un 83 % au premier quart d'heure et un 103 % aux cinq dernières minutes.
     # La moyenne d'une partie ne dit rien de la partie ; les tranches, si.
@@ -78,8 +86,9 @@ def run(P, cpm=15, cap_min=600, garde=0.0):
     reste = list(GIS)                               # ce qu'il reste à relever, par tablette
     prix = [None] * len(GIS)                        # tarif figé au premier relevé
     # tablettes dégagées : 4 au départ, les 30 au dernier glyphe (cf. revCount() dans rendu.js)
+    narbre = lambda: len(gl - SECRETS)      # ce que l'arbre a rendu, pas ce que le joueur sait
     nrev = lambda: min(len(GIS), P['rev_base']
-                       + round(len(gl) * (len(GIS) - P['rev_base']) / len(GL)))
+                       + round(narbre() * (len(GIS) - P['rev_base']) / len(ARBRE)))
     ouvert = 0
     # La date du premier achat, et non son débit : le mur des dix premières minutes est
     # un problème de seuil, pas de taux — I6 y vaut 100 % tant que la première
@@ -90,7 +99,7 @@ def run(P, cpm=15, cap_min=600, garde=0.0):
     mtab   = lambda: (1.3 if has('kish') else 1) * (2 if has('kal') else 1)
     mcon   = lambda: (1.5 if has('sar')  else 1) * (2 if has('kal') else 1)
     mgram  = lambda: (1.5 if has('nurnur') else 1) * (2 if has('kal') else 1)
-    gramp  = lambda: P['gram_p'] * (P['gram_g'] ** len(gl)) * mgram()
+    gramp  = lambda: P['gram_p'] * (P['gram_g'] ** narbre()) * mgram()
     mclick = lambda: (1.25 if has('anna') else 1) * (1.5 if has('tab') else 1) * (2 if has('kal') else 1)
     obrut  = lambda: b['cop'] * P['cop_p'] * mcop() + b['ate'] * P['ate_p'] * mate()
     # Un relevé ne vaut plein tarif que sur du terrain neuf. Le gisement épuisé rend le
@@ -104,7 +113,7 @@ def run(P, cpm=15, cap_min=600, garde=0.0):
         m = (P['rec_r'] ** rec) * (0.75 if has('gan') else 1)
         return math.ceil(P['rec_o'] * m), math.ceil(P['rec_h'] * m)
 
-    recgain = lambda: min(P['rec_max'], 1 + len(gl) // P['rec_div'])
+    recgain = lambda: min(P['rec_max'], 1 + narbre() // P['rec_div'])
 
     def avail():                       # premier glyphe non acquis de chaque branche
         out = []
@@ -114,7 +123,7 @@ def run(P, cpm=15, cap_min=600, garde=0.0):
                     out.append(g); break
         return out
 
-    while len(gl) < len(GL) and t < 60 * cap_min:
+    while narbre() < len(ARBRE) and t < 60 * cap_min:
         t += dt
         o_pass += obrut() * dt
         ouvert = nrev()
@@ -193,12 +202,22 @@ def run(P, cpm=15, cap_min=600, garde=0.0):
             a = [g for g in avail() if C >= g[2]]
             if not a: break
             a.sort(key=lambda g: g[2]); g = a[0]
-            C -= g[2]; gl.add(g[0]); marks.append((g[0], t / 60))
+            C -= g[2]; gl.add(g[0]); marks.append((g[0], t / 60)); hyp_gl[g[0]] = H
+
+        # La composition : elle ne crée ni ne consomme de flux, elle change le catalogue. Un
+        # joueur qui a vu ⟨grenier⟩ dans le texte le pose dès qu'il peut ; ce qu'on mesure ici
+        # est donc le RETARD que ses 90 C coûtent, la seule chose qu'un simulateur puisse en
+        # dire. Qu'il le trouve seul est une question de playtest, pas de simulation.
+        if compose and 'nur' in gl and 'urtem' not in gl:
+            cible = next((g for g in GL if g[0] == 'urtem'), None)
+            if cible and C >= cible[2]:
+                C -= cible[2]; gl.add('urtem'); comp_faits += 1
 
     return t / 60, marks, b, dict(rec=rec, c_rec=c_rec, c_con=c_con,
                                   obrut=obrut(), cs=b['con'] * P['con_p'] * mcon(),
                                   o_main=o_main, o_pass=o_pass, gis_use=gis_use,
                                   tr_rec=tr_rec, tr_ins=tr_ins, premier=premier,
+                                  hyp_gl=hyp_gl, comp=comp_faits,
                                   gis_tot=sum(-(-n // P['gis_div']) for n in TOKENS))
 
 

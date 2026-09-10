@@ -167,6 +167,38 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .ins.afford .cs{color:var(--ochre)}
 .ins.locked{opacity:.3}
 
+/* ---------- composition ---------- */
+.comp{padding:9px 11px;display:flex;flex-direction:column;gap:9px}
+.pose{display:flex;align-items:center;justify-content:center;gap:6px}
+.pose .op{font-family:var(--mono);font-size:12px;color:var(--faint)}
+/* Le signe d'égalité ne pend pas dans le vide : il n'apparaît qu'avec l'aperçu. */
+.pose:not(.pret) .eq,.pose:not(.pret) .apercu{visibility:hidden}
+.slot{width:40px;height:34px;display:flex;align-items:center;justify-content:center;
+  border:1px dashed var(--line2);background:var(--clay2);border-radius:2px;color:var(--dim);
+  transition:border-color .15s,color .15s}
+.slot:hover{border-color:var(--ochre-d)}
+.slot.plein{border-style:solid;color:var(--lamp)}
+.slot .gl{width:16px;height:21px}
+.slot .gl2{width:27px;height:21px}
+/* L'aperçu est en couleur du texte ancien, pas en couleur d'instrument : ce qu'on y voit est
+   un signe, de la même encre que ceux du corpus, et c'est là-bas qu'il faut aller le
+   reconnaître. Il ne dit jamais s'il existe. */
+.apercu{min-width:44px;height:34px;display:flex;align-items:center;justify-content:center;color:var(--grain)}
+.apercu .gl2{width:32px;height:26px}
+.choix{display:flex;flex-wrap:wrap;gap:3px}
+.pion{width:27px;height:26px;display:flex;align-items:center;justify-content:center;
+  border:1px solid transparent;background:transparent;border-radius:2px;color:var(--mid);
+  transition:border-color .12s,background .12s,color .12s}
+.pion:hover{background:#2C2318;border-color:var(--line2);color:var(--lamp)}
+.pion.pose{border-color:var(--ochre-d);background:#31261B;color:var(--ochre)}
+.pion .gl{width:13px;height:17px}
+.pion .gl2{width:22px;height:17px}
+.carnet{border-top:1px solid var(--line);padding-top:7px;display:flex;flex-wrap:wrap;gap:5px;align-items:center}
+.carnet .ch{width:100%;font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--faint);margin-bottom:1px}
+.cpair{display:inline-flex;opacity:.38;color:var(--dim)}
+.cpair .gl2{width:24px;height:18px}
+
 /* ---------- lexique ---------- */
 .lex{padding:10px 11px;display:flex;flex-direction:column;gap:13px}
 .branch .bh{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-bottom:6px}
