@@ -8,11 +8,25 @@
    glyphes et rouvrirait sur l'écran de fin, sans moyen de continuer. */
 const KEY='langue-morte-actes-i-iii';
 const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram:0},gl:[],t:0,done:false,
-  rel:{}, prix:{}});   // rel : jetons relevés par tablette · prix : tarif du gisement, verrouillé
+  rel:{}, prix:{}, carnet:[], comp:0});
+/* rel : jetons relevés par tablette · prix : tarif du gisement, verrouillé
+   carnet : les paires déjà tentées et fausses · comp : le nombre de tentatives, toutes issues
+   confondues — c'est lui que PT10 doit lire, pas la seule liste des échecs.
+   Champs de premier niveau, donc une partie d'avant la composition les reçoit vides au
+   chargement, sans qu'on touche à `KEY`. */
 let S_ = fresh(), speed = 1;
 try{ const raw=localStorage.getItem(KEY); if(raw){ const p=JSON.parse(raw);
   if(p&&p.b){ const b=Object.assign({cop:0,tab:0,con:0,ate:0,gram:0},p.b); S_=Object.assign(fresh(),p); S_.b=b; } } }catch(e){}
 const has = id => S_.gl.indexOf(id)>=0;
+/* Ce que l'arbre a rendu, qui n'est pas ce que le joueur sait : un composé secret s'acquiert
+   hors de toute branche. Les deux comptes se confondaient tant qu'il n'y avait qu'une façon
+   d'apprendre un signe ; depuis la grille de composition, tout ce qui mesure une PROGRESSION
+   passe par ici — la fin de partie, les tablettes dégagées (`revCount`), la Grammaire
+   (`gramMul`), le gain du recoupement et le compteur du lexique. Les confondre ferait avancer
+   le jeu en composant, et déplacerait une économie réglée sur neuf playtests.
+   Ce que le joueur COMPREND se mesure ailleurs, dans le corpus : `mesures()`, qui compte bien
+   le grenier parce que c'est justement ce qu'il a gagné. */
+const nArbre = () => { let n=0; for(const id of S_.gl){ const g=byId[id]; if(!g||!g.sec) n++; } return n; };
 
 /* ---- économie ---- */
 const M = {
@@ -108,7 +122,7 @@ const CON_P = 0.0039;   // certitude par seconde et par concordance
 const GRAM_P = 0.0012;  // certitude par seconde et par grammaire, avant l'effet du lexique
 const GRAM_R = 1.16;    // ... qui croît de 16 % par signe déchiffré
 const GRAM_C = 3.0;     // hypothèses par seconde consommées
-const gramMul = () => Math.pow(GRAM_R, S_.gl.length);
+const gramMul = () => Math.pow(GRAM_R, nArbre());
 
 const INS = [
   {k:'cop', nom:'Copiste',              sig:'sar',  base:10,   r:1.12,
@@ -126,7 +140,7 @@ const INS = [
 const insCost = i => Math.ceil(i.base*Math.pow(i.r,S_.b[i.k]));
 const recCost = () => { const m=Math.pow(REC_R,S_.rec)*(has('gan')?0.75:1);
   return {O:Math.ceil(12*m), H:Math.ceil(3*m)}; };
-const recGain = () => Math.min(3, 1 + Math.floor(S_.gl.length/5));
+const recGain = () => Math.min(3, 1 + Math.floor(nArbre()/5));
 const hypCost = () => 3;
 
 /* ---- formats ---- */
@@ -178,6 +192,51 @@ function recouper(id){
   S_.O-=c.O; S_.H-=c.H; S_.C+=recGain(); S_.rec++;
   return true;
 }
+/* ---- la composition ----
+   « Poser un signe sur un autre » (design doc §7). Le joueur ne cherche pas au hasard : les
+   dix-sept composés sont dessinés comme composés depuis le premier écran, et ⟨grenier⟩ porte
+   ⟨maison⟩ et ⟨grain⟩ dans vingt-quatre lignes du corpus. L'indice est dans le texte, il n'est
+   nulle part ailleurs, et la grille ne dit jamais si une paire existe avant qu'on la pose.
+
+   L'échec ne coûte QUE des hypothèses (R3) — jamais de Certitude, qui est la mesure de ce
+   qu'on a compris et ne peut pas se perdre à une erreur. Il croît vite, et c'est là toute la
+   mécanique : le stock d'hypothèses à l'ouverture de la grille est de l'ordre de vingt mille,
+   pour environ six cents par minute nettes une fois la Grammaire installée. Une tentative
+   coûte alors une vingtaine de secondes, cinq en coûtent quatre minutes, dix en coûtent
+   vingt-sept, et quinze sont hors de portée — quand il y a plus de deux cents paires à
+   balayer. Lire revient donc structurellement moins cher que chercher, ce qui est le cœur du
+   design (design doc §8) et la réponse au risque R3. Mesuré à `python outils/sim.py`.
+
+   Une paire déjà fausse ne se retente pas : elle est au carnet, et le jeu la refuse au lieu
+   de la faire repayer. On ne punit pas l'oubli, on empêche seulement de balayer. */
+const COMP_H = 250;     // hypothèses perdues à la première tentative fausse
+const COMP_R = 1.40;    // ... et par tentative fausse déjà inscrite au carnet
+const compCost  = () => Math.ceil(COMP_H*Math.pow(COMP_R, S_.carnet.length));
+const compOuvre = () => has('nur');   // même porte que la Grammaire : l'acte III s'ouvre là
+const auCarnet  = (a,b) => S_.carnet.indexOf(a+'+'+b) >= 0;
+
+/* Rend ce qui s'est passé — 'acquis', 'rate', ou 'refus' quand rien n'a bougé. Le corpus,
+   le journal et la peinture sont l'affaire d'`acheterGl`, qui les fait déjà tous. */
+function composer(a, b){
+  if(!compOuvre() || !has(a) || !has(b) || auCarnet(a, b)) return 'refus';
+  const cible = recetteDe(a, b);
+  if(cible && has(cible)) return 'refus';        // déjà lu : il n'y a plus rien à trouver
+  const c = compCost();
+  if(S_.H < c) return 'refus';                   // pas de quoi engager la tentative
+  S_.comp++;
+  if(cible && S_.C >= byId[cible].cost){
+    acheterGl(cible);                            // le coût est en Certitude, et lui seul
+    return 'acquis';
+  }
+  /* La tentative a eu lieu : les hypothèses sont perdues dans les deux cas. Une paire juste
+     qu'on n'a pas les moyens de payer n'entre PAS au carnet — elle se retentera plus tard —
+     mais elle coûte comme une autre et ne se distingue de rien à l'écran. Sans ça, l'absence
+     de perte dirait au joueur qu'il vient de trouver. */
+  S_.H -= c;
+  if(!cible) S_.carnet.push(a+'+'+b);
+  pushLog('Rien ne vient. Ces deux signes ne se rencontrent nulle part.');
+  return 'rate';
+}
 function acheterIns(k){ const i=INS.find(x=>x.k===k), c=insCost(i);
   if(i.unlock()&&S_.O>=c){ S_.O-=c; S_.b[k]++; } }
 function acheterGl(id){
@@ -192,18 +251,23 @@ function acheterGl(id){
   paintCorpus(id);
   lastPct=-1;
   if(id==='an'||id==='kal'){ const b=$('bloom'); b.classList.remove('on'); void b.offsetWidth; b.classList.add('on'); }
-  if(S_.gl.length===NGL){ S_.done=true; showEnd(); }
+  if(nArbre()===NGL){ S_.done=true; showEnd(); }
 }
 
 function showEnd(){
   const m=Math.floor(S_.t/60), s=Math.floor(S_.t%60);
-  $('endstats').innerHTML=[
+  const lignes=[
     ['temps de lecture', m+' min '+String(s).padStart(2,'0')],
     ['signes relevés à la main', nf.format(S_.clicks)],
     ['recoupements', nf.format(S_.rec)],
     ['lignes entièrement lues', mesures().lig+' %'],
     ['signes déchiffrés', mesures().sig+' %']
-  ].map(([k,v])=>'<div>'+k+' <b>'+v+'</b></div>').join('');
+  ];
+  /* Les compositions ne se comptent que si on en a tenté. Un joueur qui n'a jamais ouvert la
+     grille ne doit pas apprendre à l'écran de fin qu'il y avait quelque chose à y trouver :
+     c'est le journal d'actions qui le dira à l'auteur, pas la carte au joueur. */
+  if(S_.comp > 0) lignes.push(['signes posés l’un sur l’autre', nf.format(S_.comp)]);
+  $('endstats').innerHTML=lignes.map(([k,v])=>'<div>'+k+' <b>'+v+'</b></div>').join('');
   $('end').hidden=false;
 }
 
@@ -253,7 +317,7 @@ function frame(now){
   let dt=(now-last)/1000; last=now;
   if(dt>0.5) dt=0.5;
   if(!S_.done) tick(dt*speed);
-  paintRes(); paintActs(); paintInstr(); paintLex(); paintMeter();
+  paintRes(); paintActs(); paintInstr(); paintComp(); paintLex(); paintMeter();
   const ch=Math.floor(S_.t/60)+':'+String(Math.floor(S_.t%60)).padStart(2,'0');
   if($('chrono').textContent!==ch) $('chrono').textContent=ch;
   requestAnimationFrame(frame);

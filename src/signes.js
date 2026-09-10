@@ -45,7 +45,13 @@ const P = {
   nm5:'M4 20 Q10 2 16 20 M6 14 H14 M10 20 V23',
   nm6:'M5 5 H15 M10 5 V21 M5 21 H15 M7 13 H13'
 };
-P.an = P.u1; P.hem = P.u5; P.sela = P.t10; P.meku = P.h100; P.mille = P.k1000;
+/* Un glyphe de la branche Nombre partage le tracé de son signe de numération : ⟨un⟩ le mot
+   et ⟨1⟩ le chiffre sont le même trait. La table les nomme une seule fois, dans les deux sens.
+   `sv()` la lit par la gauche pour dessiner ; la composition la lit par la droite, parce qu'un
+   joueur qui pose ⟨un⟩ pose le glyphe `an`, et que `COMP` l'attend sous le nom `u1`. */
+const ALIAS = { an:'u1', hem:'u5', sela:'t10', meku:'h100', mille:'k1000' };
+for(const g in ALIAS) P[g] = P[ALIAS[g]];
+const GLTRACE = Object.fromEntries(Object.entries(ALIAS).map(([g,t]) => [t,g]));
 
 /* Les composés se voient comme composés : le signe de « deux » EST le signe de « un »
    redoublé, celui de « grenier » contient « maison » et « grain ». Le joueur reconnaît
@@ -59,15 +65,22 @@ const COMP = {
   shenke:['shen','ke'],  imme:['im','sar'],     halan:['hal','u1'],
   enla:['en','la'],      taru:['ta','en']
 };
+/* Le tracé d'un composé, à partir de ses deux parties. Sorti de `sv()` pour que la grille de
+   composition puisse dessiner une paire qui n'est PAS dans COMP : le joueur doit voir le signe
+   qu'il propose avant de savoir s'il existe — c'est tout ce que la grille lui donne, et c'est
+   ce qui la garde du côté de la lecture. Pas de cache ici : il est indexé par id de composé,
+   et une paire quelconque n'en a pas. */
+function svPaire(a, b){
+  return '<svg class="gl gl2" viewBox="0 0 34 26" aria-hidden="true">'
+       + '<g transform="translate(0,2.6) scale(0.8)"><path d="'+P[a]+'"/></g>'
+       + '<g transform="translate(17,2.6) scale(0.8)"><path d="'+P[b]+'"/></g></svg>';
+}
 const svCache = {};
 function sv(k){
   if(svCache[k]) return svCache[k];
   let out;
   if(COMP[k]){
-    const [a,b] = COMP[k];
-    out = '<svg class="gl gl2" viewBox="0 0 34 26" aria-hidden="true">'
-        + '<g transform="translate(0,2.6) scale(0.8)"><path d="'+P[a]+'"/></g>'
-        + '<g transform="translate(17,2.6) scale(0.8)"><path d="'+P[b]+'"/></g></svg>';
+    out = svPaire(COMP[k][0], COMP[k][1]);
   } else if(P[k]){
     out = '<svg class="gl" viewBox="0 0 20 26" aria-hidden="true"><path d="'+P[k]+'"/></svg>';
   } else {

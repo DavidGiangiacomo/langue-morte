@@ -6,8 +6,10 @@
 /* ============================ rendu corpus ============================ */
 const elCorpus=document.getElementById('corpus');
 /* Nombre de tablettes dégagées : 4 au départ, les 30 au dernier glyphe. Le corpus
-   s'ouvre donc sur les trois actes, et non plus sur les deux premiers. */
-const revCount = () => Math.min(TB.length, 4 + Math.round(S_.gl.length * (TB.length-4) / NGL));
+   s'ouvre donc sur les trois actes, et non plus sur les deux premiers.
+   Sur le compte de l'arbre et non sur les glyphes acquis : composer ⟨grenier⟩ fait comprendre
+   le corpus, ça ne le fait pas sortir de terre. */
+const revCount = () => Math.min(TB.length, 4 + Math.round(nArbre() * (TB.length-4) / NGL));
 let lastRev = 0;
 
 function buildCorpus(){
@@ -416,19 +418,87 @@ function paintInstr(){
   }
 }
 
+/* Les branches, puis les composés. Un glyphe secret n'appartient à aucune chaîne — il y
+   entrerait dans le `prevDone` de `paintLex` et bloquerait la suite de sa branche, alors qu'il
+   n'est pas sur le chemin. Son bloc reste caché tant qu'on n'en a trouvé aucun : le lexique ne
+   doit pas annoncer qu'il existe des signes qu'aucune branche n'offre. */
+const CARTE = g => '<button class="gcard" data-gl="'+g.id+'">'+
+  '<span class="sig">'+sv(g.id)+'</span>'+
+  '<span class="ttl"></span><span class="cost"></span><span class="eff"></span></button>';
+const SECRETS = GL.filter(g=>g.sec);
+
+/* ==================== la grille de composition ==================== */
+/* Deux emplacements, et l'aperçu de ce qu'ils font ensemble. L'aperçu ne dit pas si la paire
+   existe : il dessine le signe proposé, exactement comme le corpus dessine les siens depuis la
+   première seconde. Le reconnaître dans le texte est tout le jeu, et c'est le seul indice
+   qu'il y ait — la grille, elle, ne souffle rien (design doc §7).
+   Les composés déjà trouvés restent posables : les exclure dirait qu'aucune recette ne les
+   emploie, et ce serait un renseignement. */
+let compSel = [null, null];
+
+function compPoser(id){
+  const i = compSel.indexOf(id);
+  if(i >= 0){ compSel[i] = null; return; }      // recliquer retire
+  if(compSel[0] === null) compSel[0] = id;
+  else compSel[1] = id;                          // les deux pleins : le second cède la place
+}
+function compVider(){ compSel = [null, null]; }
+
+function buildComp(){
+  setHTML($('comp-choix'), GL.map(g =>
+    '<button class="pion" data-pion="'+g.id+'" hidden>'+sv(g.id)+'</button>').join(''));
+}
+
+function paintComp(){
+  const ouvert = compOuvre();
+  if($('pcomp').hidden !== !ouvert) $('pcomp').hidden = !ouvert;
+  if(!ouvert) return;
+
+  for(const g of GL){
+    const b = $('comp-choix').querySelector('[data-pion="'+g.id+'"]'), vu = has(g.id);
+    if(b.hidden !== !vu) b.hidden = !vu;
+    if(!vu) continue;
+    if(b.title !== g.mot) b.title = g.mot;
+    b.classList.toggle('pose', compSel.indexOf(g.id) >= 0);
+  }
+
+  const slots = $('pcomp').querySelectorAll('.slot');
+  for(let i = 0; i < 2; i++){
+    setHTML(slots[i], compSel[i] ? sv(compSel[i]) : '');
+    slots[i].classList.toggle('plein', !!compSel[i]);
+  }
+  const a = compSel[0], b = compSel[1], pret = !!(a && b);
+  $('pcomp').querySelector('.pose').classList.toggle('pret', pret);
+  setHTML($('comp-ap'), pret ? svPaire(a, b) : '');
+
+  const c = compCost(), bt = $('a-comp');
+  bt.disabled = !pret || auCarnet(a, b) || S_.H < c;
+  setHTML($('ac-comp'), (readC() ? big(c) : numGlyphs(c)) + ' hyp.');
+
+  /* Le carnet. Il n'existe pas avant la première tentative — le panneau n'annonce pas qu'on
+     peut se tromper, il le montre une fois que c'est arrivé. */
+  const n = S_.carnet.length;
+  if($('carnet').hidden !== !n) $('carnet').hidden = !n;
+  if(n) setHTML($('carnet'), '<div class="ch">Déjà tentées</div>' + S_.carnet.map(pr => {
+    const [x, y] = pr.split('+');
+    return '<span class="cpair" title="'+byId[x].mot+' + '+byId[y].mot+'">'+svPaire(x, y)+'</span>';
+  }).join(''));
+}
+
 function buildLex(){
   setHTML($('lex'), BR.map(([k,label])=>{
-    const list=GL.filter(g=>g.br===k);
+    const list=GL.filter(g=>g.br===k && !g.sec);
     return '<div class="branch"><div class="bh">'+label+'</div><div class="chain">'+
-      list.map(g=>'<button class="gcard" data-gl="'+g.id+'">'+
-        '<span class="sig">'+sv(g.id)+'</span>'+
-        '<span class="ttl"></span><span class="cost"></span><span class="eff"></span></button>').join('')+
+      list.map(CARTE).join('')+
     '</div></div>';
-  }).join(''));
+  }).join('')
+  + '<div class="branch" id="lexsec" hidden><div class="bh">Composés</div><div class="chain">'+
+      SECRETS.map(CARTE).join('')+
+    '</div></div>');
 }
 function paintLex(){
   for(const [k] of BR){
-    const list=GL.filter(g=>g.br===k);
+    const list=GL.filter(g=>g.br===k && !g.sec);
     let prevDone=true;
     for(const g of list){
       const b=$('lex').querySelector('[data-gl="'+g.id+'"]');
@@ -450,7 +520,23 @@ function paintLex(){
       if(!done) prevDone=false;
     }
   }
-  $('lexr').textContent = S_.gl.length+' / '+NGL;
+  /* Les composés trouvés. Jamais cliquables : on ne les achète pas ici, on les a posés. */
+  let vus=0;
+  for(const g of SECRETS){
+    const b=$('lex').querySelector('[data-gl="'+g.id+'"]'), done=has(g.id);
+    if(b.hidden!==!done) b.hidden=!done;
+    if(!done) continue;
+    vus++;
+    if(b.className!=='gcard done') b.className='gcard done';
+    b.disabled=true;
+    setHTML(b.querySelector('.ttl'), g.mot);
+    setHTML(b.querySelector('.cost'), '✓');
+    setHTML(b.querySelector('.eff'), g.eff);
+  }
+  if($('lexsec').hidden !== !vus) $('lexsec').hidden = !vus;
+  /* Le compteur suit l'arbre : trouver un composé n'avance pas la progression, il ajoute au
+     savoir. Sans ça il afficherait « 21 / 20 ». */
+  $('lexr').textContent = nArbre()+' / '+NGL;
 }
 
 function paintRes(){
