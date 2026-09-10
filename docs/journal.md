@@ -141,6 +141,102 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## La composition — l'indice était dans le dessin depuis le début
+
+*10/09/2026. Première brique de la seconde moitié de l'acte III, et première tâche prise
+dans la feuille de route 1.0 (E1 : COMP-1, COMP-2, COMP-5, plus la moitié réalisable de
+COMP-4).*
+
+Une grille assemble deux signes qu'on sait lire. Elle s'ouvre avec `année`, comme la
+Grammaire — l'acte III a une seule porte. Elle ne dit jamais quelles paires existent : elle
+dessine le signe qu'on propose, et c'est tout. Le reste est dans le corpus, où les dix-sept
+composés sont dessinés comme composés depuis la toute première seconde (règle 4). ⟨grenier⟩
+y porte ⟨maison⟩ et ⟨grain⟩ dans vingt-quatre lignes, et en PT9 un testeur l'avait concordé
+sans pouvoir le lire. L'indice est posé depuis des mois ; il manquait l'endroit où s'en
+servir.
+
+### `COMP` ne pouvait pas servir de vérité telle quelle
+
+Le backlog disait « la table `COMP` sert de vérité » (COMP-1). C'était faux, et ça n'a
+sauté aux yeux qu'en l'ouvrant : **ses valeurs sont des clés de tracé, pas des glyphes.**
+`zéro` s'y écrit `['la','u1']` — `la` est bien l'identifiant de ⟨ne-pas⟩, mais `u1` est le
+trait du chiffre un, et le glyphe s'appelle `an`. La branche Nombre entière y paraît sous
+ses chiffres, à cause de l'aliasage qui fait que ⟨un⟩ le mot et ⟨1⟩ le chiffre sont le même
+trait.
+
+D'où `ALIAS`, qui nomme la correspondance une fois et dans les deux sens — `sv()` la lit par
+la gauche pour dessiner, la composition par la droite pour reconnaître — et `RECETTES`, qui
+en dérive ce qu'on peut poser. Le filtre est le vrai travail : une recette n'existe que si
+sa cible **et** ses deux parties sont au lexique. Sans lui la grille offrait `vingt`, un
+signe encore dessinable mais retiré du lexique il y a six jours, et `dernière-année`
+composée avec un `finir` qui n'est pas encore un glyphe. Avec lui, il reste exactement trois
+recettes ouvertes aujourd'hui — `deux`, `siècle`, `grenier` — et les quatorze autres
+apparaîtront d'elles-mêmes à mesure que les actes IV et V entreront au lexique. Rien à tenir
+à jour, ce qui est la seule façon de ne pas diverger une troisième fois.
+
+### Ce que coûte une erreur, et pourquoi c'est un taux
+
+L'échec ne coûte que des hypothèses, jamais de Certitude (R3, design doc §7) : la Certitude
+mesure ce qu'on a compris, et ça ne se perd pas sur une erreur.
+
+Restait à savoir combien. Le simulateur a répondu, et la réponse a corrigé une intuition :
+**le stock ne mesure rien, c'est le débit qui compte.** Il y a de l'ordre de vingt mille
+hypothèses en réserve quand la grille s'ouvre, et près de quarante mille à la fin — mais
+elles rentrent à six cents par minute nettes, Grammaire déduite. Un coût fixe de quelques
+centaines d'hypothèses ne freinerait donc rien du tout : deux cent vingt-cinq paires
+ordonnées à balayer, à une demi-minute la tentative, et le joueur qui ne lit pas gagne.
+
+C'est encore la leçon de `REC_R` (PT4, puis le réglage du 09/09) : dans une économie
+exponentielle, les coûts de base sont inertes, seuls les taux mordent. La tentative vaut
+donc 250 hypothèses et croît de 40 % par paire déjà tentée. Cinq essais coûtent quatre
+minutes de production, dix en coûtent vingt-sept, quinze sont hors de portée. Lire revient
+structurellement moins cher que chercher — ce qui est le cœur du design (§8) et la seule
+réponse honnête au risque R3.
+
+Une paire fausse entre au carnet et ne se repaie plus. On n'empêche pas d'oublier, on
+empêche de balayer.
+
+### Le cas qui se serait trahi tout seul
+
+Une paire juste que le joueur n'a pas les moyens de payer perd quand même ses hypothèses, et
+n'entre **pas** au carnet. Le premier jet la refusait sans rien prendre — et cette gratuité
+était un renseignement : l'absence de perte disait « tu viens de trouver ». Le cas est rare
+(soixante certitudes à l'acte III, on les a), mais une mécanique dont le silence parle n'est
+pas une mécanique.
+
+### Deux comptes qui n'en faisaient qu'un
+
+`grenier` est le premier signe qu'aucune branche n'offre. Il coûte 60 C, comme `année`, et
+n'a **aucun effet mécanique** : on le prend parce qu'on l'a trouvé, pas parce qu'il rapporte.
+
+C'est là qu'était le vrai danger du lot. `S_.gl.length` servait à cinq choses à la fois — la
+fin de partie, les tablettes dégagées, l'exposant de la Grammaire, le gain du recoupement et
+le compteur du lexique — parce qu'il n'y avait jamais eu qu'une façon d'apprendre un signe.
+Un vingt-et-unième glyphe hors arbre terminait donc la partie à dix-neuf, dégageait une
+tablette, et offrait 16 % de la première vraie exponentielle du jeu, gratuitement. `nArbre()`
+sépare les deux : **ce que l'arbre a rendu n'est pas ce que le joueur sait.** Ce qu'il sait
+se mesure ailleurs, dans le corpus, où `mesures()` compte bien le grenier — c'est justement
+ce qu'il a gagné.
+
+Mesuré après coup : 71,8 à 76,1 min, écart max 5,6, toutes les tranches d'I6 à partir de dix
+minutes sous 26 %. **Chiffre pour chiffre ce qu'affichait le simulateur avant ce lot**, et
+c'était le but : PT10 doit encore pouvoir juger le réglage du 09/09/2026, pas un mélange.
+Composer coûte au plus 1,4 min de partie, ce qui est le prix des 60 C et de rien d'autre.
+
+### Ce que le simulateur ne peut pas dire
+
+S'il se trouve. Un joueur qui ne sait pas qu'il y a quelque chose à chercher regarde-t-il
+assez le dessin des signes pour reconnaître ⟨maison⟩ et ⟨grain⟩ dans ⟨grenier⟩, et lui
+vient-il l'idée de les poser l'un sur l'autre ? Aucune simulation ne répond à ça. Le journal
+d'actions compte désormais les tentatives, avec leur paire et leur minute ; c'est une
+question de PT10, au même titre que la crue qui baisse.
+
+La carte de fin ne compte les compositions que si on en a tenté. Un joueur qui n'a jamais
+ouvert la grille ne doit pas apprendre à l'écran de fin qu'il y avait quelque chose à y
+trouver.
+
+---
+
 ## PT9 — la concordance est allée voir l'eau
 
 Playtest du 08/09/2026, **66 min 49** pour les vingt signes. La question posée était celle de
@@ -1090,14 +1186,16 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
 | Relever | dans le corpus. Jeton neuf : tarif de la tablette, figé à (1 + 1,2 × débit) × mult. **au premier relevé qu'on y fait**. Jeton déjà relevé ou tablette épuisée : le plancher (1 × mult.) |
 | Gisement | ⌈jetons/10⌉ par tablette, **397** en tout, dont 13 ouverts au départ |
 | Formuler | 3 occ. → 1 hyp. |
-| Recouper | dans le corpus : deux attestations d'un même signe, dans deux tablettes différentes. 12 occ. + 3 hyp. → min(3, 1 + ⌊lexique/5⌋) cert., coût ×1,18 par usage (−25 % avec `champ`) |
-| Copiste | 15 occ., ×1,12, +1 occ./s |
+| Recouper | dans le corpus : deux attestations d'un même signe, dans deux tablettes différentes. 12 occ. + 3 hyp. → min(3, 1 + ⌊arbre/5⌋) cert., coût **×1,30** par usage (−25 % avec `champ`) *(09/09/2026)* |
+| Copiste | **10** occ., ×1,12, +1 occ./s *(09/09/2026)* |
 | Table de fréquences | 100 occ., ×1,15, −1 occ./s → +0,6 hyp./s |
 | Concordance | 450 occ., ×1,18, −0,5 hyp./s → +0,0039 cert./s |
 | Atelier de copie | 1 800 occ., ×1,15, +25 occ./s |
 | Grammaire *(acte III)* | 12 000 occ., ×1,20, −3 hyp./s → +0,0012 × 1,16^lexique cert./s. Fermée jusqu'à `année` |
 | Hors ligne *(acte III)* | `nuit` : 40 % du débit, 4 h au plus, consommé au crédit |
+| Composer *(acte III)* | deux signes acquis, dans l'ordre. Ouvert par `année`. Réussite : le coût normal du glyphe en Certitude. Échec : 250 hyp. ×1,40 par paire déjà tentée, **jamais de Certitude**, et la paire entre au carnet |
 | Signes (20) | Nombre 2 · 5 · 11 · 18 · 33 · 110 — Matière 3 · 6 · 14 · 22 · 40 — Parole 8 · 27 · 48 — Temps 60 · 130 · 190 · 260 · 360 · 500 = **1 847 C** |
+| Composés secrets (1) | `grenier` 60 C, hors arbre, sans effet mécanique. Recettes ouvertes aujourd'hui : `deux`, `siècle`, `grenier` |
 | Multiplicateurs | `deux` ×1,25 relevé · `grain` ×1,3 copiste · `tablette` ×1,5 relevé · `eau` ×1,3 table · `champ` −25 % recoupement · `graver` ×1,5 concordance · `copier` ×2 sur tout · `mille` ×1,3 atelier · `siècle` ×1,5 grammaire · `dernière-année` ×1,5 atelier |
 | Datation | une tablette se date quand on sait lire `année` **et** chacun des signes de son nombre. Les deux dernières attendent `dernière-année`. `avant` range la barre, `après` range le corpus |
 | Concordance *(effet visible)* | choisir un signe replie le corpus sur ses attestations, chaque tablette gardant sa première ligne. Ouvert dès la première Concordance achetée ; marche aussi sur un signe inconnu |
@@ -1115,8 +1213,10 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
 7. **Le chrome de l'interface est en français dès t=0.** L'idéal du doc — un seul mot français à l'écran — rend le prototype injouable sans onboarding. À réexaminer une fois qu'il y en aura un.
 8. ~~Pas de progression hors-ligne.~~ **Refermé à l'acte III** : `nuit` la débloque, 40 % du débit, 4 h au plus.
 9. **L'acte III est livré par moitiés.** La branche Temps, `mille`, la Grammaire et le
-   réordonnancement d'abord ; la composition (donc `zéro`), l'Élève, la Parole III et la
-   Modalité ensuite. Le doc décrit l'acte entier, le code en tient la première moitié.
+   réordonnancement d'abord ; la composition ensuite *(10/09/2026)*, mais `zéro` n'a pas pu
+   la suivre — il se compose avec `ne-pas`, qui appartient à la Modalité. Restent donc la
+   Parole III, la Modalité, `zéro` et l'Élève. Le doc décrit l'acte entier, le code en tient
+   maintenant les trois quarts.
 
 ---
 
@@ -1138,8 +1238,10 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
    abandonnée. Le seul défaut d'équilibrage connu qui ne soit pas réglé. Il se traite par
    l'ouverture (un instrument plus tôt, ou un premier signe moins cher), pas par le
    recoupement.
-3. **Seconde moitié de l'acte III** — composition (donc `zéro`), Élève, Parole III,
-   Modalité. Puis les **contradictions** (acte IV).
+3. **Seconde moitié de l'acte III** — ~~composition~~ *(faite le 10/09/2026)*, puis Parole III
+   et Modalité, d'où `zéro` : il attend `ne-pas`, et c'est la première fois qu'une branche
+   tardive mord sur la branche Nombre. L'Élève ensuite, qui n'a pas de sens sans les lectures
+   fausses. Puis les **contradictions** (acte IV).
 4. **Le clic vide** est descendu à 8 % des relevés (PT9) depuis la marque de la barre ; le
    texte ne dit toujours pas ce que la barre dit. Peut attendre.
 5. Trancher le sort de ⟨N1⟩ et ⟨N2⟩ (`docs/corpus.md` §9).

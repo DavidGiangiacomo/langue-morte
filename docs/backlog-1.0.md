@@ -13,11 +13,11 @@
 
 | | Fait | Reste pour 1.0 |
 |---|---|---|
-| Glyphes | **20 / 45** | **25** |
+| Glyphes | **20 / 45** *(+ `grenier`, composé, hors arbre)* | **24** |
 | Instruments | 6 / 9 (Œil, Copiste, Table, Concordance, Atelier, Grammaire) | 3 (Élève, Corpus jumeau, Le Lecteur) |
-| Actes | I, II, III *(première moitié)* | III *(seconde moitié)*, IV, V |
+| Actes | I, II, III *(première moitié + composition)* | III *(fin)*, IV, V |
 | Corpus | **30 tablettes, 676 lignes, 3 809 signes — intégral** | les 11 lectures fausses, ⟨N1⟩/⟨N2⟩ |
-| Mécaniques centrales | relevé, recoupement, datation, rangement, concordance, hors-ligne | composition, confiance, contradiction, révision, Questions |
+| Mécaniques centrales | relevé, recoupement, datation, rangement, concordance, hors-ligne, **composition** | confiance, contradiction, révision, Questions |
 | Fins | aucune *(écran « fin du prototype »)* | Achever, Interrompre, relecture |
 | Rythme mesuré | 66 min 49 pour 20 glyphes (PT9) | cible design doc : 3 h – 3 h 30 pour 45 |
 
@@ -53,14 +53,19 @@ un engagement de date.
 
 *Le système qui fait la différence entre ce jeu et un Cookie Clicker rethématisé : un espace de découverte que le jeu ne guide pas (design doc §7).*
 
-**COMP-1 — Poser un signe sur un autre** · T:M
+> **COMP-1, COMP-2 et COMP-5 sont faits** (10/09/2026), avec `grenier` — la moitié de COMP-4
+> qui était atteignable. Voir `docs/journal.md`, « La composition ». Une correction au passage :
+> `COMP` **ne peut pas** servir de vérité telle quelle, ses valeurs sont des clés de tracé ;
+> `RECETTES` en dérive ce qu'on peut poser, filtré sur les glyphes qui existent.
+
+**COMP-1 — Poser un signe sur un autre** · ~~T:M~~ **fait**
 > En tant que joueur, je veux assembler deux signes que je connais pour tenter un composé, sans que le jeu me dise lesquels marchent.
 
 - Fini quand : une grille permet de sélectionner deux glyphes acquis et de valider une tentative ; la table `COMP` de `src/signes.js` (17 entrées) sert de vérité ; l'ordre des deux parties compte comme dans `COMP`.
 - Une tentative valide acquiert le composé au coût normal en Certitude.
 - Dépend de : rien. **C'est la première brique de la seconde moitié de l'acte III.**
 
-**COMP-2 — Rater sans être puni** · T:S
+**COMP-2 — Rater sans être puni** · ~~T:S~~ **fait**
 > En tant que joueur, je veux pouvoir me tromper sans perdre ma compréhension.
 
 - Fini quand : un échec coûte des Hypothèses, **jamais de Certitude** (R3) ; la paire est inscrite dans un carnet consultable, et le jeu refuse de la retenter au même prix.
@@ -72,12 +77,12 @@ un engagement de date.
 - Dépend de : COMP-1, **et de `ne-pas`** (MOD-1) — c'est la première fois qu'une branche de l'acte IV mord sur une branche de l'acte I.
 - Attention : la tablette 29 (registre de zéros) doit rester un seul signe répété jusque-là (`docs/corpus.md` §5, note « heureux accident »).
 
-**COMP-4 — `grenier` et `devenir-lecture`** · T:S
+**COMP-4 — `grenier` et `devenir-lecture`** · T:S — *`grenier` fait ; reste `devenir-lecture`, qui attend `lire` et `devenir` (actes IV–V)*
 > En tant que joueur, je veux que les deux autres composés secrets soient atteignables en avance sur le récit.
 
 - Fini quand : les deux ne sont offerts par aucune progression ; `devenir-lecture` composé tôt fait recevoir la tablette 17 « en pleine figure » sans que rien ne soit ajouté au texte.
 
-**COMP-5 — Le carnet** · T:S
+**COMP-5 — Le carnet** · ~~T:S~~ **fait**
 > En tant que joueur, je veux relire ce que j'ai déjà tenté.
 
 - Fini quand : le carnet liste les tentatives ratées, survit à la sauvegarde, et n'apparaît qu'après la première tentative.
@@ -273,7 +278,8 @@ un engagement de date.
 > En tant qu'auteur, je veux qu'un joueur qui ne sait pas ce qu'il cherche voie la crue baisser.
 
 - PT10 : la question de PT8/PT9, reposée à quelqu'un d'autre. Dans le même TSV : la part manuelle des occurrences (36,3 % en PT9 ; **au-delà de 40 %, plafonner `REL_K`**), le stock d'hypothèses entre `année` et la dixième Grammaire (27 090 en PT9), et **le nombre de recoupements** — sous une vingtaine, le réglage du 09/09 a vidé un des deux gestes manuels et il faut revenir en arrière.
-- **Le réglage du 09/09/2026 (`REC_R` 1,18 → 1,30, Copiste à 10) n'a aucun playtest derrière lui.** C'est la première chose que PT10 valide ou casse.
+- **Le réglage du 09/09/2026 (`REC_R` 1,18 → 1,30, Copiste à 10) n'a aucun playtest derrière lui.** C'est la première chose que PT10 valide ou casse. La composition ne l'a pas touché — mesuré identique au chiffre près, c'était la condition du lot.
+- **Question neuve de PT10** : ⟨grenier⟩ se trouve-t-il ? Le journal d'actions compte les tentatives de composition, avec leur paire et leur minute. Aucun simulateur ne peut y répondre.
 
 ---
 
@@ -342,7 +348,7 @@ parallèle du code.
 
 | Jalon | Contenu | Ce qu'on peut jouer à la fin |
 |---|---|---|
-| **J1 — L'acte III se termine** | E1 (composition) + PAR-1/PAR-2 + MOD-1 | 25 glyphes, la composition, `les-lecteurs` |
+| **J1 — L'acte III se termine** | ~~E1 (composition)~~ *fait* + PAR-1/PAR-2 + MOD-1 | 25 glyphes, la composition, `les-lecteurs` |
 | **J2 — Le mensonge** | TXT-1 → E3 → MOD-2/MOD-3 + E4 + E5 (Élève) | l'acte III entier, la confiance, la contradiction |
 | **J3 — La voix** | E6 (Personne, Questions, Corpus jumeau, I2) | l'acte IV |
 | **J4 — La graine** | E7 + E8 | les cinq actes, les deux fins, la relecture |
@@ -362,7 +368,7 @@ fréquences, donc l'équilibrage.
 |---|---|---|
 | **R1** | L'illisibilité initiale fait fuir | LIV-1 ; premier signe en < 60 s |
 | **R2** | La contradiction paraît punitive | On ne perd que du débit, jamais de la progression |
-| **R3** | La composition devient un jeu de devinettes | Échec en H seulement ; carnet ; 3 composés secrets |
+| **R3** | La composition devient un jeu de devinettes | *Traité le 10/09/2026* : échec en H seulement, **au taux** (×1,40 par tentative) et non au montant — un coût fixe ne freine rien dans une économie exponentielle ; carnet ; 3 composés secrets ; et la grille ne renseigne jamais, pas même par son silence |
 | **R4** | Le texte doit tenir trois heures | Corpus écrit ; le risque s'est déplacé sur VOIX-3 (les Questions) |
 | **R6** | Une action manuelle redevient la source principale de Certitude | I6 par tranches, à chaque ajout d'instrument (règle 2) |
 | **R7** *(nouveau)* | Le simulateur a surestimé de 20 % **deux fois de suite** | ECO-2 avant tout réglage des actes IV–V ; aucun chiffre annoncé sans mesure (règle 7) |
