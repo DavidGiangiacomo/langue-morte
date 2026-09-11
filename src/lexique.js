@@ -33,6 +33,21 @@ const GL = [
    log:'Graver. Quelqu’un a tenu ce stylet, et l’a écrit.'},
   {id:'kal',  br:'parole',  mot:'copier',   cost:48, eff:'×2 sur toute la production',
    log:'Copier. Deux fois, puis dix, puis cent. Bien plus qu’il n’en fallait pour garder.'},
+  /* ---- acte III : la Parole ----
+     Le corpus se met à parler de lui-même : qui grave, ce qu’on garde, et ce qu’il faut en
+     faire. Les trois signes y sont depuis la première seconde — `scribe` signe vingt-sept
+     tablettes, et il se dessine ⟨dire⟩ sur ⟨graver⟩ ; `archive`, ⟨tablette⟩ sur ⟨graver⟩.
+     Tous deux se composent donc dès que la grille s’ouvre (règle 15), et un joueur qui les a
+     reconnus peut les poser avant que la branche ne les offre. Ce sont des signes d’arbre :
+     posés en avance, ils avancent la partie, comme `deux` et `siècle`.
+     `lire` sera le piège majeur de l’ambiguïté (docs/corpus.md §7) : son effet est chiffré
+     parce que sa lecture fausse devra le majorer. Son texte ne doit rien en laisser deviner. */
+  {id:'shen', br:'parole',  mot:'lire',     cost:300, eff:'+50 % à la grammaire',
+   log:'Lire. Ce n’est pas un inventaire qui le dit, c’est une consigne — et elle revient d’une tablette à l’autre.'},
+  {id:'imme', br:'parole',  mot:'scribe',   cost:600, eff:'+50 % au copiste et à l’atelier de copie',
+   log:'Scribe. Celui qui dit et qui grave. Chaque tablette finit sur ce mot : je lisais une signature sans le savoir.'},
+  {id:'tabsar',br:'parole', mot:'archive',  cost:900, eff:'+50 % à la table de fréquences',
+   log:'L’archive. Une tablette, puis trois cents, puis mille deux cents. Ils ne rangeaient pas le grain : ils rangeaient les tablettes.'},
   /* ---- acte III : le temps ----
      La branche ne donne pas un bonus de plus, elle donne une dimension. `année` fait
      apparaître une date que le corpus portait depuis la première seconde ; `avant` range

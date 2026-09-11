@@ -141,6 +141,84 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## La Parole III — le corpus parle de lui-même
+
+11/09/2026. Premier récit de J1 (`docs/backlog-1.0.md`, PAR-1). La branche Parole s'arrêtait
+à `copier` ; elle gagne `lire`, `scribe` et `archive`, posés après lui. L'arbre passe de 20 à
+**23 signes**. Aucune ligne du corpus ne change : les trois signes y sont depuis la première
+seconde — `scribe` signe vingt-sept tablettes, `lire` revient quatre-vingt-douze fois.
+`les-lecteurs` reste pour PAR-2.
+
+| glyphe | coût | effet |
+|---|---|---|
+| `lire` | 300 C | +50 % à la grammaire |
+| `scribe` | 600 C | +50 % au copiste et à l'atelier |
+| `archive` | 900 C | +50 % à la table de fréquences |
+
+Des multiplicateurs, comme les vingt autres. `lire` en avait besoin d'un pour une raison qui
+n'est pas encore dans le jeu : c'est le piège majeur de l'ambiguïté (`docs/corpus.md` §7), et
+sa lecture fausse, « compter », devra rendre 25 % de plus. Il faut un effet chiffré à majorer.
+
+### Les coûts ne pèsent presque rien — encore
+
+Balayé aux trois cadences (`python outils/sim.py`, coûts de `lire` / `scribe` / `archive`) :
+
+| coûts | durée, 23 signes | écart max | I6, tranches ≥ 10′ |
+|---|---|---|---|
+| 150 · 300 · 430 | 74,0 – 77,5 min | 5,2 | ≤ 26 % |
+| 200 · 420 · 650 | 77,8 – 81,2 min | 5,2 | ≤ 26 % |
+| 250 · 500 · 800 | 79,9 – 83,3 min | 5,2 | ≤ 26 % |
+| **300 · 600 · 900** | **81,6 – 85,0 min** | **5,2** | **≤ 26 %** |
+| 350 · 700 · 1 100 | 83,8 – 87,1 min | 5,6 | ≤ 26 % |
+
+Au plus bas, les trois signes n'ajoutent que deux minutes : leurs multiplicateurs accélèrent
+tout ce qui suit. Retenu **300 · 600 · 900** — neuf minutes de plus pour trois signes à
+15 clics/min, `archive` sous les quatre chiffres. Au-delà, chaque palier coûte une minute et
+rapproche la Certitude du plafond d'I1 sans rien acheter d'autre.
+
+Mesuré au réglage retenu : **81,6 à 85,0 min**, écart max **5,2 min**, tranches à partir de dix
+minutes à 26 / 23 / 22 % au pire, la main à 20–21 % des occurrences, 33 recoupements. `lire`
+arrive à 67′, `scribe` à 78′, `archive` à 83′ (15 clics/min). La moyenne tombe à 3,6 min par
+signe, sous les 4 à 6 d'I4 — elle y était déjà à vingt signes (3,65).
+
+### Le scribe se compose, et c'est un piège
+
+`scribe` se dessine ⟨dire⟩ sur ⟨graver⟩, `archive` ⟨tablette⟩ sur ⟨graver⟩. La règle 15 les
+ouvre donc d'elles-mêmes dans la grille, dès `année` : cinq recettes au lieu de trois. Ce sont
+des signes d'arbre — posés en avance, ils avancent la partie, comme `deux` et `siècle`. Et
+`scribe` est au bas de chaque tablette : c'est le composé le plus visible du corpus après
+`deux`, bien plus que `grenier`.
+
+Le simulateur le fait maintenant épargner pour un composé visé (`compose=` dans `run()`) —
+sans quoi il n'a jamais 600 C de côté et « composer tôt » ne mesurait rien. Résultat :
+
+| il vise | durée | écart max |
+|---|---|---|
+| rien | 81,6 – 85,0 min | 5,2 |
+| `scribe` | 88,0 – 91,3 min | **16,6** |
+| `scribe` puis `archive` | 98,3 – 101,7 min | **18,8** |
+
+600 C à la 47ᵉ minute, c'est un prix calé pour la 78ᵉ. Le joueur qui épargne pour le poser
+reste seize minutes sans rien — le double du plafond d'I4. Et il y a pire que l'attente : tant
+qu'il ne peut pas payer, la paire juste coûte ses hypothèses et répond « Rien ne vient »,
+exactement comme une fausse (règle 14). **Un joueur qui a vu juste à la 50ᵉ minute a toutes
+les raisons de conclure qu'il s'est trompé.** Seule différence : la paire n'entre pas au
+carnet, et un joueur attentif peut le remarquer.
+
+Non réglé, et pas au simulateur de trancher : l'acheteur ne sait pas ce que « Rien ne vient »
+fait à un joueur. À regarder en PT10 dans le journal d'actions — des tentatives `im+sar` avant
+`copier`, et ce qui les suit.
+
+### Une partie finie ne l'est plus
+
+Une sauvegarde `done` à vingt glyphes aurait rouvert sur l'écran de fin, `tick` arrêté, sans
+moyen de continuer — le cul-de-sac qui avait déjà coûté un changement de `KEY`. Au chargement,
+une partie finie quand l'arbre était plus petit redevient une partie en cours. Chaque lot de
+glyphes l'aurait reproduit ; `verifier.py` le vérifie. Les « 20 glyphes » recopiés dans le HTML
+se lisent désormais dans `NGL`.
+
+---
+
 ## Le fleuve et la cité — deux noms qu'on ne lira pas
 
 11/09/2026. ⟨N1⟩ et ⟨N2⟩ étaient dessinés depuis le premier prototype et employés nulle
@@ -1232,9 +1310,9 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
 | Grammaire *(acte III)* | 12 000 occ., ×1,20, −3 hyp./s → +0,0012 × 1,16^lexique cert./s. Fermée jusqu'à `année` |
 | Hors ligne *(acte III)* | `nuit` : 40 % du débit, 4 h au plus, consommé au crédit |
 | Composer *(acte III)* | deux signes acquis, dans l'ordre. Ouvert par `année`. Réussite : le coût normal du glyphe en Certitude. Échec : 250 hyp. ×1,40 par paire déjà tentée, **jamais de Certitude**, et la paire entre au carnet |
-| Signes (20) | Nombre 2 · 5 · 11 · 18 · 33 · 110 — Matière 3 · 6 · 14 · 22 · 40 — Parole 8 · 27 · 48 — Temps 60 · 130 · 190 · 260 · 360 · 500 = **1 847 C** |
-| Composés secrets (1) | `grenier` 60 C, hors arbre, sans effet mécanique. Recettes ouvertes aujourd'hui : `deux`, `siècle`, `grenier` |
-| Multiplicateurs | `deux` ×1,25 relevé · `grain` ×1,3 copiste · `tablette` ×1,5 relevé · `eau` ×1,3 table · `champ` −25 % recoupement · `graver` ×1,5 concordance · `copier` ×2 sur tout · `mille` ×1,3 atelier · `siècle` ×1,5 grammaire · `dernière-année` ×1,5 atelier |
+| Signes (23) | Nombre 2 · 5 · 11 · 18 · 33 · 110 — Matière 3 · 6 · 14 · 22 · 40 — Parole 8 · 27 · 48 · **300 · 600 · 900** — Temps 60 · 130 · 190 · 260 · 360 · 500 = **3 647 C** *(11/09/2026)* |
+| Composés secrets (1) | `grenier` 60 C, hors arbre, sans effet mécanique. Recettes ouvertes aujourd'hui : `deux`, `siècle`, `grenier`, `scribe`, `archive` |
+| Multiplicateurs | `deux` ×1,25 relevé · `grain` ×1,3 copiste · `tablette` ×1,5 relevé · `eau` ×1,3 table · `champ` −25 % recoupement · `graver` ×1,5 concordance · `copier` ×2 sur tout · `lire` ×1,5 grammaire · `scribe` ×1,5 copiste et atelier · `archive` ×1,5 table · `mille` ×1,3 atelier · `siècle` ×1,5 grammaire · `dernière-année` ×1,5 atelier |
 | Datation | une tablette se date quand on sait lire `année` **et** chacun des signes de son nombre. Les deux dernières attendent `dernière-année`. `avant` range la barre, `après` range le corpus |
 | Concordance *(effet visible)* | choisir un signe replie le corpus sur ses attestations, chaque tablette gardant sa première ligne. Ouvert dès la première Concordance achetée ; marche aussi sur un signe inconnu |
 
@@ -1252,9 +1330,9 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
 8. ~~Pas de progression hors-ligne.~~ **Refermé à l'acte III** : `nuit` la débloque, 40 % du débit, 4 h au plus.
 9. **L'acte III est livré par moitiés.** La branche Temps, `mille`, la Grammaire et le
    réordonnancement d'abord ; la composition ensuite *(10/09/2026)*, mais `zéro` n'a pas pu
-   la suivre — il se compose avec `ne-pas`, qui appartient à la Modalité. Restent donc la
-   Parole III, la Modalité, `zéro` et l'Élève. Le doc décrit l'acte entier, le code en tient
-   maintenant les trois quarts.
+   la suivre — il se compose avec `ne-pas`, qui appartient à la Modalité. La Parole III est
+   arrivée sans son dernier signe *(11/09/2026)* : `lire`, `scribe`, `archive`. Restent donc
+   `les-lecteurs`, la Modalité, `zéro` et l'Élève.
 
 ---
 
@@ -1276,8 +1354,8 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
    abandonnée. Le seul défaut d'équilibrage connu qui ne soit pas réglé. Il se traite par
    l'ouverture (un instrument plus tôt, ou un premier signe moins cher), pas par le
    recoupement.
-3. **Seconde moitié de l'acte III** — ~~composition~~ *(faite le 10/09/2026)*, puis Parole III
-   et Modalité, d'où `zéro` : il attend `ne-pas`, et c'est la première fois qu'une branche
+3. **Seconde moitié de l'acte III** — ~~composition~~ *(faite le 10/09/2026)*, ~~`lire`,
+   `scribe`, `archive`~~ *(11/09/2026)*, puis `les-lecteurs` et la Modalité, d'où `zéro` : il attend `ne-pas`, et c'est la première fois qu'une branche
    tardive mord sur la branche Nombre. L'Élève ensuite, qui n'a pas de sens sans les lectures
    fausses. Puis les **contradictions** (acte IV).
 4. **Le clic vide** est descendu à 8 % des relevés (PT9) depuis la marque de la barre ; le

@@ -13,7 +13,7 @@
 
 | | Fait | Reste pour 1.0 |
 |---|---|---|
-| Glyphes | **20 / 45** *(+ `grenier`, composé, hors arbre)* | **24** |
+| Glyphes | **23 / 45** *(+ `grenier`, composé, hors arbre)* | **21** |
 | Instruments | 6 / 9 (Œil, Copiste, Table, Concordance, Atelier, Grammaire) | 3 (Élève, Corpus jumeau, Le Lecteur) |
 | Actes | I, II, III *(première moitié + composition)* | III *(fin)*, IV, V |
 | Corpus | **30 tablettes, 705 lignes, 3 838 signes — intégral**, ⟨N1⟩/⟨N2⟩ semés | les 11 lectures fausses |
@@ -91,11 +91,12 @@ un engagement de date.
 
 ### E2 — Parole III et Modalité *(10 glyphes)*
 
-**PAR-1 — `lire`, `scribe`, `archive`** · T:M
+**PAR-1 — `lire`, `scribe`, `archive`** · ~~T:M~~ **fait** (11/09/2026)
 > En tant que joueur, je veux que le corpus se mette à parler de lui-même.
 
 - Fini quand : les trois glyphes ont coût, effet, texte de journal, et sont posés dans l'arbre après `copier`.
 - `lire` est **le piège majeur** de l'ambiguïté (AMB-*) : le coder en sachant qu'il aura deux lectures.
+- *Fait* : 300 · 600 · 900 C ; +50 % à la grammaire, au copiste et à l'atelier, à la table. 81,6–85,0 min pour 23 signes, écart max 5,2. `scribe` et `archive` se composent dès `année` (règle 15) — et composer `scribe` tôt coûte seize minutes sans déblocage, avec un « Rien ne vient » tant qu'on ne peut pas payer. Ouvert, à regarder en PT10 : voir `docs/journal.md`, « La Parole III ».
 
 **PAR-2 — `les-lecteurs`, fin de l'acte III** · T:M
 > En tant que joueur, je veux apprendre comment ce peuple s'appelait, et comprendre que le nom est une thèse.
@@ -348,7 +349,7 @@ parallèle du code.
 
 | Jalon | Contenu | Ce qu'on peut jouer à la fin |
 |---|---|---|
-| **J1 — L'acte III se termine** | ~~E1 (composition)~~ *fait* + PAR-1/PAR-2 + MOD-1 | 25 glyphes, la composition, `les-lecteurs` |
+| **J1 — L'acte III se termine** | ~~E1 (composition)~~ *fait* + ~~PAR-1~~ *fait* + PAR-2 + MOD-1 | 25 glyphes, la composition, `les-lecteurs` |
 | **J2 — Le mensonge** | TXT-1 → E3 → MOD-2/MOD-3 + E4 + E5 (Élève) | l'acte III entier, la confiance, la contradiction |
 | **J3 — La voix** | E6 (Personne, Questions, Corpus jumeau, I2) | l'acte IV |
 | **J4 — La graine** | E7 + E8 | les cinq actes, les deux fins, la relecture |

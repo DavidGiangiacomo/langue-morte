@@ -22,9 +22,13 @@ Contrôle :
  14. la composition : la grille s'ouvre à « année », l'ordre compte, l'échec ne coûte
      jamais de Certitude, et un composé secret n'avance pas la progression de l'arbre
  15. une partie commencée avant une mécanique neuve se rouvre sans rien perdre
+ 16. la Parole III : `lire` après `copier`, les trois effets, `scribe` composable et compté
+     dans l'arbre
+ 17. une partie finie quand l'arbre était plus petit reprend au lieu de rouvrir sur la fin
 
 Prérequis : pip install playwright && playwright install chromium
 """
+import json
 import pathlib
 import sys
 import time
@@ -396,8 +400,11 @@ def main() -> None:
         # ne valent comme règle du jeu qu'une fois traduites en glyphes, et filtrées sur ceux
         # qui existent. `selanna` (vingt) reste dessinable mais a été retiré du lexique.
         rec = page.evaluate("() => RECETTES")
-        verifier(set(rec) == {"anna", "urtem", "nurnur"},
-                 f"trois recettes ouvertes aujourd'hui : {sorted(rec)}")
+        verifier(set(rec) == {"anna", "urtem", "nurnur", "imme", "tabsar"},
+                 f"cinq recettes ouvertes aujourd'hui : {sorted(rec)}")
+        # la Parole III les a ouvertes d'elle-même, sans qu'aucune liste soit tenue (règle 15)
+        verifier(rec.get("imme") == ["im", "sar"] and rec.get("tabsar") == ["tab", "sar"],
+                 "scribe = dire + graver, archive = tablette + graver")
         verifier("selanna" not in rec, "« vingt » n'est proposé par aucune recette")
         verifier("nurhal" not in rec,
                  "« dernière-année » non plus : `finir` n'est pas encore un glyphe")
@@ -445,7 +452,7 @@ def main() -> None:
         # Ce qui suit protège une économie réglée sur neuf playtests : un composé secret
         # s'ajoute à ce que le joueur SAIT, jamais à ce que l'arbre a rendu.
         verifier(r[3] == 0, "le compte de l'arbre ne bouge pas")
-        verifier(page.text_content("#lexr").strip() == "3 / 20", "le lexique affiche « 3 / 20 »")
+        verifier(page.text_content("#lexr").strip() == "3 / 23", "le lexique affiche « 3 / 23 »")
         apres_rev = page.eval_on_selector_all("#corpus .tablet:not([hidden])", "e => e.length")
         verifier(apres_rev == avant_rev, "et aucune tablette n'est dégagée en composant")
 
@@ -462,6 +469,50 @@ def main() -> None:
         verifier(r[0] == "refus", "le grenier ne se recompose pas")
         verifier(r[1] == "refus", "un signe qu'on ne sait pas lire ne se pose pas")
         verifier(r[2] == "acquis", "année + année donne le siècle, sans passer par la branche")
+
+        print("\nla Parole III : lire, scribe, archive")
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+        ordre = page.evaluate("() => GL.filter(g => g.br === 'parole').map(g => g.id)")
+        verifier(ordre == ["im", "sar", "kal", "shen", "imme", "tabsar"],
+                 f"posés dans la branche après « copier » : {ordre}")
+        classe = lambda i: page.evaluate("i => $('lex').querySelector('[data-gl=\"'+i+'\"]').className", i)
+        page.evaluate("() => { S_.C = 99999; ['im','sar'].forEach(acheterGl); }")
+        page.wait_for_timeout(150)
+        verifier("locked" in classe("shen"), "« lire » reste fermé tant que « copier » manque")
+        page.evaluate("() => acheterGl('kal')")
+        page.wait_for_timeout(150)
+        verifier("locked" not in classe("shen") and "locked" in classe("imme"),
+                 "« copier » ouvre « lire », et lui seul")
+        r = page.evaluate("""() => { const g0 = M.gram(); acheterGl('shen');
+            const c0 = M.cop(), a0 = M.ate(); acheterGl('imme');
+            const t0 = M.tabl(); acheterGl('tabsar');
+            return [M.gram()/g0, M.cop()/c0, M.ate()/a0, M.tabl()/t0].map(x => Math.round(x*100)/100); }""")
+        verifier(r == [1.5, 1.5, 1.5, 1.5],
+                 f"+50 % grammaire, copiste, atelier, table : {r}")
+        page.wait_for_timeout(250)
+        # les deux signes étaient dans le texte depuis la première seconde : l'achat ne fait
+        # que les rendre lisibles, et partout — y compris dans les tablettes pas encore dégagées
+        lus = page.eval_on_selector_all("#corpus .tok[data-w=imme]",
+            "e => [e.length, e.filter(x => x.textContent.trim() === 'scribe').length]")
+        verifier(lus[0] == 65 and lus[1] == 65, f"les signatures se lisent : {lus[1]} « scribe » sur {lus[0]}")
+        lus = page.eval_on_selector_all("#corpus .tok[data-w=shen]",
+            "e => [e.length, e.filter(x => x.textContent.trim() === 'lire').length]")
+        verifier(lus[0] == 92 and lus[1] == 92, f"« lire » partout : {lus[1]} sur {lus[0]}")
+
+        # Glyphe d'arbre composable : posé en avance, il avance la partie — contrairement au
+        # grenier, secret, qui n'ajoute qu'au savoir.
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+        r = page.evaluate("""() => { S_.C = 99999; ['im','sar','nur'].forEach(acheterGl);
+            S_.C = 700; S_.H = 100000; const n = nArbre();
+            return [composer('im','sar'), nArbre() - n, has('imme'), has('kal')]; }""")
+        page.wait_for_timeout(250)
+        verifier(r == ["acquis", 1, True, False],
+                 f"dire + graver donne le scribe avant « copier », et compte dans l'arbre : {r}")
+        verifier(page.text_content("#lexr").strip() == "4 / 23", "le lexique affiche « 4 / 23 »")
+        verifier("done" in classe("imme") and "locked" in classe("tabsar"),
+                 "sa carte est cochée, sans ouvrir « archive » par-dessus « copier »")
 
         print("\nla concordance : rassembler les attestations d'un signe")
         page.evaluate("() => $('reset').click()")
@@ -531,7 +582,7 @@ def main() -> None:
         page.evaluate("() => { S_.C = 9999; GL.forEach(g => acheterGl(g.id)); }")
         page.wait_for_timeout(200)
         verifier(page.get_attribute("#end", "hidden") is None,
-                 "elle s'ouvre au vingtième signe")
+                 "elle s'ouvre au dernier signe de l'arbre")
         # relevé en PT5 : la partie finie, l'overlay couvrait le journal d'actions —
         # inatteignable au moment précis où il faut l'exporter
         verifier(page.evaluate("""() => {
@@ -599,12 +650,37 @@ def main() -> None:
         verifier(etat == [5, 120, 9, 12], f"la partie est reprise telle quelle : {etat}")
         neufs = vieille.evaluate("() => [Array.isArray(S_.carnet), S_.carnet.length, S_.comp]")
         verifier(neufs == [True, 0, 0], f"les champs neufs arrivent vides : {neufs}")
-        verifier(vieille.text_content("#lexr").strip() == "5 / 20", "le lexique compte cinq signes")
+        verifier(vieille.text_content("#lexr").strip() == "5 / 23", "le lexique compte cinq signes")
         r = vieille.evaluate("""() => { S_.C = 9999; acheterGl('nur'); S_.H = 99999;
             const i = composer('tem','im'); sauver();
             const p = JSON.parse(localStorage.getItem('langue-morte-actes-i-iii'));
             return [i, p.carnet, p.comp]; }""")
         verifier(r == ["rate", ["tem+im"], 1], f"et la composition s'y enregistre : {r}")
+        ctx.close()
+
+        # ---- une partie finie quand l'arbre était plus petit ----
+        # Elle est `done` à vingt glyphes ; l'arbre en compte davantage. Rouvrir sur l'écran
+        # de fin, `tick` arrêté, serait le cul-de-sac qui a déjà coûté un changement de clé.
+        print("\nune partie finie à vingt glyphes reprend")
+        vingt = ["an", "anna", "hem", "sela", "meku", "mille", "tem", "ur", "tab", "kish", "gan",
+                 "im", "sar", "kal", "nur", "pat", "zur", "nurnur", "esh", "nurhal"]
+        finie = ('{"O":1e9,"H":5e4,"C":40,"rec":30,"clicks":900,'
+                 '"b":{"cop":60,"tab":56,"con":39,"ate":36,"gram":18},'
+                 '"gl":%s,"t":4400,"done":true}' % json.dumps(vingt))
+        ctx = nav.new_context()
+        ctx.add_init_script("localStorage.setItem('langue-morte-actes-i-iii', %r)" % finie)
+        vieille = ctx.new_page()
+        casses = []
+        vieille.on("pageerror", lambda e: casses.append(str(e)))
+        vieille.goto(PAGE.resolve().as_uri())
+        vieille.wait_for_timeout(700)
+        verifier(not casses, f"aucune erreur au chargement : {casses[:1] or '—'}")
+        etat = vieille.evaluate("() => [S_.done, $('end').hidden, S_.gl.length]")
+        verifier(etat == [False, True, 20], f"pas d'écran de fin, la partie continue : {etat}")
+        verifier(vieille.text_content("#lexr").strip() == "20 / 23", "le lexique affiche « 20 / 23 »")
+        verifier("locked" not in vieille.evaluate(
+                     "() => $('lex').querySelector('[data-gl=shen]').className"),
+                 "et « lire » attend d'être acheté")
         ctx.close()
 
         nav.close()
