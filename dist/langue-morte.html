@@ -272,7 +272,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 <div class="shell">
   <header class="masthead">
     <h1>La langue morte</h1>
-    <span class="sub">prototype · actes I–III · 20 glyphes sur 45</span>
+    <span class="sub">prototype · actes I–III · <span class="ngl"></span> glyphes sur 45</span>
     <span class="spacer"></span>
     <div class="devbar">
       <span>hors jeu</span>
@@ -339,7 +339,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
     </div>
 
     <section class="panel">
-      <div class="phead"><span>Lexique</span><span class="r" id="lexr">0 / 20</span></div>
+      <div class="phead"><span>Lexique</span><span class="r" id="lexr"></span></div>
       <div class="lex" id="lex"></div>
     </section>
   </div>
@@ -350,7 +350,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 <div class="end" id="end" hidden>
   <div class="endcard">
     <h2>Fin du prototype</h2>
-    <div class="k">actes I à III · 20 glyphes sur 45</div>
+    <div class="k">actes I à III · <span class="ngl"></span> glyphes sur 45</div>
     <p class="quote">La dernière année. Elle n'a pas de nombre : après elle, personne n'a plus compté.</p>
     <p>Le corpus s'arrête ici. La suite — la deuxième personne, les lectures fausses et les contradictions — appartient aux actes IV et V.</p>
     <div class="endstats" id="endstats"></div>
@@ -534,6 +534,21 @@ const GL = [
    log:'Graver. Quelqu’un a tenu ce stylet, et l’a écrit.'},
   {id:'kal',  br:'parole',  mot:'copier',   cost:48, eff:'×2 sur toute la production',
    log:'Copier. Deux fois, puis dix, puis cent. Bien plus qu’il n’en fallait pour garder.'},
+  /* ---- acte III : la Parole ----
+     Le corpus se met à parler de lui-même : qui grave, ce qu’on garde, et ce qu’il faut en
+     faire. Les trois signes y sont depuis la première seconde — `scribe` signe vingt-sept
+     tablettes, et il se dessine ⟨dire⟩ sur ⟨graver⟩ ; `archive`, ⟨tablette⟩ sur ⟨graver⟩.
+     Tous deux se composent donc dès que la grille s’ouvre (règle 15), et un joueur qui les a
+     reconnus peut les poser avant que la branche ne les offre. Ce sont des signes d’arbre :
+     posés en avance, ils avancent la partie, comme `deux` et `siècle`.
+     `lire` sera le piège majeur de l’ambiguïté (docs/corpus.md §7) : son effet est chiffré
+     parce que sa lecture fausse devra le majorer. Son texte ne doit rien en laisser deviner. */
+  {id:'shen', br:'parole',  mot:'lire',     cost:300, eff:'+50 % à la grammaire',
+   log:'Lire. Ce n’est pas un inventaire qui le dit, c’est une consigne — et elle revient d’une tablette à l’autre.'},
+  {id:'imme', br:'parole',  mot:'scribe',   cost:600, eff:'+50 % au copiste et à l’atelier de copie',
+   log:'Scribe. Celui qui dit et qui grave. Chaque tablette finit sur ce mot : je lisais une signature sans le savoir.'},
+  {id:'tabsar',br:'parole', mot:'archive',  cost:900, eff:'+50 % à la table de fréquences',
+   log:'L’archive. Une tablette, puis trois cents, puis mille deux cents. Ils ne rangeaient pas le grain : ils rangeaient les tablettes.'},
   /* ---- acte III : le temps ----
      La branche ne donne pas un bonus de plus, elle donne une dimension. `année` fait
      apparaître une date que le corpus portait depuis la première seconde ; `avant` range
@@ -633,18 +648,27 @@ const has = id => S_.gl.indexOf(id)>=0;
    Ce que le joueur COMPREND se mesure ailleurs, dans le corpus : `mesures()`, qui compte bien
    le grenier parce que c'est justement ce qu'il a gagné. */
 const nArbre = () => { let n=0; for(const id of S_.gl){ const g=byId[id]; if(!g||!g.sec) n++; } return n; };
+/* Une partie finie quand l'arbre comptait moins de signes n'est plus finie : l'arbre a
+   grandi sous elle. Sans ça elle rouvrirait sur l'écran de fin, `tick` arrêté, sans moyen
+   de continuer — le cas exact qui a déjà coûté un changement de `KEY` et toutes les
+   parties en cours. Chaque lot de glyphes le reproduirait. */
+if(S_.done && nArbre() < NGL) S_.done = false;
 
 /* ---- économie ---- */
 const M = {
   click:()=> 1*(has('anna')?1.25:1)*(has('tab')?1.5:1)*(has('kal')?2:1),
-  cop:  ()=> (has('tem')?1.3:1)*(has('kal')?2:1),
+  cop:  ()=> (has('tem')?1.3:1)*(has('kal')?2:1)*(has('imme')?1.5:1),
   /* L'atelier suivait le copiste jusqu'à l'acte III ; les deux bonus de la branche Temps
      le détachent — c'est le seul instrument qui porte encore l'échelle des occurrences
-     quand la Certitude, elle, passe à la grammaire. */
-  ate:  ()=> (has('tem')?1.3:1)*(has('kal')?2:1)*(has('mille')?1.3:1)*(has('nurhal')?1.5:1),
-  tabl: ()=> (has('kish')?1.3:1)*(has('kal')?2:1),
+     quand la Certitude, elle, passe à la grammaire. `scribe` porte les deux : l'atelier
+     n'est qu'une salle pleine de scribes. */
+  ate:  ()=> (has('tem')?1.3:1)*(has('kal')?2:1)*(has('mille')?1.3:1)*(has('nurhal')?1.5:1)*(has('imme')?1.5:1),
+  tabl: ()=> (has('kish')?1.3:1)*(has('kal')?2:1)*(has('tabsar')?1.5:1),
   con:  ()=> (has('sar')?1.5:1)*(has('kal')?2:1),
-  gram: ()=> (has('nurnur')?1.5:1)*(has('kal')?2:1)
+  /* `lire` est le piège majeur de l'ambiguïté (docs/corpus.md §7) : sa lecture fausse,
+     « compter », devra rendre 25 % de plus. Il lui faut donc un effet chiffré, et c'est
+     celui de l'instrument qui lit. */
+  gram: ()=> (has('nurnur')?1.5:1)*(has('kal')?2:1)*(has('shen')?1.5:1)
 };
 /* production brute d'occurrences par seconde (sert au barème du relevé manuel) */
 const oBrut = () => S_.b.cop*1.0*M.cop() + S_.b.ate*25*M.ate();
@@ -1767,6 +1791,8 @@ window.addEventListener('pagehide', sauverTraces);
 "use strict";
 
 /* ============================ liaisons ============================ */
+/* Le compte de l'arbre, écrit une fois : recopié dans le HTML, il mentait dès le lot suivant. */
+document.querySelectorAll('.ngl').forEach(el => { el.textContent = NGL; });
 majSignes();
 buildRail(); buildCorpus(); buildInstr(); buildComp(); buildLex();
 if(S_.gl.length){ paintCorpus(null); pushLog(byId[S_.gl[S_.gl.length-1]].log); }

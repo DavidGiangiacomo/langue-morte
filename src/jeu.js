@@ -4,6 +4,8 @@
 "use strict";
 
 /* ============================ liaisons ============================ */
+/* Le compte de l'arbre, écrit une fois : recopié dans le HTML, il mentait dès le lot suivant. */
+document.querySelectorAll('.ngl').forEach(el => { el.textContent = NGL; });
 majSignes();
 buildRail(); buildCorpus(); buildInstr(); buildComp(); buildLex();
 if(S_.gl.length){ paintCorpus(null); pushLog(byId[S_.gl[S_.gl.length-1]].log); }

@@ -27,18 +27,27 @@ const has = id => S_.gl.indexOf(id)>=0;
    Ce que le joueur COMPREND se mesure ailleurs, dans le corpus : `mesures()`, qui compte bien
    le grenier parce que c'est justement ce qu'il a gagné. */
 const nArbre = () => { let n=0; for(const id of S_.gl){ const g=byId[id]; if(!g||!g.sec) n++; } return n; };
+/* Une partie finie quand l'arbre comptait moins de signes n'est plus finie : l'arbre a
+   grandi sous elle. Sans ça elle rouvrirait sur l'écran de fin, `tick` arrêté, sans moyen
+   de continuer — le cas exact qui a déjà coûté un changement de `KEY` et toutes les
+   parties en cours. Chaque lot de glyphes le reproduirait. */
+if(S_.done && nArbre() < NGL) S_.done = false;
 
 /* ---- économie ---- */
 const M = {
   click:()=> 1*(has('anna')?1.25:1)*(has('tab')?1.5:1)*(has('kal')?2:1),
-  cop:  ()=> (has('tem')?1.3:1)*(has('kal')?2:1),
+  cop:  ()=> (has('tem')?1.3:1)*(has('kal')?2:1)*(has('imme')?1.5:1),
   /* L'atelier suivait le copiste jusqu'à l'acte III ; les deux bonus de la branche Temps
      le détachent — c'est le seul instrument qui porte encore l'échelle des occurrences
-     quand la Certitude, elle, passe à la grammaire. */
-  ate:  ()=> (has('tem')?1.3:1)*(has('kal')?2:1)*(has('mille')?1.3:1)*(has('nurhal')?1.5:1),
-  tabl: ()=> (has('kish')?1.3:1)*(has('kal')?2:1),
+     quand la Certitude, elle, passe à la grammaire. `scribe` porte les deux : l'atelier
+     n'est qu'une salle pleine de scribes. */
+  ate:  ()=> (has('tem')?1.3:1)*(has('kal')?2:1)*(has('mille')?1.3:1)*(has('nurhal')?1.5:1)*(has('imme')?1.5:1),
+  tabl: ()=> (has('kish')?1.3:1)*(has('kal')?2:1)*(has('tabsar')?1.5:1),
   con:  ()=> (has('sar')?1.5:1)*(has('kal')?2:1),
-  gram: ()=> (has('nurnur')?1.5:1)*(has('kal')?2:1)
+  /* `lire` est le piège majeur de l'ambiguïté (docs/corpus.md §7) : sa lecture fausse,
+     « compter », devra rendre 25 % de plus. Il lui faut donc un effet chiffré, et c'est
+     celui de l'instrument qui lit. */
+  gram: ()=> (has('nurnur')?1.5:1)*(has('kal')?2:1)*(has('shen')?1.5:1)
 };
 /* production brute d'occurrences par seconde (sert au barème du relevé manuel) */
 const oBrut = () => S_.b.cop*1.0*M.cop() + S_.b.ate*25*M.ate();

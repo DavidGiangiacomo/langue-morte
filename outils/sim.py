@@ -33,6 +33,7 @@ GL = [('an','nombre',2), ('anna','nombre',5), ('hem','nombre',11), ('sela','nomb
       ('tem','matiere',3), ('ur','matiere',6), ('tab','matiere',14), ('kish','matiere',22),
       ('gan','matiere',40),
       ('im','parole',8), ('sar','parole',27), ('kal','parole',48),
+      ('shen','parole',300), ('imme','parole',600), ('tabsar','parole',900),
       ('nur','temps',60), ('pat','temps',130), ('zur','temps',190), ('nurnur','temps',260),
       ('esh','temps',360), ('nurhal','temps',500),
       # Composés secrets : offerts par aucune branche, ils ne s'obtiennent qu'à la grille de
@@ -67,10 +68,11 @@ for g in ARBRE:
     BR.setdefault(g[1], []).append(g)
 
 
-def run(P, cpm=15, cap_min=600, garde=0.0, compose=False):
+def run(P, cpm=15, cap_min=600, garde=0.0, compose=()):
     """cpm = clics manuels par minute. `garde` = fraction de la partie pendant laquelle
     le joueur s'interdit de relever, pour tarifer ses tablettes au débit maximal —
-    c'est le pire cas contre lequel il faut se prémunir. Retourne (durée, jalons, ...)."""
+    c'est le pire cas contre lequel il faut se prémunir. `compose` = les signes que le
+    joueur pose à la grille dès qu'il peut les payer. Retourne (durée, jalons, ...)."""
     O = H = C = 0.0
     b = {'cop': 0, 'tab': 0, 'con': 0, 'ate': 0, 'gram': 0}
     gl, rec, t, dt = set(), 0, 0.0, 0.1
@@ -94,11 +96,11 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=False):
     # un problème de seuil, pas de taux — I6 y vaut 100 % tant que la première
     # Concordance n'est pas posée, quelle que soit la cadence de clic.
     premier = {}
-    mcop   = lambda: (1.3 if has('tem')  else 1) * (2 if has('kal') else 1)
+    mcop   = lambda: (1.3 if has('tem')  else 1) * (2 if has('kal') else 1) * (1.5 if has('imme') else 1)
     mate   = lambda: mcop() * (1.3 if has('mille') else 1) * (1.5 if has('nurhal') else 1)
-    mtab   = lambda: (1.3 if has('kish') else 1) * (2 if has('kal') else 1)
+    mtab   = lambda: (1.3 if has('kish') else 1) * (2 if has('kal') else 1) * (1.5 if has('tabsar') else 1)
     mcon   = lambda: (1.5 if has('sar')  else 1) * (2 if has('kal') else 1)
-    mgram  = lambda: (1.5 if has('nurnur') else 1) * (2 if has('kal') else 1)
+    mgram  = lambda: (1.5 if has('nurnur') else 1) * (2 if has('kal') else 1) * (1.5 if has('shen') else 1)
     gramp  = lambda: P['gram_p'] * (P['gram_g'] ** narbre()) * mgram()
     mclick = lambda: (1.25 if has('anna') else 1) * (1.5 if has('tab') else 1) * (2 if has('kal') else 1)
     obrut  = lambda: b['cop'] * P['cop_p'] * mcop() + b['ate'] * P['ate_p'] * mate()
@@ -197,8 +199,11 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=False):
             tr_rec[min(11, int(t // 600))] += recgain()
             rc = reccost()
 
-        # achat de glyphes : le moins cher disponible d'abord
-        while True:
+        # achat de glyphes : le moins cher disponible d'abord — sauf quand le joueur épargne
+        # pour un signe qu'il a reconnu dans le texte et compte poser à la grille. Sans cette
+        # épargne, l'acheteur n'a jamais 600 C de côté et « composer tôt » ne mesure rien.
+        vise = 'nur' in gl and any(cid not in gl for cid in compose)
+        while not vise:
             a = [g for g in avail() if C >= g[2]]
             if not a: break
             a.sort(key=lambda g: g[2]); g = a[0]
@@ -208,10 +213,15 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=False):
         # joueur qui a vu ⟨grenier⟩ dans le texte le pose dès qu'il peut ; ce qu'on mesure ici
         # est donc le RETARD que ses 90 C coûtent, la seule chose qu'un simulateur puisse en
         # dire. Qu'il le trouve seul est une question de playtest, pas de simulation.
-        if compose and 'nur' in gl and 'urtem' not in gl:
-            cible = next((g for g in GL if g[0] == 'urtem'), None)
-            if cible and C >= cible[2]:
-                C -= cible[2]; gl.add('urtem'); comp_faits += 1
+        # Même chose pour `scribe` et `archive`, qui sont des glyphes d'arbre composables :
+        # posés en avance, ils comptent dans la progression — et donc dans les jalons.
+        for cid in compose:
+            if 'nur' in gl and cid not in gl:
+                cible = next((g for g in GL if g[0] == cid), None)
+                if cible and C >= cible[2]:
+                    C -= cible[2]; gl.add(cid); comp_faits += 1
+                    if cid not in SECRETS:
+                        marks.append((cid, t / 60)); hyp_gl[cid] = H
 
     return t / 60, marks, b, dict(rec=rec, c_rec=c_rec, c_con=c_con,
                                   obrut=obrut(), cs=b['con'] * P['con_p'] * mcon(),
