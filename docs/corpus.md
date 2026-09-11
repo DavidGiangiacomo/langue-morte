@@ -17,7 +17,7 @@ Trois conséquences de production :
 - **Tout le corpus tient dans 45 mots** plus les nombres et six noms propres jamais déchiffrés. Cette contrainte n'est pas une limite subie : c'est elle qui produit le style. Un peuple qui n'a que « ne-pas » pour dire l'absence écrit « eau ne-pas », et c'est plus dur que n'importe quelle phrase qu'on pourrait écrire à sa place.
 - **Le français lu est télégraphique.** Pas d'articles, pas de prépositions, pas d'accord. La couche d'affichage n'ajoute rien. « champ 3 · grain 140 » est le texte, pas un résumé du texte.
 
-**Réalisé** : 676 lignes, **3 809 signes**, dont 58 % lisibles avec les 13 signes du MVP.
+**Réalisé** : 705 lignes, **3 838 signes**, dont 58 % lisibles avec les 13 signes du MVP.
 
 ---
 
@@ -43,14 +43,16 @@ Six signes qui ne se résolvent à aucun acte. Le joueur apprend à reconnaître
 
 | Signe | Ce que c'est *(note de conception, jamais dite au joueur)* |
 |---|---|
-| ⟨N1⟩ | le fleuve |
-| ⟨N2⟩ | la cité |
+| ⟨N1⟩ | le fleuve — intitule les champs et la veille, 13 fois dans 13 tablettes |
+| ⟨N2⟩ | la cité — intitule les maisons et l'archive, 16 fois dans 15 tablettes |
 | ⟨N3⟩ | le premier scribe — tablettes 4 à 11 |
 | ⟨N4⟩ | le deuxième scribe — tablettes 11 à 19 |
 | ⟨N5⟩ | la dernière scribe — tablettes 19 à 30 |
 | ⟨N6⟩ | quelqu'un qu'elle a aimé — tablette 30 seulement |
 
 ⟨N6⟩ apparaît quatre fois, dans les six dernières lignes du corpus, et nulle part ailleurs.
+
+⟨N1⟩ et ⟨N2⟩ ne sont employés par aucune ligne écrite à la main : ils sont les **intitulés des registres** (§6), un nom seul sur sa ligne au-dessus de ce qu'il tient. ⟨N1⟩ est à l'écran dès la première seconde, en tête des champs des tablettes 1 à 4 — une forme que le joueur voit avant toutes les autres, et qu'il ne lira jamais. *(Tranché le 11/09/2026.)*
 
 ---
 
@@ -432,9 +434,11 @@ Quatre règles produisent la masse répétitive. Implémentation dans `outils/co
 
 **`consignes(k)`** — le protocole de copie, répété tel quel de tablette en tablette, avec k copies exigées.
 
+**Les intitulés.** Chaque registre s'ouvre sur le nom de ce qu'il tient, seul sur sa ligne : ⟨N2⟩ au-dessus de `maisons` et d'`archive`, ⟨N1⟩ au-dessus de `champs` et de `veille`. Les `consignes` n'en portent pas — c'est un protocole, il ne tient le compte de rien. Un intitulé par bloc, pas un titre courant : 13 et 16 occurrences, rang 24 et 21 sur 48 formes. Assez pour qu'on les reconnaisse d'une tablette à l'autre, pas assez pour saturer le registre.
+
 Trois principes non négociables :
 
-1. Les blocs emploient **exactement le même vocabulaire** que les lignes écrites à la main. Aucun signe ne doit apparaître uniquement dans un bloc — sinon la fréquence ment.
+1. Les blocs emploient **exactement le même vocabulaire** que les lignes écrites à la main. Aucun signe ne doit apparaître uniquement dans un bloc — sinon la fréquence ment. **Seule exception, les intitulés** : un nom propre ne se déchiffre pas, sa fréquence n'induit donc personne en erreur — elle dit seulement qu'il revient.
 2. Ils sont **longs**. Un joueur doit pouvoir scruter cinquante lignes `maison i · grain 20` et en déduire que le deuxième signe varie et pas le quatrième. C'est le cœur de la méthode.
 3. Ils ne contiennent **jamais** de contenu narratif. Tout ce qui a du sens est écrit à la main, au §5.
 
@@ -495,5 +499,5 @@ Le dégagement est progressif : 4 tablettes au départ, les 30 au dernier signe 
 ## 9. Ce qui reste à faire sur le texte
 
 1. **Vérifier la densité de l'acte II.** C'est le passage le plus plat par conception (« on installe le quotidien pour que sa disparition compte ») et donc le seul endroit où le joueur peut décrocher. Si un playtest montre un décrochage, la réponse n'est pas d'ajouter du drame : c'est d'avancer la tablette 6 dans l'ordre de révélation.
-2. **Décider du sort de ⟨N1⟩ et ⟨N2⟩** (le fleuve, la cité). Ils ne sont employés dans aucune tablette. Soit on les sème dans les blocs générés comme en-têtes — ce qui donne deux formes très fréquentes et jamais résolues, très frustrant et très juste — soit on les supprime. Je penche pour les semer.
+2. ~~**Décider du sort de ⟨N1⟩ et ⟨N2⟩** (le fleuve, la cité).~~ **Tranché le 11/09/2026 : semés comme intitulés des registres** (§2, §6). La note promettait « deux formes très fréquentes » ; un intitulé par bloc les donne à 13 et 16 occurrences, fréquence moyenne. Un titre courant repris toutes les cinq lignes aurait porté ⟨N2⟩ à 75 — mais ⟨N1⟩ serait resté à 18, ses registres étant courts. Choisi en connaissance de cause.
 3. **Écrire les lectures fausses des 11 signes ambigus** (§7) : chacune doit produire une phrase absurde repérable. C'est du travail d'écriture, pas de code.

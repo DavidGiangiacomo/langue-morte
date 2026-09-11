@@ -37,7 +37,7 @@ except ImportError:
 RACINE = pathlib.Path(__file__).parent.parent
 PAGE = RACINE / "dist" / "langue-morte.html"
 
-SIGNES_ATTENDUS = 3809          # cf. sortie de outils/corpus.py
+SIGNES_ATTENDUS = 3838          # cf. sortie de outils/corpus.py
 RENDU_MAX_S = 4.0
 
 # glyphe acheté -> ensemble exact des nombres du corpus qui doivent devenir lisibles
@@ -146,7 +146,7 @@ def main() -> None:
         verifier(page.evaluate("() => mesures().sig") == 0, "la jauge repart de 0 %")
 
         print("\nle relevé, acte de lecture")
-        verifier(page.evaluate("() => GIS_TOTAL") == 397, "gisement du corpus : 397 relevés")
+        verifier(page.evaluate("() => GIS_TOTAL") == 399, "gisement du corpus : 399 relevés")
         ouvert = page.evaluate(
             "() => { let n = 0; for (let i = 0; i < revCount(); i++) n += gisReste(TB[i].t); return n; }")
         verifier(ouvert == 13, f"13 relevés ouverts au départ ({ouvert})")
@@ -478,7 +478,7 @@ def main() -> None:
         lignes = lambda: page.eval_on_selector_all(
             "#corpus .tablet:not([hidden]):not(.vide) .ln:not(.off)", "e => e.length")
         avant = lignes()
-        verifier(avant == 676, f"corpus entier : {avant} lignes")
+        verifier(avant == 705, f"corpus entier : {avant} lignes")
         page.evaluate("() => concChoisir('kish')")
         page.wait_for_timeout(250)
         apres = lignes()
