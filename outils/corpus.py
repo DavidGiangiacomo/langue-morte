@@ -26,11 +26,18 @@ def L(s):
             out.append(MOT[tk])
     return ' '.join(out)
 
+# Chaque registre s'ouvre sur le nom de ce qu'il tient : ⟨N2⟩, la cité, au-dessus de ses
+# maisons et de son archive ; ⟨N1⟩, le fleuve, au-dessus de ses champs et de sa veille. Un nom
+# seul sur sa ligne, comme un intitulé de compte. Ils ne se résolvent à aucun acte
+# (docs/corpus.md §2) : le joueur apprend à les reconnaître d'une tablette à l'autre sans
+# jamais les lire. Un intitulé par bloc, pas un titre courant — 13 et 16 occurrences ; le
+# titre courant n'aurait haussé que la cité, les registres du fleuve étant courts. Le
+# protocole de copie n'en porte pas — c'est une consigne, il ne tient le compte de rien.
 def maisons(n, q, vides=0):
     """Registre de distribution. Salé de mots de modalité, de temps et de personne :
     un vrai registre est plein de « si », « ne-pas », « il-faut ». C'est ce qui empêche
     la masse répétitive d'être intégralement déchiffrable dès l'acte II."""
-    out=[]
+    out=[L('N2')]
     for i in range(1, n+1):
         if i > n-vides:      out.append(L(f'maison {i} · ne-pas · grenier ne-pas · avant · année ne-pas'))
         elif i % 7 == 0:     out.append(L(f'maison {i} · grain {q} · si semence · il-faut ne-pas · après'))
@@ -43,14 +50,14 @@ def maisons(n, q, vides=0):
 def veille(annee, serie):
     """Le relevé d'eau tenu d'année en année — le document le plus lourd en vocabulaire
     d'acte III (avant, après, année, ne-pas, peut-être). C'est lui qui porte le déclin."""
-    out=[L(f'année {annee} · eau {serie[-1][1]}')]
+    out=[L('N1'), L(f'année {annee} · eau {serie[-1][1]}')]
     for an, e in reversed(serie[:-1]):
         out.append(L(f'avant · année {an} · eau {e} · si ne-pas · sinon'))
     out += [L('il-faut lire · eau'), L('peut-être eau · peut-être ne-pas'), L('après · il-faut lire')]
     return out
 
 def archive(a, b, step=1):
-    out=[]
+    out=[L('N2')]
     for k in range(a, b+1, 4*step):
         grp=[str(i) for i in range(k, min(k+4, b+1))]
         out.append(L('tablette '+' · tablette '.join(grp)))
@@ -58,7 +65,7 @@ def archive(a, b, step=1):
         if (k//(4*step)) % 4 == 2:  out.append(L('nuit · copier · après'))
     return out
 
-def champs(vals):  return [L(f'champ {i+1} · grain {v}') for i,v in enumerate(vals)]
+def champs(vals):  return [L('N1')] + [L(f'champ {i+1} · grain {v}') for i,v in enumerate(vals)]
 
 def consignes(k):
     """Le protocole de copie, répété tel quel de tablette en tablette."""

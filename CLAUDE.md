@@ -106,12 +106,13 @@ python build.py && python outils/verifier.py    # tests
 - **L'invariant I5 du design doc (« progression quasi linéaire ») est retiré.** Aucune mesure de progression n'est linéaire : les signes sont front-chargés, les lignes back-chargées. L'écart entre les deux *est* le propos — on peut lire presque tous les mots et ne comprendre presque rien. L'afficher, ne pas le lisser.
 - Lexique porté à **45 signes** (la branche Nombre gagne `cinq` et `mille`, perd `vingt`).
 - **17 composés** au lieu des 9 prévus.
+- **⟨N1⟩ et ⟨N2⟩, 11/09/2026 : semés comme intitulés des registres.** Un nom seul sur sa ligne en tête de chaque bloc généré — ⟨N1⟩ (le fleuve) sur `champs` et `veille`, ⟨N2⟩ (la cité) sur `maisons` et `archive`, rien sur `consignes`. 13 et 16 occurrences : fréquence moyenne, choisie contre un titre courant. Seule exception admise au principe « aucun signe uniquement dans un bloc » (`docs/corpus.md` §6) : un nom propre ne se déchiffre pas, sa fréquence ne ment donc à personne. Rythme simulé inchangé, gisement 397 → 399.
 
 ---
 
 ## État actuel et suite
 
-**Fait** : actes I à III (première moitié **et la composition**), **20 signes d'arbre sur 45**, plus un composé secret, corpus complet des 30 tablettes (676 lignes, 3 809 signes), économie réglée sur neuf playtests, numération signe par signe jusqu'à `mille`, barre de navigation entre tablettes, infobulles, comptage d'occurrences dans le lexique, journal d'actions horodaté, relevé et recoupement dans le corpus avec gisement par tablette, **datation et réordonnancement chronologique**, instrument **Grammaire**, progression **hors ligne**, **grille de composition** avec carnet des tentatives.
+**Fait** : actes I à III (première moitié **et la composition**), **20 signes d'arbre sur 45**, plus un composé secret, corpus complet des 30 tablettes (705 lignes, 3 838 signes), économie réglée sur neuf playtests, numération signe par signe jusqu'à `mille`, barre de navigation entre tablettes, infobulles, comptage d'occurrences dans le lexique, journal d'actions horodaté, relevé et recoupement dans le corpus avec gisement par tablette, **datation et réordonnancement chronologique**, instrument **Grammaire**, progression **hors ligne**, **grille de composition** avec carnet des tentatives.
 
 **PT7 fait** (07/09/2026) : 44 min 50. R9 est tranché — le tarif figé à la première visite ramène la main de 0,1 % à **17,9 % des occurrences**, sur 22 tablettes au lieu de 3, jusqu'à la quarantième minute au lieu de la quinzième. I6 global à 31,2 %, mais découpé par tranches il montre deux défauts opposés : 83 % au premier quart d'heure (le mur d'ouverture, connu, non réglé) et 103 % aux cinq dernières minutes (5 232 hypothèses que les Concordances ne buvaient pas). D'où la mesure d'I6 par tranches, et la Grammaire.
 

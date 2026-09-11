@@ -176,7 +176,7 @@ function paintRail(){
    survol, qui monte aussi, et avec l'ocre de `touche`, qui prend déjà le cadre et le
    numéro. Descendre ne heurte personne.
    Repeinte à part, et non dans `paintRail` : le gisement change à chaque relevé quand la
-   lisibilité ne change qu'à chaque glyphe, et recompter les 3 809 signes du corpus à
+   lisibilité ne change qu'à chaque glyphe, et recompter les 3 838 signes du corpus à
    chaque clic coûterait cent fois ce que coûtent ces deux classes. */
 function peindreGisement(){
   for(const c of $('rail').children){

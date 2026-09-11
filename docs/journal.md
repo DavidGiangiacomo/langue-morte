@@ -141,6 +141,44 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## Le fleuve et la cité — deux noms qu'on ne lira pas
+
+11/09/2026. ⟨N1⟩ et ⟨N2⟩ étaient dessinés depuis le premier prototype et employés nulle
+part. `docs/corpus.md` §9 laissait deux options — les semer dans les blocs comme en-têtes,
+ou les supprimer. **Semés.** Chaque registre s'ouvre désormais sur le nom de ce qu'il tient,
+seul sur sa ligne : la cité au-dessus des maisons et de l'archive, le fleuve au-dessus des
+champs et de la veille. Le protocole de copie n'en porte pas ; il ne tient le compte de rien.
+
+### « Très fréquentes », promettait la note
+
+Elle se trompait. Un intitulé par bloc donne ⟨N1⟩ **13 fois** et ⟨N2⟩ **16 fois** — rangs 24
+et 21 sur 48 formes, quand `tablette` en fait 318. Pour les rendre vraiment fréquents il
+aurait fallu un titre courant : repris toutes les cinq lignes de registre, ⟨N2⟩ montait à 75
+(rang 12) — mais ⟨N1⟩ restait à 18, parce que ses registres sont courts (quatre champs, trois
+veilles). Le titre courant ne rééquilibrait donc que la cité. Retenu : un par bloc. On les
+reconnaît d'une tablette à l'autre, ils ne saturent pas le registre.
+
+Ce qui compte plus que leur rang : ⟨N1⟩ est **à l'écran dès la première seconde**, en tête des
+champs des tablettes 1 à 4, et il ne se lira jamais. Les quatre tablettes d'ouverture restent
+identiques entre elles — le levier de l'acte I tient.
+
+### L'exception au principe des blocs
+
+`docs/corpus.md` §6 interdit qu'un signe n'apparaisse que dans un bloc, « sinon la fréquence
+ment ». Les deux noms n'apparaissent **que** là. L'exception est assumée : le principe protège
+l'analyse de fréquence d'un signe qu'on va déchiffrer ; un nom propre ne se déchiffre pas, et
+sa fréquence ne dit rien d'autre que « il revient ».
+
+### Mesuré
+
+Corpus : 676 → **705 lignes**, 3 809 → **3 838 signes**, 58 % lisibles au MVP (inchangé).
+Gisement : 397 → **399** relevés, 13 ouverts au départ (inchangé : 27 jetons font toujours
+trois relevés). Simulateur : **71,8 à 76,2 min**, écart max 5,6, contre 71,8 à 76,1 avant ; la
+seule tranche d'I6 qui bouge est 30–40′ à 15 clics/min, de 9 à 12 %. PT10 juge toujours le
+réglage du 09/09/2026, pas un mélange.
+
+---
+
 ## La composition — l'indice était dans le dessin depuis le début
 
 *10/09/2026. Première brique de la seconde moitié de l'acte III, et première tâche prise
@@ -1184,7 +1222,7 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
 | | Valeur |
 |---|---|
 | Relever | dans le corpus. Jeton neuf : tarif de la tablette, figé à (1 + 1,2 × débit) × mult. **au premier relevé qu'on y fait**. Jeton déjà relevé ou tablette épuisée : le plancher (1 × mult.) |
-| Gisement | ⌈jetons/10⌉ par tablette, **397** en tout, dont 13 ouverts au départ |
+| Gisement | ⌈jetons/10⌉ par tablette, **399** en tout, dont 13 ouverts au départ |
 | Formuler | 3 occ. → 1 hyp. |
 | Recouper | dans le corpus : deux attestations d'un même signe, dans deux tablettes différentes. 12 occ. + 3 hyp. → min(3, 1 + ⌊arbre/5⌋) cert., coût **×1,30** par usage (−25 % avec `champ`) *(09/09/2026)* |
 | Copiste | **10** occ., ×1,12, +1 occ./s *(09/09/2026)* |
@@ -1244,4 +1282,5 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
    fausses. Puis les **contradictions** (acte IV).
 4. **Le clic vide** est descendu à 8 % des relevés (PT9) depuis la marque de la barre ; le
    texte ne dit toujours pas ce que la barre dit. Peut attendre.
-5. Trancher le sort de ⟨N1⟩ et ⟨N2⟩ (`docs/corpus.md` §9).
+5. ~~Trancher le sort de ⟨N1⟩ et ⟨N2⟩ (`docs/corpus.md` §9).~~ *Semés comme intitulés des
+   registres le 11/09/2026 — voir « Le fleuve et la cité ».*

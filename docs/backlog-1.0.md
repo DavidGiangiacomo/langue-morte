@@ -16,14 +16,14 @@
 | Glyphes | **20 / 45** *(+ `grenier`, composé, hors arbre)* | **24** |
 | Instruments | 6 / 9 (Œil, Copiste, Table, Concordance, Atelier, Grammaire) | 3 (Élève, Corpus jumeau, Le Lecteur) |
 | Actes | I, II, III *(première moitié + composition)* | III *(fin)*, IV, V |
-| Corpus | **30 tablettes, 676 lignes, 3 809 signes — intégral** | les 11 lectures fausses, ⟨N1⟩/⟨N2⟩ |
+| Corpus | **30 tablettes, 705 lignes, 3 838 signes — intégral**, ⟨N1⟩/⟨N2⟩ semés | les 11 lectures fausses |
 | Mécaniques centrales | relevé, recoupement, datation, rangement, concordance, hors-ligne, **composition** | confiance, contradiction, révision, Questions |
 | Fins | aucune *(écran « fin du prototype »)* | Achever, Interrompre, relecture |
 | Rythme mesuré | 66 min 49 pour 20 glyphes (PT9) | cible design doc : 3 h – 3 h 30 pour 45 |
 
 Le corpus étant écrit intégralement, **la majeure partie du reste est du code et de
 l'équilibrage** — l'inverse de la situation des actes I–II, où le texte était le budget.
-Les deux exceptions sont TXT-1 (les lectures fausses) et TXT-2 (⟨N1⟩/⟨N2⟩).
+L'exception est TXT-1 (les lectures fausses) ; TXT-2 (⟨N1⟩/⟨N2⟩) est tranché depuis le 11/09/2026.
 
 ---
 
@@ -291,10 +291,10 @@ un engagement de date.
 - Fini quand : chacun des 11 signes a sa lecture fausse écrite, et l'endroit exact où elle casse est vérifié dans le texte rendu (`docs/corpus.md` §7).
 - **Du travail d'écriture, pas de code.** Bloque AMB-2 et donc E5.
 
-**TXT-2 — Trancher ⟨N1⟩ et ⟨N2⟩** · T:S
+**TXT-2 — Trancher ⟨N1⟩ et ⟨N2⟩** · ~~T:S~~ **fait** (11/09/2026)
 > En tant que joueur, je veux rencontrer des formes très fréquentes que je ne résoudrai jamais.
 
-- Deux options ouvertes depuis `docs/corpus.md` §9 : les semer dans les blocs générés comme en-têtes (« très frustrant et très juste »), ou les supprimer. L'auteur penche pour les semer. **À trancher avant tout travail sur les blocs.**
+- Semés comme **intitulés des registres**, un par bloc : ⟨N1⟩ en tête des champs et de la veille (13 fois), ⟨N2⟩ en tête des maisons et de l'archive (16 fois). Fréquence moyenne et non « très fréquente » — un titre courant l'aurait haussée pour ⟨N2⟩ seul. Rythme simulé inchangé (71,8–76,2 min, écart 5,6), gisement 397 → 399. Voir `docs/corpus.md` §6 et `docs/journal.md`.
 
 **TXT-3 — Vérifier la densité de l'acte II** · T:S
 > En tant que joueur, je ne veux pas décrocher dans le passage volontairement plat.
@@ -357,8 +357,8 @@ parallèle du code.
 **En parallèle, en continu** : ECO-2 (le simulateur doit précéder chaque réglage), ECO-4
 (un playtest par jalon, jamais par l'auteur seul), LIV-5 (les tests suivent le code).
 
-TXT-2 (⟨N1⟩/⟨N2⟩) se tranche avant J1, parce qu'il touche les blocs générés — donc les
-fréquences, donc l'équilibrage.
+~~TXT-2 (⟨N1⟩/⟨N2⟩) se tranche avant J1, parce qu'il touche les blocs générés — donc les
+fréquences, donc l'équilibrage.~~ *Tranché le 11/09/2026, avant J1 comme prévu.*
 
 ---
 
