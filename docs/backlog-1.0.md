@@ -13,13 +13,13 @@
 
 | | Fait | Reste pour 1.0 |
 |---|---|---|
-| Glyphes | **23 / 45** *(+ `grenier`, composé, hors arbre)* | **21** |
+| Glyphes | **27 / 45** *(+ `grenier` et `zéro`, composés, hors arbre)* | **17** |
 | Instruments | 6 / 9 (Œil, Copiste, Table, Concordance, Atelier, Grammaire) | 3 (Élève, Corpus jumeau, Le Lecteur) |
-| Actes | I, II, III *(première moitié + composition)* | III *(fin)*, IV, V |
+| Actes | I, II, III *(tout sauf `les-lecteurs`)* | III *(un signe)*, IV, V |
 | Corpus | **30 tablettes, 705 lignes, 3 838 signes — intégral**, ⟨N1⟩/⟨N2⟩ semés | les 11 lectures fausses |
 | Mécaniques centrales | relevé, recoupement, datation, rangement, concordance, hors-ligne, **composition** | confiance, contradiction, révision, Questions |
 | Fins | aucune *(écran « fin du prototype »)* | Achever, Interrompre, relecture |
-| Rythme mesuré | 66 min 49 pour 20 glyphes (PT9) | cible design doc : 3 h – 3 h 30 pour 45 |
+| Rythme mesuré | 66 min 49 pour 20 glyphes (PT9) · 87 à 90 min simulées pour 27 | cible design doc : 3 h – 3 h 30 pour 45 |
 
 Le corpus étant écrit intégralement, **la majeure partie du reste est du code et de
 l'équilibrage** — l'inverse de la situation des actes I–II, où le texte était le budget.
@@ -70,12 +70,13 @@ un engagement de date.
 
 - Fini quand : un échec coûte des Hypothèses, **jamais de Certitude** (R3) ; la paire est inscrite dans un carnet consultable, et le jeu refuse de la retenter au même prix.
 
-**COMP-3 — `zéro`, et les compteurs qui se replient** · T:M
+**COMP-3 — `zéro`, et les compteurs qui se replient** · ~~T:M~~ **fait** (12/09/2026)
 > En tant que joueur, je veux découvrir moi-même que `ne-pas` + `un` fait un signe que je regarde depuis la première seconde.
 
-- Fini quand : `zéro` n'est offert par aucune branche, ne s'obtient que par COMP-1, et donne rétroactivement la notation compacte des grands nombres (`numLisible()`, règle 3).
+- Fini quand : `zéro` n'est offert par aucune branche, ne s'obtient que par COMP-1, et rend lisibles les onze zéros du corpus (`numLisible()`, règle 3).
 - Dépend de : COMP-1, **et de `ne-pas`** (MOD-1) — c'est la première fois qu'une branche de l'acte IV mord sur une branche de l'acte I.
 - Attention : la tablette 29 (registre de zéros) doit rester un seul signe répété jusque-là (`docs/corpus.md` §5, note « heureux accident »).
+- *Fait* : 120 C, hors arbre, sans effet mécanique. **La notation compacte des grands nombres ne lui revient pas** — elle est déjà celle de `cent`, acquise par tout le monde, et la déplacer sur un composé facultatif la retirerait à la plupart des joueurs (voir `docs/journal.md`, « La Modalité, et le zéro »). Onze zéros passent en chiffres, dont les neuf de la tablette 29, qui reste un seul signe répété jusque-là. Coût mesuré pour qui le pose : deux minutes de progression, écart max porté à 6,2 min.
 
 **COMP-4 — `grenier` et `devenir-lecture`** · T:S — *`grenier` fait ; reste `devenir-lecture`, qui attend `lire` et `devenir` (actes IV–V)*
 > En tant que joueur, je veux que les deux autres composés secrets soient atteignables en avance sur le récit.
@@ -103,11 +104,12 @@ un engagement de date.
 
 - Fini quand : l'achat déclenche le premier basculement narratif ; la tablette 18 devient lisible d'un coup ; **première contradiction majeure** possible ici (CONTR-1).
 
-**MOD-1 — `ne-pas`, `si`, `il-faut`, `sinon`** · T:M
+**MOD-1 — `ne-pas`, `si`, `il-faut`, `sinon`** · ~~T:M~~ **fait** (12/09/2026)
 > En tant que joueur, je veux lire les conditions dont le registre est plein.
 
 - Fini quand : les quatre glyphes existent ; les blocs générés (`maisons()`, salés de modalité) deviennent lisibles ; `il-faut` est marqué comme ambigu « qui ne casse jamais mécaniquement ».
 - Débloque : COMP-3 (`zéro`).
+- *Fait* : 150 · 320 · 550 · 800 C, et **816 attestations** qui passent en français — un signe du corpus sur cinq, le plus gros morceau de lisibilité qui restait. Un seul effet chiffré, `il-faut` ×1,5 à l'atelier : donner à `si` le troisième ×1,5 de la Grammaire raccourcissait l'acte de cinq minutes au lieu de l'allonger. Mesuré 87,0–90,0 min pour 27 signes, écart max 5,2, tranches ≥ 10′ ≤ 27 %. `sinon` se compose de `si` + `ne-pas` (règle 15), donc derrière sa propre branche : le piège de `scribe`, en beaucoup plus doux.
 
 **MOD-2 — `peut-être` et le panneau de confiance** · T:L
 > En tant que joueur, je veux découvrir que le jeu ne m'a jamais dit qu'une lecture pouvait être fausse.
@@ -280,7 +282,9 @@ un engagement de date.
 
 - PT10 : la question de PT8/PT9, reposée à quelqu'un d'autre. Dans le même TSV : la part manuelle des occurrences (36,3 % en PT9 ; **au-delà de 40 %, plafonner `REL_K`**), le stock d'hypothèses entre `année` et la dixième Grammaire (27 090 en PT9), et **le nombre de recoupements** — sous une vingtaine, le réglage du 09/09 a vidé un des deux gestes manuels et il faut revenir en arrière.
 - **Le réglage du 09/09/2026 (`REC_R` 1,18 → 1,30, Copiste à 10) n'a aucun playtest derrière lui.** C'est la première chose que PT10 valide ou casse. La composition ne l'a pas touché — mesuré identique au chiffre près, c'était la condition du lot.
-- **Question neuve de PT10** : ⟨grenier⟩ se trouve-t-il ? Le journal d'actions compte les tentatives de composition, avec leur paire et leur minute. Aucun simulateur ne peut y répondre.
+- **Question neuve de PT10** : ⟨grenier⟩ se trouve-t-il ? Et ⟨ne-pas⟩ posé sur ⟨un⟩, quand le joueur vient d'acheter ⟨ne-pas⟩ et qu'il a neuf zéros sous les yeux sur la tablette 29 ? Le journal d'actions compte les tentatives de composition, avec leur paire et leur minute. Aucun simulateur ne peut y répondre.
+- **La tranche 20-30′ monte d'un lot à l'autre** — 25,8 % à 23 glyphes, 27,0 % à 27 — par `revCount()` et non par les lots eux-mêmes : plus l'arbre est grand, plus lentement les tablettes se dégagent par signe acquis. Sous 30 % (règle 2), à surveiller au prochain lot.
+- **Le garde-fou de durée de `balayage.py` suit la taille du lexique**, et doit être re-basé à chaque lot : resté à (71, 77) — PT9, vingt glyphes — il rejetait ses dix-huit combinaisons depuis `da61b19`, réglage en place compris, en affichant « 0 sur 18 ». Re-basé à (84, 92).
 
 ---
 
@@ -349,7 +353,7 @@ parallèle du code.
 
 | Jalon | Contenu | Ce qu'on peut jouer à la fin |
 |---|---|---|
-| **J1 — L'acte III se termine** | ~~E1 (composition)~~ *fait* + ~~PAR-1~~ *fait* + PAR-2 + MOD-1 | 25 glyphes, la composition, `les-lecteurs` |
+| **J1 — L'acte III se termine** | ~~E1 (composition)~~ + ~~PAR-1~~ + ~~MOD-1~~ + ~~COMP-3~~ *faits* + PAR-2 | 28 glyphes, la composition, `les-lecteurs` |
 | **J2 — Le mensonge** | TXT-1 → E3 → MOD-2/MOD-3 + E4 + E5 (Élève) | l'acte III entier, la confiance, la contradiction |
 | **J3 — La voix** | E6 (Personne, Questions, Corpus jumeau, I2) | l'acte IV |
 | **J4 — La graine** | E7 + E8 | les cinq actes, les deux fins, la relecture |

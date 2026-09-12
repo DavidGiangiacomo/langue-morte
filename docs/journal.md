@@ -141,6 +141,128 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## La Modalité, et le zéro qu'on avait sous les yeux
+
+12/09/2026. Deuxième récit de J1 (`docs/backlog-1.0.md`, MOD-1 et COMP-3). La branche
+**Modalité** entre dans l'arbre avec `ne-pas`, `si`, `il-faut`, `sinon` ; `zéro` la suit par
+la grille de composition. L'arbre passe de 23 à **27 signes**, et le lexique du joueur à 29
+avec les deux composés secrets.
+
+| glyphe | coût | effet |
+|---|---|---|
+| `ne-pas` | 150 C | ce qui manque se lit : les foyers vides, les greniers vides |
+| `si` | 320 C | les conditions se lisent |
+| `il-faut` | 550 C | +50 % à l'atelier de copie |
+| `sinon` | 800 C | le protocole de copie se lit jusqu'à son dernier mot |
+| `zéro` *(composé)* | 120 C | les onze zéros du corpus passent en chiffres |
+
+Aucune ligne du corpus ne change — c'est le quatrième lot de suite. Mais c'est le plus gros
+morceau de lisibilité qui restait : **816 attestations, un signe du corpus sur cinq**
+(`ne-pas` 290, `si` 239, `il-faut` 156, `sinon` 131). `les-lecteurs`, à côté, en vaut trois.
+
+Ce que ça donne à lire était sous les yeux depuis la première seconde :
+
+```
+maison 6 · ne-pas · grenier ne-pas · avant · année ne-pas
+champ 1 · ne-pas
+champ 2 · ne-pas
+champ 3 · grain 21
+champ 4 · ne-pas
+```
+
+La tablette 25, quatre champs et un seul qui rend quelque chose. Et le protocole de copie,
+qui revient sur deux siècles et dont on ne lisait que le premier mot :
+
+```
+il-faut copier · si ne-pas · sinon
+```
+
+La consigne s'arrête là. Ce qui vient après « sinon » n'est gravé nulle part — c'est la seule
+menace du corpus, et elle n'est pas écrite (règle 5 : le jeu n'ajoute rien).
+
+### Une branche qui ne doit pas accélérer
+
+La Modalité ne donne qu'un multiplicateur pour quatre signes, et c'est mesuré, pas oublié.
+Cinq variantes d'effets, coûts identiques (`python outils/sim.py`, trois cadences) :
+
+| effets | durée, 27 signes | écart max |
+|---|---|---|
+| `si` +50 % grammaire · `il-faut` +50 % atelier | 82,5 – 85,6 min | 5,2 |
+| `si` +50 % grammaire seul | 82,7 – 85,7 min | 5,2 |
+| `si` +30 % grammaire · `il-faut` +50 % atelier | 84,0 – 87,0 min | 5,2 |
+| **`il-faut` +50 % atelier seul** | **87,0 – 90,0 min** | **5,2** |
+| aucun | 87,2 – 90,1 min | 5,2 |
+
+Deux choses se lisent dans ce tableau. La première : **le bonus d'atelier ne déplace rien**
+(87,0 contre 87,2). En fin de partie les occurrences ne sont plus ce qui manque — la
+Certitude passe par la Grammaire, qui boit des hypothèses, lesquelles viennent de la Table.
+Trois bonus d'atelier existaient déjà (`mille`, `dernière-année`, `scribe`) sans que personne
+l'ait remarqué. La seconde : **le bonus de grammaire, lui, rend plus qu'il ne coûte**. Donner
+à `si` le troisième ×1,5 de l'instrument exponentiel faisait finir l'acte en 82,5 min au lieu
+de 87,0 — quatre signes de plus pour une minute de jeu. C'est la leçon de `REC_R` par l'autre
+bout : dans cette économie, seuls les taux mordent, et un taux posé sur l'instrument qui
+porte la Certitude se rembourse avant d'être payé.
+
+Retenu : `il-faut` porte l'atelier — la consigne du corpus est « il-faut copier », gravée
+vingt-sept fois, et l'atelier est la salle où on la suit — et les trois autres ne paient
+qu'en lecture. La zone d'interface de la branche (le panneau de révision, les indices de
+confiance, design doc §6) n'existe pas encore : elle s'ouvrira à `peut-être`.
+
+**Mesuré au réglage retenu** : 87,0 à 90,0 min pour les 27 signes (81,6 – 85,0 à 23), écart
+max **5,2 min** — inchangé, il est posé à `cinq`, dans le premier quart d'heure —, I6 par
+tranches **≤ 27 %** à partir de 10′ (25,8 % avant ce lot), 33 recoupements, la main fournit
+22,1 à 23,6 % des occurrences. Le point d'attention est le 27 % de la tranche 20-30′ : il ne
+vient pas de la Modalité, qui arrive à la cinquantième minute, mais de `revCount()` — quatre
+glyphes d'arbre de plus, c'est un dégagement de tablettes un peu plus lent par signe acquis,
+donc un peu moins de gisement, donc un peu moins d'instruments. Chaque lot le poussera. Sous
+la barre de 30 % (règle 2), mais le prochain lot devra le regarder.
+
+### `zéro` : ce que le design doc lui prête, et ce qu'il fait
+
+`zéro` est le composé canonique — ⟨ne-pas⟩ posé sur ⟨un⟩, la branche Nombre de l'acte I
+rencontrée par la Modalité de l'acte III, exactement ce que la composition existe pour
+produire. Le design doc (§7) lui prête « la notation compacte des grands nombres ».
+**Il ne l'aura pas** : cette notation est déjà celle de `cent`, que tout le monde achète, et
+la déplacer sur un composé facultatif la retirerait à la plupart des joueurs. Son effet est
+donc celui du grenier : on le lit, et c'est tout.
+
+Ce qu'on lit suffit. `numLisible()` attend ce signe depuis l'acte I — un nombre nul n'est
+lisible que si on l'a —, et onze zéros dorment dans le corpus, dont **neuf sur la tablette
+29**, le registre où tout est à zéro (`docs/corpus.md` §5). Elle reste jusque-là un seul
+signe répété, l'« heureux accident » qu'il fallait préserver ; elle passe d'un coup en
+chiffres, quatre champs, le grain, l'eau, les maisons, le grenier, la semence.
+
+Coût : 120 C, soit deux minutes de progression pour qui le pose (`grenier` en coûte 1,4), et
+l'écart max monte alors à 6,2 min — sous les huit minutes d'I4. `sinon`, lui, est un signe
+d'**arbre** composable (règle 15) : posé en avance il avance la partie, et saute `il-faut`
+dans la chaîne pour une minute de retard. C'est le piège de `scribe`, en beaucoup plus doux,
+parce que ses deux parties sont dans sa propre branche : pour composer `sinon` il faut déjà
+avoir acheté `si`, donc `ne-pas`.
+
+### Deux outils qui avaient divergé
+
+`outils/sim.py` posait un composé sans vérifier que le joueur en connaissait les deux
+parties. Vrai sans conséquence tant que les composés mesurés (`grenier`, `scribe`) se
+faisaient de signes de l'acte I ; faux pour `sinon`, qui se compose de deux signes de sa
+propre branche. Le simulateur lit désormais `COMP` et `ALIAS` dans `src/signes.js` et en
+dérive ses recettes comme le jeu (règle 15) — troisième table lue à la source plutôt que
+recopiée, après le corpus et l'ordre de sortie de terre.
+
+`outils/balayage.py` rejetait ses dix-huit combinaisons **depuis le commit `da61b19`**, y
+compris le réglage en place, en affichant « 0 sur 18 » sans que rien ne soit cassé : son
+garde-fou de durée valait encore (71, 77), la mesure de PT9 à vingt glyphes, quand l'arbre
+en comptait vingt-trois. L'écart et le plafond par tranche sont des invariants ; la durée
+n'en est pas un, elle suit la taille du lexique. Re-basée à (84, 92) — 14 combinaisons sur
+18 passent, dont le réglage retenu.
+
+### Ce que PT10 doit regarder ici
+
+Une question de plus, et elle est de la même famille que ⟨grenier⟩ : **un joueur qui vient
+d'acheter ⟨ne-pas⟩ pose-t-il ⟨ne-pas⟩ sur ⟨un⟩ ?** Il a le signe sous les yeux depuis la
+première seconde — il est dans la tablette 29 en neuf exemplaires, et dans les compteurs du
+jeu à chaque fois qu'une ressource est vide. Le journal d'actions compte les tentatives avec
+leur paire et leur minute. Aucun simulateur ne répond à ça.
+
 ## La Parole III — le corpus parle de lui-même
 
 11/09/2026. Premier récit de J1 (`docs/backlog-1.0.md`, PAR-1). La branche Parole s'arrêtait
@@ -1310,9 +1432,9 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
 | Grammaire *(acte III)* | 12 000 occ., ×1,20, −3 hyp./s → +0,0012 × 1,16^lexique cert./s. Fermée jusqu'à `année` |
 | Hors ligne *(acte III)* | `nuit` : 40 % du débit, 4 h au plus, consommé au crédit |
 | Composer *(acte III)* | deux signes acquis, dans l'ordre. Ouvert par `année`. Réussite : le coût normal du glyphe en Certitude. Échec : 250 hyp. ×1,40 par paire déjà tentée, **jamais de Certitude**, et la paire entre au carnet |
-| Signes (23) | Nombre 2 · 5 · 11 · 18 · 33 · 110 — Matière 3 · 6 · 14 · 22 · 40 — Parole 8 · 27 · 48 · **300 · 600 · 900** — Temps 60 · 130 · 190 · 260 · 360 · 500 = **3 647 C** *(11/09/2026)* |
-| Composés secrets (1) | `grenier` 60 C, hors arbre, sans effet mécanique. Recettes ouvertes aujourd'hui : `deux`, `siècle`, `grenier`, `scribe`, `archive` |
-| Multiplicateurs | `deux` ×1,25 relevé · `grain` ×1,3 copiste · `tablette` ×1,5 relevé · `eau` ×1,3 table · `champ` −25 % recoupement · `graver` ×1,5 concordance · `copier` ×2 sur tout · `lire` ×1,5 grammaire · `scribe` ×1,5 copiste et atelier · `archive` ×1,5 table · `mille` ×1,3 atelier · `siècle` ×1,5 grammaire · `dernière-année` ×1,5 atelier |
+| Signes (27) | Nombre 2 · 5 · 11 · 18 · 33 · 110 — Matière 3 · 6 · 14 · 22 · 40 — Parole 8 · 27 · 48 · 300 · 600 · 900 — Temps 60 · 130 · 190 · 260 · 360 · 500 — Modalité **150 · 320 · 550 · 800** = **5 467 C** *(12/09/2026)* |
+| Composés secrets (2) | `grenier` 60 C et `zéro` 120 C, hors arbre, sans effet mécanique — on les lit, et c'est tout. Recettes ouvertes aujourd'hui : `deux`, `siècle`, `grenier`, `scribe`, `archive`, **`sinon`**, **`zéro`** |
+| Multiplicateurs | `deux` ×1,25 relevé · `grain` ×1,3 copiste · `tablette` ×1,5 relevé · `eau` ×1,3 table · `champ` −25 % recoupement · `graver` ×1,5 concordance · `copier` ×2 sur tout · `lire` ×1,5 grammaire · `scribe` ×1,5 copiste et atelier · `archive` ×1,5 table · `mille` ×1,3 atelier · `siècle` ×1,5 grammaire · `dernière-année` ×1,5 atelier · `il-faut` ×1,5 atelier |
 | Datation | une tablette se date quand on sait lire `année` **et** chacun des signes de son nombre. Les deux dernières attendent `dernière-année`. `avant` range la barre, `après` range le corpus |
 | Concordance *(effet visible)* | choisir un signe replie le corpus sur ses attestations, chaque tablette gardant sa première ligne. Ouvert dès la première Concordance achetée ; marche aussi sur un signe inconnu |
 
@@ -1331,8 +1453,12 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
 9. **L'acte III est livré par moitiés.** La branche Temps, `mille`, la Grammaire et le
    réordonnancement d'abord ; la composition ensuite *(10/09/2026)*, mais `zéro` n'a pas pu
    la suivre — il se compose avec `ne-pas`, qui appartient à la Modalité. La Parole III est
-   arrivée sans son dernier signe *(11/09/2026)* : `lire`, `scribe`, `archive`. Restent donc
-   `les-lecteurs`, la Modalité, `zéro` et l'Élève.
+   arrivée sans son dernier signe *(11/09/2026)* : `lire`, `scribe`, `archive`. La Modalité
+   et `zéro` ont suivi *(12/09/2026)*. Restent `les-lecteurs` et l'Élève.
+10. **`zéro` ne donne pas la notation compacte des grands nombres**, que le design doc §7 lui
+   prête. Elle est déjà celle de `cent`, acquise par tout le monde ; la déplacer sur un
+   composé facultatif la retirerait à la plupart des joueurs. Il ne donne que sa lecture —
+   les onze zéros du corpus, dont les neuf de la tablette 29.
 
 ---
 
@@ -1349,16 +1475,25 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
    mot à quelqu'un qui ne le sait pas ; le journal d'actions dira s'il concorde, et sur quoi.
    À surveiller dans le même TSV : la part manuelle des occurrences (36,3 % en PT9 ; au-delà
    de 40 %, plafonner `REL_K`) et le stock d'hypothèses entre `année` et la dixième Grammaire.
+   Et deux paires, comptées avec leur minute : ⟨maison⟩+⟨grain⟩, ⟨ne-pas⟩+⟨un⟩. Les deux
+   signes sont dans le texte depuis la première seconde ; personne ne dira qu'il y a quelque
+   chose à y trouver.
 2. **Le mur des dix premières minutes** : 83 % de la Certitude à la main avant la première
    Concordance en PT7, 63 % en PT8, 75 % en PT9 — et c'est là que la partie 1 de PT5 a été
    abandonnée. Le seul défaut d'équilibrage connu qui ne soit pas réglé. Il se traite par
    l'ouverture (un instrument plus tôt, ou un premier signe moins cher), pas par le
    recoupement.
 3. **Seconde moitié de l'acte III** — ~~composition~~ *(faite le 10/09/2026)*, ~~`lire`,
-   `scribe`, `archive`~~ *(11/09/2026)*, puis `les-lecteurs` et la Modalité, d'où `zéro` : il attend `ne-pas`, et c'est la première fois qu'une branche
-   tardive mord sur la branche Nombre. L'Élève ensuite, qui n'a pas de sens sans les lectures
-   fausses. Puis les **contradictions** (acte IV).
+   `scribe`, `archive`~~ *(11/09/2026)*, ~~la Modalité et `zéro`~~ *(12/09/2026 : une branche
+   tardive mord enfin sur la branche Nombre)*. Reste **`les-lecteurs`**, dernier signe de
+   l'acte. L'Élève ensuite, qui n'a pas de sens sans les lectures fausses. Puis les
+   **contradictions** (acte IV).
 4. **Le clic vide** est descendu à 8 % des relevés (PT9) depuis la marque de la barre ; le
    texte ne dit toujours pas ce que la barre dit. Peut attendre.
 5. ~~Trancher le sort de ⟨N1⟩ et ⟨N2⟩ (`docs/corpus.md` §9).~~ *Semés comme intitulés des
    registres le 11/09/2026 — voir « Le fleuve et la cité ».*
+6. **La tranche 20-30′ remonte d'un lot à l'autre** : 25,8 % à 23 signes, 27,0 % à 27. Ce
+   n'est pas le lot qui la pousse — la Modalité arrive à la cinquantième minute — c'est
+   `revCount()` : plus l'arbre est grand, plus lentement les tablettes se dégagent par signe
+   acquis, donc moins de gisement au milieu de la partie. Sous 30 % (règle 2), mais à
+   regarder au prochain lot, et à traiter dans `revCount()` si ça continue.

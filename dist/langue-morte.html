@@ -354,7 +354,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
     <p class="quote">La dernière année. Elle n'a pas de nombre : après elle, personne n'a plus compté.</p>
     <p>Le corpus s'arrête ici. La suite — la deuxième personne, les lectures fausses et les contradictions — appartient aux actes IV et V.</p>
     <div class="endstats" id="endstats"></div>
-    <p style="font-size:15px"><b style="color:var(--lamp);font-weight:500">La seule question qui compte&nbsp;:</b> au moment où les tablettes se sont rangées dans l'ordre du temps, est-ce que la crue qui baisse s'est vue&nbsp;? Personne ne la commente&nbsp;; elle n'est que dans les chiffres. Si elle passe inaperçue, le sommet de l'acte III est manqué et les 25 glyphes restants ne le rattraperont pas.</p>
+    <p style="font-size:15px"><b style="color:var(--lamp);font-weight:500">La seule question qui compte&nbsp;:</b> au moment où les tablettes se sont rangées dans l'ordre du temps, est-ce que la crue qui baisse s'est vue&nbsp;? Personne ne la commente&nbsp;; elle n'est que dans les chiffres. Si elle passe inaperçue, le sommet de l'acte III est manqué et les 18 glyphes restants ne le rattraperont pas.</p>
     <div class="endacts">
       <button class="go" id="again">recommencer</button>
       <button class="ghost" id="fermer" title="échap — le corpus reste figé sur la partie terminée">revenir au corpus</button>
@@ -567,6 +567,32 @@ const GL = [
    log:'Nuit. Ils gravaient la nuit. Le corpus se lit maintenant sans moi.'},
   {id:'nurhal',br:'temps',  mot:'dernière-année',cost:500,eff:'les deux dernières tablettes se datent · +50 % à l’atelier de copie',
    log:'La dernière année. Elle n’a pas de nombre : après elle, personne n’a plus compté.'},
+  /* ---- acte III : la modalité ----
+     Quatre signes pour 816 attestations, un signe du corpus sur cinq. Ce sont les plus
+     fréquents qui restaient, et ils étaient illisibles : ⟨ne-pas⟩ seul paraît 290 fois.
+     La branche ne donne presque pas de multiplicateurs, et c'est mesuré, pas oublié —
+     donner à `si` le troisième ×1,5 de la Grammaire faisait finir l'acte en 82,5 min au
+     lieu de 87,0, soit quatre signes de plus pour une minute de jeu (`outils/sim.py`).
+     Dans une économie exponentielle, un bonus sur l'instrument qui porte la Certitude
+     rend plus qu'il ne coûte : la même leçon que `REC_R`, par l'autre bout.
+     Ce que la branche donne, c'est de la lecture. Les registres de distribution sont
+     salés de conditions depuis la première seconde — « ur %24 · la · urtem la · pat ·
+     nur la », le foyer sans grenier et sans année — et le protocole de copie s'achève
+     sur un mot qu'on ne savait pas lire. La zone d'interface de la Modalité (le panneau
+     de révision, les indices de confiance, design doc §6) n'existe pas encore : elle
+     s'ouvrira à `peut-être`, et ces quatre-là y arrivent en avance.
+     `il-faut` est, avec `lire`, l'un des deux signes ambigus conçus pour NE PAS casser
+     mécaniquement (docs/corpus.md §7) : sa lecture fausse, « on peut », transforme les ordres
+     en permissions sans produire une seule absurdité — un corpus cohérent, et plus plat. Le
+     jour où AMB-1 arrivera, ne pas lui chercher de garde-fou : c'est voulu. */
+  {id:'la',   br:'modalite',mot:'ne-pas',  cost:150, eff:'ce qui manque se lit : les foyers vides, les greniers vides',
+   log:'Ne pas. Le signe le plus fréquent de tout le corpus est une négation — et les colonnes que je croyais inachevées disent qu’il n’y avait rien.'},
+  {id:'en',   br:'modalite',mot:'si',      cost:320, eff:'les conditions se lisent — un registre est plein de « si »',
+   log:'Si. Ils ne consignaient pas seulement ce qui était : ils gravaient ce qu’il faudrait faire au cas où.'},
+  {id:'dun',  br:'modalite',mot:'il-faut', cost:550, eff:'+50 % à l’atelier de copie',
+   log:'Il faut. Ce n’est plus un inventaire qui parle, c’est quelqu’un qui ordonne — et sur deux siècles, l’ordre ne change pas : copier.'},
+  {id:'enla', br:'modalite',mot:'sinon',   cost:800, eff:'le protocole de copie se lit jusqu’à son dernier mot',
+   log:'Sinon. La consigne s’arrête là. Ils n’ont jamais gravé ce qui vient après « sinon » — ou bien c’est arrivé.'},
   /* ---- les composés secrets ----
      `sec` veut dire : aucune branche ne l’offre, il ne s’obtient qu’en le composant. Il ne
      compte donc pas dans la progression de l’arbre — ni pour la fin de partie, ni pour les
@@ -574,13 +600,23 @@ const GL = [
      effet de `grenier` est qu’on le lit : vingt-quatre attestations qui passent en français,
      et rien de plus. Un joueur peut finir la partie sans jamais le trouver. */
   {id:'urtem',br:'matiere', sec:true, mot:'grenier', cost:60, eff:'le grenier se lit — un mot qu’aucune branche n’offrait',
-   log:'Le grenier — la maison du grain. Personne ne me l’a appris : c’était écrit dans le signe.'}
+   log:'Le grenier — la maison du grain. Personne ne me l’a appris : c’était écrit dans le signe.'},
+  /* `zéro` est le seul composé dont les deux parties viennent de deux branches et de deux
+     actes — ⟨ne-pas⟩ posé sur ⟨un⟩. Le design doc lui prête « la notation compacte des
+     grands nombres » ; elle est déjà celle de `cent`, acquise par tout le monde, et la
+     déplacer sur un composé facultatif la retirerait à la plupart des joueurs. Son effet
+     est donc celui du grenier : on le lit, et c'est tout. Ce qu'on lit, c'est la
+     tablette 29 — un registre de zéros, un seul signe répété pendant toute la partie
+     (docs/corpus.md §5), qui passe d'un coup en chiffres. `numLisible()` l'attend depuis
+     l'acte I : un nombre nul n'est lisible que si l'on a ce signe-là. */
+  {id:'lan',  br:'nombre',  sec:true, mot:'zéro',    cost:120, eff:'le zéro se lit — les registres vides passent en chiffres',
+   log:'Zéro. Ne-pas un : ils ont écrit l’absence comme un nombre et l’ont rangée dans la colonne des nombres. Je le regardais depuis le début sans le compter.'}
 ];
 /* Le lexique compte ce que l’arbre offre. Un composé secret s’ajoute au savoir du joueur sans
    s’ajouter à sa progression : le compteur reste « x / 20 », et l’économie mesurée sur neuf
    playtests ne bouge pas parce qu’on a trouvé un signe de plus. */
 const NGL = GL.filter(g=>!g.sec).length;
-const BR = [['nombre','Nombre'],['matiere','Matière'],['parole','Parole'],['temps','Temps']];
+const BR = [['nombre','Nombre'],['matiere','Matière'],['parole','Parole'],['temps','Temps'],['modalite','Modalité']];
 const byId = Object.fromEntries(GL.map(g=>[g.id,g]));
 
 /* ============================ recettes ============================ */
@@ -661,8 +697,15 @@ const M = {
   /* L'atelier suivait le copiste jusqu'à l'acte III ; les deux bonus de la branche Temps
      le détachent — c'est le seul instrument qui porte encore l'échelle des occurrences
      quand la Certitude, elle, passe à la grammaire. `scribe` porte les deux : l'atelier
-     n'est qu'une salle pleine de scribes. */
-  ate:  ()=> (has('tem')?1.3:1)*(has('kal')?2:1)*(has('mille')?1.3:1)*(has('nurhal')?1.5:1)*(has('imme')?1.5:1),
+     n'est qu'une salle pleine de scribes.
+     `il-faut` le porte aussi, bien qu'il soit le signe dessiné SUR l'instrument Grammaire :
+     la consigne du corpus est « il-faut copier », gravée vingt-sept fois, et l'atelier est la
+     salle où on la suit. Mesuré au passage — ce bonus-là ne déplace pas la durée de l'acte
+     (87,0 min avec ou sans), parce qu'en fin de partie les occurrences ne sont plus ce qui
+     manque ; un bonus de grammaire l'aurait raccourci de cinq minutes. La Modalité reçoit
+     donc ce qui se lit, pas ce qui accélère. */
+  ate:  ()=> (has('tem')?1.3:1)*(has('kal')?2:1)*(has('mille')?1.3:1)*(has('nurhal')?1.5:1)*(has('imme')?1.5:1)
+             *(has('dun')?1.5:1),
   tabl: ()=> (has('kish')?1.3:1)*(has('kal')?2:1)*(has('tabsar')?1.5:1),
   con:  ()=> (has('sar')?1.5:1)*(has('kal')?2:1),
   /* `lire` est le piège majeur de l'ambiguïté (docs/corpus.md §7) : sa lecture fausse,

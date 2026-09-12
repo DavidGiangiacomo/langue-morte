@@ -40,8 +40,15 @@ const M = {
   /* L'atelier suivait le copiste jusqu'à l'acte III ; les deux bonus de la branche Temps
      le détachent — c'est le seul instrument qui porte encore l'échelle des occurrences
      quand la Certitude, elle, passe à la grammaire. `scribe` porte les deux : l'atelier
-     n'est qu'une salle pleine de scribes. */
-  ate:  ()=> (has('tem')?1.3:1)*(has('kal')?2:1)*(has('mille')?1.3:1)*(has('nurhal')?1.5:1)*(has('imme')?1.5:1),
+     n'est qu'une salle pleine de scribes.
+     `il-faut` le porte aussi, bien qu'il soit le signe dessiné SUR l'instrument Grammaire :
+     la consigne du corpus est « il-faut copier », gravée vingt-sept fois, et l'atelier est la
+     salle où on la suit. Mesuré au passage — ce bonus-là ne déplace pas la durée de l'acte
+     (87,0 min avec ou sans), parce qu'en fin de partie les occurrences ne sont plus ce qui
+     manque ; un bonus de grammaire l'aurait raccourci de cinq minutes. La Modalité reçoit
+     donc ce qui se lit, pas ce qui accélère. */
+  ate:  ()=> (has('tem')?1.3:1)*(has('kal')?2:1)*(has('mille')?1.3:1)*(has('nurhal')?1.5:1)*(has('imme')?1.5:1)
+             *(has('dun')?1.5:1),
   tabl: ()=> (has('kish')?1.3:1)*(has('kal')?2:1)*(has('tabsar')?1.5:1),
   con:  ()=> (has('sar')?1.5:1)*(has('kal')?2:1),
   /* `lire` est le piège majeur de l'ambiguïté (docs/corpus.md §7) : sa lecture fausse,

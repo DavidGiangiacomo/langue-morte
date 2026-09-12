@@ -36,12 +36,20 @@ GL = [('an','nombre',2), ('anna','nombre',5), ('hem','nombre',11), ('sela','nomb
       ('shen','parole',300), ('imme','parole',600), ('tabsar','parole',900),
       ('nur','temps',60), ('pat','temps',130), ('zur','temps',190), ('nurnur','temps',260),
       ('esh','temps',360), ('nurhal','temps',500),
+      # Modalité (acte III). Seul `dun` (il-faut) a un effet chiffré, +50 % à l'atelier ; les
+      # trois autres ne rendent que de la lecture — 816 attestations, un signe du corpus sur
+      # cinq. Donner à `si` le troisième ×1,5 de la Grammaire RACCOURCIT
+      # l'acte au lieu de l'allonger — mesuré 82,5 min contre 87,0, soit quatre signes de plus
+      # pour une minute de jeu. Dans une économie exponentielle, un multiplicateur sur
+      # l'instrument qui porte la Certitude paie plus que ce qu'il coûte.
+      ('la','modalite',150), ('en','modalite',320), ('dun','modalite',550),
+      ('enla','modalite',800),
       # Composés secrets : offerts par aucune branche, ils ne s'obtiennent qu'à la grille de
       # composition. Ils comptent dans ce que le joueur SAIT, jamais dans ce que l'arbre a
       # rendu — d'où `ARBRE`, qui est le compte dont dépendent le dégagement des tablettes, la
       # Grammaire et la fin de partie. Confondre les deux ferait avancer le jeu en composant.
-      ('urtem','matiere',60)]
-SECRETS = {'urtem'}
+      ('urtem','matiere',60), ('lan','nombre',120)]
+SECRETS = {'urtem', 'lan'}
 ARBRE = [g for g in GL if g[0] not in SECRETS]
 
 # ---- constantes économiques ----------------------------------------------
@@ -66,6 +74,21 @@ P = dict(
 BR = {}
 for g in ARBRE:
     BR.setdefault(g[1], []).append(g)
+
+# ---- les recettes, lues à la source elles aussi ---------------------------
+# `compose` ne peut poser un signe que si le joueur en connaît les deux parties. Le
+# simulateur l'ignorait tant que les composés mesurés (grenier, scribe) se faisaient de
+# signes acquis dès l'acte I ; `sinon` = si + ne-pas est dans sa propre branche, derrière
+# `si`, et un simulateur qui l'oublie mesure un raccourci qui n'existe pas.
+_sig = (pathlib.Path(__file__).parent.parent / 'src' / 'signes.js').read_text(encoding='utf-8')
+_alias = dict(re.findall(r"(\w+):'(\w+)'", re.search(r'const ALIAS = \{(.*?)\};', _sig, re.S).group(1)))
+_trace = {v: k for k, v in _alias.items()}
+_ids = {g[0] for g in GL}
+RECETTES = {}
+for cible, a, b in re.findall(r"(\w+):\['(\w+)','(\w+)'\]", re.search(r'const COMP = \{(.*?)\};', _sig, re.S).group(1)):
+    a, b = _trace.get(a, a), _trace.get(b, b)
+    if {cible, a, b} <= _ids:
+        RECETTES[cible] = (a, b)
 
 
 def run(P, cpm=15, cap_min=600, garde=0.0, compose=()):
@@ -97,7 +120,8 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=()):
     # Concordance n'est pas posée, quelle que soit la cadence de clic.
     premier = {}
     mcop   = lambda: (1.3 if has('tem')  else 1) * (2 if has('kal') else 1) * (1.5 if has('imme') else 1)
-    mate   = lambda: mcop() * (1.3 if has('mille') else 1) * (1.5 if has('nurhal') else 1)
+    mate   = lambda: (mcop() * (1.3 if has('mille') else 1) * (1.5 if has('nurhal') else 1)
+                      * (1.5 if has('dun') else 1))
     mtab   = lambda: (1.3 if has('kish') else 1) * (2 if has('kal') else 1) * (1.5 if has('tabsar') else 1)
     mcon   = lambda: (1.5 if has('sar')  else 1) * (2 if has('kal') else 1)
     mgram  = lambda: (1.5 if has('nurnur') else 1) * (2 if has('kal') else 1) * (1.5 if has('shen') else 1)
@@ -202,7 +226,10 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=()):
         # achat de glyphes : le moins cher disponible d'abord — sauf quand le joueur épargne
         # pour un signe qu'il a reconnu dans le texte et compte poser à la grille. Sans cette
         # épargne, l'acheteur n'a jamais 600 C de côté et « composer tôt » ne mesure rien.
-        vise = 'nur' in gl and any(cid not in gl for cid in compose)
+        # ... et il ne peut épargner que pour une paire qu'il a les moyens de POSER : épargner
+        # pour `sinon` avant d'avoir `si` bloquerait la branche qui le donne.
+        vise = 'nur' in gl and any(cid not in gl and set(RECETTES.get(cid, ())) <= gl
+                                   for cid in compose)
         while not vise:
             a = [g for g in avail() if C >= g[2]]
             if not a: break
@@ -216,7 +243,7 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=()):
         # Même chose pour `scribe` et `archive`, qui sont des glyphes d'arbre composables :
         # posés en avance, ils comptent dans la progression — et donc dans les jalons.
         for cid in compose:
-            if 'nur' in gl and cid not in gl:
+            if 'nur' in gl and cid not in gl and set(RECETTES.get(cid, ())) <= gl:
                 cible = next((g for g in GL if g[0] == cid), None)
                 if cible and C >= cible[2]:
                     C -= cible[2]; gl.add(cid); comp_faits += 1
