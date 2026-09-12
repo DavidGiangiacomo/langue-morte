@@ -24,7 +24,11 @@ Contrôle :
  15. une partie commencée avant une mécanique neuve se rouvre sans rien perdre
  16. la Parole III : `lire` après `copier`, les trois effets, `scribe` composable et compté
      dans l'arbre
- 17. une partie finie quand l'arbre était plus petit reprend au lieu de rouvrir sur la fin
+ 17. la Modalité : la branche s'ouvre sur le signe le plus fréquent du corpus, `il-faut`
+     porte l'atelier et non la grammaire, et les 816 attestations passent en français
+ 18. `zéro` : composé de deux branches et de deux actes, il ne s'obtient qu'à la grille,
+     n'avance pas l'arbre, et rend lisibles les onze zéros du corpus
+ 19. une partie finie quand l'arbre était plus petit reprend au lieu de rouvrir sur la fin
 
 Prérequis : pip install playwright && playwright install chromium
 """
@@ -321,7 +325,11 @@ def main() -> None:
         verifier(frq() == [], "rien sans « deux » : le nombre serait illisible")
         page.evaluate("() => { acheterGl('an'); acheterGl('anna'); }")
         page.wait_for_timeout(250)
-        verifier(len(frq()) == 4, f"un comptage par tête de branche : {frq()}")
+        verifier(len(frq()) == 5, f"un comptage par tête de branche : {frq()}")
+        # La Modalité entre par le signe le plus fréquent du corpus : 290 attestations,
+        # dont aucune lisible jusque-là. C'est l'arbitrage que la Table met sous les yeux.
+        verifier(page.evaluate("() => freqGlyphe('la')") == 290,
+                 "« ne-pas », tête de la Modalité (290)")
         # le piège : compter les mots seuls donnerait 8 à « un » et 0 à « cinq », alors que
         # leur signe est partout DANS les nombres. Ce serait dire que la branche la plus
         # rentable du jeu est la plus pauvre.
@@ -400,8 +408,8 @@ def main() -> None:
         # ne valent comme règle du jeu qu'une fois traduites en glyphes, et filtrées sur ceux
         # qui existent. `selanna` (vingt) reste dessinable mais a été retiré du lexique.
         rec = page.evaluate("() => RECETTES")
-        verifier(set(rec) == {"anna", "urtem", "nurnur", "imme", "tabsar"},
-                 f"cinq recettes ouvertes aujourd'hui : {sorted(rec)}")
+        verifier(set(rec) == {"anna", "urtem", "nurnur", "imme", "tabsar", "enla", "lan"},
+                 f"sept recettes ouvertes aujourd'hui : {sorted(rec)}")
         # la Parole III les a ouvertes d'elle-même, sans qu'aucune liste soit tenue (règle 15)
         verifier(rec.get("imme") == ["im", "sar"] and rec.get("tabsar") == ["tab", "sar"],
                  "scribe = dire + graver, archive = tablette + graver")
@@ -452,7 +460,7 @@ def main() -> None:
         # Ce qui suit protège une économie réglée sur neuf playtests : un composé secret
         # s'ajoute à ce que le joueur SAIT, jamais à ce que l'arbre a rendu.
         verifier(r[3] == 0, "le compte de l'arbre ne bouge pas")
-        verifier(page.text_content("#lexr").strip() == "3 / 23", "le lexique affiche « 3 / 23 »")
+        verifier(page.text_content("#lexr").strip() == "3 / 27", "le lexique affiche « 3 / 27 »")
         apres_rev = page.eval_on_selector_all("#corpus .tablet:not([hidden])", "e => e.length")
         verifier(apres_rev == avant_rev, "et aucune tablette n'est dégagée en composant")
 
@@ -510,9 +518,71 @@ def main() -> None:
         page.wait_for_timeout(250)
         verifier(r == ["acquis", 1, True, False],
                  f"dire + graver donne le scribe avant « copier », et compte dans l'arbre : {r}")
-        verifier(page.text_content("#lexr").strip() == "4 / 23", "le lexique affiche « 4 / 23 »")
+        verifier(page.text_content("#lexr").strip() == "4 / 27", "le lexique affiche « 4 / 27 »")
         verifier("done" in classe("imme") and "locked" in classe("tabsar"),
                  "sa carte est cochée, sans ouvrir « archive » par-dessus « copier »")
+
+        print("\nla Modalité : ne-pas, si, il-faut, sinon")
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+        ordre = page.evaluate("() => GL.filter(g => g.br === 'modalite').map(g => g.id)")
+        verifier(ordre == ["la", "en", "dun", "enla"],
+                 f"quatre signes, du plus fréquent au dernier mot du protocole : {ordre}")
+        page.evaluate("() => { S_.C = 99999; }")
+        page.wait_for_timeout(150)
+        verifier("locked" in classe("en"), "« si » reste fermé tant que « ne-pas » manque")
+        # Le bonus va à l'atelier, pas à la grammaire : « il-faut copier » est une consigne de
+        # copie, et la Modalité ne doit pas raccourcir l'acte qu'elle allonge (cf. economie.js).
+        r = page.evaluate("""() => { ['la','en'].forEach(acheterGl);
+            const a0 = M.ate(), g0 = M.gram(); acheterGl('dun');
+            return [M.ate()/a0, M.gram()/g0]; }""")
+        verifier(r == [1.5, 1], f"« il-faut » : +50 % à l'atelier, rien à la grammaire : {r}")
+        # `copier` avec eux : la consigne du protocole est « il-faut copier », et sans son
+        # verbe la ligne ne se lit pas jusqu'au bout.
+        page.evaluate("() => { ['enla','kal'].forEach(acheterGl); }")
+        page.wait_for_timeout(300)
+        lus = page.evaluate("""() => ['la','en','dun','enla'].map(id =>
+            [...document.querySelectorAll('#corpus .tok[data-w='+id+']')]
+              .filter(x => x.textContent.trim() === byId[id].mot).length)""")
+        verifier(lus == [290, 239, 156, 131],
+                 f"les {sum(lus)} attestations passent en français : {lus}")
+        # Le protocole de copie, en entier : « il-faut copier · si ne-pas · sinon ». La ligne
+        # s'arrête là, et ce qui vient après « sinon » n'est écrit nulle part (règle 5).
+        ligne = page.evaluate("""() => { const tb = document.querySelector('.tablet[data-tb="8"]');
+            return [...tb.children].map(l => [...l.children].map(t => t.textContent.trim()).join(' '))
+                                   .find(t => t.startsWith('il-faut copier')); }""")
+        verifier(ligne == "il-faut copier · si ne-pas · sinon",
+                 f"le protocole se lit jusqu'à son dernier mot : {ligne!r}")
+
+        print("\nzéro : le composé de deux branches et de deux actes")
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+        nuls = lambda: page.eval_on_selector_all(
+            "#corpus .tok[data-n='0']", "e => e.filter(x => x.textContent.trim() === '0').length")
+        page.evaluate("""() => { S_.C = 99999;
+            ['an','anna','hem','sela','meku','mille','nur'].forEach(acheterGl); }""")
+        page.wait_for_timeout(300)
+        verifier(nuls() == 0, "toute la numération acquise ne rend pas un seul zéro lisible")
+        verifier(page.evaluate("() => GL.find(g => g.id === 'lan').sec") is True,
+                 "aucune branche ne l'offre : il ne s'obtient qu'à la grille")
+        r = page.evaluate("() => { S_.C = 500; S_.H = 99999; return composer('la','an'); }")
+        verifier(r == "refus", "et il ne se pose pas sans savoir lire « ne-pas »")
+        page.evaluate("() => { S_.C = 99999; acheterGl('la'); S_.C = 500; }")
+        page.wait_for_timeout(150)
+        r = page.evaluate("""() => { const c = S_.C, n = nArbre(), su = SU.size;
+            const issue = composer('la','an');
+            return [issue, c - S_.C, nArbre() - n, SU.size - su]; }""")
+        page.wait_for_timeout(300)
+        verifier(r[0] == "acquis" and r[1] == 120,
+                 f"ne-pas + un donne le zéro, à son coût en certitude : {r[:2]}")
+        verifier(r[2] == 0, "et n'avance pas l'arbre : c'est du savoir, pas de la progression")
+        # Règle 3 : la numération s'acquiert signe par signe. Le zéro n'ouvre que le zéro.
+        verifier(r[3] == 0, "il n'ouvre aucun autre rang de numération")
+        verifier(nuls() == 11, f"les {nuls()} zéros du corpus passent en chiffres")
+        # docs/corpus.md §5 : la tablette 29 est un registre de zéros, et elle reste un seul
+        # signe répété pendant presque toute la partie. C'est ce qui rend sa lecture brutale.
+        z29 = page.eval_on_selector_all(".tablet[data-tb='29'] .tok[data-n='0']", "e => e.length")
+        verifier(z29 == 9, f"la tablette 29 en portait {z29} depuis la première seconde")
 
         print("\nla concordance : rassembler les attestations d'un signe")
         page.evaluate("() => $('reset').click()")
@@ -650,7 +720,7 @@ def main() -> None:
         verifier(etat == [5, 120, 9, 12], f"la partie est reprise telle quelle : {etat}")
         neufs = vieille.evaluate("() => [Array.isArray(S_.carnet), S_.carnet.length, S_.comp]")
         verifier(neufs == [True, 0, 0], f"les champs neufs arrivent vides : {neufs}")
-        verifier(vieille.text_content("#lexr").strip() == "5 / 23", "le lexique compte cinq signes")
+        verifier(vieille.text_content("#lexr").strip() == "5 / 27", "le lexique compte cinq signes")
         r = vieille.evaluate("""() => { S_.C = 9999; acheterGl('nur'); S_.H = 99999;
             const i = composer('tem','im'); sauver();
             const p = JSON.parse(localStorage.getItem('langue-morte-actes-i-iii'));
@@ -677,7 +747,7 @@ def main() -> None:
         verifier(not casses, f"aucune erreur au chargement : {casses[:1] or '—'}")
         etat = vieille.evaluate("() => [S_.done, $('end').hidden, S_.gl.length]")
         verifier(etat == [False, True, 20], f"pas d'écran de fin, la partie continue : {etat}")
-        verifier(vieille.text_content("#lexr").strip() == "20 / 23", "le lexique affiche « 20 / 23 »")
+        verifier(vieille.text_content("#lexr").strip() == "20 / 27", "le lexique affiche « 20 / 27 »")
         verifier("locked" not in vieille.evaluate(
                      "() => $('lex').querySelector('[data-gl=shen]').className"),
                  "et « lire » attend d'être acheté")

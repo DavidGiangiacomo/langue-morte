@@ -31,7 +31,7 @@ src/
   index.html    markup + chargement des sources — se joue directement, sans build
   style.css     thème unique sombre (parti pris assumé : lampe à huile sur argile)
   signes.js     tracés SVG des 45 signes, composés, numération
-  lexique.js    les 20 glyphes des actes I–III : coût, effet, texte de journal
+  lexique.js    les 27 glyphes des actes I–III + 2 composés : coût, effet, texte de journal
   corpus.js     GÉNÉRÉ — ne jamais éditer à la main
   economie.js   état, ressources, instruments, actions, boucle de simulation
   rendu.js      corpus, barre de tablettes, panneaux, infobulle, journal
@@ -72,7 +72,9 @@ python build.py && python outils/verifier.py    # tests
 
     **Le dépassement de 20–30 min est réglé** (09/09/2026), et la façon dont il l'a été vaut pour la suite. Il tenait 28 à 37 % dans les 27 combinaisons de prix, sans jamais passer sous 28 : la famille « prix » ne pouvait pas le toucher. Une analyse de sensibilité une constante à la fois a montré que `rec_o`, `rec_h`, `rec_max`, `tab_p` et `tab_b` sont **inertes** — dans une économie exponentielle les coûts de base ne pèsent rien, seuls les taux de croissance mordent, ce que le commentaire de `REC_R` écrivait déjà depuis PT4. Le levier est donc `REC_R`, porté de 1,18 à **1,30**, compensé par un premier Copiste à **10** au lieu de 15 pour tenir le rythme que l'un allongeait et l'autre raccourcit. Mesuré : 71,8–76,1 min, écart max 5,6 min, toutes les tranches à partir de 10′ sous 26 %. Coût assumé : le joueur recoupe 32 fois au lieu de 49. **À valider en PT10** — le simulateur ne modélise qu'un joueur qui recoupe « tant que c'est rentable » (voir `docs/journal.md`, « le mur des dix premières minutes »).
 
-3. **La numération s'acquiert signe par signe, jamais d'un bloc.** Un nombre du corpus ne passe en chiffres que si le joueur connaît *chacun* de ses signes — et `deux` n'ouvre aucun signe, il ouvre le principe du redoublement (sans lui, on ne lit qu'un nombre où chaque signe apparaît une seule fois). Voir `numLisible()` dans `signes.js` et le tableau dans `docs/journal.md`.
+    **Deux choses dérivent avec la taille de l'arbre**, et se revoient à chaque lot. La tranche 20–30′ monte — 25,8 % à 23 glyphes, **27,0 % à 27** — non pas à cause des signes ajoutés, qui arrivent après la cinquantième minute, mais par `revCount()` : plus l'arbre est grand, plus lentement les tablettes se dégagent par signe acquis, donc moins de gisement au milieu de la partie. Sous 30 %, mais à traiter dans `revCount()` si ça continue. Et le garde-fou de **durée** de `outils/balayage.py`, lui, n'est pas un invariant du tout : resté à (71, 77) — la mesure de PT9, vingt glyphes — pendant que l'arbre passait à vingt-trois, il rejetait ses dix-huit combinaisons, réglage en place compris, en affichant « 0 sur 18 » sans que rien ne soit cassé. Re-basé à (84, 92). L'écart max et le plafond par tranche, eux, ne bougent jamais.
+
+3. **La numération s'acquiert signe par signe, jamais d'un bloc.** Un nombre du corpus ne passe en chiffres que si le joueur connaît *chacun* de ses signes — et `deux` n'ouvre aucun signe, il ouvre le principe du redoublement (sans lui, on ne lit qu'un nombre où chaque signe apparaît une seule fois). Voir `numLisible()` dans `signes.js` et le tableau dans `docs/journal.md`. `zéro` suit la même règle par l'autre bout : il n'ouvre que le zéro, il ne s'obtient qu'en le composant, et il ne donne pas la notation compacte des grands nombres — elle est celle de `cent` depuis l'acte I.
 
 4. **Les composés se dessinent comme composés.** `sv()` rend un signe composé à partir de ses deux parties (table `COMP` dans `signes.js`). Le joueur doit pouvoir reconnaître ⟨maison⟩ et ⟨grain⟩ dans ⟨grenier⟩ avant de savoir le lire.
 
@@ -112,7 +114,7 @@ python build.py && python outils/verifier.py    # tests
 
 ## État actuel et suite
 
-**Fait** : actes I à III (première moitié, **la composition**, et la Parole III sans `les-lecteurs`), **23 signes d'arbre sur 45**, plus un composé secret, corpus complet des 30 tablettes (705 lignes, 3 838 signes), économie réglée sur neuf playtests, numération signe par signe jusqu'à `mille`, barre de navigation entre tablettes, infobulles, comptage d'occurrences dans le lexique, journal d'actions horodaté, relevé et recoupement dans le corpus avec gisement par tablette, **datation et réordonnancement chronologique**, instrument **Grammaire**, progression **hors ligne**, **grille de composition** avec carnet des tentatives.
+**Fait** : actes I à III (tout sauf `les-lecteurs`), **27 signes d'arbre sur 45**, plus deux composés secrets, corpus complet des 30 tablettes (705 lignes, 3 838 signes), économie réglée sur neuf playtests, numération signe par signe de `zéro` à `mille`, barre de navigation entre tablettes, infobulles, comptage d'occurrences dans le lexique, journal d'actions horodaté, relevé et recoupement dans le corpus avec gisement par tablette, **datation et réordonnancement chronologique**, instrument **Grammaire**, progression **hors ligne**, **grille de composition** avec carnet des tentatives.
 
 **PT7 fait** (07/09/2026) : 44 min 50. R9 est tranché — le tarif figé à la première visite ramène la main de 0,1 % à **17,9 % des occurrences**, sur 22 tablettes au lieu de 3, jusqu'à la quarantième minute au lieu de la quinzième. I6 global à 31,2 %, mais découpé par tranches il montre deux défauts opposés : 83 % au premier quart d'heure (le mur d'ouverture, connu, non réglé) et 103 % aux cinq dernières minutes (5 232 hypothèses que les Concordances ne buvaient pas). D'où la mesure d'I6 par tranches, et la Grammaire.
 
@@ -138,9 +140,23 @@ Mesuré : **78,6 à 83,5 min** pour les 20 signes, écart max 6,2 min entre deux
 
 **La Parole III** (11/09/2026, PAR-1) : `lire` (300 C, +50 % grammaire), `scribe` (600 C, +50 % copiste et atelier), `archive` (900 C, +50 % table), après `copier`. Aucune ligne du corpus ne change. `lire` a un effet chiffré parce que sa lecture fausse « compter » devra le majorer. Mesuré : **81,6–85,0 min pour 23 signes**, écart max 5,2, tranches ≥ 10′ sous 26 %. `scribe` et `archive` se composent dès `année` (règle 15) ; **composer `scribe` tôt est un piège** — seize minutes sans déblocage pour qui épargne, et « Rien ne vient » tant qu'on ne peut pas payer, comme une paire fausse. Non réglé : voir `docs/journal.md`, « La Parole III ».
 
-**Prochaine étape — PT10 avec un autre joueur, puis la suite de l'acte III.** Même question qu'en PT8 et PT9, posée à quelqu'un qui ne sait pas ce qu'il cherche. Dans le même TSV : la part manuelle des occurrences (au-delà de 40 %, plafonner `REL_K`) le stock d'hypothèses entre `année` et la dixième Grammaire (27 090 en PT9), **le nombre de recoupements** — sous une vingtaine sur la partie, le réglage du 09/09 a vidé un des deux gestes manuels et il faut revenir en arrière — et **les tentatives de composition** : le journal d'actions les compte avec leur paire et leur minute. La question neuve est celle-là : un joueur qui ignore qu'il y a quelque chose à chercher reconnaît-il ⟨maison⟩ et ⟨grain⟩ dans ⟨grenier⟩ ? Aucun simulateur ne répond à ça.
+**La Modalité, et le zéro** (12/09/2026, MOD-1 + COMP-3) : `ne-pas` (150 C), `si` (320 C),
+`il-faut` (550 C, +50 % atelier), `sinon` (800 C) — et `zéro` (120 C) par la grille, ⟨ne-pas⟩
+posé sur ⟨un⟩, première fois qu'une branche tardive mord sur la branche Nombre. Aucune ligne
+du corpus ne change, mais **816 attestations passent en français**, un signe du corpus sur
+cinq : les foyers vides de la tablette 25, le protocole de copie jusqu'à son dernier mot
+(« il-faut copier · si ne-pas · sinon » — ce qui vient après n'est gravé nulle part), et les
+neuf zéros de la tablette 29. Un seul effet chiffré pour quatre signes, et c'est mesuré :
+donner à `si` le troisième ×1,5 de la Grammaire **raccourcissait** l'acte de cinq minutes —
+dans cette économie, un taux posé sur l'instrument qui porte la Certitude se rembourse avant
+d'être payé (la leçon de `REC_R`, par l'autre bout). Mesuré : **87,0–90,0 min pour 27
+signes**, écart max 5,2, tranches ≥ 10′ ≤ 27 %. `zéro` n'a **pas** la notation compacte des
+grands nombres que lui prête le design doc §7 : elle est déjà celle de `cent` — voir
+`docs/journal.md`, « La Modalité, et le zéro ».
 
-Restent ensuite : **`les-lecteurs`**, dernier signe de la Parole III et fin de l'acte (PAR-2), et la branche **Modalité** — d'où `zéro` = `ne-pas` + `un`, qui attend `ne-pas` et sera le premier composé à faire mordre une branche tardive sur la branche Nombre —, l'instrument **Élève**, puis les **contradictions** de l'acte IV. Voir `docs/design-doc.md` §7 et §8, et `docs/backlog-1.0.md` pour le découpage.
+**Prochaine étape — PT10 avec un autre joueur, puis `les-lecteurs`.** Même question qu'en PT8 et PT9, posée à quelqu'un qui ne sait pas ce qu'il cherche. Dans le même TSV : la part manuelle des occurrences (au-delà de 40 %, plafonner `REL_K`) le stock d'hypothèses entre `année` et la dixième Grammaire (27 090 en PT9), **le nombre de recoupements** — sous une vingtaine sur la partie, le réglage du 09/09 a vidé un des deux gestes manuels et il faut revenir en arrière — et **les tentatives de composition** : le journal d'actions les compte avec leur paire et leur minute. La question neuve est celle-là : un joueur qui ignore qu'il y a quelque chose à chercher reconnaît-il ⟨maison⟩ et ⟨grain⟩ dans ⟨grenier⟩, ou ⟨ne-pas⟩ et ⟨un⟩ dans le zéro qu'il regarde depuis la première seconde ? Aucun simulateur ne répond à ça. À surveiller aussi : la tranche 20-30′ monte d'un lot à l'autre (25,8 % à 23 signes, 27,0 % à 27) par `revCount()` et non par les lots eux-mêmes.
+
+Restent ensuite : **`les-lecteurs`**, dernier signe de la Parole III et fin de l'acte (PAR-2), l'instrument **Élève** — qui n'a rien à fausser tant que les lectures fausses ne sont pas écrites (TXT-1) —, puis les **contradictions** de l'acte IV. Voir `docs/design-doc.md` §7 et §8, et `docs/backlog-1.0.md` pour le découpage.
 
 ---
 

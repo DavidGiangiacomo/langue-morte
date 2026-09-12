@@ -21,9 +21,15 @@ from sim import P, run
 CADENCES = (5, 15, 40)
 GRILLE = dict(rec_r=(1.26, 1.30, 1.35), con_b=(350, 400, 450), cop_b=(10, 15))
 
-# Garde-fous. Durée et écart viennent de PT9 : 66 min 49 mesurées, 71 à 77 simulées par
-# l'acheteur recalé. Le plafond par tranche est la règle 2 du CLAUDE.md.
-DUREE = (71.0, 77.0)
+# Garde-fous. L'écart et le plafond par tranche sont des invariants — I4 et la règle 2 du
+# CLAUDE.md — et ne bougent pas. La DURÉE, elle, n'en est pas un : elle vaut pour un lexique
+# d'une taille donnée, et grandit à chaque lot de glyphes. Elle est restée à (71, 77), la
+# mesure de PT9 à vingt glyphes, pendant que l'arbre passait à vingt-trois : au commit
+# `da61b19`, ce balayage rejetait ses dix-huit combinaisons, y compris le réglage en place,
+# et disait « 0 sur 18 » sans que rien ne soit cassé. Re-baser cette fenêtre fait partie de
+# tout lot qui ajoute des signes.
+# 27 glyphes (Modalité comprise) : le réglage retenu mesure 87,0-90,0 min aux trois cadences.
+DUREE = (84.0, 92.0)
 ECART_MAX = 6.0
 I6_MAX = 30.0
 NT = 6                  # tranches retenues : 0-10′ à 50-60′, au-delà tout est à zéro
