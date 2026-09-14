@@ -10,7 +10,8 @@ Contrôle :
   3. l'échelle de la numération : chaque glyphe de nombre ouvre exactement ce qu'il doit
   4. les infobulles répondent dans les quatre cas prévus
   5. le temps de rendu initial reste sous le seuil
-  6. la fenêtre de fin se ferme, et ne couvre pas les outils hors jeu
+  6. la fenêtre de fin attend qu'on ait lu la tablette du dernier signe, se ferme,
+     et ne couvre pas les outils hors jeu
   7. le relevé se fait dans le corpus ; le gisement s'épuise et se tarife à la 1re visite
   8. le recoupement se fait dans le corpus : deux passages d'un même signe
   9. la datation : une tablette se date quand on sait lire sa date, et pas avant
@@ -28,7 +29,9 @@ Contrôle :
      porte l'atelier et non la grammaire, et les 816 attestations passent en français
  18. `zéro` : composé de deux branches et de deux actes, il ne s'obtient qu'à la grille,
      n'avance pas l'arbre, et rend lisibles les onze zéros du corpus
- 19. une partie finie quand l'arbre était plus petit reprend au lieu de rouvrir sur la fin
+ 19. `les-lecteurs` : dernier signe de l'acte III, il n'ouvre aucune recette tant que
+     ⟨nous⟩ n'est pas au lexique, ne multiplie rien, et laisse la tablette 18 à 80 %
+ 20. une partie finie quand l'arbre était plus petit reprend au lieu de rouvrir sur la fin
 
 Prérequis : pip install playwright && playwright install chromium
 """
@@ -460,7 +463,7 @@ def main() -> None:
         # Ce qui suit protège une économie réglée sur neuf playtests : un composé secret
         # s'ajoute à ce que le joueur SAIT, jamais à ce que l'arbre a rendu.
         verifier(r[3] == 0, "le compte de l'arbre ne bouge pas")
-        verifier(page.text_content("#lexr").strip() == "3 / 27", "le lexique affiche « 3 / 27 »")
+        verifier(page.text_content("#lexr").strip() == "3 / 28", "le lexique affiche « 3 / 28 »")
         apres_rev = page.eval_on_selector_all("#corpus .tablet:not([hidden])", "e => e.length")
         verifier(apres_rev == avant_rev, "et aucune tablette n'est dégagée en composant")
 
@@ -482,7 +485,7 @@ def main() -> None:
         page.evaluate("() => $('reset').click()")
         page.wait_for_timeout(200)
         ordre = page.evaluate("() => GL.filter(g => g.br === 'parole').map(g => g.id)")
-        verifier(ordre == ["im", "sar", "kal", "shen", "imme", "tabsar"],
+        verifier(ordre == ["im", "sar", "kal", "shen", "imme", "tabsar", "shenu"],
                  f"posés dans la branche après « copier » : {ordre}")
         classe = lambda i: page.evaluate("i => $('lex').querySelector('[data-gl=\"'+i+'\"]').className", i)
         page.evaluate("() => { S_.C = 99999; ['im','sar'].forEach(acheterGl); }")
@@ -518,7 +521,7 @@ def main() -> None:
         page.wait_for_timeout(250)
         verifier(r == ["acquis", 1, True, False],
                  f"dire + graver donne le scribe avant « copier », et compte dans l'arbre : {r}")
-        verifier(page.text_content("#lexr").strip() == "4 / 27", "le lexique affiche « 4 / 27 »")
+        verifier(page.text_content("#lexr").strip() == "4 / 28", "le lexique affiche « 4 / 28 »")
         verifier("done" in classe("imme") and "locked" in classe("tabsar"),
                  "sa carte est cochée, sans ouvrir « archive » par-dessus « copier »")
 
@@ -583,6 +586,44 @@ def main() -> None:
         # signe répété pendant presque toute la partie. C'est ce qui rend sa lecture brutale.
         z29 = page.eval_on_selector_all(".tablet[data-tb='29'] .tok[data-n='0']", "e => e.length")
         verifier(z29 == 9, f"la tablette 29 en portait {z29} depuis la première seconde")
+
+        print("\nles-lecteurs : le nom, et ce qu'il laisse à lire")
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+        page.evaluate("() => { S_.C = 9e6; GL.filter(g => !g.sec && g.id !== 'shenu')"
+                      "                      .forEach(g => acheterGl(g.id)); }")
+        page.wait_for_timeout(300)
+        # Règle 15 : une recette n'existe que si sa cible et ses deux parties sont au lexique.
+        # ⟨les-lecteurs⟩ se dessine ⟨lire⟩ sur ⟨nous⟩, et ⟨nous⟩ appartient à l'acte IV — la
+        # grille ne doit donc pas l'offrir, même une fois tout l'arbre acquis.
+        r = page.evaluate("""() => [COMP.shenu, RECETTES.shenu === undefined,
+                                    recetteDe('shen','nash') === undefined,
+                                    byId.nash === undefined]""")
+        verifier(r == [["shen", "nash"], True, True, True],
+                 f"le nom se dessine sur un signe qui n'est pas au lexique, et n'ouvre aucune recette : {r}")
+        # Aucun effet chiffré, et c'est mesuré : dernier achat de l'arbre, il serait payé à la
+        # seconde où la partie s'arrête. Cinq variantes d'effet donnent la même durée simulée.
+        r = page.evaluate("""() => { const av = [M.cop(), M.ate(), M.tabl(), M.con(), M.gram(), M.click()];
+            acheterGl('shenu');
+            const ap = [M.cop(), M.ate(), M.tabl(), M.con(), M.gram(), M.click()];
+            return [av.every((v, i) => v === ap[i]), S_.done, $('end').hidden, [...finLire]]; }""")
+        page.wait_for_timeout(400)
+        verifier(r[0] is True, "il ne multiplie rien : aucun instrument ne bouge à l'achat")
+        verifier(r[1] is True and r[3] == [18],
+                 f"il ferme l'arbre, et la seule tablette qu'il ouvre est la 18 : {r[1:]}")
+        verifier(page.text_content("#lexr").strip() == "28 / 28", "le lexique affiche « 28 / 28 »")
+        lus = page.eval_on_selector_all("#corpus .tok[data-w=shenu]",
+            "e => [e.length, e.filter(x => x.textContent.trim() === 'les-lecteurs').length]")
+        verifier(lus == [3, 3], f"ses trois attestations passent en français : {lus}")
+        # Ce que l'achat NE donne pas : la tablette 18 s'arrête à ⟨nous⟩, qui se tient seul
+        # juste devant le nom, sur la même ligne. C'est la porte de l'acte IV, et elle est
+        # dans le texte (docs/backlog-1.0.md, PAR-2 et VOIX-1).
+        reste = page.eval_on_selector_all(".tablet[data-tb='18'] .tok.g",
+                                          "e => e.map(x => x.dataset.w)")
+        verifier(sorted(reste) == ["nash", "nash", "nash", "nash", "nm4"],
+                 f"et la tablette 18 s'arrête sur « nous », quatre fois, plus un nom propre : {reste}")
+        pct = page.evaluate("() => Math.round(100 * pctTablette(TBN[18]))")
+        verifier(pct == 80, f"soit {pct} % de la tablette, contre 68 avant l'achat")
 
         print("\nla concordance : rassembler les attestations d'un signe")
         page.evaluate("() => $('reset').click()")
@@ -649,10 +690,38 @@ def main() -> None:
         page.evaluate("() => { S_.b.cop = 0; }")
 
         print("\nfenêtre de fin")
-        page.evaluate("() => { S_.C = 9999; GL.forEach(g => acheterGl(g.id)); }")
+        page.evaluate("() => $('reset').click()")
         page.wait_for_timeout(200)
+        page.evaluate("() => { S_.C = 9e6; GL.forEach(g => acheterGl(g.id)); }")
+        page.wait_for_timeout(400)
+        # Elle ne s'ouvre plus au clic : le dernier signe de l'arbre est celui qui rend
+        # lisible la tablette 18, et un écran de statistiques posé par-dessus la couvrirait
+        # avant qu'on l'ait lue. Elle attend d'être allé voir (finRegarder(), economie.js).
+        verifier(page.get_attribute("#end", "hidden") is not None,
+                 "elle ne couvre pas la tablette que le dernier signe vient d'ouvrir")
+        page.evaluate("() => { finArmee -= 7000; versTablette(1); }")
+        page.wait_for_timeout(900)
+        verifier(page.get_attribute("#end", "hidden") is not None,
+                 "ni ne vient sur une tablette qui n'a rien à voir")
+        page.evaluate("() => versTablette(18)")
+        page.wait_for_timeout(900)
         verifier(page.get_attribute("#end", "hidden") is None,
-                 "elle s'ouvre au dernier signe de l'arbre")
+                 "elle vient une fois la tablette 18 sous les yeux")
+        # Le garde-fou : un joueur qui n'y va pas doit quand même avoir une fin. Le corpus
+        # est rangé dans l'ordre du temps à ce stade — remonter de la 18 à la 1 est un long
+        # défilement, et `tabletteVisible()` ne change qu'une fois qu'il a abouti.
+        page.evaluate("() => { $('end').hidden = true; finLire = new Set([18]);"
+                      "        versTablette(1); }")
+        page.wait_for_timeout(1600)
+        page.evaluate("() => { finArmee = performance.now() - 7000; }")
+        page.wait_for_timeout(500)
+        verifier(page.get_attribute("#end", "hidden") is not None, "sinon elle patiente")
+        page.evaluate("() => { finArmee = performance.now() - 95000; }")
+        page.wait_for_timeout(400)
+        verifier(page.get_attribute("#end", "hidden") is None,
+                 "mais elle finit par venir, lecture ou pas")
+        # `showEnd()` désarme : sans ça la carte reviendrait sur celui qui la ferme.
+        verifier(page.evaluate("() => finArmee") == 0, "et elle se désarme en s'ouvrant")
         # relevé en PT5 : la partie finie, l'overlay couvrait le journal d'actions —
         # inatteignable au moment précis où il faut l'exporter
         verifier(page.evaluate("""() => {
@@ -670,6 +739,15 @@ def main() -> None:
             verifier(page.get_attribute("#end", "hidden") is not None, f"{fermeture} la ferme")
         # le corpus derrière est figé sur la partie terminée, pas remis à zéro
         verifier(page.evaluate("() => mesures().sig") > 50, "le corpus reste déchiffré derrière")
+        # En dernier, parce qu'il vide la partie : « réinitialiser » ne recharge pas la page,
+        # et une carte armée survivrait à la remise à zéro pour s'ouvrir sur la partie neuve —
+        # le défaut qu'avait `SU` avant PT4, avec ses 229 nombres encore lisibles.
+        page.evaluate("() => { finArmee = performance.now() - 95000; finLire = new Set();"
+                      "        $('reset').click(); }")
+        page.wait_for_timeout(500)
+        verifier(page.get_attribute("#end", "hidden") is not None
+                 and page.evaluate("() => finArmee") == 0,
+                 "« réinitialiser » la désarme : une partie neuve ne s'ouvre pas sur la fin")
 
         print("\njournal d'actions (hors jeu)")
         page.evaluate("() => { TR.length = 0; prochainEtat = 0; S_.t = 0; }")
@@ -720,7 +798,7 @@ def main() -> None:
         verifier(etat == [5, 120, 9, 12], f"la partie est reprise telle quelle : {etat}")
         neufs = vieille.evaluate("() => [Array.isArray(S_.carnet), S_.carnet.length, S_.comp]")
         verifier(neufs == [True, 0, 0], f"les champs neufs arrivent vides : {neufs}")
-        verifier(vieille.text_content("#lexr").strip() == "5 / 27", "le lexique compte cinq signes")
+        verifier(vieille.text_content("#lexr").strip() == "5 / 28", "le lexique compte cinq signes")
         r = vieille.evaluate("""() => { S_.C = 9999; acheterGl('nur'); S_.H = 99999;
             const i = composer('tem','im'); sauver();
             const p = JSON.parse(localStorage.getItem('langue-morte-actes-i-iii'));
@@ -747,7 +825,7 @@ def main() -> None:
         verifier(not casses, f"aucune erreur au chargement : {casses[:1] or '—'}")
         etat = vieille.evaluate("() => [S_.done, $('end').hidden, S_.gl.length]")
         verifier(etat == [False, True, 20], f"pas d'écran de fin, la partie continue : {etat}")
-        verifier(vieille.text_content("#lexr").strip() == "20 / 27", "le lexique affiche « 20 / 27 »")
+        verifier(vieille.text_content("#lexr").strip() == "20 / 28", "le lexique affiche « 20 / 28 »")
         verifier("locked" not in vieille.evaluate(
                      "() => $('lex').querySelector('[data-gl=shen]').className"),
                  "et « lire » attend d'être acheté")

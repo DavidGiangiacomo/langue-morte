@@ -141,6 +141,145 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## Les lecteurs — le nom, et le mot qui manque dedans
+
+14/09/2026. Troisième récit de J1 (`docs/backlog-1.0.md`, PAR-2), et le dernier : l'acte III
+se termine. `les-lecteurs` entre dans la branche Parole après `archive`. L'arbre passe de 27
+à **28 signes**, le lexique du joueur à 30 avec les deux composés secrets.
+
+| glyphe | coût | effet |
+|---|---|---|
+| `les-lecteurs` | 1 200 C | **aucun** — trois attestations, une seule tablette |
+
+C'est le plus mauvais achat du jeu à toute mesure d'épigraphiste : 1 200 C pour trois
+occurrences, quand `ne-pas` en rendait 290 pour 150. Et le jeu le dit — la Table de
+fréquences affiche « 3 occ. » à côté du prix, depuis PT4. Ce qu'on paie ici n'est pas de la
+lisibilité, c'est une phrase :
+
+```
+tablette 18 · année 164
+grain 352 · eau 6 · maison 17
+⟨nous⟩ · les-lecteurs
+avant · ⟨nous⟩ · les-lecteurs
+après · ⟨nous⟩ · les-lecteurs
+si ne-pas lire · ⟨nous⟩ ne-pas
+scribe ⟨N4⟩
+```
+
+### Le dernier signe de l'arbre ne peut pas porter de taux
+
+Aucun effet chiffré, et ce n'est pas un oubli : c'est une mesure. Cinq variantes —
+concordance, table, grammaire, atelier, aucune — aux trois cadences, quatre prix chacune :
+**la même durée à la décimale près**, vingt fois de suite. La raison est structurelle et vaut
+au-delà de ce signe : `les-lecteurs` est le dernier achat de l'arbre, donc `nArbre() === NGL`
+clôt la partie à la seconde même où le multiplicateur commencerait à rendre. Un effet posé
+là ne serait pas un réglage, ce serait une décoration.
+
+Et c'était déjà vrai avant ce lot, sans que personne l'ait vu : le ×1,5 à la table
+d'`archive` ne déplace rien non plus — 86,99–89,98 min avec ou sans, à 27 signes, où il était
+le dernier achat ; 89,64–92,66 avec ou sans, à 28, où il a pourtant 2,8 minutes pour agir.
+La queue de l'arbre est l'endroit où un multiplicateur cesse d'être un argument, et ce n'est
+pas une raison de retirer celui d'`archive` — il est dans la fiction, et l'acte IV lui rendra
+du temps. C'est une raison de ne pas en poser un de plus par habitude.
+
+Le jour où l'acte IV mettra `les-lecteurs` au milieu de l'arbre, la question de son effet se
+mesurera pour la première fois. Aujourd'hui, elle ne se mesure pas.
+
+### Ce que l'achat ne donne pas
+
+⟨nous⟩. Le nom se dessine ⟨lire⟩ sur ⟨nous⟩ (table `COMP`, règle 4), et ⟨nous⟩ se tient seul
+juste devant lui, sur la même ligne — **41 fois dans le corpus**, jamais au lexique avant la
+branche Personne. La tablette 18 passe de **68 % à 80 %** de lisibilité et s'arrête là : ils
+se nomment, et le mot qui dit « nous » reste à déchiffrer. Ce qui subsiste, exactement :
+quatre ⟨nous⟩ et un nom propre.
+
+C'est la porte de l'acte IV, et elle est dans le texte — pas dans une annonce, pas dans la
+carte de fin, pas dans l'infobulle. Un joueur qui regarde le signe qu'il vient d'acheter voit
+qu'il en contient un autre, et que cet autre est posé juste devant, tout seul. Personne ne le
+lui dira. C'est la même mécanique que ⟨grenier⟩ et que le zéro, une troisième fois, et cette
+fois-ci elle ne mène pas à un composé à poser mais à un acte à jouer.
+
+Aucune recette ne s'ouvre pour autant (règle 15) : `RECETTES` filtre sur les deux parties, et
+`nash` n'est pas au lexique. `les-lecteurs` ne se composera que le jour où `nous` y entrera —
+et ce jour-là, la grille l'offrira d'elle-même, sans qu'on ait une liste à tenir.
+
+### La carte de fin attend qu'on ait lu
+
+Le dernier achat de l'arbre est aussi celui qui rend lisible ce que l'acte avait à dire. Or
+`showEnd()` était appelée dans la foulée d'`acheterGl()` : la carte « Fin du prototype », un
+écran de statistiques à 93 % d'opacité, tombait sur la tablette 18 avant qu'on l'ait
+regardée — et la question de playtest qu'elle porte s'y serait répondue toute seule. Tant que
+le dernier signe était `archive` ou `dernière-année`, ça ne coûtait rien. Ici, ça couvrait le
+sommet de l'acte.
+
+Elle attend donc d'être allé voir. Rien de neuf pour ça : `touchees` sait déjà quelles
+tablettes le dernier signe a changées, `tabletteVisible()` sait laquelle on a sous les yeux,
+et la carte vient quand les deux se rencontrent. Deux bornes l'encadrent, et ce sont des
+garde-fous, pas des réglages : jamais avant six secondes — sinon elle tomberait sur le joueur
+déjà posé sur la bonne tablette, à l'instant où les mots changent sous ses yeux — et jamais
+au-delà de quatre-vingt-dix, sinon celui qui ne va pas voir n'aurait pas de fin du tout.
+
+`S_.done` est posé tout de suite, lui : **la production s'arrête net pendant qu'on lit la
+dernière tablette.** Compteurs figés, chronomètre arrêté, le texte seul. Ce n'est pas un
+défaut d'ordre, c'est FIN-1 en avance (design doc §11) — et c'est la seule chose de ce lot
+qui touche à autre chose qu'un glyphe. Cinq tests la couvrent, et elle se retire en un
+commit si elle déplaît.
+
+### Mesuré
+
+`python outils/sim.py`, trois cadences, `les-lecteurs` à 1 200 C :
+
+| | 28 signes | 27 signes *(lot précédent)* |
+|---|---|---|
+| durée | **89,6 – 92,7 min** | 87,0 – 90,0 min |
+| écart max | **5,2 min** *(posé à `cinq`, 16ᵉ minute)* | 5,2 min |
+| dernier écart | 2,8 min | — |
+| I6, tranches ≥ 10′ | **≤ 28 %** | ≤ 27 % |
+| recoupements | 33 | 33 |
+| part manuelle des occurrences | 22,1 – 22,9 % | 22,1 – 23,6 % |
+
+1 200 C suit l'arithmétique de la branche — 300, 600, 900, 1 200 — et non le drame. Un prix
+plus haut était tentant : à 1 800 C le dernier écart monte à 4,2 min, en plein dans la cible
+de I4 (4 à 6 min). Écarté, et pour une raison mesurée ailleurs : PT8 a fini l'acte sur
+**4 min 51 sans une seule action dans le corpus**, et c'est le défaut que la Concordance a
+été écrite pour réparer. Quatre minutes d'attente avant la dernière révélation, quand il n'y
+a plus rien à acheter, c'est ce trou-là qu'on rouvrirait.
+
+`outils/balayage.py` : garde-fou de durée re-basé de (84, 92) à **(86, 95)** — mêmes marges
+qu'au lot précédent, trois minutes sous le plancher mesuré, deux au-dessus du plafond.
+13 combinaisons sur 18 passent, dont le réglage en place. Troisième lot de suite où cette
+fenêtre doit bouger : elle suit la taille du lexique, elle n'est pas un invariant.
+
+### La tranche 20-30′, troisième lot de suite
+
+25,8 % à 23 signes · 27,0 % à 27 · **28 % à 28**. Le journal du lot précédent annonçait la
+dérive et son mécanisme ; ce lot le confirme par l'autre bout. Elle ne vient pas des signes
+ajoutés — `les-lecteurs` s'achète à la quatre-vingt-dixième minute — mais de `revCount()`,
+qui vaut `4 + nArbre × 26 / NGL` : **c'est le dénominateur qui bouge**. Un signe de plus dans
+l'arbre, et chaque signe acquis dégage un peu moins de tablettes, donc moins de gisement au
+milieu de la partie, donc moins d'instruments, donc une part manuelle qui remonte. D'où un
+lot d'un seul signe qui la pousse de 0,8 point quand un lot de quatre l'avait poussée de 1,2.
+
+Il reste deux points de marge sous la barre des 30 % (règle 2), et dix-sept signes à ajouter.
+**Le prochain lot n'a plus le choix : c'est `revCount()` qu'il faut traiter, pas les prix.**
+Le balayage le montre déjà — une des dix-huit combinaisons est rejetée sur cette seule
+tranche, à 31 %.
+
+### Ce que PT10 doit regarder ici
+
+Deux questions, et aucun simulateur ne répond ni à l'une ni à l'autre.
+
+**Est-ce qu'on achète un signe à 1 200 C qui annonce trois occurrences ?** C'est l'arbitrage
+de l'épigraphiste posé à nu : le lexique affiche le prix, le compte d'attestations et l'effet
+(« le nom qu'ils se donnaient se lit »), et c'est tout. Un joueur qui optimise passe son
+chemin — et s'arrête là, sans fin, sans tablette 18. Le journal d'actions dira combien de
+temps le signe est resté payable avant d'être acheté.
+
+**Est-ce qu'on voit ⟨nous⟩ dans le nom ?** Même famille que ⟨grenier⟩ et que ⟨ne-pas⟩ posé
+sur ⟨un⟩, mais sans grille pour la recueillir : il n'y a rien à poser, rien à cliquer, aucune
+trace dans le TSV. Ça ne se saura qu'en demandant, après la partie, ce que le joueur a compris
+de la dernière tablette. Question à poser à voix haute, pas à instrumenter.
+
 ## La Modalité, et le zéro qu'on avait sous les yeux
 
 12/09/2026. Deuxième récit de J1 (`docs/backlog-1.0.md`, MOD-1 et COMP-3). La branche
@@ -1454,11 +1593,21 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
    réordonnancement d'abord ; la composition ensuite *(10/09/2026)*, mais `zéro` n'a pas pu
    la suivre — il se compose avec `ne-pas`, qui appartient à la Modalité. La Parole III est
    arrivée sans son dernier signe *(11/09/2026)* : `lire`, `scribe`, `archive`. La Modalité
-   et `zéro` ont suivi *(12/09/2026)*. Restent `les-lecteurs` et l'Élève.
+   et `zéro` ont suivi *(12/09/2026)*, `les-lecteurs` a fermé l'acte *(14/09/2026)*. Reste
+   l'Élève, qui n'a rien à fausser tant que les lectures fausses ne sont pas écrites.
 10. **`zéro` ne donne pas la notation compacte des grands nombres**, que le design doc §7 lui
    prête. Elle est déjà celle de `cent`, acquise par tout le monde ; la déplacer sur un
    composé facultatif la retirerait à la plupart des joueurs. Il ne donne que sa lecture —
    les onze zéros du corpus, dont les neuf de la tablette 29.
+11. **La carte de fin ne s'ouvre plus au dernier clic** : elle attend qu'on ait eu sous les
+   yeux la tablette que le dernier signe vient d'ouvrir — six secondes au plus tôt,
+   quatre-vingt-dix au plus tard. Le prototype se fermait sinon sur la tablette 18 sans
+   qu'on l'ait lue. `S_.done` est posé à l'achat : la production s'arrête pendant cette
+   lecture, et c'est FIN-1 en avance plutôt qu'un défaut d'ordre.
+12. **Le dernier signe de l'arbre ne porte aucun effet chiffré**, et ce n'est pas propre à
+   `les-lecteurs` : il est payé à la seconde où la partie se termine. Mesuré — cinq effets
+   possibles, quatre prix, trois cadences, la même durée à la décimale près. Le ×1,5 à la
+   table d'`archive`, qui occupait cette place au lot précédent, ne déplaçait rien non plus.
 
 ---
 
@@ -1477,23 +1626,28 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
    de 40 %, plafonner `REL_K`) et le stock d'hypothèses entre `année` et la dixième Grammaire.
    Et deux paires, comptées avec leur minute : ⟨maison⟩+⟨grain⟩, ⟨ne-pas⟩+⟨un⟩. Les deux
    signes sont dans le texte depuis la première seconde ; personne ne dira qu'il y a quelque
-   chose à y trouver.
+   chose à y trouver. Depuis le 14/09, deux questions de plus : **achète-t-on `les-lecteurs`**,
+   1 200 C pour trois attestations annoncées — le TSV date le moment où il devient payable —
+   et, celle-là à poser de vive voix après la partie, **a-t-on vu ⟨nous⟩ dans le nom** ?
 2. **Le mur des dix premières minutes** : 83 % de la Certitude à la main avant la première
    Concordance en PT7, 63 % en PT8, 75 % en PT9 — et c'est là que la partie 1 de PT5 a été
    abandonnée. Le seul défaut d'équilibrage connu qui ne soit pas réglé. Il se traite par
    l'ouverture (un instrument plus tôt, ou un premier signe moins cher), pas par le
    recoupement.
-3. **Seconde moitié de l'acte III** — ~~composition~~ *(faite le 10/09/2026)*, ~~`lire`,
+3. ~~**Seconde moitié de l'acte III**~~ — ~~composition~~ *(10/09/2026)*, ~~`lire`,
    `scribe`, `archive`~~ *(11/09/2026)*, ~~la Modalité et `zéro`~~ *(12/09/2026 : une branche
-   tardive mord enfin sur la branche Nombre)*. Reste **`les-lecteurs`**, dernier signe de
-   l'acte. L'Élève ensuite, qui n'a pas de sens sans les lectures fausses. Puis les
-   **contradictions** (acte IV).
+   tardive mord enfin sur la branche Nombre)*, ~~`les-lecteurs`~~ *(14/09/2026)*. **L'acte III
+   est fini.** Le chemin critique est maintenant **TXT-1**, les onze lectures fausses : c'est
+   de l'écriture, et elle bloque l'ambiguïté, donc l'Élève, donc `peut-être` et `faux`, donc
+   la relecture de fin.
 4. **Le clic vide** est descendu à 8 % des relevés (PT9) depuis la marque de la barre ; le
    texte ne dit toujours pas ce que la barre dit. Peut attendre.
 5. ~~Trancher le sort de ⟨N1⟩ et ⟨N2⟩ (`docs/corpus.md` §9).~~ *Semés comme intitulés des
    registres le 11/09/2026 — voir « Le fleuve et la cité ».*
-6. **La tranche 20-30′ remonte d'un lot à l'autre** : 25,8 % à 23 signes, 27,0 % à 27. Ce
-   n'est pas le lot qui la pousse — la Modalité arrive à la cinquantième minute — c'est
-   `revCount()` : plus l'arbre est grand, plus lentement les tablettes se dégagent par signe
-   acquis, donc moins de gisement au milieu de la partie. Sous 30 % (règle 2), mais à
-   regarder au prochain lot, et à traiter dans `revCount()` si ça continue.
+6. **`revCount()`, maintenant.** La tranche 20-30′ monte à chaque lot : 25,8 % à 23 signes,
+   27,0 % à 27, **28 % à 28**. Ce ne sont pas les lots qui la poussent, c'est le dénominateur
+   de `revCount()` = `4 + nArbre × 26 / NGL` : chaque signe ajouté à l'arbre ralentit le
+   dégagement par signe acquis, donc le gisement du milieu de partie, donc les instruments.
+   Un lot d'un seul signe l'a poussée de 0,8 point. Deux points de marge sous la barre des
+   30 % (règle 2), dix-sept signes à venir : le prochain lot doit le traiter avant d'ajouter
+   quoi que ce soit.

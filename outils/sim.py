@@ -34,6 +34,12 @@ GL = [('an','nombre',2), ('anna','nombre',5), ('hem','nombre',11), ('sela','nomb
       ('gan','matiere',40),
       ('im','parole',8), ('sar','parole',27), ('kal','parole',48),
       ('shen','parole',300), ('imme','parole',600), ('tabsar','parole',900),
+      # `les-lecteurs` ferme l'acte III, et il est le seul glyphe de l'arbre sans effet
+      # chiffré par mesure et non par oubli : dernier achat, il est payé à la seconde où
+      # la partie se termine. Concordance, table, grammaire, atelier ou rien — cinq
+      # variantes, trois cadences, la même durée à la décimale près. Ce simulateur est
+      # l'outil qui le montre, et c'est tout ce qu'il peut en dire.
+      ('shenu','parole',1200),
       ('nur','temps',60), ('pat','temps',130), ('zur','temps',190), ('nurnur','temps',260),
       ('esh','temps',360), ('nurhal','temps',500),
       # Modalité (acte III). Seul `dun` (il-faut) a un effet chiffré, +50 % à l'atelier ; les

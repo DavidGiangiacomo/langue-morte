@@ -48,6 +48,29 @@ const GL = [
    log:'Scribe. Celui qui dit et qui grave. Chaque tablette finit sur ce mot : je lisais une signature sans le savoir.'},
   {id:'tabsar',br:'parole', mot:'archive',  cost:900, eff:'+50 % à la table de fréquences',
    log:'L’archive. Une tablette, puis trois cents, puis mille deux cents. Ils ne rangeaient pas le grain : ils rangeaient les tablettes.'},
+  /* ---- acte III : le nom, et ce qu'il laisse à lire ----
+     Dernier signe de l'acte, et de loin le plus rare : trois attestations, toutes sur la
+     tablette 18. C'est un mauvais achat pour tout épigraphiste qui compte — 1 200 C pour
+     trois occurrences quand `ne-pas` en rendait 290 pour 150 — et la Table de fréquences
+     l'affiche en toutes lettres à côté du prix. C'est voulu : ce qu'on paie ici n'est pas
+     de la lisibilité, c'est une phrase.
+     AUCUN effet chiffré, et ce n'est pas un oubli : c'est une mesure. `les-lecteurs` est le
+     dernier achat de l'arbre, donc `nArbre() === NGL` clôt la partie à la seconde même où
+     le multiplicateur commencerait à rendre. Cinq variantes — concordance, table, grammaire,
+     atelier, aucune — à trois cadences donnent la même durée à la décimale près. Un effet
+     posé ici ne serait pas un réglage, ce serait une décoration. Le jour où l'acte IV le
+     mettra au milieu de l'arbre, la question se mesurera pour la première fois.
+     Ce que l'achat ne donne PAS : ⟨nous⟩. Le signe se dessine ⟨lire⟩ sur ⟨nous⟩ (table COMP),
+     et ⟨nous⟩ se tient seul juste devant lui, sur la même ligne — 41 fois dans le corpus,
+     jamais au lexique avant la branche Personne. La tablette 18 passe de 68 % à 80 % de
+     lisibilité et s'arrête là : ils se nomment, et le mot qui dit « nous » reste à
+     déchiffrer. La porte de l'acte IV est dans le texte, pas dans une annonce.
+     Aucune recette ne s'ouvre pour autant (règle 15) : `RECETTES` filtre sur les deux
+     parties, et `nash` n'est pas au lexique. Il ne se composera que le jour où `nous` y
+     entrera — et ce jour-là, la grille l'offrira d'elle-même. */
+  {id:'shenu',br:'parole', mot:'les-lecteurs', cost:1200,
+   eff:'le nom qu’ils se donnaient se lit — trois attestations, une seule tablette',
+   log:'Les lecteurs. Ils se nommaient d’après ce qu’ils faisaient — et la moitié du nom est un signe que je ne sais pas lire, qui se tient seul juste devant, sur la même ligne.'},
   /* ---- acte III : le temps ----
      La branche ne donne pas un bonus de plus, elle donne une dimension. `année` fait
      apparaître une date que le corpus portait depuis la première seconde ; `avant` range

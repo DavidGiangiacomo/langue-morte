@@ -13,13 +13,14 @@
 
 | | Fait | Reste pour 1.0 |
 |---|---|---|
-| Glyphes | **27 / 45** *(+ `grenier` et `zéro`, composés, hors arbre)* | **17** |
+| Glyphes | **28 / 45** *(+ `grenier` et `zéro`, composés, hors arbre)* | **17** |
 | Instruments | 6 / 9 (Œil, Copiste, Table, Concordance, Atelier, Grammaire) | 3 (Élève, Corpus jumeau, Le Lecteur) |
-| Actes | I, II, III *(tout sauf `les-lecteurs`)* | III *(un signe)*, IV, V |
+| Actes | **I, II, III — entiers** | IV, V |
 | Corpus | **30 tablettes, 705 lignes, 3 838 signes — intégral**, ⟨N1⟩/⟨N2⟩ semés | les 11 lectures fausses |
 | Mécaniques centrales | relevé, recoupement, datation, rangement, concordance, hors-ligne, **composition** | confiance, contradiction, révision, Questions |
+| Acte III | **fini** *(PAR-2, 14/09/2026)* | — |
 | Fins | aucune *(écran « fin du prototype »)* | Achever, Interrompre, relecture |
-| Rythme mesuré | 66 min 49 pour 20 glyphes (PT9) · 87 à 90 min simulées pour 27 | cible design doc : 3 h – 3 h 30 pour 45 |
+| Rythme mesuré | 66 min 49 pour 20 glyphes (PT9) · **89,6 à 92,7 min simulées pour 28** | cible design doc : 3 h – 3 h 30 pour 45 |
 
 Le corpus étant écrit intégralement, **la majeure partie du reste est du code et de
 l'équilibrage** — l'inverse de la situation des actes I–II, où le texte était le budget.
@@ -99,10 +100,20 @@ un engagement de date.
 - `lire` est **le piège majeur** de l'ambiguïté (AMB-*) : le coder en sachant qu'il aura deux lectures.
 - *Fait* : 300 · 600 · 900 C ; +50 % à la grammaire, au copiste et à l'atelier, à la table. 81,6–85,0 min pour 23 signes, écart max 5,2. `scribe` et `archive` se composent dès `année` (règle 15) — et composer `scribe` tôt coûte seize minutes sans déblocage, avec un « Rien ne vient » tant qu'on ne peut pas payer. Ouvert, à regarder en PT10 : voir `docs/journal.md`, « La Parole III ».
 
-**PAR-2 — `les-lecteurs`, fin de l'acte III** · T:M
+**PAR-2 — `les-lecteurs`, fin de l'acte III** · ~~T:M~~ **fait** (14/09/2026)
 > En tant que joueur, je veux apprendre comment ce peuple s'appelait, et comprendre que le nom est une thèse.
 
 - Fini quand : l'achat déclenche le premier basculement narratif ; la tablette 18 devient lisible d'un coup ; **première contradiction majeure** possible ici (CONTR-1).
+- *Fait* : 1 200 C, **aucun effet chiffré** — mesuré, pas oublié : dernier achat de l'arbre, il
+  est payé à la seconde où `nArbre() === NGL` clôt la partie, et cinq effets possibles à quatre
+  prix rendent la même durée à la décimale près (le ×1,5 d'`archive` ne déplaçait rien non plus).
+  La tablette 18 passe de 68 % à 80 % : ce qui reste est ⟨nous⟩, quatre fois, dessiné dans le
+  nom lui-même et posé seul juste devant — la porte de l'acte IV, dans le texte et nulle part
+  ailleurs. Aucune recette ne s'ouvre tant que `nous` n'est pas au lexique (règle 15).
+  **La carte de fin attend désormais qu'on ait lu la tablette** : elle couvrait le sommet de
+  l'acte. Mesuré : **89,6–92,7 min pour 28 signes**, écart max 5,2, tranches ≥ 10′ ≤ 28 %.
+  CONTR-1 n'est pas de ce lot — elle dépend d'AMB-3, donc de TXT-1. Voir `docs/journal.md`,
+  « Les lecteurs ».
 
 **MOD-1 — `ne-pas`, `si`, `il-faut`, `sinon`** · ~~T:M~~ **fait** (12/09/2026)
 > En tant que joueur, je veux lire les conditions dont le registre est plein.
@@ -283,8 +294,8 @@ un engagement de date.
 - PT10 : la question de PT8/PT9, reposée à quelqu'un d'autre. Dans le même TSV : la part manuelle des occurrences (36,3 % en PT9 ; **au-delà de 40 %, plafonner `REL_K`**), le stock d'hypothèses entre `année` et la dixième Grammaire (27 090 en PT9), et **le nombre de recoupements** — sous une vingtaine, le réglage du 09/09 a vidé un des deux gestes manuels et il faut revenir en arrière.
 - **Le réglage du 09/09/2026 (`REC_R` 1,18 → 1,30, Copiste à 10) n'a aucun playtest derrière lui.** C'est la première chose que PT10 valide ou casse. La composition ne l'a pas touché — mesuré identique au chiffre près, c'était la condition du lot.
 - **Question neuve de PT10** : ⟨grenier⟩ se trouve-t-il ? Et ⟨ne-pas⟩ posé sur ⟨un⟩, quand le joueur vient d'acheter ⟨ne-pas⟩ et qu'il a neuf zéros sous les yeux sur la tablette 29 ? Le journal d'actions compte les tentatives de composition, avec leur paire et leur minute. Aucun simulateur ne peut y répondre.
-- **La tranche 20-30′ monte d'un lot à l'autre** — 25,8 % à 23 glyphes, 27,0 % à 27 — par `revCount()` et non par les lots eux-mêmes : plus l'arbre est grand, plus lentement les tablettes se dégagent par signe acquis. Sous 30 % (règle 2), à surveiller au prochain lot.
-- **Le garde-fou de durée de `balayage.py` suit la taille du lexique**, et doit être re-basé à chaque lot : resté à (71, 77) — PT9, vingt glyphes — il rejetait ses dix-huit combinaisons depuis `da61b19`, réglage en place compris, en affichant « 0 sur 18 ». Re-basé à (84, 92).
+- **La tranche 20-30′ monte d'un lot à l'autre** — 25,8 % à 23 glyphes, 27,0 % à 27, **28 % à 28** — par `revCount()` et non par les lots eux-mêmes : le dénominateur est `NGL`, donc chaque signe ajouté à l'arbre ralentit le dégagement par signe acquis. Un lot d'un seul glyphe l'a poussée de 0,8 point. Deux points de marge (règle 2) pour dix-sept signes à venir : **à traiter dans `revCount()` avant le prochain lot**, et non plus à surveiller.
+- **Le garde-fou de durée de `balayage.py` suit la taille du lexique**, et doit être re-basé à chaque lot : resté à (71, 77) — PT9, vingt glyphes — il rejetait ses dix-huit combinaisons depuis `da61b19`, réglage en place compris, en affichant « 0 sur 18 ». Re-basé à (84, 92), puis à **(86, 95)** à 28 glyphes — 13 combinaisons sur 18 passent.
 
 ---
 
@@ -335,7 +346,7 @@ un engagement de date.
 **LIV-5 — Étendre `verifier.py`** · T:L
 > En tant qu'auteur, je veux que chaque mécanique nouvelle soit couverte bout en bout.
 
-- Le fichier porte aujourd'hui **134 assertions** sur le relevé, le recoupement, la numération, le gisement, la datation, les infobulles, la composition, et la reprise d'une sauvegarde d'avant une mécanique neuve. Chaque épic de cette feuille de route doit y ajouter ses vérifications — en particulier AMB-4 (la phrase absurde est bien rendue) et COMP-3 (`zéro` replie les compteurs).
+- Le fichier porte aujourd'hui **175 assertions** sur le relevé, le recoupement, la numération, le gisement, la datation, les infobulles, la composition, la fenêtre de fin qui attend sa lecture, et la reprise d'une sauvegarde d'avant une mécanique neuve. Chaque épic de cette feuille de route doit y ajouter ses vérifications — en particulier AMB-4 (la phrase absurde est bien rendue) et COMP-3 (`zéro` replie les compteurs).
 
 **LIV-6 — README, écran-titre, distribution** · T:S
 > En tant que curieux, je veux ouvrir un fichier et jouer.
@@ -353,7 +364,7 @@ parallèle du code.
 
 | Jalon | Contenu | Ce qu'on peut jouer à la fin |
 |---|---|---|
-| **J1 — L'acte III se termine** | ~~E1 (composition)~~ + ~~PAR-1~~ + ~~MOD-1~~ + ~~COMP-3~~ *faits* + PAR-2 | 28 glyphes, la composition, `les-lecteurs` |
+| ~~**J1 — L'acte III se termine**~~ *(fait, 14/09/2026)* | ~~E1 (composition)~~ + ~~PAR-1~~ + ~~MOD-1~~ + ~~COMP-3~~ + ~~PAR-2~~ | 28 glyphes, la composition, `les-lecteurs` |
 | **J2 — Le mensonge** | TXT-1 → E3 → MOD-2/MOD-3 + E4 + E5 (Élève) | l'acte III entier, la confiance, la contradiction |
 | **J3 — La voix** | E6 (Personne, Questions, Corpus jumeau, I2) | l'acte IV |
 | **J4 — La graine** | E7 + E8 | les cinq actes, les deux fins, la relecture |
