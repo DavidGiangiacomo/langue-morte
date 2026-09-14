@@ -1061,8 +1061,32 @@ const elCorpus=document.getElementById('corpus');
 /* Nombre de tablettes dégagées : 4 au départ, les 30 au dernier glyphe. Le corpus
    s'ouvre donc sur les trois actes, et non plus sur les deux premiers.
    Sur le compte de l'arbre et non sur les glyphes acquis : composer ⟨grenier⟩ fait comprendre
-   le corpus, ça ne le fait pas sortir de terre. */
-const revCount = () => Math.min(TB.length, 4 + Math.round(nArbre() * (TB.length-4) / NGL));
+   le corpus, ça ne le fait pas sortir de terre.
+
+   `REV_R` : le dégagement suit le déchiffrement, un peu en retard. L'exposant est petit et
+   il est mesuré, pas choisi — c'est le seul bouton qui tire les deux garde-fous du jeu, et
+   il les tire dans le même sens, ce qu'aucune intuition n'annonçait (14/09/2026) :
+
+   - le RALENTIR fait monter ce que vaut la main, parce que le tarif d'une tablette se fige
+     à la première visite (règle 9) : sortie tard, elle est chère. L'accélérer refait le
+     défaut de PT6 — dégagement précoce, tarifs figés bas, la main à 0,1 % des occurrences.
+     Mesuré ici : tout dégager à 80 % de l'arbre fait tomber la part manuelle de 22,9 % à
+     12,4 %, pour deux points d'I6 gagnés. Mauvais marché.
+   - il décide aussi de la tranche 20-30′ d'I6, et celle-là ne DÉRIVE pas avec la taille de
+     l'arbre comme trois lots l'ont cru : elle oscille. En balayant le dénominateur de 28 à
+     44 de deux en deux, à courbe linéaire, la pire tranche fait 27,8 · 26,2 · 23,9 · 26,4 ·
+     26,3 · 25,3 · 25,3 · 25,4 · 25,4 — une dent de scie de quatre points dont 28 était
+     justement le sommet. Les trois mesures du journal (25,8 à 23 signes, 27,0 à 27, 27,8 à
+     28) en étaient trois points, lus comme une pente.
+
+   À 1,1, l'amplitude de cette dent tombe à 1,1 point (25,2 à 26,3 sur les mêmes
+   dénominateurs) et la part manuelle monte à 23,4 %. L'ouverture ne bouge pas : cinq
+   tablettes au premier signe comme avant, première Concordance à la même minute. C'est le
+   plus petit changement qui rende ce chiffre indépendant de la taille du lexique — et c'est
+   ça qu'on achète, pas les 1,5 point. */
+const REV_R = 1.1;
+const revCount = () =>
+  Math.min(TB.length, 4 + Math.round((TB.length-4) * Math.pow(nArbre() / NGL, REV_R)));
 let lastRev = 0;
 
 function buildCorpus(){

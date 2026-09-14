@@ -20,7 +20,7 @@
 | Mécaniques centrales | relevé, recoupement, datation, rangement, concordance, hors-ligne, **composition** | confiance, contradiction, révision, Questions |
 | Acte III | **fini** *(PAR-2, 14/09/2026)* | — |
 | Fins | aucune *(écran « fin du prototype »)* | Achever, Interrompre, relecture |
-| Rythme mesuré | 66 min 49 pour 20 glyphes (PT9) · **89,6 à 92,7 min simulées pour 28** | cible design doc : 3 h – 3 h 30 pour 45 |
+| Rythme mesuré | 66 min 49 pour 20 glyphes (PT9) · **89,7 à 92,9 min simulées pour 28** | cible design doc : 3 h – 3 h 30 pour 45 |
 
 Le corpus étant écrit intégralement, **la majeure partie du reste est du code et de
 l'équilibrage** — l'inverse de la situation des actes I–II, où le texte était le budget.
@@ -111,7 +111,8 @@ un engagement de date.
   nom lui-même et posé seul juste devant — la porte de l'acte IV, dans le texte et nulle part
   ailleurs. Aucune recette ne s'ouvre tant que `nous` n'est pas au lexique (règle 15).
   **La carte de fin attend désormais qu'on ait lu la tablette** : elle couvrait le sommet de
-  l'acte. Mesuré : **89,6–92,7 min pour 28 signes**, écart max 5,2, tranches ≥ 10′ ≤ 28 %.
+  l'acte. Mesuré : **89,7–92,9 min pour 28 signes**, écart max 5,2, tranches ≥ 10′ ≤ 26 %
+  *(avec `REV_R`, posé le même jour)*.
   CONTR-1 n'est pas de ce lot — elle dépend d'AMB-3, donc de TXT-1. Voir `docs/journal.md`,
   « Les lecteurs ».
 
@@ -287,6 +288,7 @@ un engagement de date.
 > En tant que joueur, je veux un déblocage toutes les 4 à 6 minutes, et jamais plus de 8 minutes sans rien.
 
 - La Certitude ne dépasse jamais 4 chiffres à l'écran (I1) alors que les Occurrences vont à ~10¹⁰. **La divergence est le propos ; la tenir sur 25 glyphes de plus est le vrai travail d'équilibrage restant.**
+- Depuis le 14/09/2026, la **courbe de dégagement** (`REV_R`) est un paramètre balayé et non plus une constante implicite. C'est le seul bouton connu qui tire à la fois la part manuelle des occurrences et la pire tranche d'I6 — et dans le même sens : le ralentir améliore les deux. À rebalayer quand `sim.py` couvrira les actes IV et V (ECO-2), parce que tout ce qu'on sait de son comportement au-delà de 28 signes vient d'un arbre tronqué.
 
 **ECO-4 — PT10 et suivants** · T:M *(récurrent)*
 > En tant qu'auteur, je veux qu'un joueur qui ne sait pas ce qu'il cherche voie la crue baisser.
@@ -294,8 +296,8 @@ un engagement de date.
 - PT10 : la question de PT8/PT9, reposée à quelqu'un d'autre. Dans le même TSV : la part manuelle des occurrences (36,3 % en PT9 ; **au-delà de 40 %, plafonner `REL_K`**), le stock d'hypothèses entre `année` et la dixième Grammaire (27 090 en PT9), et **le nombre de recoupements** — sous une vingtaine, le réglage du 09/09 a vidé un des deux gestes manuels et il faut revenir en arrière.
 - **Le réglage du 09/09/2026 (`REC_R` 1,18 → 1,30, Copiste à 10) n'a aucun playtest derrière lui.** C'est la première chose que PT10 valide ou casse. La composition ne l'a pas touché — mesuré identique au chiffre près, c'était la condition du lot.
 - **Question neuve de PT10** : ⟨grenier⟩ se trouve-t-il ? Et ⟨ne-pas⟩ posé sur ⟨un⟩, quand le joueur vient d'acheter ⟨ne-pas⟩ et qu'il a neuf zéros sous les yeux sur la tablette 29 ? Le journal d'actions compte les tentatives de composition, avec leur paire et leur minute. Aucun simulateur ne peut y répondre.
-- **La tranche 20-30′ monte d'un lot à l'autre** — 25,8 % à 23 glyphes, 27,0 % à 27, **28 % à 28** — par `revCount()` et non par les lots eux-mêmes : le dénominateur est `NGL`, donc chaque signe ajouté à l'arbre ralentit le dégagement par signe acquis. Un lot d'un seul glyphe l'a poussée de 0,8 point. Deux points de marge (règle 2) pour dix-sept signes à venir : **à traiter dans `revCount()` avant le prochain lot**, et non plus à surveiller.
-- **Le garde-fou de durée de `balayage.py` suit la taille du lexique**, et doit être re-basé à chaque lot : resté à (71, 77) — PT9, vingt glyphes — il rejetait ses dix-huit combinaisons depuis `da61b19`, réglage en place compris, en affichant « 0 sur 18 ». Re-basé à (84, 92), puis à **(86, 95)** à 28 glyphes — 13 combinaisons sur 18 passent.
+- ~~**La tranche 20-30′ monte d'un lot à l'autre**~~ — *traité le 14/09/2026, et la prémisse était fausse* : elle n'est pas en pente, elle oscille (dent de scie de quatre points sur les dénominateurs 28 à 45, dont 28 était le sommet). Le mécanisme, lui, était bien `revCount()`. `REV_R = 1,1` en ramène l'amplitude à 1,1 point ; ce qui est acheté, c'est que ce chiffre ne dépende plus de la taille du lexique. Le premier candidat de correction gagnait deux points d'I6 en ramenant la part manuelle des occurrences de 22,9 % à 12,4 % — PT6 en miniature (règle 9) — d'où le plancher de 15 % entré dans le tri de `balayage.py`, qui balaie aussi `rev_r`. Voir `docs/journal.md`, « Le dégagement ne dérive pas, il oscille ».
+- **Le garde-fou de durée de `balayage.py` suit la taille du lexique**, et doit être re-basé à chaque lot : resté à (71, 77) — PT9, vingt glyphes — il rejetait ses dix-huit combinaisons depuis `da61b19`, réglage en place compris, en affichant « 0 sur 18 ». Re-basé à (84, 92), puis à **(86, 95)** à 28 glyphes. La grille compte désormais `rev_r` (la courbe de dégagement) et un garde-fou de plus, la part manuelle des occurrences : 39 combinaisons sur 54 passent, dont le réglage en place (89,7–92,9 min, écart 5,2, main 23 %, pire tranche 26 %).
 
 ---
 
@@ -346,7 +348,7 @@ un engagement de date.
 **LIV-5 — Étendre `verifier.py`** · T:L
 > En tant qu'auteur, je veux que chaque mécanique nouvelle soit couverte bout en bout.
 
-- Le fichier porte aujourd'hui **175 assertions** sur le relevé, le recoupement, la numération, le gisement, la datation, les infobulles, la composition, la fenêtre de fin qui attend sa lecture, et la reprise d'une sauvegarde d'avant une mécanique neuve. Chaque épic de cette feuille de route doit y ajouter ses vérifications — en particulier AMB-4 (la phrase absurde est bien rendue) et COMP-3 (`zéro` replie les compteurs).
+- Le fichier porte aujourd'hui **177 assertions** sur le relevé, le recoupement, la numération, le gisement, la datation, les infobulles, la composition, la fenêtre de fin qui attend sa lecture, et la reprise d'une sauvegarde d'avant une mécanique neuve. Chaque épic de cette feuille de route doit y ajouter ses vérifications — en particulier AMB-4 (la phrase absurde est bien rendue) et COMP-3 (`zéro` replie les compteurs).
 
 **LIV-6 — README, écran-titre, distribution** · T:S
 > En tant que curieux, je veux ouvrir un fichier et jouer.

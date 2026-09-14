@@ -74,6 +74,13 @@ P = dict(
     click_floor=1.0,                                   # Relevé sur gisement épuisé : le plancher seul
     gis_div=10,                                        # Gisement d'une tablette = jetons / gis_div
     rev_base=4,                                        # tablettes dégagées au départ
+    # Dégagement : 4 + 26 x (signes/arbre)^rev_r. Cet exposant tire les DEUX garde-fous, et
+    # dans le même sens — le ralentir fait monter ce que vaut la main (tarif figé à la
+    # première visite, règle 9 : une tablette sortie tard est chère) ET fait baisser la pire
+    # tranche d'I6. L'accélérer refait le défaut de PT6 : tout dégager à 80 % de l'arbre
+    # ramène la part manuelle de 22,9 % à 12,4 % pour deux points d'I6 gagnés. Balayé le
+    # 14/09/2026 ; c'est `balayage.py` qui le trie désormais.
+    rev_r=1.1,                                         # courbe du dégagement (1,0 = linéaire)
     ate_socle=30,                                      # Copistes avant d'épargner pour l'Atelier (PT9 : 22 au premier, 35 à la 14e min)
 )
 
@@ -118,8 +125,8 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=()):
     prix = [None] * len(GIS)                        # tarif figé au premier relevé
     # tablettes dégagées : 4 au départ, les 30 au dernier glyphe (cf. revCount() dans rendu.js)
     narbre = lambda: len(gl - SECRETS)      # ce que l'arbre a rendu, pas ce que le joueur sait
-    nrev = lambda: min(len(GIS), P['rev_base']
-                       + round(narbre() * (len(GIS) - P['rev_base']) / len(ARBRE)))
+    nrev = lambda: min(len(GIS), P['rev_base'] + round(
+        (len(GIS) - P['rev_base']) * (narbre() / len(ARBRE)) ** P['rev_r']))
     ouvert = 0
     # La date du premier achat, et non son débit : le mur des dix premières minutes est
     # un problème de seuil, pas de taux — I6 y vaut 100 % tant que la première
