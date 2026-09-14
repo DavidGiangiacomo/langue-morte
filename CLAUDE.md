@@ -110,6 +110,7 @@ python build.py && python outils/verifier.py    # tests
 - **L'invariant I5 du design doc (« progression quasi linéaire ») est retiré.** Aucune mesure de progression n'est linéaire : les signes sont front-chargés, les lignes back-chargées. L'écart entre les deux *est* le propos — on peut lire presque tous les mots et ne comprendre presque rien. L'afficher, ne pas le lisser.
 - Lexique porté à **45 signes** (la branche Nombre gagne `cinq` et `mille`, perd `vingt`).
 - **17 composés** au lieu des 9 prévus.
+- **Les paires réparantes, 14/09/2026 : on ne fait rien.** Trois paires de lectures fausses s'annulent mutuellement — ⟨grain⟩ « poussière » avec ⟨maison⟩ « tombe », ⟨semence⟩ avec ⟨devenir⟩, ⟨lire⟩ avec ⟨devenir⟩, cette dernière couvrant `devenir-lecture`, dernier signe du jeu. Ni interdiction, ni ligne de corpus ajoutée : interdire une lecture, c'est renseigner (R3, règle 14), et une ligne déplace des fréquences pour couvrir trois cas sur cinquante-cinq paires possibles. Qui se trompe deux fois de la bonne façon finit sur un autre livre, et c'est le propos — même décision que le retrait de l'invariant I5. **Le risque est accepté, pas supprimé** : la dette court quand même (+2 à +6 points), donc la contradiction se déclenche quand même ; le joueur est privé de l'indice, pas de la sanction. Deux épics en héritent — **MOD-2** devient la soupape (le degré de doute par signe est le seul pointeur qui reste, le texte ne trahissant rien) et **FIN-3** devient le seul endroit où le jeu admet jamais qu'on a lu autre chose. L'exception est inscrite au design doc §8, dont la promesse « le seul indice fiable est le texte » ne vaut pas pour ces trois-là. Voir `docs/corpus.md` §7.3.
 - **⟨N1⟩ et ⟨N2⟩, 11/09/2026 : semés comme intitulés des registres.** Un nom seul sur sa ligne en tête de chaque bloc généré — ⟨N1⟩ (le fleuve) sur `champs` et `veille`, ⟨N2⟩ (la cité) sur `maisons` et `archive`, rien sur `consignes`. 13 et 16 occurrences : fréquence moyenne, choisie contre un titre courant. Seule exception admise au principe « aucun signe uniquement dans un bloc » (`docs/corpus.md` §6) : un nom propre ne se déchiffre pas, sa fréquence ne ment donc à personne. Rythme simulé inchangé, gisement 397 → 399.
 
 ---
@@ -190,8 +191,9 @@ Deux se remplacent par mieux et plus tôt ; **`eau` et `année` n'en ont aucune*
 sans rupture au lieu des deux voulus. Et le défaut que rien n'annonçait : **trois paires de lectures
 fausses se réparent l'une l'autre** — qui lit ⟨grain⟩ « poussière » *et* ⟨maison⟩ « tombe » obtient
 un culte funéraire cohérent sur trente tablettes, et `lire`+`devenir` couvre `devenir-lecture`,
-dernier signe du jeu. Deux décisions passent à AMB-1, posées au §7.3 et au §7.4 ; aucune n'est
-tranchée ici, parce qu'aucune n'est de l'écriture. Ce que le lot démontre au passage : **le mot
+dernier signe du jeu. Deux décisions passaient à AMB-1 : **celle des paires est tranchée le même
+jour — on ne fait rien** (voir « Ce qui a été tranché ») ; celle de la rupture distributionnelle
+pour `eau` et `année` reste ouverte au §7.4. Ce que le lot démontre au passage : **le mot
 décide, pas le concept** — ⟨devenir⟩ faux dit *porter* et non *tenir*, et c'est le seul rempart entre
 « il faut la tablette · porter lire », qui ne se construit pas, et « tenir compte », qui est
 invisible. Voir `docs/journal.md`, « Les onze lectures fausses ».

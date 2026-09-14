@@ -152,6 +152,8 @@ Le piège est délibéré : se tromper *paie mieux à court terme*. C'est du bia
 
 **Le jeu récompense la lecture, mécaniquement.** C'est le cœur du design.
 
+**Une exception, tranchée le 14/09/2026.** Trois paires de lectures fausses se réparent l'une l'autre : ⟨grain⟩ « poussière » avec ⟨maison⟩ « tombe », ⟨semence⟩ avec ⟨devenir⟩, ⟨lire⟩ avec ⟨devenir⟩. Deux erreurs bien choisies rendent le corpus cohérent là où chacune seule était absurde, et pour celles-là le texte ne trahit rien — la phrase ci-dessus ne vaut pas. On ne fait rien : ni interdiction, ni ligne de corpus ajoutée. La dette court quand même, la contradiction se déclenche quand même, et le pointeur devient le degré de doute par signe qu'ouvre `peut-être`. Le joueur est privé de l'indice, pas de la sanction — c'est l'optimum local, en plus profond. Voir `docs/corpus.md` §7.3.
+
 ---
 
 ## 9. Courbes, invariants, rythme

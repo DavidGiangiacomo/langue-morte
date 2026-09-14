@@ -517,7 +517,7 @@ donc pas « tombe-grain » mais « caveau ».
 `caveau` mérite sa ligne : c'est à la fois une fosse à grain et un tombeau. Le mot juste et le mot
 faux tombent au même endroit, et c'est ce qui rend la paire `grain`/`maison` réparable — voir 7.3.
 
-### 7.3 Les paires qui se réparent — le vrai risque d'AMB-4
+### 7.3 Les paires qui se réparent — tranché : on ne fait rien
 
 Trois paires de lectures fausses **s'annulent mutuellement**. Deux erreurs produisent alors un
 corpus cohérent, là où chacune prise seule produisait une absurdité. C'est le défaut le plus sérieux
@@ -538,15 +538,33 @@ tout seul. La rupture de la tablette 17 tient à ce choix-là, et à rien d'autr
 démonstration que ces onze lectures sont de l'écriture et non une table de correspondances : le même
 concept, dit avec l'autre mot, effaçait une rupture.
 
-Trois réponses possibles, toutes à trancher avec AMB-1, aucune tranchée ici :
+**Tranché le 14/09/2026 : on ne fait rien.** Ni interdiction des paires, ni ligne de corpus ajoutée.
+Un joueur qui se trompe deux fois de la bonne façon finit sur un autre livre, et c'est le propos :
+« on peut lire presque tous les mots et ne comprendre presque rien » est écrit dans les décisions du
+projet depuis le retrait de l'invariant I5. Les deux autres réponses coûtaient plus qu'elles ne
+rendaient — interdire une seconde lecture fausse, c'est renseigner (R3, règle 14) ; ajouter une
+ligne, c'est toucher les fréquences, donc l'équilibrage, pour couvrir trois cas sur cinquante-cinq
+paires possibles.
 
-1. **Ne rien faire.** Un joueur qui se trompe deux fois de la bonne façon finit sur un autre livre,
-   et la relecture de fin (FIN-3) le lui montre. C'est défendable, et c'est même le propos.
-2. **Interdire les paires.** AMB-1 refuse la seconde lecture fausse d'une paire réparante. Le jeu
-   renseignerait — contraire à R3 et à la règle 14.
-3. **Écrire la ligne qui manque.** Une ligne du corpus, une seule, qui oppose les deux signes d'une
-   paire sur le même registre. C'est du texte, c'est peu, et ça touche les fréquences — donc
-   l'équilibrage (règle 7). À faire avec TXT-3, pas seul.
+Ce que la décision engage, et qu'il faut tenir ailleurs :
+
+- **La dette court quand même.** Une paire réparante vaut deux lectures fausses, donc +2 à +6 points
+  de dette (AMB-3), donc une contradiction qui se déclenche au franchissement d'acte comme pour tout
+  le monde (CONTR-1). Le joueur n'est pas épargné : il est privé de l'indice, pas de la sanction. La
+  paire creuse le piège au lieu de le combler — c'est exactement ce que le design doc §8 appelle un
+  optimum local, en plus profond.
+- **`peut-être` devient le seul pointeur.** Le design doc §8 dit que « le seul indice fiable pour
+  trouver le signe fautif est le texte lui-même ». Pour ces trois paires, c'est faux, et il faut
+  l'écrire : le texte ne trahit rien. Ce qui reste, c'est le degré de doute par signe qu'ouvre
+  `peut-être` (MOD-2), calculé par le jeu et non par la lecture. Sans MOD-2, une paire réparante
+  enfermerait le joueur dans le brute-force que CONTR-3 rend cher. **MOD-2 n'est donc plus seulement
+  le pic de malaise du jeu : c'est la soupape de cette décision.**
+- **La relecture de fin devient porteuse.** FIN-3 est le seul endroit où le jeu admet jamais qu'on a
+  lu autre chose. Le backlog dit déjà « ne pas le sacrifier au planning » ; à partir d'ici ce n'est
+  plus une préférence d'auteur, c'est ce qui rachète une partie entière.
+- **Les tests d'AMB-4 tiennent le partenaire au juste.** Une rupture de paire réparante ne se vérifie
+  qu'en fixant l'autre signe à sa lecture juste — sinon l'assertion échoue alors que le jeu se
+  comporte comme décidé. À écrire dans `verifier.py` avec le test, pas après.
 
 ### 7.4 Les quatre qui ne cassent pas — dont deux de trop
 
@@ -641,4 +659,4 @@ Le dégagement est progressif : 4 tablettes au départ, les 30 au dernier signe 
 1. **Vérifier la densité de l'acte II.** C'est le passage le plus plat par conception (« on installe le quotidien pour que sa disparition compte ») et donc le seul endroit où le joueur peut décrocher. Si un playtest montre un décrochage, la réponse n'est pas d'ajouter du drame : c'est d'avancer la tablette 6 dans l'ordre de révélation.
 2. ~~**Décider du sort de ⟨N1⟩ et ⟨N2⟩** (le fleuve, la cité).~~ **Tranché le 11/09/2026 : semés comme intitulés des registres** (§2, §6). La note promettait « deux formes très fréquentes » ; un intitulé par bloc les donne à 13 et 16 occurrences, fréquence moyenne. Un titre courant repris toutes les cinq lignes aurait porté ⟨N2⟩ à 75 — mais ⟨N1⟩ serait resté à 18, ses registres étant courts. Choisi en connaissance de cause.
 3. ~~**Écrire les lectures fausses des 11 signes ambigus** (§7).~~ **Fait le 14/09/2026** (TXT-1) : les onze mots faux, leurs onze lignes de journal, les onze composés dérivés, et le point de rupture de chacun vérifié ligne à ligne contre le corpus rendu. Trois des ruptures annoncées n'existaient pas dans le texte ; deux signes — `eau` et `année` — n'en ont aucune, et trois paires de lectures fausses se réparent l'une l'autre. Ce qui reste n'est plus de l'écriture : c'est la décision d'AMB-1 sur ces deux points, et elle est posée au §7.3 et au §7.4.
-4. **La ligne qui manque, si AMB-1 la demande** (§7.3) : une ligne de corpus qui oppose `grain` et `maison`, ou `semence` et `devenir`, sur le même registre. Une ligne touche les fréquences, donc l'équilibrage — à faire avec TXT-3, pas seul.
+4. ~~**La ligne qui manque, si AMB-1 la demande** (§7.3).~~ **Sans objet depuis le 14/09/2026** : les paires réparantes sont tranchées par « on ne fait rien ». Aucune ligne de corpus à écrire, aucune fréquence à redéplacer. Ce qui reste à tenir est ailleurs — MOD-2 et FIN-3, voir §7.3.
