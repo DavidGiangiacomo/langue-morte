@@ -267,7 +267,44 @@ function acheterGl(id){
   paintCorpus(id);
   lastPct=-1;
   if(id==='an'||id==='kal'){ const b=$('bloom'); b.classList.remove('on'); void b.offsetWidth; b.classList.add('on'); }
-  if(nArbre()===NGL){ S_.done=true; showEnd(); }
+  if(nArbre()===NGL){ S_.done=true; finArmer(); }
+}
+
+/* ---- la carte de fin attend qu'on ait lu ----
+   Le dernier achat de l'arbre est aussi celui qui rend lisible ce que l'acte avait à dire :
+   `les-lecteurs` n'ouvre rien d'autre que la tablette 18. Poser la carte de fin par-dessus à
+   la seconde du clic, c'est couvrir cette tablette-là d'un écran de statistiques avant qu'on
+   l'ait regardée — et la question de playtest que la carte porte s'y répondrait toute seule.
+   Elle attend donc qu'on soit allé voir. Rien de neuf pour ça : `touchees` sait déjà quelles
+   tablettes le dernier signe a changées, `tabletteVisible()` sait laquelle on a sous les
+   yeux, et la carte vient quand les deux se rencontrent.
+   Les deux bornes sont des garde-fous, pas des réglages. Six secondes au plus tôt, sinon
+   elle tomberait sur le joueur déjà posé sur la bonne tablette, à l'instant où les mots
+   changent sous ses yeux ; quatre-vingt-dix au plus tard, sinon celui qui ne va pas voir
+   n'aurait pas de fin du tout.
+   `S_.done` est posé tout de suite, lui : la production s'arrête net pendant qu'on lit la
+   dernière tablette. Ce n'est pas un défaut d'ordre, c'est FIN-1 en avance — à la fin, il ne
+   doit rester que le texte (design doc §11). */
+const FIN_MIN = 6, FIN_MAX = 90;   // secondes d'horloge, et non de jeu : le jeu est arrêté
+let finArmee = 0, finLire = null;
+/* Les tablettes sont retenues à l'armement, et non relues à l'affichage : rien n'interdit de
+   composer un signe une fois l'arbre fini, et `touchees` désignerait alors les tablettes de
+   ce composé-là, pas celles du dernier signe de l'acte. */
+const finArmer = () => { finArmee = performance.now(); finLire = new Set(touchees); };
+/* « réinitialiser » ne recharge pas la page : une carte armée sur la partie d'avant viendrait
+   s'ouvrir sur la partie neuve, deux secondes après le clic. C'est le défaut qu'avait déjà
+   `majSignes()` — 229 nombres encore lisibles sur une partie censée vierge. */
+const finDesarmer = () => { finArmee = 0; };
+function finRegarder(now){
+  if(!finArmee || !$('end').hidden) return;
+  const dt = (now - finArmee)/1000;
+  if(dt < FIN_MIN) return;
+  /* Un dernier signe qui ne rendrait rien lisible n'aurait rien à faire lire : la carte ne
+     se ferait pas attendre pour rien. Vrai d'aucun signe aujourd'hui ; vrai du jour où
+     l'ordre de l'arbre changera. */
+  const vue = tabletteVisible();
+  if(finLire.size && dt < FIN_MAX && !(vue && finLire.has(+vue.dataset.tb))) return;
+  finArmee = 0; showEnd();
 }
 
 function showEnd(){
@@ -334,6 +371,7 @@ function frame(now){
   if(dt>0.5) dt=0.5;
   if(!S_.done) tick(dt*speed);
   paintRes(); paintActs(); paintInstr(); paintComp(); paintLex(); paintMeter();
+  finRegarder(now);
   const ch=Math.floor(S_.t/60)+':'+String(Math.floor(S_.t%60)).padStart(2,'0');
   if($('chrono').textContent!==ch) $('chrono').textContent=ch;
   requestAnimationFrame(frame);

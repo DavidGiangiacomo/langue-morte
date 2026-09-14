@@ -28,8 +28,10 @@ GRILLE = dict(rec_r=(1.26, 1.30, 1.35), con_b=(350, 400, 450), cop_b=(10, 15))
 # `da61b19`, ce balayage rejetait ses dix-huit combinaisons, y compris le réglage en place,
 # et disait « 0 sur 18 » sans que rien ne soit cassé. Re-baser cette fenêtre fait partie de
 # tout lot qui ajoute des signes.
-# 27 glyphes (Modalité comprise) : le réglage retenu mesure 87,0-90,0 min aux trois cadences.
-DUREE = (84.0, 92.0)
+# 28 glyphes (`les-lecteurs` compris) : le réglage retenu mesure 89,6-92,7 min aux trois
+# cadences. Fenêtre gardée aux mêmes marges qu'au lot précédent — trois minutes sous le
+# plancher mesuré, deux au-dessus du plafond — pour qu'elle continue de trier.
+DUREE = (86.0, 95.0)
 ECART_MAX = 6.0
 I6_MAX = 30.0
 NT = 6                  # tranches retenues : 0-10′ à 50-60′, au-delà tout est à zéro

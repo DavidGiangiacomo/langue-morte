@@ -94,7 +94,7 @@ $('reset').addEventListener('click',()=>{
   S_=fresh(); LOGS.length=0; lastPct=-1; $('end').hidden=true;
   /* Sans ceci la table des signes de numération garde ceux de la partie précédente :
      on repart de zéro glyphe avec 229 nombres encore lisibles à l'écran. */
-  majSignes(); touchees=new Set(); recArmer(false); concFermer(); compVider();
+  majSignes(); touchees=new Set(); recArmer(false); concFermer(); compVider(); finDesarmer();
   $('log').innerHTML='<p class="hint">relève un signe : clique dans le corpus</p>';
   paintCorpus(null); try{localStorage.removeItem(KEY);}catch(e){}
 });
