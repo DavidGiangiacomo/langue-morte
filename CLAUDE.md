@@ -180,9 +180,25 @@ candidat — tout dégager à 80 % de l'arbre — gagnait deux points d'I6 en ra
 la part manuelle entrée dans le tri de `outils/balayage.py` (plancher 15 %), qui balaie aussi
 `rev_r` désormais. Mesuré : 89,7–92,9 min, écart 5,2, tranches ≥ 10′ ≤ 26 %, main 22,9–23,4 %.
 
-**Prochaine étape — PT10 avec un autre joueur, puis TXT-1.** Même question qu'en PT8 et PT9, posée à quelqu'un qui ne sait pas ce qu'il cherche. Dans le même TSV : la part manuelle des occurrences (au-delà de 40 %, plafonner `REL_K`) le stock d'hypothèses entre `année` et la dixième Grammaire (27 090 en PT9), **le nombre de recoupements** — sous une vingtaine sur la partie, le réglage du 09/09 a vidé un des deux gestes manuels et il faut revenir en arrière — et **les tentatives de composition** : le journal d'actions les compte avec leur paire et leur minute. La question neuve est celle-là : un joueur qui ignore qu'il y a quelque chose à chercher reconnaît-il ⟨maison⟩ et ⟨grain⟩ dans ⟨grenier⟩, ou ⟨ne-pas⟩ et ⟨un⟩ dans le zéro qu'il regarde depuis la première seconde ? Aucun simulateur ne répond à ça. S'y ajoutent deux questions depuis `les-lecteurs` : **achète-t-on un signe à 1 200 C qui annonce trois attestations** — le TSV date le moment où il devient payable — et, à poser de vive voix, **a-t-on vu ⟨nous⟩ dans le nom** ? Et une mesure de plus, parce que `REV_R` la déplace sans qu'aucun playtest soit derrière : **le nombre de recoupements et la part manuelle des occurrences**. Si la main descend au lieu de monter, c'est `REV_R` qu'il faut défaire en premier, avant les prix.
+**Les onze lectures fausses** (14/09/2026, TXT-1) : les onze mots faux, leurs lignes de journal,
+leurs composés dérivés et le point de rupture de chacun — **écrits et vérifiés ligne à ligne contre
+le corpus rendu**, `docs/corpus.md` §7.1 à §7.5. Le chemin critique du projet est dégagé : AMB-1 ne
+dépend plus d'aucun texte. La vérification a invalidé **trois** ruptures que la table annonçait
+depuis le premier jour — celle d'`eau` visait une ligne qui n'existe pas, celle de `ne-pas` une
+séquence absente des 735 lignes, celle d'`avant` une rupture mécanique là où AMB-4 demande du texte.
+Deux se remplacent par mieux et plus tôt ; **`eau` et `année` n'en ont aucune**, soit quatre signes
+sans rupture au lieu des deux voulus. Et le défaut que rien n'annonçait : **trois paires de lectures
+fausses se réparent l'une l'autre** — qui lit ⟨grain⟩ « poussière » *et* ⟨maison⟩ « tombe » obtient
+un culte funéraire cohérent sur trente tablettes, et `lire`+`devenir` couvre `devenir-lecture`,
+dernier signe du jeu. Deux décisions passent à AMB-1, posées au §7.3 et au §7.4 ; aucune n'est
+tranchée ici, parce qu'aucune n'est de l'écriture. Ce que le lot démontre au passage : **le mot
+décide, pas le concept** — ⟨devenir⟩ faux dit *porter* et non *tenir*, et c'est le seul rempart entre
+« il faut la tablette · porter lire », qui ne se construit pas, et « tenir compte », qui est
+invisible. Voir `docs/journal.md`, « Les onze lectures fausses ».
 
-Restent ensuite : **TXT-1**, les onze lectures fausses — du travail d'écriture, et le chemin critique du projet : il bloque l'ambiguïté, donc l'instrument **Élève**, qui n'a rien à fausser sans elles, donc `peut-être` et `faux`, donc la relecture de fin. Puis les **contradictions** de l'acte IV. Voir `docs/design-doc.md` §7 et §8, et `docs/backlog-1.0.md` pour le découpage.
+**Prochaine étape — PT10 avec un autre joueur, puis AMB-1.** Même question qu'en PT8 et PT9, posée à quelqu'un qui ne sait pas ce qu'il cherche. Dans le même TSV : la part manuelle des occurrences (au-delà de 40 %, plafonner `REL_K`) le stock d'hypothèses entre `année` et la dixième Grammaire (27 090 en PT9), **le nombre de recoupements** — sous une vingtaine sur la partie, le réglage du 09/09 a vidé un des deux gestes manuels et il faut revenir en arrière — et **les tentatives de composition** : le journal d'actions les compte avec leur paire et leur minute. La question neuve est celle-là : un joueur qui ignore qu'il y a quelque chose à chercher reconnaît-il ⟨maison⟩ et ⟨grain⟩ dans ⟨grenier⟩, ou ⟨ne-pas⟩ et ⟨un⟩ dans le zéro qu'il regarde depuis la première seconde ? Aucun simulateur ne répond à ça. S'y ajoutent deux questions depuis `les-lecteurs` : **achète-t-on un signe à 1 200 C qui annonce trois attestations** — le TSV date le moment où il devient payable — et, à poser de vive voix, **a-t-on vu ⟨nous⟩ dans le nom** ? Et une mesure de plus, parce que `REV_R` la déplace sans qu'aucun playtest soit derrière : **le nombre de recoupements et la part manuelle des occurrences**. Si la main descend au lieu de monter, c'est `REV_R` qu'il faut défaire en premier, avant les prix.
+
+Restent ensuite : **AMB-1**, trancher à l'achat entre deux lectures — le chemin critique, qui ouvre l'instrument **Élève**, puis `peut-être` et `faux`, puis la relecture de fin. Puis les **contradictions** de l'acte IV. Voir `docs/design-doc.md` §7 et §8, et `docs/backlog-1.0.md` pour le découpage.
 
 ---
 

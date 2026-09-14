@@ -16,15 +16,16 @@
 | Glyphes | **28 / 45** *(+ `grenier` et `zéro`, composés, hors arbre)* | **17** |
 | Instruments | 6 / 9 (Œil, Copiste, Table, Concordance, Atelier, Grammaire) | 3 (Élève, Corpus jumeau, Le Lecteur) |
 | Actes | **I, II, III — entiers** | IV, V |
-| Corpus | **30 tablettes, 705 lignes, 3 838 signes — intégral**, ⟨N1⟩/⟨N2⟩ semés | les 11 lectures fausses |
+| Corpus | **30 tablettes, 705 lignes, 3 838 signes — intégral**, ⟨N1⟩/⟨N2⟩ semés, **les 11 lectures fausses écrites** | — |
 | Mécaniques centrales | relevé, recoupement, datation, rangement, concordance, hors-ligne, **composition** | confiance, contradiction, révision, Questions |
 | Acte III | **fini** *(PAR-2, 14/09/2026)* | — |
 | Fins | aucune *(écran « fin du prototype »)* | Achever, Interrompre, relecture |
 | Rythme mesuré | 66 min 49 pour 20 glyphes (PT9) · **89,7 à 92,9 min simulées pour 28** | cible design doc : 3 h – 3 h 30 pour 45 |
 
-Le corpus étant écrit intégralement, **la majeure partie du reste est du code et de
-l'équilibrage** — l'inverse de la situation des actes I–II, où le texte était le budget.
-L'exception est TXT-1 (les lectures fausses) ; TXT-2 (⟨N1⟩/⟨N2⟩) est tranché depuis le 11/09/2026.
+Le corpus étant écrit intégralement, **tout le reste est du code et de l'équilibrage** — l'inverse de
+la situation des actes I–II, où le texte était le budget. TXT-2 est tranché depuis le 11/09/2026,
+TXT-1 depuis le 14/09/2026 : il ne reste sur le texte que TXT-3 (la densité de l'acte II), et une
+ligne de corpus à écrire *si* AMB-1 choisit de traiter les paires réparantes par le texte (§7.3).
 
 ---
 
@@ -152,7 +153,10 @@ un engagement de date.
 > En tant que joueur, je veux que ma mauvaise lecture contamine tout le corpus, pas seulement une infobulle.
 
 - Fini quand : le mot faux remplace le juste dans **toutes** les occurrences du signe, y compris les blocs générés et les tablettes déjà lues.
-- Dépend de : TXT-1 (le texte des lectures fausses).
+- ~~Dépend de : TXT-1~~ — *le texte est écrit depuis le 14/09/2026 (`docs/corpus.md` §7.5).*
+- **Et dans les composés** : un signe faux salit tout composé qui le contient, sinon la grille
+  renseigne (règle 14) — un joueur qui lit ⟨ne-pas⟩ « fin » et à qui la grille répond « zéro » vient
+  d'apprendre qu'il s'est trompé. Les onze lectures dérivées sont écrites au §7.2.
 
 **AMB-3 — La dette** · T:S
 > En tant que game designer, je veux que chaque erreur porte un coût différé et invisible.
@@ -162,8 +166,11 @@ un engagement de date.
 **AMB-4 — L'indice est dans le texte, et nulle part ailleurs** · T:M
 > En tant que joueur qui lit, je veux pouvoir trouver le signe fautif sans que le jeu me le dise.
 
-- Fini quand : chacune des 11 lectures fausses produit une absurdité **repérable à un endroit précis du corpus** (table de `docs/corpus.md` §7) ; un test de `verifier.py` vérifie que la phrase absurde est bien rendue.
+- Fini quand : chacune des 11 lectures fausses produit une absurdité **repérable à un endroit précis du corpus** (table de `docs/corpus.md` §7.1) ; un test de `verifier.py` vérifie que la phrase absurde est bien rendue.
 - Vérifier que `lire` et `il-faut` **ne cassent pas** mécaniquement : c'est voulu.
+- **Sept signes sur onze ont leur rupture, tablette et ligne connues** (§7.1) — les tests peuvent être
+  écrits tels quels. Les quatre autres attendent les deux décisions de TXT-1 : `eau` et `année` n'ont
+  pas de rupture textuelle, et trois paires de lectures fausses se réparent l'une l'autre (§7.3, §7.4).
 
 ---
 
@@ -303,11 +310,27 @@ un engagement de date.
 
 ### E10 — Texte et corpus
 
-**TXT-1 — Écrire les 11 lectures fausses** · T:L
+**TXT-1 — Écrire les 11 lectures fausses** · ~~T:L~~ **fait** (14/09/2026)
 > En tant que joueur, je veux que ma mauvaise lecture produise un corpus cohérent, plausible, et faux.
 
 - Fini quand : chacun des 11 signes a sa lecture fausse écrite, et l'endroit exact où elle casse est vérifié dans le texte rendu (`docs/corpus.md` §7).
-- **Du travail d'écriture, pas de code.** Bloque AMB-2 et donc E5.
+- **Du travail d'écriture, pas de code.** Bloquait AMB-2 et donc E5.
+- *Fait* : les onze mots faux, leurs onze lignes de journal, les onze composés dérivés et le point de
+  rupture de chacun, vérifié ligne à ligne contre le corpus rendu — `docs/corpus.md` §7.1 à §7.5. La
+  vérification a invalidé **trois** des ruptures que la table annonçait depuis le premier jour : celle
+  d'`eau` visait une ligne qui n'existe pas (`champ 3 · grain 21`, pas « sang 21 »), celle de `ne-pas`
+  une séquence absente des 735 lignes, celle d'`avant` une rupture mécanique là où AMB-4 demande une
+  rupture textuelle. Les deux dernières se remplacent par mieux et plus tôt ; **`eau` n'en a aucune, et
+  `année` non plus** — quatre signes sur onze sans rupture au lieu des deux voulus.
+- **Deux décisions passent à AMB-1, et elles ne sont pas de l'écriture** (voir `docs/journal.md`,
+  « Les onze lectures fausses ») :
+  1. **Les paires qui se réparent** — `grain`+`maison`, `semence`+`devenir`, `lire`+`devenir`. Deux
+     erreurs bien choisies rendent le corpus cohérent là où chacune seule était absurde. La troisième
+     couvre `devenir-lecture`, dernier signe du jeu. §7.3 pose les trois réponses possibles.
+  2. **La rupture distributionnelle** — ce qui trahit `année` → « soleil », ce n'est pas une phrase,
+     c'est que ⟨année⟩ porte toujours un nombre et n'est jamais opposé à ⟨nuit⟩. L'admettre donne à
+     `eau` et `année` leur indice sans écrire une ligne, et le donne à la Table de fréquences et à la
+     Concordance. §7.4.
 
 **TXT-2 — Trancher ⟨N1⟩ et ⟨N2⟩** · ~~T:S~~ **fait** (11/09/2026)
 > En tant que joueur, je veux rencontrer des formes très fréquentes que je ne résoudrai jamais.
@@ -359,15 +382,15 @@ un engagement de date.
 
 ## 4. Ordre conseillé
 
-Le graphe de dépendances a une seule vraie contrainte forte : **le texte des lectures
-fausses (TXT-1) bloque l'ambiguïté, qui bloque l'Élève, la Modalité et la relecture.**
-C'est le chemin critique du projet, et c'est de l'écriture — donc à lancer en premier, en
-parallèle du code.
+Le graphe de dépendances avait une seule vraie contrainte forte : **le texte des lectures fausses
+(TXT-1) bloquait l'ambiguïté, qui bloque l'Élève, la Modalité et la relecture.** Elle est levée
+depuis le 14/09/2026. J2 commence donc directement par AMB-1, avec deux décisions de conception
+posées sur la table par le texte et non par le code (`docs/corpus.md` §7.3 et §7.4).
 
 | Jalon | Contenu | Ce qu'on peut jouer à la fin |
 |---|---|---|
 | ~~**J1 — L'acte III se termine**~~ *(fait, 14/09/2026)* | ~~E1 (composition)~~ + ~~PAR-1~~ + ~~MOD-1~~ + ~~COMP-3~~ + ~~PAR-2~~ | 28 glyphes, la composition, `les-lecteurs` |
-| **J2 — Le mensonge** | TXT-1 → E3 → MOD-2/MOD-3 + E4 + E5 (Élève) | l'acte III entier, la confiance, la contradiction |
+| **J2 — Le mensonge** | ~~TXT-1~~ → E3 → MOD-2/MOD-3 + E4 + E5 (Élève) | l'acte III entier, la confiance, la contradiction |
 | **J3 — La voix** | E6 (Personne, Questions, Corpus jumeau, I2) | l'acte IV |
 | **J4 — La graine** | E7 + E8 | les cinq actes, les deux fins, la relecture |
 | **J5 — 1.0** | E9 (final) + E11 | une version publique |
@@ -388,6 +411,7 @@ fréquences, donc l'équilibrage.~~ *Tranché le 11/09/2026, avant J1 comme pré
 | **R2** | La contradiction paraît punitive | On ne perd que du débit, jamais de la progression |
 | **R3** | La composition devient un jeu de devinettes | *Traité le 10/09/2026* : échec en H seulement, **au taux** (×1,40 par tentative) et non au montant — un coût fixe ne freine rien dans une économie exponentielle ; carnet ; 3 composés secrets ; et la grille ne renseigne jamais, pas même par son silence |
 | **R4** | Le texte doit tenir trois heures | Corpus écrit ; le risque s'est déplacé sur VOIX-3 (les Questions) |
+| **R9** *(nouveau)* | Deux lectures fausses se couvrent l'une l'autre et le corpus reste cohérent | Trouvé en écrivant TXT-1, non traité : trois paires réparantes, dont `lire`+`devenir` qui couvre le dernier signe du jeu. Trois réponses possibles au §7.3 de `docs/corpus.md`, à trancher avec AMB-1 |
 | **R6** | Une action manuelle redevient la source principale de Certitude | I6 par tranches, à chaque ajout d'instrument (règle 2) |
 | **R7** *(nouveau)* | Le simulateur a surestimé de 20 % **deux fois de suite** | ECO-2 avant tout réglage des actes IV–V ; aucun chiffre annoncé sans mesure (règle 7) |
 | **R8** *(nouveau)* | Les Questions font parler le jeu au lieu de le faire lire | Chaque réponse est une ligne du corpus existant, jamais un texte écrit pour l'occasion |
