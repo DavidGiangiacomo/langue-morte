@@ -212,6 +212,41 @@ l'enfant ne porte pas » se tient — et pour `lire`/`devenir`, qui est la pire 
 `devenir-lecture`, **le dernier signe du jeu**, et deux erreurs le font lire « porter-compte ». La
 tablette 27, sommet de l'acte V, devient une note d'archive, et rien ne casse.
 
+### Tranché le même jour : on ne fait rien
+
+Les trois réponses possibles étaient : ne rien faire, interdire la seconde lecture fausse d'une
+paire, ou écrire la ligne de corpus qui manque. **C'est la première qui est retenue.**
+
+Les deux autres coûtaient plus qu'elles ne rendaient. Interdire, c'est renseigner : refuser une
+lecture, c'est dire au joueur qu'elle est fausse, et rien dans ce jeu n'a ce droit (R3, règle 14).
+Écrire la ligne, c'est déplacer des fréquences — donc l'équilibrage, donc un balayage — pour couvrir
+trois cas sur les cinquante-cinq paires que onze signes permettent de former.
+
+Reste l'argument de fond, et c'est lui qui emporte : un joueur qui se trompe deux fois de la bonne
+façon **finit sur un autre livre**, et c'est le propos du jeu. C'est la même décision que le retrait
+de l'invariant I5 — on peut lire presque tous les mots et ne comprendre presque rien, et l'écart
+entre les deux est ce qu'il y a à montrer, pas à lisser.
+
+Ce que la décision déplace, en revanche, n'est pas rien, et c'est écrit au §7.3 de `docs/corpus.md` :
+
+- La **dette court quand même** (+2 à +6 points pour une paire), donc la contradiction se déclenche
+  au franchissement d'acte comme pour tout le monde. Le joueur est privé de l'indice, pas de la
+  sanction. La paire creuse le piège, elle ne le comble pas.
+- Le design doc §8 promettait que « le seul indice fiable pour trouver le signe fautif est le texte
+  lui-même ». Pour ces trois paires, c'est faux. L'exception est inscrite au design doc plutôt que
+  laissée à la mémoire de celui qui codera AMB-4.
+- **MOD-2 change de statut.** `peut-être` n'était que le pic de malaise du jeu ; il devient la
+  soupape de cette décision, parce que le degré de doute par signe est calculé par le jeu et non
+  lu dans le texte. Sans lui, une paire réparante enferme le joueur dans le brute-force que CONTR-3
+  rend cher — exactement le joueur que le design voulait punir, et pour une fois sans qu'il l'ait
+  mérité.
+- **FIN-3 devient porteuse.** La relecture de fin est désormais le seul endroit où le jeu admet
+  jamais qu'on a lu autre chose. « Ne pas la sacrifier au planning » cesse d'être une préférence
+  d'auteur.
+
+Et une note pour les tests : une rupture de paire réparante ne se vérifie qu'en tenant l'autre signe
+à sa lecture juste. Sinon l'assertion échoue alors que le jeu fait exactement ce qui a été décidé.
+
 ### Le mot, pas le concept
 
 Un détail décide de tout, et il mérite d'être écrit avant qu'on l'oublie.

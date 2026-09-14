@@ -130,6 +130,7 @@ un engagement de date.
 - Fini quand : avant `peut-être`, aucun indice de confiance n'existe nulle part dans l'interface ; après, chaque signe ambigu porte son degré de doute, et le panneau de révision s'ouvre.
 - **Pic de malaise du jeu** (design doc §6). Ne pas l'adoucir.
 - Dépend de : E3 (il n'y a rien à douter tant que rien n'est ambigu).
+- **Et c'est la soupape du §7.3** depuis le 14/09/2026 : pour les trois paires réparantes, le texte ne trahit rien, et le degré de doute par signe — calculé par le jeu, pas lu — est le seul pointeur qui reste. Sans MOD-2, une paire réparante enferme le joueur dans le brute-force que CONTR-3 rend cher.
 
 **MOD-3 — `faux`, rétroactif** · T:M
 > En tant que joueur, je veux voir d'un coup tout ce que j'ai mal traduit depuis le début.
@@ -162,6 +163,7 @@ un engagement de date.
 > En tant que game designer, je veux que chaque erreur porte un coût différé et invisible.
 
 - Fini quand : chaque lecture fausse ajoute +1 à +3 points de dette ; la dette n'est lisible nulle part avant `peut-être` ; elle est le seul intrant de CONTR-1.
+- **Une paire réparante paie double** (§7.3) : +2 à +6 points pour deux erreurs que le texte ne trahit pas. Le joueur est privé de l'indice, pas de la sanction — c'est ce qui rend la décision du §7.3 tenable.
 
 **AMB-4 — L'indice est dans le texte, et nulle part ailleurs** · T:M
 > En tant que joueur qui lit, je veux pouvoir trouver le signe fautif sans que le jeu me le dise.
@@ -169,8 +171,10 @@ un engagement de date.
 - Fini quand : chacune des 11 lectures fausses produit une absurdité **repérable à un endroit précis du corpus** (table de `docs/corpus.md` §7.1) ; un test de `verifier.py` vérifie que la phrase absurde est bien rendue.
 - Vérifier que `lire` et `il-faut` **ne cassent pas** mécaniquement : c'est voulu.
 - **Sept signes sur onze ont leur rupture, tablette et ligne connues** (§7.1) — les tests peuvent être
-  écrits tels quels. Les quatre autres attendent les deux décisions de TXT-1 : `eau` et `année` n'ont
-  pas de rupture textuelle, et trois paires de lectures fausses se réparent l'une l'autre (§7.3, §7.4).
+  écrits tels quels. `eau` et `année` n'en ont aucune et attendent la décision du §7.4.
+- **Les paires réparantes ne sont pas une exception à coder** (§7.3, tranché) : le jeu laisse passer.
+  Mais le test d'une rupture de paire réparante doit tenir l'autre signe à sa lecture **juste**,
+  sinon il échoue alors que le jeu fait exactement ce qui a été décidé.
 
 ---
 
@@ -273,6 +277,7 @@ un engagement de date.
 - Fini quand : le corpus est intégralement lisible dès le départ ; **toutes** les erreurs de traduction de la partie sont surlignées, y compris celles jamais détectées ; environ vingt minutes, aucune mécanique.
 - Dépend de : AMB-1 (le journal des choix), FIN-1.
 - « Ce n'est pas un prestige, c'est un épilogue. » Coût de production faible, valeur émotionnelle haute — **ne pas le sacrifier au planning.**
+- Depuis le 14/09/2026 ce n'est plus une préférence d'auteur : les paires réparantes étant laissées passer (§7.3), **la relecture est le seul endroit où le jeu admet jamais qu'on a lu autre chose.**
 
 ---
 
@@ -324,9 +329,11 @@ un engagement de date.
   `année` non plus** — quatre signes sur onze sans rupture au lieu des deux voulus.
 - **Deux décisions passent à AMB-1, et elles ne sont pas de l'écriture** (voir `docs/journal.md`,
   « Les onze lectures fausses ») :
-  1. **Les paires qui se réparent** — `grain`+`maison`, `semence`+`devenir`, `lire`+`devenir`. Deux
-     erreurs bien choisies rendent le corpus cohérent là où chacune seule était absurde. La troisième
-     couvre `devenir-lecture`, dernier signe du jeu. §7.3 pose les trois réponses possibles.
+  1. ~~**Les paires qui se réparent**~~ — **tranché le 14/09/2026 : on ne fait rien** (§7.3). Ni
+     interdiction, ni ligne de corpus ajoutée : interdire une lecture, c'est renseigner (R3,
+     règle 14), et une ligne déplace des fréquences pour couvrir trois cas sur cinquante-cinq paires
+     possibles. Qui se trompe deux fois de la bonne façon finit sur un autre livre, et c'est le
+     propos. **Trois épics héritent de la décision** — voir AMB-3, MOD-2 et FIN-3 ci-dessous.
   2. **La rupture distributionnelle** — ce qui trahit `année` → « soleil », ce n'est pas une phrase,
      c'est que ⟨année⟩ porte toujours un nombre et n'est jamais opposé à ⟨nuit⟩. L'admettre donne à
      `eau` et `année` leur indice sans écrire une ligne, et le donne à la Table de fréquences et à la
@@ -411,7 +418,7 @@ fréquences, donc l'équilibrage.~~ *Tranché le 11/09/2026, avant J1 comme pré
 | **R2** | La contradiction paraît punitive | On ne perd que du débit, jamais de la progression |
 | **R3** | La composition devient un jeu de devinettes | *Traité le 10/09/2026* : échec en H seulement, **au taux** (×1,40 par tentative) et non au montant — un coût fixe ne freine rien dans une économie exponentielle ; carnet ; 3 composés secrets ; et la grille ne renseigne jamais, pas même par son silence |
 | **R4** | Le texte doit tenir trois heures | Corpus écrit ; le risque s'est déplacé sur VOIX-3 (les Questions) |
-| **R9** *(nouveau)* | Deux lectures fausses se couvrent l'une l'autre et le corpus reste cohérent | Trouvé en écrivant TXT-1, non traité : trois paires réparantes, dont `lire`+`devenir` qui couvre le dernier signe du jeu. Trois réponses possibles au §7.3 de `docs/corpus.md`, à trancher avec AMB-1 |
+| **R9** *(nouveau)* | Deux lectures fausses se couvrent l'une l'autre et le corpus reste cohérent | Trouvé en écrivant TXT-1. **Tranché le 14/09/2026 : on laisse passer** (§7.3). Le risque est accepté, pas supprimé — il est reporté sur MOD-2 (le seul pointeur qui reste) et sur FIN-3 (le seul aveu) |
 | **R6** | Une action manuelle redevient la source principale de Certitude | I6 par tranches, à chaque ajout d'instrument (règle 2) |
 | **R7** *(nouveau)* | Le simulateur a surestimé de 20 % **deux fois de suite** | ECO-2 avant tout réglage des actes IV–V ; aucun chiffre annoncé sans mesure (règle 7) |
 | **R8** *(nouveau)* | Les Questions font parler le jeu au lieu de le faire lire | Chaque réponse est une ligne du corpus existant, jamais un texte écrit pour l'occasion |
