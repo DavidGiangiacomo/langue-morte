@@ -492,7 +492,7 @@ Deux choix dans cet ordre :
 - **La tablette 21 arrive 7ᵉ.** C'est l'abécédaire ; le joueur le lit comme du charabia numérique et ne comprendra qu'à l'acte IV qu'il tenait le mode d'emploi depuis le début.
 - **La tablette 29 arrive avant la 28.** Le registre de zéros est lu avant l'explication. On voit la fin avant d'en connaître la raison — c'est l'ordre qui rend l'acte V supportable.
 
-Le dégagement est progressif : 4 tablettes au départ, les 30 au dernier signe du MVP (`revCount()` dans `src/rendu.js`).
+Le dégagement est progressif : 4 tablettes au départ, les 30 au dernier signe de l'arbre (`revCount()` dans `src/rendu.js`). Il suit le déchiffrement un peu en retard — `REV_R`, exposant mesuré et non choisi : une tablette sortie de terre tard est une tablette chère à relever, parce que son tarif se fige à la première visite.
 
 ---
 

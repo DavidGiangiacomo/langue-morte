@@ -141,6 +141,143 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## Le dégagement ne dérive pas, il oscille
+
+14/09/2026, dans la foulée de PAR-2. `revCount()` était signalé depuis trois lots comme le
+prochain chantier d'équilibrage : la tranche 20-30′ d'I6 montait à chaque fois — 25,8 % à
+23 signes, 27,0 % à 27, 27,8 % à 28 — et le journal en concluait une dérive qui finirait par
+crever le plafond de 30 % (règle 2). Traité. Le mécanisme était le bon ; la conclusion, non.
+
+### D'abord vérifier que c'est bien le dénominateur
+
+`revCount()` vaut `4 + 26 × nArbre / NGL`. Les lots changent deux choses à la fois : ils
+ajoutent des signes, et ils augmentent `NGL`. On les sépare — même arbre, dénominateur forcé ;
+même dénominateur, arbre changé :
+
+| | tranche 20-30′ | durée max | gisement |
+|---|---|---|---|
+| 23 signes, dénominateur 23 *(mesure du journal : 25,8)* | **25,8 %** | 85,0 | 99,0 % |
+| 27 signes, dénominateur 27 *(mesure : 27,0)* | **26,9 %** | 90,0 | 96,4 % |
+| 28 signes, dénominateur 28 *(mesure : 27,8)* | **27,8 %** | 92,7 | 97,9 % |
+| 23 signes, **dénominateur forcé à 28** | 27,8 % | 85,4 | 84,7 % |
+| 28 signes, **dénominateur forcé à 23** | 25,8 % | 92,3 | 100 % |
+
+Le simulateur reproduit les trois mesures d'archive au dixième, et les deux dernières lignes
+tranchent : **le chiffre suit le dénominateur, et lui seul.** Les signes ajoutés n'y sont pour
+rien. Jusque-là, le journal avait raison.
+
+### Puis vérifier que ça monte
+
+Ça ne monte pas. En balayant le dénominateur de 28 à 45 — l'arbre grandit sous les mêmes
+28 signes atteignables, ce qui est exactement ce que fait chaque lot — la pire tranche donne :
+
+```
+28    29    30    31    32    33    34    35    36 …  45
+27,8  27,7  26,2  26,2  23,9  23,9  26,4  26,3  26,3  25,3
+```
+
+Une **dent de scie de quatre points**, sans tendance, dont 28 se trouve être le sommet. Trois
+points de cette dent, lus dans l'ordre, font une pente convaincante. Ce n'en est pas une : à
+45 signes, toutes choses égales par ailleurs, ce chiffre vaut 25,3 % — mieux qu'aujourd'hui.
+
+D'où vient la dent ? De `round()`, et de tout ce qui est discret en dessous : le nombre de
+tablettes ouvertes à un instant donné saute d'une unité, le gisement avec, et l'achat d'une
+Concordance tombe d'un côté ou de l'autre de la tranche. Ce n'est pas du bruit de simulation
+— le simulateur est déterministe et reproduit l'historique au dixième — c'est la granularité
+réelle d'un jeu qui a trente tablettes et pas trois mille.
+
+### Ce qui se passe vraiment dans la tranche
+
+Dénominateur 23 contre 28, à cadence moyenne, par tranche de dix minutes :
+
+| | tablettes ouvertes | gisement relevé | Concordances | I6 |
+|---|---|---|---|---|
+| 10-20′, dénom. 23 | 11 | **32** | 2 | 15 % |
+| 10-20′, dénom. 28 | 10 | **10** | 2 | 8 % |
+| 20-30′, dénom. 23 | 14 | **77** | 11 | 23 % |
+| 20-30′, dénom. 28 | 12 | **45** | 10 | 28 % |
+
+Deux tablettes de moins sous la main entre la dixième et la trentième minute, c'est trente
+relevés de gisement en moins, une Concordance en moins, et la part manuelle qui remonte
+d'autant. Le mécanisme est propre et il est petit.
+
+### Le premier candidat était le bon, et il était mauvais
+
+Puisque la tranche veut des tablettes plus tôt, on les donne plus tôt : tout dégager quand
+80 % de l'arbre est acquis, au lieu du dernier signe. La tranche tombe à 25,8 %, le gisement
+est consommé à 100 %, la durée ne bouge pas. Et **la part manuelle des occurrences tombe de
+22,9 % à 12,4 %.**
+
+C'est PT6 en miniature, et c'est la règle 9 qui l'explique : le tarif d'une tablette se fige
+**au premier relevé qu'on y fait**. Une tablette sortie tôt est relevée tôt, donc tarifée au
+débit du début, donc bon marché pour le reste de la partie. Dégager vite, c'est solder le
+corpus. PT6 avait mesuré le fond de ce trou : la main à **0,1 %** des occurrences.
+
+Aucun garde-fou ne voyait ça. Le balayage triait sur la durée, l'écart et I6 — trois mesures
+qu'un dégagement précoce améliore toutes les trois.
+
+### L'autre sens, que rien n'annonçait
+
+Si accélérer coûte la main, ralentir devrait coûter I6. Mesuré, c'est faux : ralentir
+améliore **les deux**.
+
+| exposant sur la courbe | pire tranche ≥ 10′ | part manuelle | durée | tablettes au 1er signe |
+|---|---|---|---|---|
+| 0,8 *(plus vite)* | 25,8 % | 19,2 % | 88,7 – 92,8 | 6 |
+| 1,0 *(en place)* | **27,8 %** | 22,1 % | 89,6 – 92,7 | 5 |
+| **1,1** | **26,1 %** | **22,9 %** | 89,7 – 92,9 | 5 |
+| 1,25 | 25,2 % | 24,0 % | 90,1 – 93,9 | **4** |
+
+Le réglage en place est un **maximum local** : on descend des deux côtés. Et du côté lent, la
+main monte au lieu de tomber — une tablette sortie tard est une tablette chère.
+
+### Ce qui a été retenu, et pourquoi pas mieux
+
+`REV_R = 1,1` : `4 + 26 × (nArbre / NGL)^1,1`. Le dégagement suit le déchiffrement, un peu en
+retard.
+
+Ce qu'on achète n'est pas le point et demi sur la tranche — c'est la **fin de la dent de
+scie**. Sur les mêmes dénominateurs 28 → 44 :
+
+| courbe | pire tranche par dénominateur | pire | main |
+|---|---|---|---|
+| linéaire | 27,8 · 26,2 · 23,9 · 26,4 · 26,3 · 25,3 · 25,3 · 25,4 · 25,4 | **27,8 %** | 16,3 % |
+| **1,1** | 26,1 · 26,3 · 25,2 · 25,2 · 25,4 · 25,3 · 25,4 · 25,4 · 25,8 | **26,3 %** | 18,3 % |
+| 1,25 | 25,2 · 25,3 · 25,3 · 25,4 · 25,8 · 25,8 · 25,9 · 25,9 · 25,9 | 25,9 % | 18,9 % |
+| tout à 85 % | 25,8 · 26,9 · 26,9 · 27,7 · 26,2 · 23,9 · 26,4 · 26,3 · 25,2 | 27,7 % | 13,9 % |
+
+L'amplitude passe de 3,9 points à 1,1. **Ce chiffre cesse de dépendre de la taille du
+lexique**, et c'est la seule chose qui empêche de rouvrir ce dossier à chaque lot — ce qu'on
+vient de faire trois fois.
+
+1,25 mesure un peu mieux sur les deux colonnes. Écarté quand même : à 1,25, le premier signe
+acheté ne dégage **aucune** tablette (4 → 4, contre 4 → 5 aujourd'hui). L'ouverture est la
+zone qu'aucune mesure ne couvre — c'est là que la partie 1 de PT5 a été abandonnée, c'est
+ECO-1, et le seul chiffre qu'on en ait est la date de la première Concordance, inchangée dans
+les deux cas. On ne touche pas à l'ouverture pour un demi-point sur une tranche.
+
+À 1,1, mesuré aux trois cadences : **89,7 – 92,9 min**, écart max 5,2, tranches ≥ 10′ ≤ 26 %,
+33 recoupements, la main fournit 22,9 à 23,4 % des occurrences, gisement consommé 96,8 à
+99 %. Tout est à l'identique ou meilleur.
+
+### Le garde-fou qui manquait
+
+`outils/balayage.py` balaie désormais `rev_r` comme il balaie les prix, et trie sur une mesure
+de plus : **la part manuelle des occurrences, plancher à 15 %**. Aucune combinaison de la
+grille actuelle ne s'en approche — elles sont toutes entre 22 et 24 %. Il n'est pas là pour
+elles : il est là pour la famille de courbes qui a failli passer, celle qui gagnait deux
+points d'I6 en vidant la main, et que trois garde-fous sur trois trouvaient excellente.
+
+C'est la même leçon que la fenêtre de durée restée à (71, 77) pendant trois lots : **un
+garde-fou qui ne mesure pas la chose qu'on est en train de casser dit oui avec assurance.**
+
+### Ce que PT10 doit regarder ici
+
+Le nombre de recoupements (33 simulés) et la part manuelle des occurrences, comme prévu — mais
+avec une raison de plus : ce réglage-ci les déplace tous les deux, et aucun playtest n'est
+derrière lui. Si la main descend au lieu de monter, c'est `REV_R` qu'il faut défaire en
+premier, avant les prix.
+
 ## Les lecteurs — le nom, et le mot qui manque dedans
 
 14/09/2026. Troisième récit de J1 (`docs/backlog-1.0.md`, PAR-2), et le dernier : l'acte III
@@ -238,6 +375,10 @@ commit si elle déplaît.
 | recoupements | 33 | 33 |
 | part manuelle des occurrences | 22,1 – 22,9 % | 22,1 – 23,6 % |
 
+*(Chiffres mesurés à courbe de dégagement linéaire, celle de ce lot-là. `REV_R` l'a changée
+le jour même : le réglage livré mesure 89,7–92,9 min et des tranches ≤ 26 % — voir « Le
+dégagement ne dérive pas, il oscille ».)*
+
 1 200 C suit l'arithmétique de la branche — 300, 600, 900, 1 200 — et non le drame. Un prix
 plus haut était tentant : à 1 800 C le dernier écart monte à 4,2 min, en plein dans la cible
 de I4 (4 à 6 min). Écarté, et pour une raison mesurée ailleurs : PT8 a fini l'acte sur
@@ -264,6 +405,12 @@ Il reste deux points de marge sous la barre des 30 % (règle 2), et dix-sept sig
 **Le prochain lot n'a plus le choix : c'est `revCount()` qu'il faut traiter, pas les prix.**
 Le balayage le montre déjà — une des dix-huit combinaisons est rejetée sur cette seule
 tranche, à 31 %.
+
+> *Repris le jour même, et à moitié faux.* Le mécanisme est le bon — c'est bien le
+> dénominateur, et la décomposition le prouve au dixième près. Mais **ce n'est pas une
+> dérive** : balayé de 28 à 45, ce chiffre oscille entre 23,9 % et 27,8 % sans tendance, et
+> 28 en est le sommet. Trois mesures lues comme une pente étaient trois points d'une dent de
+> scie. Voir la section suivante, « Le dégagement ne dérive pas, il oscille ».
 
 ### Ce que PT10 doit regarder ici
 
@@ -1644,10 +1791,9 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
    texte ne dit toujours pas ce que la barre dit. Peut attendre.
 5. ~~Trancher le sort de ⟨N1⟩ et ⟨N2⟩ (`docs/corpus.md` §9).~~ *Semés comme intitulés des
    registres le 11/09/2026 — voir « Le fleuve et la cité ».*
-6. **`revCount()`, maintenant.** La tranche 20-30′ monte à chaque lot : 25,8 % à 23 signes,
-   27,0 % à 27, **28 % à 28**. Ce ne sont pas les lots qui la poussent, c'est le dénominateur
-   de `revCount()` = `4 + nArbre × 26 / NGL` : chaque signe ajouté à l'arbre ralentit le
-   dégagement par signe acquis, donc le gisement du milieu de partie, donc les instruments.
-   Un lot d'un seul signe l'a poussée de 0,8 point. Deux points de marge sous la barre des
-   30 % (règle 2), dix-sept signes à venir : le prochain lot doit le traiter avant d'ajouter
-   quoi que ce soit.
+6. ~~**`revCount()`, maintenant.**~~ *Fait le 14/09/2026, et la prémisse était fausse : ce
+   chiffre n'est pas en pente, il oscille — 28 en était le sommet.* `REV_R = 1,1` ramène
+   l'amplitude de la dent de scie de 3,9 points à 1,1 et rend la mesure indépendante de la
+   taille du lexique. Ce qui reste ouvert, c'est la question que ce travail a soulevée :
+   **le dégagement fixe le prix de la main** (règle 9), et aucun playtest n'est derrière ce
+   réglage-là. Voir « Le dégagement ne dérive pas, il oscille ».

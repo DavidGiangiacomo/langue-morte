@@ -99,6 +99,19 @@ def main() -> None:
         tablettes = page.eval_on_selector_all(".tablet:not([hidden])", "e => e.length")
         verifier(tablettes == 4, f"{tablettes} tablettes dégagées au départ (attendu 4)")
 
+        # Le dégagement : quatre tablettes tant qu'on ne lit rien, les trente au dernier
+        # signe de l'arbre, et jamais un pas en arrière. `REV_R` règle la forme de la courbe
+        # entre les deux (14/09/2026) ; ces trois bornes-là ne se règlent pas — la première
+        # est le gabarit de l'acte I, la dernière est le corpus entier.
+        courbe = page.evaluate("""() => { const vrai = S_.gl.slice();
+            const suite = []; S_.gl.length = 0; suite.push(revCount());
+            for(const g of GL.filter(x => !x.sec)){ S_.gl.push(g.id); suite.push(revCount()); }
+            S_.gl.length = 0; S_.gl.push(...vrai); return suite; }""")
+        verifier(courbe[0] == 4 and courbe[-1] == 30,
+                 f"quatre tablettes à zéro signe, trente au dernier : {courbe[0]} → {courbe[-1]}")
+        verifier(all(y >= x for x, y in zip(courbe, courbe[1:])) and max(courbe) <= 30,
+                 f"et la courbe ne recule jamais : {courbe}")
+
         print("\néchelle de la numération")
         for mot, attendu in ECHELLE:
             page.evaluate("(m) => { const g = GL.find(x => x.mot === m); S_.C += g.cost; }", mot)
