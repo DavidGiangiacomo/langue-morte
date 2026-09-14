@@ -446,25 +446,165 @@ Trois principes non négociables :
 
 ## 7. Les 11 signes ambigus
 
-*(Mécanique de l'acte IV, pas encore implémentée.)*
+*(Mécanique de l'acte IV — AMB-1 à AMB-4. Les lectures fausses sont **écrites** depuis le
+14/09/2026 ; la mécanique qui les pose ne l'est pas. Tout ce qui est marqué « vérifié » ci-dessous
+l'a été contre le corpus rendu en français, ligne par ligne, et non contre l'intention.)*
 
-Chacun a une lecture juste et une lecture fausse. La fausse marche longtemps, paie 25 % de plus (design doc §8), et finit par produire une absurdité **repérable dans le texte**. C'est le seul indice, et c'est ce qui fait que le jeu récompense la lecture.
+Chacun a une lecture juste et une lecture fausse. La fausse marche longtemps, paie 25 % de plus
+(design doc §8), et doit finir par produire une absurdité **repérable dans le texte**. C'est le seul
+indice, et c'est ce qui fait que le jeu récompense la lecture.
 
-| Signe | Juste | Faux | Où ça casse |
+Les onze pèsent **1 533 attestations sur 3 838**, soit deux signes du corpus sur cinq. Ce n'est pas
+un ornement de l'acte IV : c'est quarante pour cent de ce que le joueur croit avoir lu.
+
+### 7.1 Les onze, et où ça casse vraiment
+
+Le rang est la position de la tablette dans l'ordre de sortie de terre (§8) — c'est-à-dire le plus
+tôt où la rupture peut être vue, pas la date de la tablette.
+
+| Signe | Att. | Juste | Faux | Où ça casse | Tabl. | Rang |
+|---|---|---|---|---|---|---|
+| `grain` | 315 | grain | **poussière** | `maison 1 · poussière 20` — on ne distribue pas vingt mesures de poussière à chaque maison | 5 | 6ᵉ |
+| `maison` | 266 | maison | **tombe** | même ligne, par l'autre bout : on ne distribue pas de grain aux tombes | 5 | 6ᵉ |
+| `ne-pas` | 290 | ne pas | **fin** | `si ne-pas · sinon` — « si fin · à la fin », 131 fois ; et ⟨ne-pas⟩⟨un⟩ devient homographe de ⟨finir⟩⟨un⟩ | 5 | 6ᵉ |
+| `devenir` | 4 | devenir | **porter** | `il-faut tablette · devenir lire` — « il faut la tablette · porter lire » ne se construit pas | 17 | 15ᵉ |
+| `avant` | 110 | avant | **dessous** | `siècle 1 · après` / `avant · siècle 1 · eau 14`, deux lignes de suite : un siècle n'a pas de dessous | 15 | 17ᵉ |
+| `semence` | 37 | semence | **enfant** | `si semence · ne-pas germer` — un enfant ne germe pas | 22 | 18ᵉ |
+| `graver` | 56 | graver | **couper** | `je graver N6 · graver ne-pas finit` — « je coupe ⟨N6⟩ » | 30 | **30ᵉ** |
+| `lire` | 92 | lire | **compter** | *rien* — **voulu** | — | — |
+| `il-faut` | 156 | il faut | **on peut** | *rien* — **voulu** | — | — |
+| `eau` | 68 | eau | **sang** | *rien* — **non voulu**, voir 7.4 | — | — |
+| `année` | 139 | année | **soleil** | *rien* — **non voulu**, voir 7.4 | — | — |
+
+Trois lignes de l'ancienne table ne tenaient pas contre le texte, et sont corrigées ici :
+
+- **`eau` ne casse pas à la tablette 25.** La ligne annoncée, « champ 3 · sang 21 », n'existe pas :
+  la tablette 25 porte `champ 3 · grain 21`. Les champs se mesurent en grain, jamais en eau — aucune
+  ligne du corpus ne met un nombre d'eau à côté d'un champ.
+- **`ne-pas` ne casse pas sur « ne-pas ne-pas ».** La séquence n'existe nulle part. Elle casse bien
+  plus tôt et bien mieux : sur `sinon`, qui est ⟨si⟩⟨ne-pas⟩ et qui se tient sur la même ligne que
+  ⟨ne-pas⟩ cent trente et une fois.
+- **`avant` ne casse pas « au réordonnancement ».** Le rangement chronologique marche aussi bien
+  avec « dessous » — l'ordre stratigraphique est un ordre. La rupture est textuelle, et elle est à
+  deux lignes d'intervalle sur la tablette 15.
+
+### 7.2 Ce qu'une lecture fausse emporte avec elle
+
+Un signe faux ne salit pas seulement ses propres attestations : il salit **tout composé qui le
+contient**, parce que le composé se lit par ses parties (règle 4). Et il doit le salir, sinon la
+grille de composition renseigne : un joueur qui lit ⟨ne-pas⟩ « fin » et à qui la grille répond
+« zéro » vient d'apprendre qu'il s'est trompé, ce que rien dans ce jeu n'a le droit de lui dire
+(règle 14).
+
+Le principe : **le composé faux fait le même saut que le composé juste, appliqué aux parties
+fausses.** ⟨maison⟩⟨grain⟩ ne se lit pas « maison-grain » mais « grenier » ; ⟨tombe⟩⟨grain⟩ ne se lit
+donc pas « tombe-grain » mais « caveau ».
+
+| Composé | Parties | Juste | Lecture fausse dérivée |
 |---|---|---|---|
-| `lire` | lire | compter | **Le piège majeur.** « compter » marche dans tout le corpus administratif, deux actes durant. Ne casse qu'à la tablette 18 : « nous · les-compteurs », puis à la 30 : « ⟨N6⟩ comptait ». Le joueur croit avoir affaire à une civilisation de comptables jusqu'à ce que l'acte V devienne incompréhensible. |
-| `eau` | eau | sang | Tient jusqu'à la tablette 6 (un relevé annuel de sang), casse à la 25 : « champ 3 · sang 21 ». |
-| `grain` | grain | poussière | Plausible dans un grenier, absurde tablette 5 quand on en distribue vingt à chaque maison. |
-| `maison` | maison | tombe | Sinistre et cohérent au début — casse au même endroit : on ne distribue pas de grain aux tombes. |
-| `semence` | semence | enfant | Bouleversant et faux. Tient jusqu'à la tablette 27 : « enfant · tablette ». |
-| `année` | année | soleil | Tient comme datation, casse sur `siècle` (tablette 15) qui devient « cent-soleils ». |
-| `graver` | graver | couper | Casse tablette 30 : « je coupe ⟨N6⟩ ». |
-| `il-faut` | il faut | on peut | Transforme les ordres en permissions. Ne produit aucune absurdité — seulement un corpus qui perd son urgence. Le plus difficile à repérer, et celui qui abîme le plus la fin. |
-| `avant` | avant | dessous | Piège d'archéologue : parfaitement plausible pour des tablettes empilées. Casse au réordonnancement chronologique de l'acte III, qui devient incohérent. |
-| `devenir` | devenir | porter | « toi tu portes » au lieu de « toi tu deviens ». Casse tout l'acte V d'un coup. |
-| `ne-pas` | ne pas | fin | « eau fin » passe. « ne-pas ne-pas » (tablette 26) ne passe pas. |
+| `grenier` | maison + grain | grenier | grain faux : **poussier** · maison faux : **caveau** · les deux : **ossuaire** |
+| `scribe` | dire + graver | scribe | **le juge** — celui qui dit et qui tranche |
+| `archive` | tablette + graver | archive | **le rebut** — la tablette coupée |
+| `siècle` | année + année | siècle | **cent-soleils** |
+| `dernière-année` | année + finir | dernière-année | **dernier-soleil** |
+| `les-lecteurs` | lire + nous | les-lecteurs | **les-compteurs** |
+| `devenir-lecture` | lire + devenir | devenir-lecture | lire faux : **devenir-compte** · devenir faux : **porter-lecture** · les deux : **porter-compte** |
+| `germer` | semence + devenir | germer | semence faux : **naître** · devenir faux : **porter-semence** · les deux : **porter-enfant** |
+| `sinon` | si + ne-pas | sinon | **à la fin** |
+| `zéro` | ne-pas + un | zéro | **fin-un** — soit exactement ⟨finir⟩⟨un⟩, qui est `le-dernier` |
+| `moi-absent` | je + ne-pas | moi-absent | **moi-mort** — sans portée : zéro attestation dans le corpus |
 
-Deux d'entre eux — `lire` et `il-faut` — sont conçus pour **ne pas** casser mécaniquement. Ils ne produisent qu'un corpus légèrement faux, cohérent, et plus plat. Le joueur qui les rate finit le jeu sans savoir qu'il a lu une autre histoire. C'est voulu, et c'est ce que la relecture de fin (design doc §11) lui montrera.
+`caveau` mérite sa ligne : c'est à la fois une fosse à grain et un tombeau. Le mot juste et le mot
+faux tombent au même endroit, et c'est ce qui rend la paire `grain`/`maison` réparable — voir 7.3.
+
+### 7.3 Les paires qui se réparent — le vrai risque d'AMB-4
+
+Trois paires de lectures fausses **s'annulent mutuellement**. Deux erreurs produisent alors un
+corpus cohérent, là où chacune prise seule produisait une absurdité. C'est le défaut le plus sérieux
+trouvé en écrivant les onze, et aucune des mécaniques prévues ne le voit.
+
+| Paire | Ce que donne une erreur seule | Ce que donnent les deux |
+|---|---|---|
+| `grain` + `maison` | « vingt mesures de poussière à la maison 1 » · « vingt mesures de grain à la tombe 1 » | « vingt mesures de poussière à la tombe 1 » — un culte funéraire, cohérent sur les trente tablettes |
+| `semence` + `devenir` | « si l'enfant ne germe pas » | ⟨semence⟩⟨devenir⟩ se lit **porter-enfant** : « si l'enfant ne porte pas » — cohérent |
+| `lire` + `devenir` | « il faut la tablette · porter lire » | ⟨lire⟩⟨devenir⟩ se lit **porter-compte** — et la tablette 27, sommet de l'acte V, devient une note d'archive |
+
+La troisième est la pire : `devenir-lecture` est le dernier signe du jeu (GRAINE-1, COMP-4), et une
+lecture « tenir les comptes » ne casse nulle part.
+
+**Ce qui la retient : le mot, pas le concept.** ⟨devenir⟩ faux dit *porter* et non *tenir*. « Il
+faut la tablette · porter compter » ne se construit pas en français ; « tenir compte » se construit
+tout seul. La rupture de la tablette 17 tient à ce choix-là, et à rien d'autre. C'est la
+démonstration que ces onze lectures sont de l'écriture et non une table de correspondances : le même
+concept, dit avec l'autre mot, effaçait une rupture.
+
+Trois réponses possibles, toutes à trancher avec AMB-1, aucune tranchée ici :
+
+1. **Ne rien faire.** Un joueur qui se trompe deux fois de la bonne façon finit sur un autre livre,
+   et la relecture de fin (FIN-3) le lui montre. C'est défendable, et c'est même le propos.
+2. **Interdire les paires.** AMB-1 refuse la seconde lecture fausse d'une paire réparante. Le jeu
+   renseignerait — contraire à R3 et à la règle 14.
+3. **Écrire la ligne qui manque.** Une ligne du corpus, une seule, qui oppose les deux signes d'une
+   paire sur le même registre. C'est du texte, c'est peu, et ça touche les fréquences — donc
+   l'équilibrage (règle 7). À faire avec TXT-3, pas seul.
+
+### 7.4 Les quatre qui ne cassent pas — dont deux de trop
+
+`lire` et `il-faut` sont conçus pour **ne pas** casser mécaniquement. Ils ne produisent qu'un corpus
+légèrement faux, cohérent, et plus plat : une civilisation de comptables qui se donne des
+permissions au lieu de s'imposer des ordres. Le joueur qui les rate finit le jeu sans savoir qu'il a
+lu une autre histoire — c'est voulu, et c'est ce que la relecture de fin (design doc §11) lui
+montrera. Vérifié : « les-compteurs » (tablette 18) et « ⟨N6⟩ comptait » (tablette 30) sont des
+phrases étranges, pas des phrases impossibles. L'ancienne table les donnait comme ruptures ; ce n'en
+sont pas, et c'est tant mieux.
+
+`eau` et `année` ne cassent pas non plus, et là ce n'est pas voulu.
+
+- **`eau` → sang** est cohérent d'un bout à l'autre. Un relevé annuel de sang qui descend de 14 à 1
+  sur deux siècles pendant que les maisons passent de 31 à 2, ça se tient ; « il faut lire le sang »
+  se tient aussi ; et l'eau n'apparaît jamais à côté d'un champ, seul endroit où le nombre
+  trancherait.
+- **`année` → soleil** est cohérent aussi. `siècle` devient « cent-soleils » et reste juste : la
+  tablette 15, datée 139, parle bien d'un premier cent-quelque-chose déjà passé. Ce qui trahit
+  « soleil », c'est la **distribution** : ⟨année⟩ porte toujours un nombre et n'est jamais opposé à
+  ⟨nuit⟩, qui n'en porte jamais. Un soleil qu'on compte et qu'on n'oppose pas à la nuit est une
+  année.
+
+Cette dernière observation est peut-être la sortie, et elle vaut mieux que l'absurdité : **une
+rupture distributionnelle se trouve à la Concordance et à la Table de fréquences**, c'est-à-dire aux
+deux instruments que le jeu a construits pour ça. Une phrase absurde se trouve en lisant ; une
+distribution impossible se trouve en travaillant. AMB-4 demande aujourd'hui la première. Admettre la
+seconde donnerait à `eau` et `année` une rupture sans écrire une ligne de corpus, et rendrait à la
+Concordance un usage qu'elle n'a pas encore.
+
+### 7.5 Les entrées de lexique
+
+Les textes ci-dessous sont écrits. L'effet chiffré ne l'est pas : la règle est « +25 % d'effet
+mécanique » (AMB-1), et le chiffre exact de chaque signe se pose à l'implémentation, pas ici
+(règle 7).
+
+Une remarque en les écrivant : **plusieurs lignes de journal justes fonctionnent telles quelles pour
+la lecture fausse**, à un mot près — `lire` et `eau` surtout. Ce n'est pas un hasard, c'est la
+consigne du 11/09/2026 (« son texte ne doit rien en laisser deviner ») qui a tenu. Les versions
+fausses ci-dessous ajoutent donc une phrase de plus : celle qui confirme au joueur ce qu'il croyait
+déjà. C'est là que le piège se referme.
+
+| Signe | `mot` faux | `log` faux |
+|---|---|---|
+| `lire` | compter | Compter. Ce n'est pas un inventaire qui le dit, c'est une consigne — et elle revient d'une tablette à l'autre. Un peuple qui ordonne de compter : je ne suis pas surpris. |
+| `eau` | sang | Le sang. Un relevé par année, tenu sur deux siècles. Je préfère ne pas savoir de quoi ils tenaient le compte si scrupuleusement. |
+| `grain` | poussière | De la poussière. Ce ne sont pas des prières : ce sont des comptes de cendres, et ils les ont tenus jusqu'au bout. |
+| `maison` | tombe | Une tombe. Les outils du corpus prennent un nom, et ce n'est pas celui d'une ville : trente et une tombes la première année, deux la dernière. |
+| `semence` | enfant | Un enfant. Ils les comptaient par soixante, puis par cent, pendant que les tombes se vidaient. C'est le seul nombre du corpus qui monte. |
+| `année` | soleil | Le soleil. Chaque tablette porte le sien depuis le début — je ne savais pas lire la date. |
+| `graver` | couper | Couper. Quelqu'un a tenu ce stylet, et il a entaillé l'argile comme on entaille autre chose. |
+| `il-faut` | on peut | On peut. Ce n'est pas un inventaire qui parle, c'est quelqu'un qui autorise — et sur deux siècles, l'autorisation ne change pas : copier. |
+| `avant` | dessous | Dessous. Ce qui est sorti de terre en premier était en haut de la pile : ils rangeaient en empilant. |
+| `devenir` | porter | Porter. Ce qu'ils demandent à la tablette, ce n'est pas d'être lue : c'est de transporter quelque chose. |
+| `ne-pas` | fin | Fin. Le signe le plus fréquent de tout le corpus dit la fin de quelque chose — et les colonnes que je croyais inachevées disent qu'on s'était arrêté là. |
+
+`semence` et `devenir` n'ont pas encore d'entrée juste : leur branche est l'acte V (GRAINE-1). Les
+lectures fausses ci-dessus sont écrites d'avance et attendent leur signe.
 
 ---
 
@@ -500,4 +640,5 @@ Le dégagement est progressif : 4 tablettes au départ, les 30 au dernier signe 
 
 1. **Vérifier la densité de l'acte II.** C'est le passage le plus plat par conception (« on installe le quotidien pour que sa disparition compte ») et donc le seul endroit où le joueur peut décrocher. Si un playtest montre un décrochage, la réponse n'est pas d'ajouter du drame : c'est d'avancer la tablette 6 dans l'ordre de révélation.
 2. ~~**Décider du sort de ⟨N1⟩ et ⟨N2⟩** (le fleuve, la cité).~~ **Tranché le 11/09/2026 : semés comme intitulés des registres** (§2, §6). La note promettait « deux formes très fréquentes » ; un intitulé par bloc les donne à 13 et 16 occurrences, fréquence moyenne. Un titre courant repris toutes les cinq lignes aurait porté ⟨N2⟩ à 75 — mais ⟨N1⟩ serait resté à 18, ses registres étant courts. Choisi en connaissance de cause.
-3. **Écrire les lectures fausses des 11 signes ambigus** (§7) : chacune doit produire une phrase absurde repérable. C'est du travail d'écriture, pas de code.
+3. ~~**Écrire les lectures fausses des 11 signes ambigus** (§7).~~ **Fait le 14/09/2026** (TXT-1) : les onze mots faux, leurs onze lignes de journal, les onze composés dérivés, et le point de rupture de chacun vérifié ligne à ligne contre le corpus rendu. Trois des ruptures annoncées n'existaient pas dans le texte ; deux signes — `eau` et `année` — n'en ont aucune, et trois paires de lectures fausses se réparent l'une l'autre. Ce qui reste n'est plus de l'écriture : c'est la décision d'AMB-1 sur ces deux points, et elle est posée au §7.3 et au §7.4.
+4. **La ligne qui manque, si AMB-1 la demande** (§7.3) : une ligne de corpus qui oppose `grain` et `maison`, ou `semence` et `devenir`, sur le même registre. Une ligne touche les fréquences, donc l'équilibrage — à faire avec TXT-3, pas seul.

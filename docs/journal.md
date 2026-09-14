@@ -141,6 +141,125 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## Les onze lectures fausses — trois ruptures n'existaient pas
+
+14/09/2026, TXT-1. Le chemin critique du projet : le texte des onze lectures fausses bloque
+l'ambiguïté (E3), donc l'Élève (E5), donc `peut-être` et `faux`, donc la relecture de fin. Le
+backlog le donnait pour « du travail d'écriture, pas de code ». C'en est — mais la moitié du
+travail a été de vérifier, et c'est la vérification qui a tout déplacé.
+
+La table du §7 de `docs/corpus.md` existait depuis le premier jour : onze signes, onze mots faux,
+et pour chacun une colonne « où ça casse ». Elle avait été écrite **avant** le corpus. Le corpus a
+été écrit ensuite, et personne n'était retourné confronter les deux.
+
+### La méthode : rendre le corpus, puis substituer
+
+Un script hors jeu relit `src/corpus.js`, remonte chaque identifiant à son mot français et sort les
+735 lignes des trente tablettes en clair. On y cherche alors, non pas le signe, mais **tous ses
+contextes distincts** : `grep`, normalisation des nombres, `sort | uniq -c`. Trois cent quinze
+attestations de `grain` se réduisent à seize contextes ; deux cent quatre-vingt-dix de `ne-pas`, à
+vingt-deux. À cette taille-là, on peut lire chaque contexte avec le mot faux à la place du juste et
+juger s'il tient.
+
+C'est exactement le geste que le jeu demande au joueur, et c'est exactement ce que fait la
+Concordance. Ça vaut d'être noté : l'outil qui manquait à l'auteur pour écrire cet acte est celui
+qu'il avait déjà donné au joueur en PT9.
+
+### Ce que la confrontation a cassé
+
+Trois des onze ruptures annoncées n'existent pas dans le texte.
+
+| Annoncé | Ce que dit le corpus |
+|---|---|
+| `eau` casse tablette 25 : « champ 3 · sang 21 » | La ligne est `champ 3 · grain 21`. Les champs se mesurent en grain — **aucune** ligne du corpus ne met un nombre d'eau à côté d'un champ. |
+| `ne-pas` casse sur « ne-pas ne-pas » (tablette 26) | La séquence n'existe **nulle part** dans les 735 lignes. |
+| `avant` casse « au réordonnancement chronologique » | Le rangement marche aussi bien avec « dessous » : l'ordre stratigraphique est un ordre. La rupture annoncée était mécanique, or AMB-4 demande une rupture **textuelle**. |
+
+Deux des trois se remplacent, et par mieux :
+
+- **`ne-pas` → « fin » casse sur `sinon`.** `sinon` est ⟨si⟩⟨ne-pas⟩ ; il se tient sur la même ligne
+  que ⟨ne-pas⟩ **131 fois**, dès la tablette 5, sixième à sortir de terre. « si fin · à la fin » :
+  deux signes différents, presque le même mot, cent trente et une fois. Et ⟨ne-pas⟩⟨un⟩ — le zéro —
+  devient homographe de ⟨finir⟩⟨un⟩, qui est `le-dernier`. La rupture annoncée était la plus tardive
+  et la plus rare ; la vraie est la plus précoce et la plus fréquente du lot.
+- **`avant` → « dessous » casse tablette 15, lignes 3 et 4**, qui se suivent : `siècle 1 · après`
+  puis `avant · siècle 1 · eau 14`. Un siècle n'a pas de dessous, et les deux lignes mettent la
+  paire avant/après sur le même objet à un interligne d'écart.
+
+La troisième ne se remplace pas : **`eau` → « sang » ne casse nulle part.** Un relevé annuel de sang
+qui descend de 14 à 1 sur deux siècles pendant que les maisons passent de 31 à 2 se tient ; « il
+faut lire le sang » se tient ; le seul endroit où un nombre trancherait — un champ mesuré en eau —
+n'existe pas. En cherchant, `année` → « soleil » s'est révélé avoir le même défaut : `siècle` devient
+« cent-soleils » et reste juste, la tablette 15 étant datée 139.
+
+Deux signes conçus pour casser ne cassent pas. Ils rejoignent `lire` et `il-faut`, qui sont conçus
+pour ça — soit quatre sur onze, alors que le design en prévoyait deux.
+
+### Le vrai défaut : les paires qui se réparent
+
+Le plus sérieux n'était annoncé nulle part. **Trois paires de lectures fausses s'annulent
+mutuellement.**
+
+`grain` → poussière est absurde à la tablette 5 : on ne distribue pas vingt mesures de poussière à
+chaque maison. `maison` → tombe est absurde à la même ligne, par l'autre bout : on ne distribue pas
+de grain aux tombes. Le joueur qui se trompe **sur les deux** lit « vingt mesures de poussière à la
+tombe 1 » — un culte funéraire, cohérent d'un bout à l'autre des trente tablettes. Les deux erreurs
+les plus lourdes du corpus (315 et 266 attestations, plus d'un signe sur sept à elles deux) se couvrent
+l'une l'autre.
+
+Même chose pour `semence`/`devenir` — ⟨semence⟩⟨devenir⟩ se lit alors « porter-enfant » et « si
+l'enfant ne porte pas » se tient — et pour `lire`/`devenir`, qui est la pire : ⟨lire⟩⟨devenir⟩ est
+`devenir-lecture`, **le dernier signe du jeu**, et deux erreurs le font lire « porter-compte ». La
+tablette 27, sommet de l'acte V, devient une note d'archive, et rien ne casse.
+
+### Le mot, pas le concept
+
+Un détail décide de tout, et il mérite d'être écrit avant qu'on l'oublie.
+
+`devenir` → faux dit **porter**. Sa rupture est tablette 17 : « il faut la tablette · porter lire »
+ne se construit pas en français. Si le mot faux avait été *tenir* — même concept, même plausibilité,
+même effet sur le reste du corpus — la ligne aurait donné « il faut la tablette · tenir compte » dès
+lors que `lire` est lu « compter ». Idiomatique, banal, invisible. **Le choix du mot français, et
+lui seul, sépare une rupture d'un corpus cohérent.**
+
+C'est l'argument qui justifie que TXT-1 soit de l'écriture et pas une table de correspondances, et
+c'est aussi pourquoi les onze lignes de journal des lectures fausses sont écrites en entier au §7.5
+plutôt que laissées à l'implémentation.
+
+### Une sortie possible pour `eau` et `année`
+
+Ce qui trahit « soleil », ce n'est pas une phrase : c'est une **distribution**. ⟨année⟩ porte
+toujours un nombre et n'est jamais opposé à ⟨nuit⟩, qui n'en porte jamais. Un soleil qu'on compte et
+qu'on n'oppose pas à la nuit est une année.
+
+AMB-4 demande aujourd'hui une absurdité repérable. Admettre en plus une **rupture
+distributionnelle** donnerait à `eau` et `année` leur indice sans écrire une ligne de corpus — et le
+donnerait à la Table de fréquences et à la Concordance, c'est-à-dire aux deux instruments que le jeu
+a construits pour ça et qui n'ont encore rien à trouver que le joueur ne puisse voir à l'œil. Une
+phrase absurde se trouve en lisant ; une distribution impossible se trouve en travaillant. Le second
+geste est celui que ce jeu prétend enseigner.
+
+Non tranché : c'est une décision d'AMB-1/AMB-4, elle change ce que la mécanique doit détecter, et
+elle n'a pas à être prise dans le même lot que le texte.
+
+### Ce qui est fait, ce qui ne l'est pas
+
+Écrit : les onze mots faux, les onze lignes de journal, les onze composés dérivés (⟨dire⟩⟨couper⟩
+donne « le juge », ⟨tombe⟩⟨grain⟩ donne « caveau », ⟨si⟩⟨fin⟩ donne « à la fin »), et le point de
+rupture de chacun vérifié ligne à ligne. `semence` et `devenir` n'ayant pas encore d'entrée juste —
+leur branche est l'acte V — leurs lectures fausses sont écrites d'avance et attendent leur signe.
+
+Pas écrit, et pas de ce lot : l'effet chiffré de chaque lecture fausse. La règle est « +25 %
+d'effet mécanique » ; le chiffre par signe se pose au simulateur, pas à la plume (règle 7).
+
+Une trouvaille sans rapport, laissée là pour la branche Personne : **`moi-absent` (⟨je⟩⟨ne-pas⟩) n'a
+aucune attestation dans le corpus.** C'est le seul signe non numéral des 45 dans ce cas — `cinq` et
+`mille` sont absents eux aussi comme signes, mais ils paraissent dans les nombres, ce qui est leur
+façon d'être attestés. VOIX-1 devra soit donner une ligne à `moi-absent`, soit expliquer ce qu'on
+achète en l'achetant.
+
+---
+
 ## Le dégagement ne dérive pas, il oscille
 
 14/09/2026, dans la foulée de PAR-2. `revCount()` était signalé depuis trois lots comme le
