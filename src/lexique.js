@@ -111,6 +111,27 @@ const GL = [
    log:'Ne pas. Le signe le plus fréquent de tout le corpus est une négation — et les colonnes que je croyais inachevées disent qu’il n’y avait rien.'},
   {id:'en',   br:'modalite',mot:'si',      cost:320, eff:'les conditions se lisent — un registre est plein de « si »',
    log:'Si. Ils ne consignaient pas seulement ce qui était : ils gravaient ce qu’il faudrait faire au cas où.'},
+  /* ---- le doute ----
+     `peut-être` est le pic de malaise du jeu (design doc §6), et il n'ajoute pas une
+     mécanique : il en retire une protection. Depuis la première seconde, le lexique affiche
+     ce que le joueur a lu comme s'il l'avait su ; ce signe-là lui dit que onze de ses
+     lectures en supportaient une autre, et qu'il a tranché sans jamais en être averti.
+     Aucun effet chiffré : la Modalité donne ce qui se lit, pas ce qui accélère (mesuré en
+     MOD-1, où un bonus de Grammaire raccourcissait l'acte au lieu de l'allonger). Ce qu'il
+     donne est ailleurs — le degré de doute par signe, et la révision.
+     450 C, et le prix est une mesure, pas un cran de branche : à 900 ou 1 100 il tombe deux
+     minutes avant la fin du prototype et le doute n'a pas le temps de servir. À 450 il
+     laisse **quatorze minutes**, soit quatre ou cinq révisions au coût croissant — de quoi
+     en jouer, pas de quoi toutes les faire (CONTR-3). Il passe donc avant `il-faut`, dont
+     la lecture se tranche alors le panneau déjà ouvert : la dernière décision ambiguë du
+     prototype est la seule que le joueur prenne en sachant ce qu'il risque.
+     Dix attestations seulement, mais l'une d'elles est « peut-être eau », les deux seuls
+     mots d'espoir du corpus (docs/corpus.md §5, tablette 12) — et sur la tablette 26 la
+     même paire porte à sa droite un signe qu'on ne sait pas encore lire. Ne rien annoncer
+     de tout ça : c'est le texte qui le dit, quatre-vingt-dix-sept ans plus tard. */
+  {id:'mik',  br:'modalite',mot:'peut-être', cost:450,
+   eff:'le doute se chiffre, signe par signe · une lecture peut se rouvrir',
+   log:'Peut-être. Ils avaient un signe pour ça, et pas moi. Onze de mes lectures en supportaient une autre, et je les ai toutes recopiées au propre.'},
   {id:'dun',  br:'modalite',mot:'il-faut', cost:550, eff:'+50 % à l’atelier de copie',
    log:'Il faut. Ce n’est plus un inventaire qui parle, c’est quelqu’un qui ordonne — et sur deux siècles, l’ordre ne change pas : copier.'},
   {id:'enla', br:'modalite',mot:'sinon',   cost:800, eff:'le protocole de copie se lit jusqu’à son dernier mot',

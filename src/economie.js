@@ -8,12 +8,15 @@
    glyphes et rouvrirait sur l'écran de fin, sans moyen de continuer. */
 const KEY='langue-morte-actes-i-iii';
 const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram:0},gl:[],t:0,done:false,
-  rel:{}, prix:{}, carnet:[], comp:0, lect:{}, dette:0});
+  rel:{}, prix:{}, carnet:[], comp:0, lect:{}, dte:{}, conc:{}, recs:{}, rev:0});
 /* rel : jetons relevés par tablette · prix : tarif du gisement, verrouillé
    carnet : les paires déjà tentées et fausses · comp : le nombre de tentatives, toutes issues
    confondues — c'est lui que PT10 doit lire, pas la seule liste des échecs.
-   lect : la lecture tranchée pour chaque signe ambigu ('j' ou 'f') · dette : les points
-   qu'elles coûtent, que RIEN ne lit encore — CONTR-1 sera son premier lecteur.
+   lect : la lecture tranchée pour chaque signe ambigu ('j' ou 'f'), d'où la dette se
+   déduit — elle n'est pas stockée, voir `dette()`.
+   dte : le degré de doute figé à la décision · conc, recs : les signes concordés et le
+   nombre de recoupements par signe, qui sont ce sur quoi ce degré se calcule · rev : les
+   révisions faites, dont dépend le prix de la suivante (CONTR-3).
    Champs de premier niveau, donc une partie d'avant la composition, ou d'avant l'ambiguïté,
    les reçoit vides au chargement, sans qu'on touche à `KEY`. */
 let S_ = fresh(), speed = 1;
@@ -78,6 +81,12 @@ function logDe(id){
    carte de fin. Son seul lecteur sera CONTR-1. `freqGlyphe()` est dans rendu.js, chargé
    ensuite — même report que `pushLog` ou `paintCorpus`, appelés d'ici depuis toujours. */
 const detteDe = id => { const n = freqGlyphe(id); return n >= 250 ? 3 : n >= 100 ? 2 : 1; };
+/* La dette totale se DÉDUIT des lectures, elle ne s'accumule pas. Tenue en solde, elle
+   dérivait à la première révision qui ne passait pas exactement par le bon chemin — et un
+   solde faux sur un chiffre que personne n'affiche ne se verrait jamais. Dérivée, elle est
+   juste par construction, elle survit à n'importe quelle sauvegarde, et CONTR-1 n'aura rien
+   à migrer. Elle reste invisible jusque-là (AMB-3). */
+const dette = () => S_.gl.reduce((n, id) => n + (AMB[id] && faux(id) ? detteDe(id) : 0), 0);
 
 /* Le multiplicateur d'un signe, majoré de 25 % quand il est mal lu (design doc §8). La prime
    porte sur le BONUS et non sur l'instrument : +30 % devient +37,5 %, pas +62,5 %. Trois
@@ -96,6 +105,96 @@ const detteDe = id => { const n = freqGlyphe(id); return n >= 250 ? 3 : n >= 100
      économie réglée sur neuf playtests au profit d'un chiffre que personne ne voit. */
 const AMB_R = 1.25;
 const mfx = (id, x) => has(id) ? (faux(id) ? 1 + (x - 1)*AMB_R : x) : 1;
+
+/* ======================== le doute, et la révision ========================
+   MOD-2 et CONTR-2/3. `peut-être` ne montre pas la vérité — il montre **ce sur quoi la
+   décision reposait**. C'est la seule chose que le jeu ait le droit de calculer : la vérité
+   ferait un oracle, et rien dans ce jeu ne dit au joueur qu'il s'est trompé (règle 17).
+
+   Le degré de doute d'un signe se fait de deux moitiés, et il fallait les deux : une forme
+   multiplicative tassait les neuf signes entre 83 et 99 % — vrai, inutile, et la jauge ne
+   classait plus rien.
+
+   - **ce qui était sorti de terre** : la part des attestations du signe que le corpus offrait
+     à lire quand le joueur a tranché. On ne peut pas avoir lu ce qui n'était pas déterré.
+   - **ce qu'il en a fait** : une concordance sur ce signe vaut plein — c'est l'instrument qui
+     rassemble toutes ses attestations d'un coup, et il existe pour ça (règle 11). Un
+     recoupement de deux d'entre elles vaut moitié. N'avoir rien fait ne vaut rien, même avec
+     les trente tablettes sous les yeux : avoir pu lire n'est pas avoir lu.
+
+   Un signe acheté à la troisième minute sans rien en faire sort à 94 ; le même acheté à la
+   fin, concordance faite, sort au plancher. Entre les deux, tout l'éventail.
+
+   Deux propriétés tiennent tout le système :
+
+   1. **Le chiffre est le même pour les deux lectures.** Il ne dit jamais laquelle est juste,
+      seulement à quel point on a décidé à l'aveugle. Il ne ment donc pas, et il corrèle quand
+      même avec l'erreur : on se trompe davantage sur ce qu'on n'a pas regardé.
+   2. **Regarder après coup ne le fait pas baisser.** Une concordance faite aujourd'hui
+      n'annule pas une décision prise à la douzième minute. Seule la RÉVISION le recalcule,
+      parce qu'elle seule re-décide. C'est ce qui empêche le doute d'être une jauge qu'on
+      vide en promenant la souris, et ce qui fait de la lecture le chemin vers la révision
+      plutôt que son substitut.
+
+   Le plancher : un signe entièrement travaillé garde cinq points. Le corpus n'a jamais
+   confirmé une lecture, il l'a seulement laissée faire — un zéro serait la seule certitude
+   que ce jeu n'a pas le droit d'afficher. */
+const DOU_MIN = 5;
+function douteCalc(id){
+  const travail = S_.conc[id] ? 1 : (S_.recs[id] ? 0.5 : 0);
+  const vu = 0.5*partOuverte(id) + 0.5*travail;
+  return Math.max(DOU_MIN, Math.round(100 * (1 - vu)));
+}
+/* Les signes ambigus acquis, du plus douteux au moins douteux : l'ordre du panneau, et
+   l'ordre dans lequel un joueur qui ne lit pas dépensera ses révisions.
+   Un signe acquis avant ce lot n'a pas de relevé de doute — la partie a été jouée quand le
+   jeu ne le mesurait pas. Il compte alors pour cent : le jeu ne sait pas ce que le joueur
+   avait sous les yeux, et la seule réponse honnête à « je n'en ai aucune trace » est le
+   doute entier. Une révision lui en donnera un vrai. */
+const douteDe = id => S_.dte[id] === undefined ? 100 : S_.dte[id];
+const douteux = () => S_.gl.filter(id => AMB[id])
+                           .sort((a, b) => douteDe(b) - douteDe(a));
+const douteOuvre = () => has('mik');
+
+/* ---- la révision (CONTR-2) ----
+   Rouvrir un signe, repayer, choisir à nouveau. Ce que la révision ne fait PAS, et c'est
+   délibéré : elle ne dit pas si l'on avait raison. Elle repeint le corpus, et c'est au
+   joueur de lire ce qui en sort — « le grenier pleure trois fois par nuit » n'a pas de sens,
+   et c'est la seule chose qui le lui dira (design doc §8). Une révision qui annoncerait
+   « juste ! » serait l'oracle que la prime silencieuse d'AMB-1 refuse déjà.
+   Le design doc prévoit un **bonus rétroactif** quand on retombe sur la lecture juste. Il
+   n'est pas de ce lot, et pour cette raison-là : un bonus visible est un verdict. Il attend
+   CONTR-1, où la dette devient lisible et où il pourra être payé en dette effacée plutôt
+   qu'en Certitude — c'est-à-dire sans rien annoncer.
+
+   CONTR-3, le coût du brute-force : le prix croît par révision faite, jamais par signe.
+   C'est la leçon de `REC_R` et de `COMP_R`, pour la troisième fois — dans une économie
+   exponentielle un coût de base ne freine rien, seul un taux mord. Balayer les neuf signes
+   ambigus de l'acte III coûte alors plus que ce que le joueur peut gagner d'ici la fin,
+   tandis que trois ou quatre révisions choisies restent payables. Mesuré à `outils/sim.py`,
+   pas estimé (règle 7). */
+const REV_B = 240;      // coût de la première révision, en Certitude
+const REV_K = 1.6;      // ... et par révision déjà faite
+const revCost = () => Math.ceil(REV_B * Math.pow(REV_K, S_.rev));
+
+/* Rend true si la révision a eu lieu. `lect` vaut 'j' ou 'f' comme à l'achat — et comme à
+   l'achat, la fenêtre a tiré l'ordre des deux lectures au sort : repasser par là ne dit
+   pas laquelle on avait prise. */
+function reviser(id, lect){
+  if(!douteOuvre() || !AMB[id] || !has(id)) return false;
+  const c = revCost();
+  if(S_.C < c) return false;
+  S_.C -= c; S_.rev++;
+  /* La dette suit d'elle-même : elle se déduit des lectures, donc quitter une lecture fausse
+     l'efface et y retomber la refait courir, sans une ligne de comptabilité à tenir. Le
+     joueur n'en voit rien dans un cas comme dans l'autre (AMB-3). */
+  S_.lect[id] = lect === 'f' ? 'f' : 'j';
+  S_.dte[id] = douteCalc(id);
+  numCache.length = 0;
+  pushLog(logDe(id));
+  paintCorpus(id);
+  return true;
+}
 
 /* ---- économie ---- */
 const M = {
@@ -272,6 +371,9 @@ function recouper(id){
   const c=recCost();
   if(S_.O<c.O||S_.H<c.H) return false;
   S_.O-=c.O; S_.H-=c.H; S_.C+=recGain(); S_.rec++;
+  /* Compté par signe depuis MOD-2 : rapprocher deux attestations d'un même signe est l'un
+     des deux gestes sur lesquels se calcule son degré de doute. */
+  if(id) S_.recs[id] = (S_.recs[id]||0) + 1;
   return true;
 }
 /* ---- la composition ----
@@ -331,7 +433,13 @@ function acheterGl(id, lect){
   /* La dette est posée ici et nulle part ailleurs, à l'instant du choix, et personne ne la
      relit avant CONTR-1. Le joueur n'en verra rien : pas de compteur, pas d'infobulle, pas
      de ligne à la carte de fin (AMB-3). */
-  if(AMB[id]){ S_.lect[id] = lect==='f' ? 'f' : 'j'; if(lect==='f') S_.dette += detteDe(id); }
+  if(AMB[id]){
+    S_.lect[id] = lect==='f' ? 'f' : 'j';
+    /* Le doute se fige ici, sur l'état du corpus et du travail à cette seconde-là. Rien ne
+       le rouvrira qu'une révision : regarder après coup ne rend pas la décision moins
+       aveugle (MOD-2). La dette, elle, n'a rien à poser — elle se déduit (`dette()`). */
+    S_.dte[id] = douteCalc(id);
+  }
   majSignes();
   numCache.length = 0;
   touchees = new Set();
@@ -447,7 +555,7 @@ function frame(now){
   let dt=(now-last)/1000; last=now;
   if(dt>0.5) dt=0.5;
   if(!S_.done) tick(dt*speed);
-  paintRes(); paintActs(); paintInstr(); paintComp(); paintLex(); paintMeter();
+  paintRes(); paintActs(); paintInstr(); paintComp(); paintDoute(); paintLex(); paintMeter();
   finRegarder(now);
   const ch=Math.floor(S_.t/60)+':'+String(Math.floor(S_.t%60)).padStart(2,'0');
   if($('chrono').textContent!==ch) $('chrono').textContent=ch;

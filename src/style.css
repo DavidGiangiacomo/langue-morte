@@ -236,9 +236,32 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .tip .lab{font-family:var(--mono);font-size:10px;letter-spacing:.09em;color:var(--dim);text-transform:uppercase;white-space:nowrap}
 .tip .lab b{color:var(--lamp);font-weight:500}
 .tip .plus{font-family:var(--mono);font-size:12px;color:var(--faint)}
+/* La part en cadre de nombre, séparée du mot : c'est un fait de corpus, pas une glose. */
+.tip .dist{border-left:1px solid var(--line);padding-left:9px;color:var(--faint)}
 .bloom{position:fixed;inset:0;pointer-events:none;background:radial-gradient(60% 50% at 50% 45%,rgba(214,140,70,.30),transparent 70%);opacity:0;z-index:40}
 .bloom.on{animation:bl 1.1s ease}
 @keyframes bl{0%{opacity:0}18%{opacity:1}100%{opacity:0}}
+/* ---------- le doute ---------- */
+/* Une ligne par signe ambigu acquis, la plus douteuse en haut. La barre est un fait —
+   la part du signe qu'on n'avait pas sous les yeux — et non un verdict : rien ici ne
+   change de couleur selon qu'on a eu raison, parce que le jeu ne le dit jamais. */
+.doutes{display:flex;flex-direction:column;gap:3px}
+.drow{display:grid;grid-template-columns:22px 1fr 54px 30px;align-items:center;gap:3px 8px;
+  width:100%;text-align:left;border:1px solid transparent;border-radius:2px;padding:5px 7px}
+.drow:hover{background:#2C2318;border-color:var(--line)}
+.drow:disabled{cursor:default}
+.drow:disabled:hover{background:none;border-color:transparent}
+.drow .dsig{grid-row:1/3;display:flex;align-items:center;justify-content:center;color:var(--dim)}
+.drow .dsig .gl{width:14px;height:19px}
+.drow .dsig .gl2{width:22px;height:19px}
+.drow .dmot{font-size:14.5px;color:var(--mid)}
+.drow .dbar{height:3px;background:#2E2519;border-radius:2px;overflow:hidden}
+.drow .dbar i{display:block;height:100%;background:var(--ochre-d)}
+.drow .dpc{font-family:var(--mono);font-size:10.5px;color:var(--dim);text-align:right;font-variant-numeric:tabular-nums}
+.drow .dfic{grid-column:2/5;font-family:var(--mono);font-size:9px;color:var(--faint);letter-spacing:.02em;line-height:1.45}
+.drow:not(:disabled):hover .dmot{color:var(--lamp)}
+.drow:not(:disabled):hover .dbar i{background:var(--ochre)}
+
 /* ---------- trancher à l'achat ---------- */
 /* Les deux lectures sont rendues strictement pareilles : même largeur, même casse, même
    couleur, même ordre de survol. Tout écart de traitement serait un renseignement — la
@@ -256,6 +279,10 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .ambchoix button{border:1px solid var(--ochre-d);background:#302518;border-radius:2px;
   padding:15px 10px;font-size:19px;color:var(--lamp);text-align:center;line-height:1.25}
 .ambchoix button:hover{background:#3B2C1B;border-color:var(--ochre)}
+/* À la révision, la lecture déjà retenue. Marquée pour qu'on ne la reprenne pas d'un clic
+   malheureux — elle est déjà au panneau et dans tout le corpus, elle n'apprend rien. */
+.ambchoix button.lu{border-style:dashed;border-color:var(--line2);background:#241D15;color:var(--dim)}
+.ambchoix button.lu:hover{background:#2C2318;border-color:var(--line2);color:var(--mid)}
 .ambpied{display:flex;justify-content:space-between;gap:16px;margin:16px 0 20px;
   font-family:var(--mono);font-size:9.5px;letter-spacing:.02em;color:var(--faint);line-height:1.45}
 .ambpied span:last-child{color:var(--dim);white-space:nowrap;font-variant-numeric:tabular-nums}

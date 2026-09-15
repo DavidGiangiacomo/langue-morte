@@ -59,6 +59,15 @@
         <div class="instr" id="instr"></div>
       </section>
 
+      <!-- Le doute. N'apparaît qu'avec `peut-être` : avant lui, RIEN dans l'interface ne
+           laisse entendre qu'une lecture puisse être autre chose que la bonne (design
+           doc §6). Chaque ligne dit ce qu'on a lu, à quel point on l'a décidé à l'aveugle,
+           et ce que le corpus sait du signe — jamais si l'on a eu raison. -->
+      <section class="panel" id="pdoute" hidden>
+        <div class="phead"><span>Doute</span><span class="r" id="doute-c"></span></div>
+        <div class="doutes" id="doutes" aria-label="Les signes qui supportaient deux lectures. Cliquez pour en rouvrir une."></div>
+      </section>
+
       <!-- La grille de composition. Elle n'apparaît qu'avec `année` : c'est l'acte III qui
            l'ouvre, comme la Grammaire. Rien n'y dit quelles paires existent — l'aperçu montre
            le signe qu'on propose, et c'est au corpus de l'avoir déjà montré. -->
@@ -94,7 +103,7 @@
      les distingue est le mot, ce qui est exactement ce que le joueur a à trancher. -->
 <div class="amb" id="amb" hidden>
   <div class="ambcard">
-    <div class="ambtete"><span class="ambsig" id="amb-sig"></span><span class="ambk">deux lectures tiennent</span></div>
+    <div class="ambtete"><span class="ambsig" id="amb-sig"></span><span class="ambk" id="amb-k">deux lectures tiennent</span></div>
     <div class="ambchoix" id="amb-choix">
       <button data-amb="0"></button>
       <button data-amb="1"></button>
