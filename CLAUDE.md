@@ -192,7 +192,7 @@ leurs composés dérivés et le point de rupture de chacun — **écrits et vér
 le corpus rendu**, `docs/corpus.md` §7.1 à §7.5. Le chemin critique du projet est dégagé : AMB-1 ne
 dépend plus d'aucun texte. La vérification a invalidé **trois** ruptures que la table annonçait
 depuis le premier jour — celle d'`eau` visait une ligne qui n'existe pas, celle de `ne-pas` une
-séquence absente des 735 lignes, celle d'`avant` une rupture mécanique là où AMB-4 demande du texte.
+séquence absente des 705 lignes, celle d'`avant` une rupture mécanique là où AMB-4 demande du texte.
 Deux se remplacent par mieux et plus tôt ; **`eau` et `année` n'en ont aucune**, soit quatre signes
 sans rupture au lieu des deux voulus. Et le défaut que rien n'annonçait : **trois paires de lectures
 fausses se réparent l'une l'autre** — qui lit ⟨grain⟩ « poussière » *et* ⟨maison⟩ « tombe » obtient

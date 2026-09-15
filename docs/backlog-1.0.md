@@ -355,7 +355,7 @@ un engagement de date.
   rupture de chacun, vérifié ligne à ligne contre le corpus rendu — `docs/corpus.md` §7.1 à §7.5. La
   vérification a invalidé **trois** des ruptures que la table annonçait depuis le premier jour : celle
   d'`eau` visait une ligne qui n'existe pas (`champ 3 · grain 21`, pas « sang 21 »), celle de `ne-pas`
-  une séquence absente des 735 lignes, celle d'`avant` une rupture mécanique là où AMB-4 demande une
+  une séquence absente des 705 lignes, celle d'`avant` une rupture mécanique là où AMB-4 demande une
   rupture textuelle. Les deux dernières se remplacent par mieux et plus tôt ; **`eau` n'en a aucune, et
   `année` non plus** — quatre signes sur onze sans rupture au lieu des deux voulus.
 - **Deux décisions passent à AMB-1, et elles ne sont pas de l'écriture** (voir `docs/journal.md`,
