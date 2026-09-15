@@ -26,6 +26,9 @@ _jetons = {tb['t']: sum(1 for l in tb['l'] for tk in l.split(' ') if tk != '·')
 # ORDRE, et non l'ordre du fichier : les tablettes sortent de terre dans cet ordre-là, et
 # les deux divergent dès la cinquième. C'est lui qui décide du gisement ouvert à un instant.
 TOKENS = [_jetons[n] for n in _ordre]
+# Le même compte, indexé par NUMÉRO de tablette : `depouiller.py` lit un journal
+# d'actions où les relevés portent le numéro, pas le rang de sortie de terre.
+JETONS = dict(_jetons)
 
 # ---- lexique : (id, branche, coût en Certitude) ---------------------------
 GL = [('an','nombre',2), ('anna','nombre',5), ('hem','nombre',11), ('sela','nombre',18),
@@ -140,6 +143,27 @@ DETTE = {g: (3 if _freq.get(g, 0) >= 250 else 2 if _freq.get(g, 0) >= 100 else 1
          for g in AMBIGUS}
 
 
+def multis(has, mf):
+    """Les cinq multiplicateurs d'instrument et celui du relevé, en un seul endroit.
+    Sortis de `run()` le 15/09/2026 pour que `depouiller.py` les lise ici plutôt que
+    d'en tenir une troisième copie : `economie.js` a déjà la sienne, et ce fichier
+    porte en tête la trace de la fois où les deux ont divergé.
+    `has(id)` dit si le signe est acquis, `mf(id, x)` rend son multiplicateur majoré de
+    la prime s'il est mal lu (AMB-1). Les deux viennent de l'appelant, qui seul sait
+    s'il rejoue une simulation ou un journal d'actions."""
+    mcop = lambda: mf('tem', 1.3) * (2 if has('kal') else 1) * (1.5 if has('imme') else 1)
+    return dict(
+        cop=mcop,
+        ate=lambda: (mcop() * (1.3 if has('mille') else 1) * (1.5 if has('nurhal') else 1)
+                     * mf('dun', 1.5)),
+        tab=lambda: mf('kish', 1.3) * (2 if has('kal') else 1) * (1.5 if has('tabsar') else 1),
+        con=lambda: mf('sar', 1.5) * (2 if has('kal') else 1),
+        gram=lambda: (1.5 if has('nurnur') else 1) * (2 if has('kal') else 1) * mf('shen', 1.5),
+        click=lambda: ((1.25 if has('anna') else 1) * (1.5 if has('tab') else 1)
+                       * (2 if has('kal') else 1)),
+    )
+
+
 def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=()):
     """cpm = clics manuels par minute. `garde` = fraction de la partie pendant laquelle
     le joueur s'interdit de relever, pour tarifer ses tablettes au débit maximal —
@@ -176,14 +200,10 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=()):
     # un problème de seuil, pas de taux — I6 y vaut 100 % tant que la première
     # Concordance n'est pas posée, quelle que soit la cadence de clic.
     premier = {}
-    mcop   = lambda: mf('tem', 1.3) * (2 if has('kal') else 1) * (1.5 if has('imme') else 1)
-    mate   = lambda: (mcop() * (1.3 if has('mille') else 1) * (1.5 if has('nurhal') else 1)
-                      * mf('dun', 1.5))
-    mtab   = lambda: mf('kish', 1.3) * (2 if has('kal') else 1) * (1.5 if has('tabsar') else 1)
-    mcon   = lambda: mf('sar', 1.5) * (2 if has('kal') else 1)
-    mgram  = lambda: (1.5 if has('nurnur') else 1) * (2 if has('kal') else 1) * mf('shen', 1.5)
+    _m = multis(has, mf)
+    mcop, mate, mtab, mcon, mgram = _m['cop'], _m['ate'], _m['tab'], _m['con'], _m['gram']
     gramp  = lambda: P['gram_p'] * (P['gram_g'] ** narbre()) * mgram()
-    mclick = lambda: (1.25 if has('anna') else 1) * (1.5 if has('tab') else 1) * (2 if has('kal') else 1)
+    mclick = _m['click']
     obrut  = lambda: b['cop'] * P['cop_p'] * mcop() + b['ate'] * P['ate_p'] * mate()
     # Un relevé ne vaut plein tarif que sur du terrain neuf. Le gisement épuisé rend le
     # plancher, jamais zéro : à t=0 le débit est nul, les deux se valent, et l'ouverture
