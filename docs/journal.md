@@ -6,17 +6,17 @@ Historique des playtests, des défauts trouvés et des décisions prises. À lir
 
 ## Les playtests
 
-| | PT4 | PT5 | PT6 | PT7 | PT8 | PT9 | Cible |
-|---|---|---|---|---|---|---|---|
-| Durée | 42 min 12 | 50 min 37 | 43 min 49 | 44 min 50 | **63 min 12** *(20 signes)* | **66 min 49** *(20 signes)* | 45 min *(13 signes)* |
-| Signes relevés à la main | 56 | **371** | 180 | **422** | — | **429** | — |
-| Hypothèses formulées à la main | — | 264 | 27 | 7 | — | 6 | — |
-| Recoupements | **56** | 46 | 44 | 39 | 46 | 49 | — |
-| Part manuelle de la Certitude | 43,5 % *(simulé)* | **30,8 %** | **30,0 %** | **31,2 %** | **6,0 %** | **8,2 %** | < 30 % par tranche de 10 min |
-| Part manuelle des Occurrences | — | 0,6 % | **0,1 %** | **17,9 %** | — | **36,3 %** | — |
-| Gisement consommé | — | — | 54 / 398 | 293 / 398 | **394 / 398** | 393 / 397 | — |
-| Lignes entièrement lues | 26 % | 26 % | 26 % | 26 % | **34 %** | 34 % | — |
-| Signes déchiffrés | 58 % | 57 % | 57 % | 57 % | **69 %** | 69 % | — |
+| | PT4 | PT5 | PT6 | PT7 | PT8 | PT9 | PT10 | Cible |
+|---|---|---|---|---|---|---|---|---|
+| Durée | 42 min 12 | 50 min 37 | 43 min 49 | 44 min 50 | **63 min 12** *(20 signes)* | **66 min 49** *(20 signes)* | **96 min 35** *(30 signes)* | 45 min *(13 signes)* |
+| Signes relevés à la main | 56 | **371** | 180 | **422** | — | **429** | **164** | — |
+| Hypothèses formulées à la main | — | 264 | 27 | 7 | — | 6 | 8 | — |
+| Recoupements | **56** | 46 | 44 | 39 | 46 | 49 | **32** | — |
+| Part manuelle de la Certitude | 43,5 % *(simulé)* | **30,8 %** | **30,0 %** | **31,2 %** | **6,0 %** | **8,2 %** | **0,7 %** | < 30 % par tranche de 10 min |
+| Part manuelle des Occurrences | — | 0,6 % | **0,1 %** | **17,9 %** | — | **36,3 %** | **1,0 %** | — |
+| Gisement consommé | — | — | 54 / 398 | 293 / 398 | **394 / 398** | 393 / 397 | **148 / 399** | — |
+| Lignes entièrement lues | 26 % | 26 % | 26 % | 26 % | **34 %** | 34 % | **59 %** | — |
+| Signes déchiffrés | 58 % | 57 % | 57 % | 57 % | **69 %** | 69 % | **92 %** | — |
 
 PT1 à PT3 sortent du tableau : ils datent d'avant le journal d'actions, et leurs chiffres
 vivent dans les sections qui les dépouillent. PT8 est la première partie des trois actes —
@@ -26,7 +26,8 @@ TSV (29 min 27, 271, 69, « corpus lisible 68 % ») était celle de PT2, et n'a 
 
 PT1 à PT4 : l'auteur. **PT5 : un second joueur** (mon fils, 06/09/2026), et le premier
 playtest instrumenté par le journal d'actions — d'où le détail de ce qui suit. Tout ce qui
-y est chiffré sort du TSV, pas du souvenir.
+y est chiffré sort du TSV, pas du souvenir. **PT10 : l'auteur de nouveau**, ce qui n'était
+pas le plan — ses colonnes valent pour l'économie et pour rien d'autre.
 
 ### PT1 — le clic était la colonne vertébrale
 
@@ -140,6 +141,172 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
   dans `jeu.js`, verrouillé par trois contrôles de `outils/verifier.py`.
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
+
+## PT10 — la main a disparu du corpus
+
+Playtest du 15/09/2026, le premier sur les trente signes de l'arbre : **96 min 35** au
+chrono, 94 min 16 entre le premier et le dernier geste. Trois lectures fausses sur neuf,
+contradiction déclenchée, aucune révision.
+
+**Ce n'est pas le playtest qui était prévu.** PT10 devait se jouer avec quelqu'un qui ne sait
+pas ce qu'il cherche ; c'est l'auteur qui a joué. Les questions de reconnaissance restent donc
+entières et se reposent mot pour mot — ⟨grenier⟩, ⟨nous⟩ dans `les-lecteurs`, ⟨ne-pas⟩ posé
+sur ⟨un⟩, la crue qui baisse, et « a-t-on remarqué qu'on choisissait ». Ce que cette partie
+mesure, c'est l'économie et l'instrument. Elle y trouve deux défauts que neuf playtests, le
+simulateur et tous les balayages avaient manqués.
+
+### La main fournit 1,0 % des occurrences — PT6 est revenu
+
+| | PT6 | PT7 | PT9 | PT10 |
+|---|---|---|---|---|
+| Part manuelle des Occurrences | **0,1 %** | 17,9 % | **36,3 %** | **1,0 %** |
+
+166 000 occurrences relevées à la main sur **17,0 millions** produites. C'est le défaut que
+R9 avait été écrite pour tuer, et qui revient par une porte que personne ne gardait.
+
+Le chiffre est une reconstruction des tarifs figés depuis le TSV, contrôlée contre le journal
+lui-même : sur **74 intervalles sans achat ni relevé**, la production prédite par le modèle
+colle au ΔO relevé toutes les trente secondes à **0,0 % d'écart médian**, 0,2 % au pire. Ce
+n'est pas une estimation.
+
+La cause n'est pas le tarif, elle est dans la date. **147 des 148 relevés utiles tombent avant
+la trente-deuxième minute**, quand le débit est encore petit — et le tarif d'une tablette est
+figé à son premier relevé, pour toute la partie (règle 9). Le relevé moyen vaut ici
+**1 120 occurrences** ; en PT9, les quatorze dernières tablettes valaient 11 996 par relevé.
+Le 148ᵉ relevé de la partie arrive à 86:34, cinquante minutes après le 147ᵉ, et le 149ᵉ
+n'existe pas : celui de 94:57 tombe à vide.
+
+Le garde-fou existait pourtant. `outils/balayage.py` trie sur cette part depuis le 14/09/2026,
+plancher à 15 %, et le réglage en place donne 22,9 à 23,4 %. Il n'a rien vu, pour une raison
+qui vaut bien au-delà de ce chiffre : **il mesure le comportement du simulateur, pas celui du
+joueur.** L'acheteur simulé relève tant que c'est rentable, donc tout du long ; ce joueur-ci a
+sorti ce qu'il voulait sortir en trente minutes et n'y est jamais revenu. Le plancher tient en
+simulation et casse à 1,0 % dans le jeu. Un garde-fou qui ne contraint que la main qui l'a
+écrit ne garde rien.
+
+### Cinquante minutes sans un geste dans le corpus
+
+Le plus long trou de la partie sans relevé, recoupement, concordance ni navigation :
+**49 min 48, de 36:46 à 86:34** — 53 % d'une partie de 94 minutes.
+
+| | relevés | recoupements | concordances | navigations |
+|---|---|---|---|---|
+| avant 36:46 | 162 | 28 | 1 | 5 |
+| **36:46 → 86:34** | **0** | **0** | **0** | **0** |
+| après 86:34 | 2 *(dont 1 à vide)* | 4 *(après la fin)* | 0 | 1 |
+
+Ce n'est pas l'idle de PT8 : il se passe beaucoup de choses à l'écran, vingt-deux signes
+s'achètent dans l'intervalle, les compteurs montent de quatre ordres de grandeur. Mais règle 8
+dit que les deux actions manuelles se font **dans le corpus**, et que c'est là le point de
+bascule entre un incrémental habillé en déchiffrement et un jeu où l'on agit en lisant. Pendant
+cinquante minutes, ce jeu-ci est un incrémental habillé.
+
+Six tentatives de composition tombent dans le trou, et ce sont les seules. La grille n'est pas
+le corpus : elle assemble deux signes déjà acquis, sans qu'on ait à lire une ligne.
+
+### I6 tombe à 0,7 %, et ce n'est pas une bonne nouvelle
+
+| tranche | 0–10 | 10–20 | 20–30 | 30–40 | 40–50 | 50–60 | 60–70 | 70–80 | 80–90 | 90–96 |
+|---|---|---|---|---|---|---|---|---|---|---|
+| part de la main | **79 %** | 15 % | 16 % | 9 % | 0 | 0 | 0 | 0 | 0 | 0 |
+
+57 de Certitude recoupée sur environ 7 900 produites. Le mur d'ouverture est à 79 %, dans la
+ligne des précédents (83 % en PT7, 63 en PT8, 75 en PT9) et toujours pas réglé. Tout le reste
+est très en dessous du plafond — mais **les cinq dernières tranches sont à zéro exact**, et un
+invariant qu'on respecte en ne jouant plus n'est pas respecté : il est vide.
+
+**32 recoupements**, contre 49 en PT9. Le réglage du 09/09/2026 — `REC_R` porté à 1,30 —
+prévoyait 32 ou 33 : le simulateur tombe juste au recoupement près. Mais la question qu'il
+laissait ouverte était « 32 recoupements au lieu de 49 laissent-ils au geste sa place ? », et
+la réponse mesurée est non : **les 32 tiennent dans les trente-sept premières minutes**, et
+les quatre derniers sont postérieurs à la fin de la partie, sur ⟨N1⟩, un nom propre. Le seuil
+d'alarme de PT10 était « sous une vingtaine sur la partie » ; il ne regardait pas au bon
+endroit. Ce n'est pas le nombre qui a chuté, c'est sa répartition.
+
+### Le simulateur tombe juste, pour la première fois depuis PT7
+
+91,1 à 94,3 min annoncées toutes lectures justes (MOD-3) ; **94 min 16 jouées**, avec trois
+lectures fausses et la contradiction armée sur les treize dernières minutes. PT8 et PT9
+l'avaient pris à surestimer de 20 % ; recalé le 08/09/2026, il n'avait plus jamais été
+confronté à une partie réelle. C'est fait.
+
+Réserve, et elle est du même ordre que celle de PT9 : ce joueur-là joue comme l'acheteur du
+simulateur. Ce que la mesure valide, c'est la cohérence du modèle avec lui-même.
+
+### La contradiction a mordu, et personne n'a révisé
+
+`peut-être` acheté à 83:41. Dette **6** — ⟨grain⟩ 3, ⟨eau⟩ 1, ⟨année⟩ 2 — contre un seuil de
+5 : la Certitude est divisée par deux pour les treize dernières minutes. Le journal le confirme
+au chiffre, de part et d'autre de l'achat : 155 de Certitude par tranche de trente secondes
+avant, 102 après, quand les deux signes d'arbre pris entre-temps en annonçaient 104 une fois
+divisés. La sanction a bien mordu.
+
+**Zéro révision.** Le joueur a fini la partie sous sanction sans jamais rouvrir une lecture —
+et `faux`, acheté à 90:23, n'y a rien changé : il allume une ligne et une seule (tablette 5,
+⟨grain⟩ seul, puisque ⟨maison⟩ est lu juste), et le joueur est allé sur la tablette 14.
+
+Le détail qui valide AMB-1 : **le signe qui fait franchir le seuil est celui qui ne rapporte
+rien.** ⟨grain⟩ et ⟨eau⟩ font 4, sous le seuil. C'est ⟨année⟩ — deux points de dette, aucun
+multiplicateur, `mfx` ne le touche pas — qui met à 6. Et les trois signes ambigus qui portent
+un multiplicateur du côté de la Certitude, ⟨graver⟩ à la concordance, ⟨lire⟩ à la grammaire,
+⟨il-faut⟩ à l'atelier, ont tous été lus juste. La prime n'a donc rien payé là où ça comptait,
+et la sanction est tombée quand même. C'est exactement le contrat de la prime silencieuse,
+vérifié par une partie et non par un balayage.
+
+### `les-lecteurs` s'achète — et avant `sinon`
+
+1 200 C pour trois attestations annoncées, acheté à 95:20, **devant `sinon` qui en coûte 800**
+et qui sera le trentième et dernier signe. Le lexique affichait les deux prix et les deux
+comptes ; le joueur a pris le plus cher et le plus maigre d'abord. C'est la réponse que PAR-2
+attendait, et elle est positive — elle vaut ce que vaut un joueur qui a écrit le signe.
+
+### Six compositions, six paires justes — et l'instrument disait le contraire
+
+Le dépouillement a d'abord conclu à cinq échecs et une réussite. C'était faux, et c'est
+l'instrument qui mentait : **les six paires étaient justes.** `tab+sar` (archive) et `im+sar`
+(scribe) deux fois chacune, `en+la` (sinon) une fois, toutes refusées faute de Certitude et
+non faute d'avoir trouvé — 900 C pour archive quand le joueur en avait 266, puis 592.
+
+| | | |
+|---|---|---|
+| 51:03 | `tab + sar` | archive, 900 C — 266 en caisse |
+| 55:50 | `im + sar` | scribe, 600 C — 220 en caisse |
+| 58:09 | `ur + tem` | **acquis** — 60 C |
+| 65:24 | `im + sar` | scribe, de nouveau |
+| 72:09 | `tab + sar` | archive, de nouveau |
+| 80:08 | `en + la` | sinon, 800 C — 465 en caisse |
+
+Le carnet est donc resté **vide toute la partie** : une paire juste qu'on ne peut pas payer n'y
+entre pas (règle 14), donc `compCost()` n'a jamais quitté 250 hypothèses et la rampe
+anti-balayage ne s'est jamais armée. Les six tentatives ont coûté 1 500 hypothèses en tout,
+sur un stock de trente-six mille. Ce n'est pas un défaut — c'est le contrat, « lire coûte moins
+cher que chercher », observé pour la première fois chez quelqu'un qui lisait.
+
+Reste que le joueur, lui, n'a aucun moyen de se souvenir d'une recette trouvée et impayable :
+le carnet ne garde que les paires fausses. Il a retenté deux fois chacune des deux qu'il avait
+trouvées, puis a fini par acheter `scribe`, `archive` et `sinon` à l'arbre, au prix fort.
+Question ouverte, pas encore un défaut.
+
+### Ce que l'instrument ne disait pas
+
+Quatre questions du backlog étaient posées à un journal qui ne pouvait pas y répondre, et rien
+ne le signalait — dans un TSV, une mesure absente se lit comme un zéro. `reviser` n'était pas
+enveloppée du tout, le degré de doute n'était pas écrit à l'achat malgré ce qu'annonçait
+`CLAUDE.md`, une paire juste impayable ne se distinguait pas d'un coup de sonde, et le chrono
+gelait au dernier signe — d'où les six dernières actions de cette partie au même instant, et
+l'absence de toute ligne de fin pour une partie terminée. Les quatre sont bouchés le même jour,
+avec neuf assertions de plus. Le journal date désormais l'arrêt (`finjeu`) et l'ouverture de la
+carte (`fin`) séparément, et l'écart entre les deux est la mesure de FIN-1.
+
+### Ce que PT11 doit regarder ici
+
+Tout ce que PT10 devait regarder, puisqu'il ne l'a pas fait — et une question neuve, la plus
+grosse : **un joueur revient-il dans le corpus après la quarantième minute ?** Si la réponse
+est non chez quelqu'un d'autre aussi, ce n'est plus un accident de joueur, c'est la seconde
+moitié du jeu qui n'a rien à faire lire. Les deux leviers connus sont opposés — ralentir encore
+le dégagement (`REV_R`) pour que des tablettes neuves restent à sortir tard, ou rendre le
+gisement moins épuisable — et aucun des deux ne se règle avant d'avoir la mesure. Ne pas
+toucher `REL_K` : le tarif n'est pas en cause, la date l'est.
 
 ## `faux` ne donne pas le corrigé — il montre où le texte ne tient pas
 
@@ -2450,16 +2617,14 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
 
 ## Suite
 
-1. **PT10, avec un autre joueur.** PT9 a répondu oui à la question de PT8 — la crue qui baisse
-   se voit — mais pour un testeur qui savait quoi chercher. La question se repose mot pour
-   mot à quelqu'un qui ne le sait pas ; le journal d'actions dira s'il concorde, et sur quoi.
-   À surveiller dans le même TSV : la part manuelle des occurrences (36,3 % en PT9 ; au-delà
-   de 40 %, plafonner `REL_K`) et le stock d'hypothèses entre `année` et la dixième Grammaire.
-   Et deux paires, comptées avec leur minute : ⟨maison⟩+⟨grain⟩, ⟨ne-pas⟩+⟨un⟩. Les deux
-   signes sont dans le texte depuis la première seconde ; personne ne dira qu'il y a quelque
-   chose à y trouver. Depuis le 14/09, deux questions de plus : **achète-t-on `les-lecteurs`**,
-   1 200 C pour trois attestations annoncées — le TSV date le moment où il devient payable —
-   et, celle-là à poser de vive voix après la partie, **a-t-on vu ⟨nous⟩ dans le nom** ?
+1. **PT11, avec un autre joueur.** PT10 a bien eu lieu (15/09/2026) mais l'auteur l'a joué :
+   il a répondu sur l'économie et sur l'instrument, pas une seule fois sur la lecture. Toutes
+   les questions de reconnaissance repassent donc telles quelles — la crue qui baisse,
+   ⟨maison⟩+⟨grain⟩, ⟨ne-pas⟩+⟨un⟩, ⟨nous⟩ dans `les-lecteurs`, et « a-t-on remarqué qu'on
+   choisissait », à poser de vive voix et à la fin. Deux réponses sont acquises et ne valent
+   que pour un joueur : **`les-lecteurs` s'achète**, à 95:20 et devant `sinon` qui coûte 400 de
+   moins ; et **trois lectures fausses sur neuf**, ce qui reste compatible avec le hasard.
+   Voir « PT10 — la main a disparu du corpus ».
 2. **Le mur des dix premières minutes** : 83 % de la Certitude à la main avant la première
    Concordance en PT7, 63 % en PT8, 75 % en PT9 — et c'est là que la partie 1 de PT5 a été
    abandonnée. Le seul défaut d'équilibrage connu qui ne soit pas réglé. Il se traite par
@@ -2471,8 +2636,8 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
    est fini.** Le chemin critique est maintenant **TXT-1**, les onze lectures fausses : c'est
    de l'écriture, et elle bloque l'ambiguïté, donc l'Élève, donc `peut-être` et `faux`, donc
    la relecture de fin.
-4. **Le clic vide** est descendu à 8 % des relevés (PT9) depuis la marque de la barre ; le
-   texte ne dit toujours pas ce que la barre dit. Peut attendre.
+4. **Le clic vide** : 8 % des relevés en PT9, 10 % en PT10 (16 sur 164) depuis la marque de
+   la barre ; le texte ne dit toujours pas ce que la barre dit. Peut attendre.
 5. ~~Trancher le sort de ⟨N1⟩ et ⟨N2⟩ (`docs/corpus.md` §9).~~ *Semés comme intitulés des
    registres le 11/09/2026 — voir « Le fleuve et la cité ».*
 6. ~~**`revCount()`, maintenant.**~~ *Fait le 14/09/2026, et la prémisse était fausse : ce
@@ -2481,3 +2646,19 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
    taille du lexique. Ce qui reste ouvert, c'est la question que ce travail a soulevée :
    **le dégagement fixe le prix de la main** (règle 9), et aucun playtest n'est derrière ce
    réglage-là. Voir « Le dégagement ne dérive pas, il oscille ».
+
+7. **La main a disparu du corpus** *(PT10, 15/09/2026)* — 1,0 % des occurrences contre 36,3 %
+   en PT9, et **cinquante minutes d'affilée sans un geste dans le texte**, de 36:46 à 86:34.
+   Les deux ont la même cause : le gisement est sorti en trente minutes, donc tarifé au débit
+   du début, donc bon marché pour toujours, et il ne reste plus rien à y faire ensuite. C'est
+   le défaut de PT6 revenu par la porte que R9 ne garde pas — R9 fige le tarif à la première
+   visite, elle ne dit rien de qui ne revient jamais. **Le défaut d'équilibrage le plus grave
+   depuis PT6**, et il attend la mesure de PT11 avant tout réglage : ne pas toucher `REL_K`,
+   c'est la date des relevés qui est en cause, pas leur prix.
+
+8. **Un garde-fou qui ne contraint que le simulateur ne garde rien.** Le plancher de 15 % sur
+   la part manuelle des occurrences, entré dans `outils/balayage.py` le 14/09/2026, donne 22,9
+   à 23,4 % sur le réglage en place et n'a pas vu venir le 1,0 % de PT10 — parce qu'il mesure
+   l'acheteur simulé, qui relève tant que c'est rentable, et pas un joueur qui s'arrête. Vrai
+   de ce plancher-là ; à vérifier sur les trois autres. C'est la limite de méthode que huit
+   balayages n'avaient pas rencontrée, et elle ne se corrige pas en déplaçant un seuil.
