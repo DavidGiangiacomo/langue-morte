@@ -297,7 +297,7 @@ et pour chacun une colonne « où ça casse ». Elle avait été écrite **avant
 ### La méthode : rendre le corpus, puis substituer
 
 Un script hors jeu relit `src/corpus.js`, remonte chaque identifiant à son mot français et sort les
-735 lignes des trente tablettes en clair. On y cherche alors, non pas le signe, mais **tous ses
+705 lignes des trente tablettes en clair. On y cherche alors, non pas le signe, mais **tous ses
 contextes distincts** : `grep`, normalisation des nombres, `sort | uniq -c`. Trois cent quinze
 attestations de `grain` se réduisent à seize contextes ; deux cent quatre-vingt-dix de `ne-pas`, à
 vingt-deux. À cette taille-là, on peut lire chaque contexte avec le mot faux à la place du juste et
@@ -307,6 +307,13 @@ C'est exactement le geste que le jeu demande au joueur, et c'est exactement ce q
 Concordance. Ça vaut d'être noté : l'outil qui manquait à l'auteur pour écrire cet acte est celui
 qu'il avait déjà donné au joueur en PT9.
 
+> *Corrigé le 15/09/2026.* Cette entrée écrivait « 735 lignes », repris ensuite dans le backlog et
+> dans le `CLAUDE.md`. Le compte est **705** — `src/corpus.js`, trente tablettes. Le chiffre n'avait
+> jamais été compté, seulement recopié, ce qui est exactement le défaut que cette section-ci
+> reproche à la table du §7. Rien de ce qu'il servait à dire ne change : la séquence
+> ⟨ne-pas⟩⟨ne-pas⟩ n'existe toujours nulle part.  *(Tous les autres chiffres de l'entrée ont été
+> recomptés à cette occasion et sont justes : 315, 290, 131, 41, 24, 1 533.)*
+
 ### Ce que la confrontation a cassé
 
 Trois des onze ruptures annoncées n'existent pas dans le texte.
@@ -314,7 +321,7 @@ Trois des onze ruptures annoncées n'existent pas dans le texte.
 | Annoncé | Ce que dit le corpus |
 |---|---|
 | `eau` casse tablette 25 : « champ 3 · sang 21 » | La ligne est `champ 3 · grain 21`. Les champs se mesurent en grain — **aucune** ligne du corpus ne met un nombre d'eau à côté d'un champ. |
-| `ne-pas` casse sur « ne-pas ne-pas » (tablette 26) | La séquence n'existe **nulle part** dans les 735 lignes. |
+| `ne-pas` casse sur « ne-pas ne-pas » (tablette 26) | La séquence n'existe **nulle part** dans les 705 lignes. |
 | `avant` casse « au réordonnancement chronologique » | Le rangement marche aussi bien avec « dessous » : l'ordre stratigraphique est un ordre. La rupture annoncée était mécanique, or AMB-4 demande une rupture **textuelle**. |
 
 Deux des trois se remplacent, et par mieux :
