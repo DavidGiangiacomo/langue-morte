@@ -42,7 +42,7 @@ pip install playwright && playwright install chromium
 python build.py && python outils/verifier.py
 ```
 
-224 assertions bout en bout, en vingt-deux sections : absence d'erreur JS, rendu complet du corpus, échelle de la numération signe par signe, infobulles, gisement et tarif du relevé, recoupement, datation et rangement chronologique, concordance, composition, ambiguïté, doute et révision, progression hors ligne, fenêtre de fin, et reprise d'une sauvegarde commencée avant une mécanique neuve. Chaque mécanique ajoutée doit y ajouter les siennes.
+239 assertions bout en bout, en vingt-trois sections : absence d'erreur JS, rendu complet du corpus, échelle de la numération signe par signe, infobulles, gisement et tarif du relevé, recoupement, datation et rangement chronologique, concordance, composition, ambiguïté, doute, révision et contradiction, progression hors ligne, fenêtre de fin, et reprise d'une sauvegarde commencée avant une mécanique neuve. Chaque mécanique ajoutée doit y ajouter les siennes.
 
 ## Équilibrer
 

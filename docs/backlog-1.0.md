@@ -17,7 +17,7 @@
 | Instruments | 6 / 9 (Œil, Copiste, Table, Concordance, Atelier, Grammaire) | 3 (Élève, Corpus jumeau, Le Lecteur) |
 | Actes | **I, II, III — entiers** | IV, V |
 | Corpus | **30 tablettes, 705 lignes, 3 838 signes — intégral**, ⟨N1⟩/⟨N2⟩ semés, **les 11 lectures fausses écrites** | — |
-| Mécaniques centrales | relevé, recoupement, datation, rangement, concordance, hors-ligne, **composition**, **ambiguïté**, **doute et révision** | contradiction, Questions |
+| Mécaniques centrales | relevé, recoupement, datation, rangement, concordance, hors-ligne, **composition**, **ambiguïté**, **doute, révision, contradiction** | Questions |
 | Acte III | **fini** *(PAR-2, 14/09/2026)* | — |
 | Fins | aucune *(écran « fin du prototype »)* | Achever, Interrompre, relecture |
 | Rythme mesuré | 66 min 49 pour 20 glyphes (PT9) · **90,5 à 93,7 min simulées pour 29** *(85,2 à 88,1 toutes lectures fausses)* | cible design doc : 3 h – 3 h 30 pour 45 |
@@ -222,11 +222,23 @@ un engagement de date.
 
 ### E4 — Contradiction et révision
 
-**CONTR-1 — Un passage refuse de se résoudre** · T:M
+**CONTR-1 — Un passage refuse de se résoudre** · ~~T:M~~ **fait** (15/09/2026)
 > En tant que joueur, je veux que mes erreurs finissent par bloquer quelque chose, sans jamais me faire perdre ce que j'ai acquis.
 
 - Fini quand : au franchissement d'acte, dette > seuil divise par deux la production de Certitude ; **aucune progression n'est perdue, seulement du débit** (R2) ; l'état est affiché sans ambiguïté.
 - Dépend de : AMB-3.
+- *Fait* : seuil **5**, Certitude ÷2. Elle se solde **à l'ouverture du doute** et non à un
+  franchissement de branche — dans le prototype, la fin de l'acte III est le dernier achat de
+  l'arbre (règle 16 : la partie s'arrête là), et `année` la déclencherait trente minutes avant
+  que `peut-être` n'existe, donc sans remède ni explication. Règle générale : *elle s'évalue à
+  chaque franchissement d'acte à partir de `peut-être`*. Le passage qui refuse est **fixe** —
+  tablette 17 ligne 4, « eau · ne-pas tablette », la note de tri qui constate qu'un relevé
+  manque. Le choisir d'après les signes mal lus les désignerait (règles 17, 18) ; la ligne de
+  journal dit donc expressément qu'il n'est pas en cause. Mesuré chez qui ne révise jamais :
+  90,5–93,7 min lecture parfaite, **89,1–92,4 pour qui ne rate que les deux incassables** (la
+  prime sans la sanction), 96,6–99,5 toutes fausses, et **100,5–103,4 pour la paire
+  réparante** — le pire cas du jeu, qui prend la sanction entière avec la prime de deux
+  signes. Voir `docs/journal.md`, « La contradiction ».
 
 **CONTR-2 — Rouvrir un signe** · ~~T:M~~ **fait** (15/09/2026, avec MOD-2)
 > En tant que joueur, je veux revenir sur une lecture et payer pour la corriger.
@@ -432,13 +444,15 @@ un engagement de date.
 **LIV-5 — Étendre `verifier.py`** · T:L
 > En tant qu'auteur, je veux que chaque mécanique nouvelle soit couverte bout en bout.
 
-- Le fichier porte aujourd'hui **224 assertions** sur le relevé, le recoupement, la numération, le gisement, la datation, les infobulles, la composition, la fenêtre de fin qui attend sa lecture, et la reprise d'une sauvegarde d'avant une mécanique neuve. Chaque épic de cette feuille de route doit y ajouter ses vérifications — en particulier AMB-4 (la phrase absurde est bien rendue) et COMP-3 (`zéro` replie les compteurs).
+- Le fichier porte aujourd'hui **239 assertions** sur le relevé, le recoupement, la numération, le gisement, la datation, les infobulles, la composition, la fenêtre de fin qui attend sa lecture, et la reprise d'une sauvegarde d'avant une mécanique neuve. Chaque épic de cette feuille de route doit y ajouter ses vérifications — en particulier AMB-4 (la phrase absurde est bien rendue) et COMP-3 (`zéro` replie les compteurs).
   *15/09/2026* : la section 21 en ajoute vingt-cinq sur l'ambiguïté, dont les cinq ruptures d'AMB-4
   qui existent dans l'arbre d'aujourd'hui et la vérification que **rien à l'écran ne nomme la dette** ;
   la section 22 en ajoute vingt-deux sur le doute et la révision, dont **le degré de doute est le
   même pour les deux lectures** et **la révision ne dit jamais si l'on avait raison**. Les compteurs
   de lexique n'y figent plus la taille de l'arbre : ils lisent `NGL`, sans quoi ils échouent à
   chaque lot de glyphes sans que rien soit cassé — la leçon du garde-fou de durée, en petit.
+  La section 23 en ajoute quinze sur la contradiction, dont **R2 mesuré en basculant la
+  sanction sans rien acheter** et **le passage qui refuse ne bouge pas avec les signes mal lus**.
 
 **LIV-6 — README, écran-titre, distribution** · T:S
 > En tant que curieux, je veux ouvrir un fichier et jouer.
@@ -453,15 +467,15 @@ Le graphe de dépendances avait une seule vraie contrainte forte : **le texte de
 (TXT-1) bloquait l'ambiguïté, qui bloque l'Élève, la Modalité et la relecture.** Elle est levée
 depuis le 14/09/2026 ; E3 et MOD-2 sont faits le 15/09/2026, avec CONTR-2 et CONTR-3 que
 `peut-être` ne pouvait pas laisser dehors — un doute qu'on ne peut pas payer ne sert à rien.
-**Le prochain sur le chemin critique est CONTR-1**, la contradiction : la dette court depuis
-AMB-3 et personne ne la lit encore. Elle rendra son sens à la révision (dette effacée, donc
-bonus rétroactif payable sans rien annoncer) et fermera la boucle voir → payer → être puni de
-ne pas payer. Puis MOD-3 (`faux`) et l'Élève.
+CONTR-1 ferme la boucle le même jour : voir son doute, payer pour rouvrir, ou encaisser.
+**Le prochain sur le chemin critique est MOD-3** (`faux`), qui repeint rétroactivement les
+erreurs commises — le seul moment où le jeu dira enfin lesquelles — puis **E5, l'Élève**, dont
+le taux d'erreur a maintenant de quoi se nourrir. E4 est entier.
 
 | Jalon | Contenu | Ce qu'on peut jouer à la fin |
 |---|---|---|
 | ~~**J1 — L'acte III se termine**~~ *(fait, 14/09/2026)* | ~~E1 (composition)~~ + ~~PAR-1~~ + ~~MOD-1~~ + ~~COMP-3~~ + ~~PAR-2~~ | 28 glyphes, la composition, `les-lecteurs` |
-| **J2 — Le mensonge** | ~~TXT-1~~ → ~~AMB-1 · AMB-2 · AMB-3~~ → ~~AMB-4~~ *(5 ruptures sur 7)* → ~~MOD-2 · CONTR-2 · CONTR-3~~ *(15/09/2026)* → **CONTR-1** + MOD-3 + E5 (Élève) | l'acte III entier, la confiance, la contradiction |
+| **J2 — Le mensonge** | ~~TXT-1~~ → ~~AMB-1 · AMB-2 · AMB-3~~ → ~~AMB-4~~ *(5 ruptures sur 7)* → ~~MOD-2 · CONTR-2 · CONTR-3 · CONTR-1~~ *(15/09/2026)* → **MOD-3** + E5 (Élève) | l'acte III entier, la confiance, **la contradiction** |
 | **J3 — La voix** | E6 (Personne, Questions, Corpus jumeau, I2) | l'acte IV |
 | **J4 — La graine** | E7 + E8 | les cinq actes, les deux fins, la relecture |
 | **J5 — 1.0** | E9 (final) + E11 | une version publique |

@@ -73,7 +73,12 @@ def essai(variante):
     ses pires mesures."""
     durees, ecarts, con1, trs, mains = [], [], [], [], []
     for cpm, lect in itertools.product(CADENCES, LECTURES):
-        tt, marks, _, s = run({**P, **variante}, cpm, faux=lect)
+        # `contr_s` hors d'atteinte : ce balayage mesure le RYTHME d'un réglage, pas la
+        # sanction que le joueur s'inflige. La contradiction ajoute onze minutes à qui ne
+        # révise jamais (CONTR-1) — les compter ici ferait rejeter un bon réglage pour une
+        # punition qui n'est pas la sienne, et qui a une sortie. Elle se mesure à part,
+        # dans `sim.py`.
+        tt, marks, _, s = run({**P, **variante, 'contr_s': 99}, cpm, faux=lect)
         durees.append(tt)
         ecarts.append(max((marks[i][1] - marks[i - 1][1] for i in range(1, len(marks))),
                           default=0.0))

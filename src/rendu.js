@@ -69,24 +69,32 @@ const cleTok = el => el.closest('.tablet').dataset.tb + ':' + el.dataset.j;
 
 function paintCorpus(flashId){
   const rel = releves();
+  /* La ligne que la contradiction retient (CONTR-1). Un Set vide quand elle n'est pas armée,
+     donc la boucle ci-dessous ne paie rien le reste du temps. */
+  const jetons = refusJetons();
+  const refus = jetons ? new Set(jetons) : null;
   elCorpus.querySelectorAll('[data-w]').forEach(el=>{
-    const id=el.dataset.w, known=!!byId[id] && has(id);
-    const r = rel.has(cleTok(el)) ? 'r' : '';
+    const id=el.dataset.w;
+    const nie = !!refus && refus.has(el);
+    const known = !nie && !!byId[id] && has(id);
+    const r = (rel.has(cleTok(el)) ? 'r' : '') + (nie ? 'x' : '');
     /* Le mot entre dans la signature du cache : une lecture tranchée à l'achat repeint
        les attestations déjà peintes, sans quoi le mot faux n'arriverait que sur les
        tablettes touchées ensuite (AMB-2). */
     const want = (known ? 'w:'+motDe(id) : 'g') + r;
     if(el.__v===want && flashId!==id) return;
     el.__v=want;
-    el.className='tok '+(known?'w':'g')+(r?' rel':'')+(flashId===id?' flash':'');
+    el.className='tok '+(known?'w':'g')+(r.indexOf('r')>=0?' rel':'')+(nie?' refus':'')
+                +(flashId===id?' flash':'');
     el.innerHTML = known ? motDe(id) : sv(id);
   });
   elCorpus.querySelectorAll('[data-n]').forEach(el=>{
-    const n=+el.dataset.n, lis=numLisible(n), r = rel.has(cleTok(el)) ? 'r' : '';
+    const n=+el.dataset.n, nie = !!refus && refus.has(el), lis = !nie && numLisible(n);
+    const r = (rel.has(cleTok(el)) ? 'r' : '') + (nie ? 'x' : '');
     const want=(lis?'n':'g')+r;
     if(el.__v===want) return;
     el.__v=want;
-    el.className='tok '+(lis?'num':'g')+(r?' rel':'');
+    el.className='tok '+(lis?'num':'g')+(r.indexOf('r')>=0?' rel':'')+(nie?' refus':'');
     el.innerHTML = lis ? nf.format(n) : numGlyphs(n);
   });
   ranger(); revealer(); paintRail(); peindreRec(); peindreConc();
@@ -590,6 +598,13 @@ function paintDoute(){
   if(!ouvert) return;
   const c = revCost(), payable = S_.C >= c;
   setHTML($('doute-c'), 'rouvrir ' + (readC() ? big(c) : numGlyphs(c)));
+  /* « L'état est affiché sans ambiguïté » (CONTR-1). Ce que le bandeau dit : la Certitude est
+     divisée par deux, et une révision peut y mettre fin. Ce qu'il ne dit pas, et ne dira
+     jamais : lequel des signes est en cause. */
+  const bn = $('doute-etat');
+  if(bn.hidden !== !S_.contr) bn.hidden = !S_.contr;
+  if(S_.contr) setHTML(bn, 'Un passage refuse de se résoudre. Certitude divisée par deux '
+    + 'jusqu’à ce qu’une lecture rouverte le dénoue.');
   const liste = douteux();
   for(const g of GL){
     if(!AMB[g.id]) continue;
@@ -670,7 +685,7 @@ function paintRes(){
   const tb=S_.b.tab, cn=S_.b.con, gr=S_.b.gram;
   const oNet = oBrut() - tb*1.0,
         hNet = tb*0.6*M.tabl() - cn*0.5 - gr*GRAM_C,
-        cNet = cn*CON_P*M.con() + gr*GRAM_P*gramMul()*M.gram();
+        cNet = (cn*CON_P*M.con() + gr*GRAM_P*gramMul()*M.gram())/contrDiv();
   setHTML($('vl-O'), amount(S_.O, readN()));
   setHTML($('vl-H'), amount(S_.H, readN()));
   setHTML($('vl-C'), amount(S_.C, readN()));

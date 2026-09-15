@@ -86,6 +86,11 @@ P = dict(
     # 14/09/2026 ; c'est `balayage.py` qui le trie désormais.
     rev_r=1.1,                                         # courbe du dégagement (1,0 = linéaire)
     ate_socle=30,                                      # Copistes avant d'épargner pour l'Atelier (PT9 : 22 au premier, 35 à la 14e min)
+    # La contradiction (CONTR-1) : à l'ouverture du doute, si la dette dépasse le seuil, la
+    # Certitude est divisée par deux jusqu'à révision. Le seuil suit `CONTR_SEUIL` dans
+    # economie.js. Ce simulateur n'a pas de modèle de lecture et ne révise donc JAMAIS : il
+    # mesure le pire cas, celui du joueur qui encaisse jusqu'au bout.
+    contr_s=5, contr_div=2.0,
 )
 
 BR = {}
@@ -117,6 +122,19 @@ for cible, a, b in re.findall(r"(\w+):\['(\w+)','(\w+)'\]", re.search(r'const CO
 AMB_R = 1.25
 AMBIGUS = ('tem', 'ur', 'kish', 'sar', 'shen', 'nur', 'pat', 'dun', 'la')
 
+# ---- la dette et la contradiction (AMB-3, CONTR-1) ------------------------
+# Les poids se déduisent des attestations comme dans le jeu : 315 occurrences pèsent 3,
+# quatre en pèsent 1. Recopier une table à la main les ferait diverger au premier signe
+# ajouté.
+_freq = {}
+for _tb in _corpus:
+    for _l in _tb['l']:
+        for _tk in _l.split(' '):
+            if _tk != '·' and not _tk.startswith('%'):
+                _freq[_tk] = _freq.get(_tk, 0) + 1
+DETTE = {g: (3 if _freq.get(g, 0) >= 250 else 2 if _freq.get(g, 0) >= 100 else 1)
+         for g in AMBIGUS}
+
 
 def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=()):
     """cpm = clics manuels par minute. `garde` = fraction de la partie pendant laquelle
@@ -136,6 +154,9 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=()):
     o_main = o_pass = gis_use = 0.0
     has = lambda x: x in gl
     mal_lus = set(faux)
+    # Armée une seule fois, à l'ouverture du doute, et jamais levée ici faute de révision.
+    contr = [False]
+    etrangle = lambda: P['contr_div'] if contr[0] else 1.0
     # Le multiplicateur d'un signe, majoré s'il est mal lu. Le joueur n'en voit rien : la
     # prime ne se lit ni au lexique ni à l'écran de choix (economie.js, `mfx`).
     mf = lambda g, x: (1 + (x - 1) * AMB_R if g in mal_lus else x) if has(g) else 1
@@ -211,12 +232,12 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=()):
         w = b['con'] * P['con_c'] * dt
         if w > 0:
             c = min(w, H); fr = c / w; H -= c
-            g = b['con'] * P['con_p'] * mcon() * fr * dt
+            g = b['con'] * P['con_p'] * mcon() * fr * dt / etrangle()
             C += g; c_con += g; tr_ins[min(11, int(t // 600))] += g
         w = b['gram'] * P['gram_c'] * dt
         if w > 0:
             c = min(w, H); fr = c / w; H -= c
-            g = b['gram'] * gramp() * fr * dt
+            g = b['gram'] * gramp() * fr * dt / etrangle()
             C += g; c_con += g; tr_ins[min(11, int(t // 600))] += g
 
         # achats d'instruments : garder la chaîne alimentée avant de l'allonger
@@ -267,6 +288,9 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=()):
             if not a: break
             a.sort(key=lambda g: g[2]); g = a[0]
             C -= g[2]; gl.add(g[0]); marks.append((g[0], t / 60)); hyp_gl[g[0]] = H
+            # `peut-être` ouvre le doute ET solde les lectures faites jusque-là.
+            if g[0] == 'mik':
+                contr[0] = sum(DETTE[x] for x in mal_lus if x in gl) > P['contr_s']
 
         # La composition : elle ne crée ni ne consomme de flux, elle change le catalogue. Un
         # joueur qui a vu ⟨grenier⟩ dans le texte le pose dès qu'il peut ; ce qu'on mesure ici
@@ -282,7 +306,7 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=()):
                     if cid not in SECRETS:
                         marks.append((cid, t / 60)); hyp_gl[cid] = H
 
-    return t / 60, marks, b, dict(rec=rec, c_rec=c_rec, c_con=c_con,
+    return t / 60, marks, b, dict(rec=rec, c_rec=c_rec, c_con=c_con, contr=contr[0],
                                   obrut=obrut(), cs=b['con'] * P['con_p'] * mcon(),
                                   o_main=o_main, o_pass=o_pass, gis_use=gis_use,
                                   tr_rec=tr_rec, tr_ins=tr_ins, premier=premier,
@@ -313,13 +337,12 @@ if __name__ == '__main__':
             tr.append(f"{i*10}-{i*10+10}′ {100*r/(r+ins):.0f} %")
         print("     I6 par tranche : " + " · ".join(tr))
 
-    # La même partie, toutes lectures fausses (AMB-1). La prime de 25 % ne porte que sur les
-    # CINQ signes ambigus qui multiplient quelque chose, et le joueur ne la voit nulle part :
-    # ce bloc est le seul endroit du projet où elle se lit. Ce qu'il mesure, c'est de combien
-    # se tromper paie — la promesse du design doc §8, en minutes.
-    print("\n--- toutes lectures fausses ---")
+    # La même partie, toutes lectures fausses (AMB-1), SANS la contradiction : ce bloc mesure
+    # la prime de 25 % seule — de combien se tromper paie, la promesse du design doc §8 en
+    # minutes. Le joueur ne la voit nulle part ; c'est le seul endroit du projet où elle se lit.
+    print("\n--- toutes lectures fausses, sans contradiction ---")
     for cpm in (5, 15, 40):
-        tt, marks, b, s = run(P, cpm, faux=AMBIGUS)
+        tt, marks, b, s = run({**P, 'contr_s': 99}, cpm, faux=AMBIGUS)
         gaps = [marks[i][1] - marks[i - 1][1] for i in range(1, len(marks))] or [0]
         main = 100 * s['o_main'] / max(1e-9, s['o_main'] + s['o_pass'])
         tr = []
@@ -330,3 +353,17 @@ if __name__ == '__main__':
         print(f"--- {cpm:>2} clics/min : {tt:5.1f} min · écart max {max(gaps):4.1f} min · "
               f"{s['rec']:>3} recoup. · la main fournit {main:.1f} % des occurrences")
         print("     I6 par tranche : " + " · ".join(tr))
+
+    # Et ce que la contradiction reprend (CONTR-1). Le pire cas n'est PAS « tout faux » : la
+    # prime y compense une partie de la sanction. C'est la paire réparante ⟨grain⟩+⟨maison⟩ —
+    # six points de dette, deux signes de prime — qui paie le plus cher, et c'est exactement
+    # ce que `docs/corpus.md` §7.3 annonçait en décidant de la laisser passer.
+    print("\n--- la contradiction, pour qui ne révise jamais ---")
+    for lib, fx in (('lecture parfaite', ()),
+                    ('les deux incassables (lire, il-faut)', ('shen', 'dun')),
+                    ('la paire réparante (grain + maison)', ('tem', 'ur')),
+                    ('toutes fausses', AMBIGUS)):
+        d = [run(P, c, faux=fx)[0] for c in (5, 15, 40)]
+        armee = run(P, 15, faux=fx)[3]['contr']
+        print(f"    {lib:38} dette {sum(DETTE[g] for g in fx):>2} · "
+              f"{'ARMÉE ' if armee else 'libre '} · {min(d):5.1f}-{max(d):5.1f} min")

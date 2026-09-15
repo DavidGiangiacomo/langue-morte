@@ -252,6 +252,15 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .bloom{position:fixed;inset:0;pointer-events:none;background:radial-gradient(60% 50% at 50% 45%,rgba(214,140,70,.30),transparent 70%);opacity:0;z-index:40}
 .bloom.on{animation:bl 1.1s ease}
 @keyframes bl{0%{opacity:0}18%{opacity:1}100%{opacity:0}}
+/* ---------- la contradiction ---------- */
+/* Le passage qui refuse. Il ne s'efface pas et ne se barre pas : il redevient des signes,
+   exactement comme avant qu'on sache les lire. Le liseré dit que c'est le jeu qui retient,
+   et non qu'il manque quelque chose au corpus. */
+.tok.refus{box-shadow:inset 0 -1px 0 var(--ochre);opacity:.9}
+.tok.refus .gl{stroke-width:1.7}
+.detat{margin:0 0 7px;padding:7px 9px;border-left:2px solid var(--ochre-d);background:#2A2116;
+  font-size:13px;line-height:1.45;color:var(--mid)}
+
 /* ---------- le doute ---------- */
 /* Une ligne par signe ambigu acquis, la plus douteuse en haut. La barre est un fait —
    la part du signe qu'on n'avait pas sous les yeux — et non un verdict : rien ici ne
@@ -375,6 +384,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
            et ce que le corpus sait du signe — jamais si l'on a eu raison. -->
       <section class="panel" id="pdoute" hidden>
         <div class="phead"><span>Doute</span><span class="r" id="doute-c"></span></div>
+        <div class="detat" id="doute-etat" hidden></div>
         <div class="doutes" id="doutes" aria-label="Les signes qui supportaient deux lectures. Cliquez pour en rouvrir une."></div>
       </section>
 
@@ -874,7 +884,7 @@ const TB = ORDRE.map(n => CORPUS.find(t => t.t === n));
    glyphes et rouvrirait sur l'écran de fin, sans moyen de continuer. */
 const KEY='langue-morte-actes-i-iii';
 const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram:0},gl:[],t:0,done:false,
-  rel:{}, prix:{}, carnet:[], comp:0, lect:{}, dte:{}, conc:{}, recs:{}, rev:0});
+  rel:{}, prix:{}, carnet:[], comp:0, lect:{}, dte:{}, conc:{}, recs:{}, rev:0, contr:0});
 /* rel : jetons relevés par tablette · prix : tarif du gisement, verrouillé
    carnet : les paires déjà tentées et fausses · comp : le nombre de tentatives, toutes issues
    confondues — c'est lui que PT10 doit lire, pas la seule liste des échecs.
@@ -882,7 +892,8 @@ const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram
    déduit — elle n'est pas stockée, voir `dette()`.
    dte : le degré de doute figé à la décision · conc, recs : les signes concordés et le
    nombre de recoupements par signe, qui sont ce sur quoi ce degré se calcule · rev : les
-   révisions faites, dont dépend le prix de la suivante (CONTR-3).
+   révisions faites, dont dépend le prix de la suivante (CONTR-3) · contr : la contradiction,
+   armée ou non (CONTR-1) — le seul de ces champs que le joueur voie.
    Champs de premier niveau, donc une partie d'avant la composition, ou d'avant l'ambiguïté,
    les reçoit vides au chargement, sans qu'on touche à `KEY`. */
 let S_ = fresh(), speed = 1;
@@ -1039,6 +1050,78 @@ const douteOuvre = () => has('mik');
    ambigus de l'acte III coûte alors plus que ce que le joueur peut gagner d'ici la fin,
    tandis que trois ou quatre révisions choisies restent payables. Mesuré à `outils/sim.py`,
    pas estimé (règle 7). */
+
+/* ======================== la contradiction (CONTR-1) ========================
+   « Au franchissement de chaque acte, si dette > seuil, un passage refuse de se résoudre :
+   la production de Certitude est divisée par deux jusqu'à révision. On ne perd jamais de
+   progression, seulement du débit » (design doc §8).
+
+   **Où elle se déclenche, dans un prototype qui n'a pas le franchissement voulu.** Le design
+   place la première contradiction à la fin de l'acte III — c'est-à-dire, ici, sur le dernier
+   achat de l'arbre, qui clôt la partie : elle n'aurait pas une seconde pour mordre. Et la
+   déclencher plus tôt, à `année`, l'imposerait trente minutes avant que `peut-être` n'existe,
+   donc sans explication ni remède : le joueur ne lirait pas une sanction, il lirait un bug.
+   Elle se solde donc à **l'ouverture du doute**, et c'est la règle générale dont le prototype
+   ne voit que le premier cas : *la contradiction s'évalue à chaque franchissement d'acte à
+   partir de `peut-être`*. Avant lui le jeu n'admet pas qu'une lecture puisse être fausse ; il
+   ne peut pas en faire payer le prix.
+
+   **Elle se lève dès que la dette repasse sous le seuil**, c'est-à-dire par la révision — et
+   c'est là que le « bonus rétroactif » du design doc se paie enfin, en dette effacée et sans
+   rien annoncer (voir `reviser`). Levée, elle ne se réarme pas : il n'y a plus de
+   franchissement d'acte dans le prototype, et on ne ballotte pas un joueur entre deux états
+   pour un chiffre qu'il ne voit pas.
+
+   **Le seuil est mesuré.** Les poids de dette étant tirés des attestations, il vaut 0 pour
+   une lecture parfaite, 3 pour qui ne rate que les deux signes conçus pour ne pas casser
+   (`lire` et `il-faut`, docs/corpus.md §7.4), 6 pour la paire réparante ⟨grain⟩+⟨maison⟩, 8
+   en moyenne pour qui tire à pile ou face, 18 pour qui se trompe partout. À **5**, un lecteur
+   qui a fait tout ce que le texte permet passe avec de la marge, et la paire réparante
+   déclenche — ce que le §7.3 exigeait quand il a été décidé de la laisser passer.
+
+   Mesuré (`outils/sim.py`, joueur qui ne révise jamais, pire cas) : 90,5-93,7 min pour une
+   lecture parfaite, 89,1-92,4 pour qui ne rate que les incassables — la prime, sans la
+   sanction — et 96,6-103,4 dès qu'elle s'arme. Se tromper faisait gagner cinq minutes et
+   demie ; il en coûte onze. Le pire cas n'est pas « tout faux » (96,6, la prime compense) :
+   c'est **la paire réparante** à 103,4, qui prend la sanction sans la prime. Le joueur que le
+   texte ne peut pas prévenir est celui qui paie le plus, et c'est exactement ce que le §7.3
+   annonçait en la laissant passer.
+
+   `S_.contr` est armé à l'achat de `peut-être`, jamais ailleurs ; il n'y a pas de tick qui
+   l'allume, pour qu'aucune sanction ne tombe sans un geste du joueur juste avant. */
+const CONTR_SEUIL = 5;
+const CONTR_DIV = 2;
+const contrDiv = () => S_.contr ? CONTR_DIV : 1;
+
+/* Le passage qui refuse : tablette 17, quatrième ligne — « eau · ne-pas tablette », la note
+   de tri qui dit qu'un relevé manque. Le jeu le fait manquer.
+   Elle est FIXE, et elle ne dépend pas des signes mal lus. Choisir la ligne d'après l'erreur
+   la désignerait, et ce serait l'oracle que les règles 17 et 18 refusent ; c'est aussi
+   pourquoi la ligne de journal dit expressément que ce passage-là n'est pas en cause. Elle
+   sort de terre quinzième, donc elle est sous les yeux du joueur depuis longtemps quand elle
+   s'éteint, et aucune ligne d'acte IV ou V ne s'y joue — celles-là sont deux lignes plus bas
+   (docs/corpus.md, tablette 17). */
+const REFUS_T = 17, REFUS_L = 4;
+function refusJetons(){
+  if(!S_.contr) return null;
+  const tb = elCorpus.querySelector('.tablet[data-tb="'+REFUS_T+'"]');
+  const ln = tb && tb.children[REFUS_L];
+  return ln ? ln.querySelectorAll('.tok') : null;
+}
+
+/* Soldée à l'ouverture du doute, et nulle part ailleurs. */
+function contrSolder(){
+  if(S_.contr || dette() <= CONTR_SEUIL) return;
+  S_.contr = 1;
+  pushLog('Un passage ne se résout plus. Ce n’est pas lui qui est en cause : c’est ce que j’ai lu ailleurs, et je ne sais pas où.');
+}
+/* Levée par la révision, dès que la dette repasse sous le seuil. Elle ne se réarme pas. */
+function contrLever(){
+  if(!S_.contr || dette() > CONTR_SEUIL) return;
+  S_.contr = 0;
+  pushLog('Le passage se résout. Quelque chose que j’avais mal lu ne l’est plus — le corpus ne dira pas quoi.');
+}
+
 const REV_B = 240;      // coût de la première révision, en Certitude
 const REV_K = 1.6;      // ... et par révision déjà faite
 const revCost = () => Math.ceil(REV_B * Math.pow(REV_K, S_.rev));
@@ -1058,6 +1141,10 @@ function reviser(id, lect){
   S_.dte[id] = douteCalc(id);
   numCache.length = 0;
   pushLog(logDe(id));
+  /* Le « bonus rétroactif » du design doc §8, enfin payé — en dette effacée, donc sans rien
+     annoncer. Une révision qui fait repasser la dette sous le seuil lève la contradiction ;
+     une qui ne suffit pas ne dit rien du tout. */
+  contrLever();
   paintCorpus(id);
   return true;
 }
@@ -1311,6 +1398,10 @@ function acheterGl(id, lect){
   touchees = new Set();
   CORPUS.forEach((tb,i)=>{ if(pctTablette(tb) > avant[i] + 1e-9) touchees.add(tb.t); });
   pushLog(logDe(id));
+  /* Avant le repeint, et non après : c'est lui qui retire le passage retenu. Le corpus ne se
+     repeint qu'à l'achat, jamais à la frame — un solde posé ensuite n'apparaîtrait qu'au
+     glyphe suivant, et sur `peut-être` il n'y en a pas forcément. */
+  if(id === 'mik') contrSolder();
   paintCorpus(id);
   lastPct=-1;
   if(id==='an'||id==='kal'){ const b=$('bloom'); b.classList.remove('on'); void b.offsetWidth; b.classList.add('on'); }
@@ -1391,11 +1482,11 @@ function produire(dt){
   // concordance : consomme des hypothèses
   const wantH = S_.b.con*0.5*dt;
   if(wantH>0){ const canH=Math.min(wantH,S_.H); const fr=canH/wantH;
-    S_.H-=canH; S_.C += S_.b.con*CON_P*M.con()*fr*dt; }
+    S_.H-=canH; S_.C += S_.b.con*CON_P*M.con()*fr*dt/contrDiv(); }
   // grammaire : en consomme beaucoup plus, et rend d'autant plus qu'on a déchiffré
   const wantG = S_.b.gram*GRAM_C*dt;
   if(wantG>0){ const canG=Math.min(wantG,S_.H); const fr=canG/wantG;
-    S_.H-=canG; S_.C += S_.b.gram*GRAM_P*gramMul()*M.gram()*fr*dt; }
+    S_.H-=canG; S_.C += S_.b.gram*GRAM_P*gramMul()*M.gram()*fr*dt/contrDiv(); }
 }
 
 /* ---- la nuit ----
@@ -1500,24 +1591,32 @@ const cleTok = el => el.closest('.tablet').dataset.tb + ':' + el.dataset.j;
 
 function paintCorpus(flashId){
   const rel = releves();
+  /* La ligne que la contradiction retient (CONTR-1). Un Set vide quand elle n'est pas armée,
+     donc la boucle ci-dessous ne paie rien le reste du temps. */
+  const jetons = refusJetons();
+  const refus = jetons ? new Set(jetons) : null;
   elCorpus.querySelectorAll('[data-w]').forEach(el=>{
-    const id=el.dataset.w, known=!!byId[id] && has(id);
-    const r = rel.has(cleTok(el)) ? 'r' : '';
+    const id=el.dataset.w;
+    const nie = !!refus && refus.has(el);
+    const known = !nie && !!byId[id] && has(id);
+    const r = (rel.has(cleTok(el)) ? 'r' : '') + (nie ? 'x' : '');
     /* Le mot entre dans la signature du cache : une lecture tranchée à l'achat repeint
        les attestations déjà peintes, sans quoi le mot faux n'arriverait que sur les
        tablettes touchées ensuite (AMB-2). */
     const want = (known ? 'w:'+motDe(id) : 'g') + r;
     if(el.__v===want && flashId!==id) return;
     el.__v=want;
-    el.className='tok '+(known?'w':'g')+(r?' rel':'')+(flashId===id?' flash':'');
+    el.className='tok '+(known?'w':'g')+(r.indexOf('r')>=0?' rel':'')+(nie?' refus':'')
+                +(flashId===id?' flash':'');
     el.innerHTML = known ? motDe(id) : sv(id);
   });
   elCorpus.querySelectorAll('[data-n]').forEach(el=>{
-    const n=+el.dataset.n, lis=numLisible(n), r = rel.has(cleTok(el)) ? 'r' : '';
+    const n=+el.dataset.n, nie = !!refus && refus.has(el), lis = !nie && numLisible(n);
+    const r = (rel.has(cleTok(el)) ? 'r' : '') + (nie ? 'x' : '');
     const want=(lis?'n':'g')+r;
     if(el.__v===want) return;
     el.__v=want;
-    el.className='tok '+(lis?'num':'g')+(r?' rel':'');
+    el.className='tok '+(lis?'num':'g')+(r.indexOf('r')>=0?' rel':'')+(nie?' refus':'');
     el.innerHTML = lis ? nf.format(n) : numGlyphs(n);
   });
   ranger(); revealer(); paintRail(); peindreRec(); peindreConc();
@@ -2021,6 +2120,13 @@ function paintDoute(){
   if(!ouvert) return;
   const c = revCost(), payable = S_.C >= c;
   setHTML($('doute-c'), 'rouvrir ' + (readC() ? big(c) : numGlyphs(c)));
+  /* « L'état est affiché sans ambiguïté » (CONTR-1). Ce que le bandeau dit : la Certitude est
+     divisée par deux, et une révision peut y mettre fin. Ce qu'il ne dit pas, et ne dira
+     jamais : lequel des signes est en cause. */
+  const bn = $('doute-etat');
+  if(bn.hidden !== !S_.contr) bn.hidden = !S_.contr;
+  if(S_.contr) setHTML(bn, 'Un passage refuse de se résoudre. Certitude divisée par deux '
+    + 'jusqu’à ce qu’une lecture rouverte le dénoue.');
   const liste = douteux();
   for(const g of GL){
     if(!AMB[g.id]) continue;
@@ -2101,7 +2207,7 @@ function paintRes(){
   const tb=S_.b.tab, cn=S_.b.con, gr=S_.b.gram;
   const oNet = oBrut() - tb*1.0,
         hNet = tb*0.6*M.tabl() - cn*0.5 - gr*GRAM_C,
-        cNet = cn*CON_P*M.con() + gr*GRAM_P*gramMul()*M.gram();
+        cNet = (cn*CON_P*M.con() + gr*GRAM_P*gramMul()*M.gram())/contrDiv();
   setHTML($('vl-O'), amount(S_.O, readN()));
   setHTML($('vl-H'), amount(S_.H, readN()));
   setHTML($('vl-C'), amount(S_.C, readN()));

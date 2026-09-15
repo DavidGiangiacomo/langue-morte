@@ -241,6 +241,15 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .bloom{position:fixed;inset:0;pointer-events:none;background:radial-gradient(60% 50% at 50% 45%,rgba(214,140,70,.30),transparent 70%);opacity:0;z-index:40}
 .bloom.on{animation:bl 1.1s ease}
 @keyframes bl{0%{opacity:0}18%{opacity:1}100%{opacity:0}}
+/* ---------- la contradiction ---------- */
+/* Le passage qui refuse. Il ne s'efface pas et ne se barre pas : il redevient des signes,
+   exactement comme avant qu'on sache les lire. Le liseré dit que c'est le jeu qui retient,
+   et non qu'il manque quelque chose au corpus. */
+.tok.refus{box-shadow:inset 0 -1px 0 var(--ochre);opacity:.9}
+.tok.refus .gl{stroke-width:1.7}
+.detat{margin:0 0 7px;padding:7px 9px;border-left:2px solid var(--ochre-d);background:#2A2116;
+  font-size:13px;line-height:1.45;color:var(--mid)}
+
 /* ---------- le doute ---------- */
 /* Une ligne par signe ambigu acquis, la plus douteuse en haut. La barre est un fait —
    la part du signe qu'on n'avait pas sous les yeux — et non un verdict : rien ici ne

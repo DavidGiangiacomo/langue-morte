@@ -141,6 +141,135 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## La contradiction — le pire cas n'est pas celui qui se trompe le plus
+
+15/09/2026, CONTR-1. La dette courait depuis AMB-3 et personne ne la lisait. Elle a
+maintenant son unique lecteur, et la boucle se ferme : voir son doute, payer pour rouvrir,
+ou encaisser.
+
+### Deux questions, et le prototype n'avait la réponse ni à l'une ni à l'autre
+
+**Où se déclenche-t-elle ?** Le design doc dit « au franchissement de chaque acte », et §10
+place la première à la fin de l'acte III. Or dans le prototype, la fin de l'acte III *est*
+le dernier achat de l'arbre : `nArbre() === NGL` clôt la partie à la seconde même, et la
+sanction n'aurait pas une seconde pour mordre. La règle 16 avait déjà donné cette leçon sur
+`les-lecteurs` ; elle vaut ici telle quelle.
+
+Et la déclencher plus tôt — à `année`, le seul autre franchissement identifiable — l'impose
+**trente minutes avant que `peut-être` n'existe**, donc sans explication ni remède. Le joueur
+ne lirait pas une sanction : il lirait un bug.
+
+Elle se solde donc à **l'ouverture du doute**, et la règle générale dont le prototype ne voit
+que le premier cas s'écrit : *la contradiction s'évalue à chaque franchissement d'acte à
+partir de `peut-être`.* Avant lui, le jeu n'admet pas qu'une lecture puisse être fausse ; il
+ne peut pas en faire payer le prix. Ce n'est pas un aménagement de prototype, c'est la
+condition pour que la sanction soit lisible comme telle.
+
+**Quel passage refuse ?** « Un passage refuse de se résoudre » est la fiction de
+l'étranglement, et il fallait en choisir un. Deux impasses d'abord :
+
+- **Le choisir d'après les signes mal lus le désignerait.** C'est l'oracle que les règles 17
+  et 18 refusent, et ce serait le plus gros de tous : la ligne pointerait exactement ce qu'il
+  faut réviser.
+- **Le choisir d'après la densité** donne une ligne de registre générée, identique à quarante
+  autres. Les six lignes les plus contestées du corpus sont toutes le même gabarit,
+  `maison N · grain 20 · avant · année ne-pas · si lire`.
+
+Le passage est donc **fixe**, et choisi pour ce qu'il dit : **tablette 17, quatrième ligne —
+« eau · ne-pas tablette »**, la note de tri qui constate qu'un relevé manque. Le jeu le fait
+manquer. Elle sort de terre quinzième, donc elle est sous les yeux du joueur depuis longtemps
+quand elle s'éteint ; elle n'est pas une ligne de charge — celles-là sont deux lignes plus
+bas, où `devenir-lecture` s'assemble sous les yeux du joueur (acte V) ; et la tablette 21,
+l'abécédaire, a été écartée exprès : y attirer l'œil à la 77ᵉ minute, et seulement pour les
+joueurs endettés, déséquilibrerait la reconnaissance de l'acte IV pour une partie d'entre eux
+seulement.
+
+Reste un risque qu'aucun choix de ligne ne supprime : **le joueur peut croire que le passage
+retenu contient ses erreurs.** C'est pourquoi la ligne de journal le dit en toutes lettres —
+« Ce n'est pas lui qui est en cause : c'est ce que j'ai lu ailleurs, et je ne sais pas où. »
+Le jeu a le droit de parler ici : CONTR-1 demande que l'état soit affiché *sans ambiguïté*.
+Il nomme la sanction et sa sortie, jamais un signe.
+
+### Le seuil, et ce qu'il trie
+
+Les poids de dette étant tirés des attestations (AMB-3), le seuil n'est pas un chiffre libre :
+il découpe des profils de lecture réels.
+
+| | Dette | Armée ? |
+|---|---|---|
+| lecture parfaite | 0 | non |
+| ne rate que les deux incassables — `lire`, `il-faut` | 3 | non |
+| la paire réparante ⟨grain⟩ + ⟨maison⟩ | 6 | **oui** |
+| pile ou face sur les neuf, en moyenne | 8 | **oui** |
+| toutes fausses | 18 | **oui** |
+
+À **5**, un lecteur qui a fait tout ce que le texte permet passe avec de la marge — les deux
+seuls signes conçus pour ne pas casser pèsent 3 à eux deux — et **la paire réparante
+déclenche**, ce que le §7.3 exigeait le 14/09 en décidant de la laisser passer. Depuis que
+MOD-2 a refermé le §7.4, `eau` et `année` ne sont plus des devinettes : le plancher
+incompressible d'un bon lecteur est vraiment de 3, et non de 6.
+
+### Le pire cas n'est pas « tout faux »
+
+Mesuré au simulateur, sur un joueur qui **ne révise jamais** — le pire cas, puisque le
+simulateur n'a pas de modèle de lecture :
+
+| | Durée |
+|---|---|
+| lecture parfaite | 90,5–93,7 min |
+| les deux incassables seulement | **89,1–92,4 min** |
+| toutes fausses | 96,6–99,5 min |
+| **la paire réparante seule** | **100,5–103,4 min** |
+
+Trois choses là-dedans, et deux n'étaient pas prévues.
+
+**La sanction retourne la prime.** Se tromper partout faisait gagner 5,5 minutes (AMB-1) ; il
+en coûte désormais 11 de plus, soit 6 de perte nette. L'optimum local du design doc §8 reste
+un optimum *local* : il paie pendant soixante-dix minutes et se reprend au franchissement.
+
+**Rater les deux signes incassables paie, et ne coûte rien.** 89,1 min, la partie la plus
+rapide du tableau. `lire` et `il-faut` sont conçus pour ne casser nulle part
+(`docs/corpus.md` §7.4) ; leur dette de 3 passe sous le seuil. Le joueur qui les rate finit le
+jeu plus vite, sans savoir qu'il a lu une autre histoire — et c'est exactement ce que le §7.4
+promettait.
+
+**Le pire cas est la paire réparante**, et c'est la mesure que ce lot n'attendait pas : elle
+prend la sanction entière avec la prime de deux signes seulement, là où « tout faux » en
+encaisse neuf. Le joueur que le texte ne peut pas prévenir est donc celui qui paie le plus
+cher. Le §7.3 avait écrit, en décidant de ne rien faire, que « la paire creuse le piège au
+lieu de le combler ». Trois minutes de plus que la partie du joueur qui s'est trompé sur tout.
+
+### Ce que la sanction ne prend pas
+
+R2 : on ne perd que du débit. Un test le vérifie en basculant la contradiction sans rien
+acheter — `pctTablette`, les deux mesures de `mesures()` et le compteur du lexique sont
+identiques armée et levée. Le passage retenu ne compte pas comme illisible : le joueur **sait**
+ces mots, et c'est le passage qui refuse de se résoudre, pas sa compréhension qui recule.
+
+Levée, elle ne se réarme pas. Il n'y a plus de franchissement d'acte dans le prototype, et on
+ne ballotte pas un joueur entre deux états sur un chiffre qu'il ne voit pas.
+
+### Le bonus rétroactif, enfin payable
+
+Le design doc §8 le promettait à CONTR-2, et le lot A l'avait laissé de côté en écrivant
+pourquoi : *un bonus visible est un verdict*. Il se paie ici, et il ne dit toujours rien —
+une révision qui fait repasser la dette sous le seuil **lève la contradiction**. Le joueur
+voit son débit revenir et un passage se résoudre ; il n'apprend pas lequel de ses signes était
+faux, ni même si c'est celui qu'il vient de rouvrir. Une révision qui ne suffit pas ne dit
+rien du tout.
+
+### Mesuré
+
+`outils/sim.py` rend un quatrième bloc, le seul endroit du projet où la sanction se lit en
+minutes. `outils/balayage.py`, lui, désarme la contradiction : il mesure le **rythme** d'un
+réglage, et compter onze minutes de punition ferait rejeter un bon réglage pour une peine
+qui n'est pas la sienne et qui a une sortie.
+
+Rythme inchangé — 90,5–93,7 min lectures justes, 85,2–88,1 toutes fausses, écart max 5,2,
+tranches ≥ 10′ ≤ 26 %. `outils/verifier.py` passe de 224 à **239 assertions**.
+
+---
+
 ## Le doute ne dit pas l'erreur, il dit l'aveuglement
 
 15/09/2026, MOD-2 avec CONTR-2 et CONTR-3. `peut-être` est le pic de malaise du jeu, et il
