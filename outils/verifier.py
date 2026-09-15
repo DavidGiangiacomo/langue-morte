@@ -61,7 +61,10 @@ RACINE = pathlib.Path(__file__).parent.parent
 PAGE = RACINE / "dist" / "langue-morte.html"
 
 SIGNES_ATTENDUS = 3838          # cf. sortie de outils/corpus.py
-RENDU_MAX_S = 4.0
+# 6 s et non 4 : au tout premier lancement, navigateur froid, le rendu des 3 838 signes
+# est monté à 4,30 s pour 1,50 s à chaque lancement suivant. Un seuil qui échoue une
+# fois sur dix pour une raison qui n'est pas dans le code apprend à ignorer les échecs.
+RENDU_MAX_S = 6.0
 
 # glyphe acheté -> ensemble exact des nombres du corpus qui doivent devenir lisibles
 ECHELLE = [
