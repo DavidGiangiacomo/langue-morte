@@ -2512,10 +2512,31 @@ try{ const raw = localStorage.getItem(TKEY); if(raw) TR = JSON.parse(raw) || [];
    produit des milliers et le tout transite par localStorage à chaque sauvegarde.
    L'instant est en secondes de JEU — celles du chrono, que le sélecteur de vitesse
    accélère. C'est le bon axe : c'est aussi celui de la durée affichée en fin de partie. */
+/* Après le dernier signe de l'arbre, `frame()` cesse d'appeler `tick` : le chrono de jeu
+   gèle, et toutes les actions de la fenêtre de lecture de FIN-1 se retrouvent au même
+   instant — PT10 en a six, toutes à 5795,7, dont quatre recoupements en zéro seconde.
+   Les secondes d'horloge et les secondes de jeu sont pourtant équivalentes là : la
+   production est arrêtée et le sélecteur de vitesse ne multiplie plus rien. On prolonge donc
+   le chrono à l'horloge, et la fenêtre où le joueur est censé LIRE se date enfin. */
+let doneT0 = 0;
+function tJeu(){
+  if(!S_.done){ doneT0 = 0; return S_.t; }
+  if(!doneT0) doneT0 = performance.now();
+  return S_.t + (performance.now() - doneT0)/1000;
+}
+
 function tracer(k, d, pos){
   if(TR.length >= TMAX) return;
-  const e = [Math.round(S_.t*10)/10, k, d === undefined ? '' : String(d)];
+  const e = [Math.round(tJeu()*10)/10, k, d === undefined ? '' : String(d)];
   if(pos === undefined) TR.push(e); else TR.splice(pos, 0, e);
+  /* La partie s'arrête au dernier signe de l'arbre (règle 16), mais la ligne `fin` ne vient
+     qu'avec la CARTE, jusqu'à quatre-vingt-dix secondes plus tard — et PT10 a exporté dans
+     l'intervalle : son journal n'a aucune ligne de fin, pour une partie terminée. Les deux
+     instants sont distincts et tous les deux intéressants, l'écart entre eux étant le temps
+     que met le joueur à retourner sur une tablette que le dernier signe vient de rendre
+     lisible — c'est-à-dire la mesure même de FIN-1. Posée ici et pas dans une enveloppe :
+     `finArmer` est un `const`, il n'y a rien à envelopper. */
+  if(S_.done && k !== 'finjeu' && !dejaTracee('finjeu')) tracer('finjeu', mmss(S_.t));
   majBoutonTraces();
 }
 
@@ -2548,10 +2569,16 @@ enrober('recouper',  () => S_.rec,        a => '+' + recGain() + ' cert.'
 enrober('acheterIns', niveaux,            a => a[0] + ' n°' + S_.b[a[0]]);
 /* Le mot retenu, et non le mot juste : sur un signe ambigu, c'est la lecture tranchée qui
    fait la partie, et le ✗ la marque pour le dépouillement. Le joueur, lui, n'en saura rien —
-   ce fichier est hors jeu et ne s'ouvre qu'après coup. */
+   ce fichier est hors jeu et ne s'ouvre qu'après coup.
+
+   Le degré de doute suit, et lui seul dit ce que le joueur avait sous les yeux en tranchant
+   (MOD-2). `CLAUDE.md` l'annonçait dans ce journal depuis le lot ; il n'y était pas, et PT10
+   s'est dépouillé sans lui. `acheterGl` le fige à l'instant du choix, juste avant qu'on le
+   lise ici. Sur un signe non ambigu il ne veut rien dire et n'est pas écrit. */
 enrober('acheterGl', () => S_.gl.length,  a => a[0] + ' (' + motDe(a[0]) + ')'
                                                + (faux(a[0]) ? ' ✗' : '')
-                                               + ' ' + byId[a[0]].cost + ' C');
+                                               + ' ' + byId[a[0]].cost + ' C'
+                                               + (AMB[a[0]] ? ' · doute ' + douteDe(a[0]) : ''));
 /* La nuit ne passe pas par `tick` et n'émettrait donc aucune ligne : une seule, au retour,
    dit ce qu'elle a rapporté. Une partie jouée en plusieurs fois se lit alors sans trou. */
 enrober('veillee',   () => Math.round(S_.O), () => Math.round(S_.O) + ' occ. hors ligne');
@@ -2562,25 +2589,63 @@ enrober('concChoisir', () => concSel, a => a[0] + ' · ' + concN + ' attest.');
 /* La composition. Le témoin est le compteur de tentatives et non la longueur du carnet : une
    paire juste qu'on n'a pas les moyens de payer n'y entre pas, et son essai passerait à la
    trappe. PT10 doit pouvoir compter les tentatives, voir sur quelles paires, et à quelle
-   minute — c'est la seule façon de savoir si ⟨grenier⟩ se trouve en lisant. */
-enrober('composer', () => S_.comp, a => a[0] + ' + ' + a[1]
-                                        + (has(recetteDe(a[0], a[1]) || '') ? ' ✓' : ''));
+   minute — c'est la seule façon de savoir si ⟨grenier⟩ se trouve en lisant.
+
+   Le ✓ seul ne suffisait pas, et PT10 l'a montré en creux : ses six tentatives s'y lisaient
+   comme cinq échecs et une réussite, alors que les six paires étaient JUSTES — `tab+sar`
+   (archive) et `im+sar` (scribe) deux fois chacune, `en+la` (sinon) une fois, toutes refusées
+   faute de Certitude et non faute d'avoir trouvé. Le dépouillement concluait au balayage
+   aveugle là où le joueur avait tout lu, et le carnet est resté vide : `compCost()` n'a jamais
+   quitté 250 hypothèses. Trois issues, donc, et le ✓ porte sur la PAIRE et non sur l'achat :
+     `ur + tem ✓ urtem`                        juste, payée, acquise
+     `tab + sar ✓ tabsar · impayable (900 C)`  juste, pas les moyens ; ne va pas au carnet
+     `im + ur ✗ carnet`                        fausse : 250 hypothèses et une ligne de carnet
+   Le ✗ d'`acheterGl` marque une lecture fausse, celui-ci une paire qui n'existe pas ; ils ne
+   se rencontrent jamais sur la même ligne. */
+enrober('composer', () => S_.comp, a => {
+  const cible = recetteDe(a[0], a[1]);
+  return a[0] + ' + ' + a[1]
+       + (!cible     ? ' ✗ carnet'
+        : has(cible) ? ' ✓ ' + cible
+                     : ' ✓ ' + cible + ' · impayable (' + byId[cible].cost + ' C)');
+});
+
+/* La révision (CONTR-2) — la seule action du jeu qui ne laissait aucune trace, et PT10 est
+   tombé dedans : zéro ligne, ce qui ne distingue pas « il n'a pas révisé » de « on ne le
+   mesurait pas ». C'est pourtant la première question que MOD-2 pose au playtest — combien
+   de révisions, et sur quels signes.
+   Pas d'`enrober` ici : le détail a besoin de l'état d'AVANT — la lecture quittée, le doute
+   quitté, le prix payé — que le témoin ne transporte pas. Rien de tracé ne s'imbrique dans
+   `reviser`, qui ne fait que repeindre et, au mieux, lever la contradiction. */
+const _reviser = reviser;
+reviser = function(id, lect){
+  const mot = motDe(id), marque = faux(id) ? ' ✗' : '', dte = douteDe(id), cout = revCost();
+  const r = _reviser(id, lect);
+  /* Le doute de départ et celui d'arrivée sur la même ligne : c'est la réponse à la seconde
+     question de MOD-2. S'il a baissé, le joueur a travaillé le signe entre les deux — il
+     concorde donc AVANT de re-trancher, et le panneau pointe vers quelque chose d'atteignable.
+     S'il n'a pas bougé, la révision s'est jouée à l'aveugle, sur le seul chiffre du panneau. */
+  if(r) tracer('reviser', id + ' · ' + mot + marque
+                             + ' → ' + motDe(id) + (faux(id) ? ' ✗' : '')
+                             + ' · ' + cout + ' C · doute ' + dte + ' → ' + douteDe(id));
+  return r;
+};
 
 /* Pas de témoin possible pour la fin : `S_.done` est déjà posé quand showEnd() est
    appelée. On remonte donc le relevé jusqu'au dernier « reset » — jeu.js rappelle
    showEnd() à chaque rechargement d'une partie terminée, et on ne veut pas d'une
    ligne « fin » par visite. */
-const finDejaTracee = () => {
+const dejaTracee = genre => {
   for(let i = TR.length-1; i >= 0; i--){
     if(TR[i][1] === 'reset') return false;
-    if(TR[i][1] === 'fin')   return true;
+    if(TR[i][1] === genre)   return true;
   }
   return false;
 };
 const _showEnd = showEnd;
 showEnd = function(){
   const r = _showEnd();
-  if(!finDejaTracee()) tracer('fin', mmss(S_.t));
+  if(!dejaTracee('fin')) tracer('fin', mmss(S_.t));
   return r;
 };
 
@@ -2625,6 +2690,8 @@ function tracesTSV(){
     '# exporté le ' + horo + ' · ' + TR.length + ' entrées',
     '# t = secondes de JEU depuis le début (le sélecteur ×3/×10 les accélère)',
     '# une ligne « reset » marque le début d\'une nouvelle partie : le temps y repart de zéro',
+    '# « finjeu » = dernier signe de l\'arbre, la production s\'arrête ; « fin » = la carte s\'ouvre',
+    '#   entre les deux le chrono de jeu est gelé : t y compte des secondes d\'horloge',
     ['temps','t_s','genre','détail'].join('\t'),
     ...TR.map(([t,k,d]) => [mmss(t), t.toFixed(1), k, d].join('\t'))
   ].join('\n');
@@ -2659,7 +2726,8 @@ $('tr-cp').addEventListener('click', e => {
 
 /* La partie repart, le relevé non : on garde tout et on marque la coupure. Une soirée
    de playtest tient dans un seul fichier, et rien n'est perdu par un reset distrait. */
-$('reset').addEventListener('click', () => { tracer('reset'); prochainEtat = 0; derniereTablette = null; });
+$('reset').addEventListener('click', () => {
+  tracer('reset'); prochainEtat = 0; derniereTablette = null; doneT0 = 0; });
 
 setInterval(sauverTraces, 4000);
 window.addEventListener('pagehide', sauverTraces);

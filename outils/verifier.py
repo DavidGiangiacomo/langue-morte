@@ -819,6 +819,70 @@ def main() -> None:
         verifier(len(etats) >= 3 and all(p == 30 for p in pas),
                  f"{len(etats)} relevés d'état, cadence {set(pas) or '—'} s")
 
+        # ---- les quatre trous ouverts par le dépouillement de PT10 ----
+        # Quatre questions du backlog étaient posées à un instrument qui ne les mesurait pas :
+        # la révision n'était pas enveloppée du tout, le degré de doute n'était pas écrit, une
+        # paire juste impayable se lisait comme un coup de sonde au hasard, et le chrono gelait
+        # à la fin. Ce qui suit tient les quatre réponses.
+        def journal():
+            return [tuple(l.split("\t")[2:4])
+                    for l in page.evaluate("() => tracesTSV()").split("\n")
+                    if l and not l.startswith("#") and not l.startswith("temps\t")]
+
+        def neuf():
+            page.evaluate("() => $('reset').click()")
+            page.wait_for_timeout(200)
+            page.evaluate("() => { TR.length = 0; S_.t = 0; prochainEtat = 0; }")
+
+        # le doute à l'achat (MOD-2) : écrit sur un signe ambigu, tu sur tous les autres
+        neuf()
+        page.evaluate("() => { S_.C = 9999; acheterGl('an'); acheterGl('tem', 'f'); }")
+        ach = dict((d.split(" ")[0], d) for g, d in journal() if g == "acheterGl")
+        verifier("· doute " in ach.get("tem", "") and "✗" in ach.get("tem", ""),
+                 f"la lecture ET le doute à l'achat : « {ach.get('tem', '—')} »")
+        verifier("· doute " not in ach.get("an", "x"),
+                 "un signe non ambigu n'a pas de doute à écrire")
+
+        # la révision (CONTR-2) : le signe, la lecture quittée, le prix, le doute avant → après
+        page.evaluate("""() => { S_.C = 99999; acheterGl('mik');
+                                 S_.conc['tem'] = 1;      // le signe est travaillé entre les deux
+                                 S_.C = 99999; reviser('tem', 'j'); }""")
+        rev = [d for g, d in journal() if g == "reviser"]
+        verifier(len(rev) == 1, f"la révision est journalisée ({len(rev)} ligne)")
+        verifier(len(rev) == 1 and "poussière ✗ → grain" in rev[0],
+                 "elle dit la lecture quittée et la lecture prise")
+        dts = rev[0].split("doute ")[-1].split(" → ") if rev else []
+        verifier(len(dts) == 2 and int(dts[1]) < int(dts[0]),
+                 f"le doute avant → après, et le travail le fait baisser : {' → '.join(dts)}")
+
+        # la composition : trois issues, et non deux (le ✓ porte sur la PAIRE)
+        neuf()
+        page.evaluate("() => { S_.C = 99999; ['nur','ur','tem','im','sar'].forEach(g => acheterGl(g));"
+                      "        S_.H = 1e6; }")
+        page.evaluate("() => { S_.C = 0; composer('im', 'sar'); }")     # juste, mais 600 C
+        page.evaluate("() => composer('ur', 'im')")                     # fausse : au carnet
+        page.evaluate("() => { S_.C = 99999; composer('ur', 'tem'); }")  # juste et payée
+        com = [d for g, d in journal() if g == "composer"]
+        verifier(com == ["im + sar ✓ imme · impayable (600 C)",
+                         "ur + im ✗ carnet",
+                         "ur + tem ✓ urtem"],
+                 f"trois issues de composition distinctes : {com}")
+
+        # la fin : datée au dernier signe de l'arbre, sans attendre la carte (FIN-1)
+        neuf()
+        page.evaluate("() => { S_.C = 9e6; GL.filter(g => !g.sec).forEach(g => acheterGl(g.id)); }")
+        j = journal()
+        verifier([g for g, _ in j].count("finjeu") == 1 and j[-1][0] == "finjeu",
+                 "« finjeu » suit le dernier signe de l'arbre, et une seule fois")
+        verifier(not any(g == "fin" for g, _ in j),
+                 "la carte n'est pas encore venue : c'est bien deux instants séparés")
+        # et le chrono continue pendant la fenêtre de lecture, que `tick` n'alimente plus
+        t0 = page.evaluate("() => TR[TR.length - 1][0]")
+        page.wait_for_timeout(1300)
+        page.evaluate("() => { S_.O = 1e6; formuler(); }")
+        t1 = page.evaluate("() => TR[TR.length - 1][0]")
+        verifier(t1 - t0 >= 1, f"après la fin, le journal date encore les actions ({t0} → {t1})")
+
         # ---- trancher à l'achat : AMB-1, AMB-2, AMB-3 ----
         # Onze signes supportent deux lectures ; neuf sont dans l'arbre des actes I-III. Ce
         # que ces vérifications tiennent, c'est surtout ce que le jeu NE dit PAS : rien, à
