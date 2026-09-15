@@ -36,6 +36,12 @@ Contrôle :
      effet, la fausse repeint tout le corpus et ses composés, la prime de 25 % ne se
      lit nulle part, la dette court sans s'afficher, et les ruptures d'AMB-4 se rendent
      bien dans le texte
+ 22. le doute : il est le même pour les deux lectures d'un signe, il se fige à la décision
+     et non au regard, la rupture distributionnelle du §7.4 se lit en infobulle, et la
+     révision repeint le corpus sans jamais dire si l'on avait raison
+ 23. la contradiction : elle se solde à l'ouverture du doute, le passage qui refuse ne bouge
+     pas avec les signes mal lus, aucune progression n'est perdue (R2), et la révision la
+     lève sans la réarmer
 
 Prérequis : pip install playwright && playwright install chromium
 """
@@ -1079,6 +1085,99 @@ def main() -> None:
         r = page.evaluate("() => { S_.rev = 0; let c = 0; for(let i=0;i<3;i++){ c += revCost(); S_.rev++; } return c; }")
         verifier(r < 4550 / 3, f"trois révisions choisies en coûtent {r} — lire reste moins cher que chercher")
         page.evaluate("() => { S_.rev = 0; }")
+
+        # ---- la contradiction : CONTR-1 ----
+        # R2 du backlog : on ne perd que du débit, jamais de la progression. Et règle 18 :
+        # le passage qui refuse ne doit désigner aucun signe, sinon c'est un oracle.
+        print("\nla contradiction : un passage refuse de se résoudre")
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+        socle = """S_.C = 9e5; S_.H = 9e5; S_.b.gram = 10; S_.b.con = 20;
+            ['an','anna','hem','sela','meku','im','tab','gan','kal','mille','nur','pat','zur',
+             'nurnur','esh','nurhal','la','en'].forEach(acheterGl);"""
+        # Toute la dette qu'on veut, tant que `peut-être` n'est pas là : rien ne se déclenche.
+        r = page.evaluate("() => { " + socle + """
+            acheterGl('tem','f'); acheterGl('ur','f'); acheterGl('kish','f');
+            acheterGl('sar','f'); acheterGl('shen','f');
+            return [dette(), S_.contr, contrDiv()]; }""")
+        page.wait_for_timeout(300)
+        verifier(r == [9, 0, 1], f"avant « peut-être », aucune dette ne déclenche rien : {r}")
+        verifier(page.get_attribute("#doute-etat", "hidden") is not None, "et rien ne l'annonce")
+        r = page.evaluate("() => { acheterGl('mik'); return [dette(), S_.contr, contrDiv()]; }")
+        page.wait_for_timeout(350)
+        verifier(r == [9, 1, 2], f"« peut-être » solde les lectures faites : {r}")
+        # Ce qui se perd, et ce qui ne se perd pas — mesuré sur la contradiction SEULE, en la
+        # basculant. Comparer avant et après l'achat de `mik` ne mesurerait pas la sanction :
+        # ce signe-là ajoute un glyphe et dix attestations, et bouge tous ces compteurs pour
+        # une raison qui n'est pas elle.
+        etat = lambda: page.evaluate("""() => { paintCorpus(null); paintLex(); return [
+            Math.round(1000*pctTablette(TBN[17])), mesures().sig, mesures().lig,
+            $('lexr').textContent]; }""")
+        arme = etat()
+        page.evaluate("() => { S_.contr = 0; }")
+        libre = etat()
+        page.evaluate("() => { S_.contr = 1; paintCorpus(null); }")
+        page.wait_for_timeout(200)
+        verifier(arme == libre,
+                 f"aucune progression n'est perdue, seulement du débit (R2) : {arme}")
+        # Le débit affiché dit la vérité : moitié moins.
+        r = page.evaluate("""() => { const c = S_.b.con*CON_P*M.con() + S_.b.gram*GRAM_P*gramMul()*M.gram();
+            const t = $('rt-C').textContent;
+            S_.contr = 0; const t0 = (paintRes(), $('rt-C').textContent);
+            S_.contr = 1; paintRes();
+            return [t, t0]; }""")
+        verifier(r[0] != r[1], f"le débit de Certitude affiché est moitié moindre : {r[0]} contre {r[1]}")
+        # Le passage. Fixe, et il ne désigne rien.
+        ligne = lambda i: page.evaluate("""(i) => [...[...document.querySelectorAll('.tablet')]
+            .find(x => +x.dataset.tb === 17).children[i].querySelectorAll('.tok')]
+            .map(t => t.textContent.trim() || '⟨⟩').join(' ')""", i)
+        marques = lambda: page.eval_on_selector_all(".tablet[data-tb='17'] .tok.refus", "e => e.length")
+        verifier("⟨⟩" in ligne(4) and marques() == 3,
+                 f"tablette 17 ligne 4 revient aux signes : « {ligne(4)} », {marques()} jetons marqués")
+        verifier("⟨⟩" not in ligne(3),
+                 f"et la ligne d'à côté se lit toujours : « {ligne(3)} »")
+        # Le même passage quelles que soient les lectures fausses : le choisir d'après l'erreur
+        # la désignerait (règle 18).
+        r = page.evaluate("""() => { const lu = JSON.parse(JSON.stringify(S_.lect));
+            for(const k in S_.lect) S_.lect[k] = 'j';
+            S_.lect.nur = 'f'; S_.lect.pat = 'f'; S_.lect.la = 'f';
+            paintCorpus(null);
+            const n = document.querySelectorAll('.tablet[data-tb="17"] .tok.refus').length;
+            const ailleurs = document.querySelectorAll('.tok.refus').length;
+            S_.lect = lu; paintCorpus(null);
+            return [n, ailleurs]; }""")
+        page.wait_for_timeout(250)
+        verifier(r == [3, 3], f"le passage ne bouge pas avec les signes mal lus : {r}")
+        vu = page.evaluate("() => $('doute-etat').textContent")
+        verifier("divisée par deux" in vu and not any(m in vu for m in
+                 ("grain", "poussière", "maison", "eau", "année")),
+                 f"l'état est affiché sans ambiguïté, et ne nomme aucun signe : « {vu[:58]}… »")
+
+        print("\nla révision dénoue, et ne réarme pas")
+        # Une révision qui ne suffit pas ne lève rien — et ne le dit pas non plus.
+        r = page.evaluate("() => { reviser('kish','j'); return [dette(), S_.contr]; }")
+        page.wait_for_timeout(250)
+        verifier(r == [8, 1], f"une révision qui ne descend pas sous le seuil ne lève rien : {r}")
+        verifier(marques() == 3, "le passage refuse toujours")
+        # Celle qui suffit lève tout, et c'est le « bonus rétroactif » du design doc §8 —
+        # payé en dette effacée, donc sans rien annoncer.
+        r = page.evaluate("""() => { reviser('tem','j'); reviser('ur','j');
+            return [dette(), S_.contr, contrDiv()]; }""")
+        page.wait_for_timeout(350)
+        verifier(r == [2, 0, 1], f"sous le seuil, la contradiction se lève : {r}")
+        verifier(marques() == 0 and "⟨⟩" not in ligne(4),
+                 f"et le passage se résout : « {ligne(4)} »")
+        # Levée, elle ne se réarme pas : il n'y a plus de franchissement d'acte dans le
+        # prototype, et on ne ballotte pas le joueur sur un chiffre qu'il ne voit pas.
+        r = page.evaluate("""() => { reviser('tem','f'); reviser('ur','f'); reviser('kish','f');
+            return [dette(), S_.contr]; }""")
+        page.wait_for_timeout(250)
+        verifier(r[0] > 5 and r[1] == 0,
+                 f"et ne se réarme pas, même si la dette remonte : {r}")
+        # Rien, nulle part, ne dit si une révision était juste.
+        vu = page.evaluate("() => document.querySelector('.shell').innerText.toLowerCase()")
+        verifier(not any(m in vu for m in ("dette", "erreur", "correct", "mauvaise lecture")),
+                 "et rien à l'écran ne nomme la dette ni ne juge une lecture")
 
         # ---- une sauvegarde d'avant la mécanique neuve doit se rouvrir ----
         # La clé a déjà changé une fois, et toutes les parties en cours ont été perdues. Un
