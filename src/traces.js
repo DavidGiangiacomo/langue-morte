@@ -60,7 +60,12 @@ enrober('formuler',  () => S_.H);
 enrober('recouper',  () => S_.rec,        a => '+' + recGain() + ' cert.'
                                                + (a[0] ? ' · ' + a[0] : ''));
 enrober('acheterIns', niveaux,            a => a[0] + ' n°' + S_.b[a[0]]);
-enrober('acheterGl', () => S_.gl.length,  a => a[0] + ' (' + byId[a[0]].mot + ') ' + byId[a[0]].cost + ' C');
+/* Le mot retenu, et non le mot juste : sur un signe ambigu, c'est la lecture tranchée qui
+   fait la partie, et le ✗ la marque pour le dépouillement. Le joueur, lui, n'en saura rien —
+   ce fichier est hors jeu et ne s'ouvre qu'après coup. */
+enrober('acheterGl', () => S_.gl.length,  a => a[0] + ' (' + motDe(a[0]) + ')'
+                                               + (faux(a[0]) ? ' ✗' : '')
+                                               + ' ' + byId[a[0]].cost + ' C');
 /* La nuit ne passe pas par `tick` et n'émettrait donc aucune ligne : une seule, au retour,
    dit ce qu'elle a rapporté. Une partie jouée en plusieurs fois se lit alors sans trou. */
 enrober('veillee',   () => Math.round(S_.O), () => Math.round(S_.O) + ' occ. hors ligne');

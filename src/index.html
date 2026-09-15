@@ -88,12 +88,27 @@
 
 <div class="tip" id="tip" hidden></div>
 <div class="bloom" id="bloom"></div>
+<!-- Trancher à l'achat. Onze signes supportent deux lectures ; celui qui déchiffre choisit,
+     et le jeu ne dit pas laquelle est la bonne — ni ici, ni plus tard, jusqu'à `peut-être`.
+     Les deux propositions portent le même prix et la même ligne d'effet : la seule chose qui
+     les distingue est le mot, ce qui est exactement ce que le joueur a à trancher. -->
+<div class="amb" id="amb" hidden>
+  <div class="ambcard">
+    <div class="ambtete"><span class="ambsig" id="amb-sig"></span><span class="ambk">deux lectures tiennent</span></div>
+    <div class="ambchoix" id="amb-choix">
+      <button data-amb="0"></button>
+      <button data-amb="1"></button>
+    </div>
+    <div class="ambpied"><span id="amb-eff"></span><span id="amb-cost"></span></div>
+    <button class="ghost" id="amb-annuler" title="échap — le signe reste à acheter">revenir au corpus</button>
+  </div>
+</div>
 <div class="end" id="end" hidden>
   <div class="endcard">
     <h2>Fin du prototype</h2>
     <div class="k">actes I à III · <span class="ngl"></span> glyphes sur 45</div>
-    <p class="quote">La dernière année. Elle n'a pas de nombre : après elle, personne n'a plus compté.</p>
-    <p>Le corpus s'arrête ici. La suite — la deuxième personne, les lectures fausses et les contradictions — appartient aux actes IV et V.</p>
+    <p class="quote" id="endquote">La dernière année. Elle n'a pas de nombre : après elle, personne n'a plus compté.</p>
+    <p>Le corpus s'arrête ici. La suite — la deuxième personne, le doute et les contradictions — appartient aux actes IV et V.</p>
     <div class="endstats" id="endstats"></div>
     <p style="font-size:15px"><b style="color:var(--lamp);font-weight:500">La seule question qui compte&nbsp;:</b> au moment où les tablettes se sont rangées dans l'ordre du temps, est-ce que la crue qui baisse s'est vue&nbsp;? Personne ne la commente&nbsp;; elle n'est que dans les chiffres. Si elle passe inaperçue, le sommet de l'acte III est manqué et les 18 glyphes restants ne le rattraperont pas.</p>
     <div class="endacts">

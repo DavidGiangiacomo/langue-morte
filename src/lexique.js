@@ -77,7 +77,7 @@ const GL = [
      l’index, `après` range le texte lui-même. Ce que ce rangement découvre — la crue qui
      baisse sur deux siècles — n’est écrit nulle part et n’est commenté par personne :
      c’est dans les chiffres, et il faut les avoir mis en ordre pour le voir. */
-  {id:'nur',  br:'temps',   mot:'année',    cost:60, eff:'chaque tablette porte sa date · la grammaire devient possible',
+  {id:'nur',  br:'temps',   mot:'année',    cost:60, eff:'la première ligne de chaque tablette se lit en entier · la grammaire devient possible',
    log:'Année. Chaque tablette est datée depuis le début — je ne savais pas lire la date.'},
   {id:'pat',  br:'temps',   mot:'avant',    cost:130, eff:'la barre se range dans l’ordre du temps',
    log:'Avant. Ce qui est sorti de terre en premier n’a pas été gravé en premier.'},
@@ -87,7 +87,7 @@ const GL = [
    log:'Siècle. Ils mesuraient par centaines d’années. Il leur en restait deux.'},
   {id:'esh',  br:'temps',   mot:'nuit',     cost:360,eff:'la lecture continue hors ligne — 40 % du débit, 4 h au plus',
    log:'Nuit. Ils gravaient la nuit. Le corpus se lit maintenant sans moi.'},
-  {id:'nurhal',br:'temps',  mot:'dernière-année',cost:500,eff:'les deux dernières tablettes se datent · +50 % à l’atelier de copie',
+  {id:'nurhal',br:'temps',  mot:'dernière-année',cost:500,eff:'les deux dernières tablettes se lisent · +50 % à l’atelier de copie',
    log:'La dernière année. Elle n’a pas de nombre : après elle, personne n’a plus compté.'},
   /* ---- acte III : la modalité ----
      Quatre signes pour 816 attestations, un signe du corpus sur cinq. Ce sont les plus
@@ -121,7 +121,7 @@ const GL = [
      tablettes dégagées, ni pour la Grammaire (voir `nArbre()` dans economie.js). Le seul
      effet de `grenier` est qu’on le lit : vingt-quatre attestations qui passent en français,
      et rien de plus. Un joueur peut finir la partie sans jamais le trouver. */
-  {id:'urtem',br:'matiere', sec:true, mot:'grenier', cost:60, eff:'le grenier se lit — un mot qu’aucune branche n’offrait',
+  {id:'urtem',br:'matiere', sec:true, mot:'grenier', cost:60, eff:'un mot qu’aucune branche n’offrait — vingt-quatre attestations',
    log:'Le grenier — la maison du grain. Personne ne me l’a appris : c’était écrit dans le signe.'},
   /* `zéro` est le seul composé dont les deux parties viennent de deux branches et de deux
      actes — ⟨ne-pas⟩ posé sur ⟨un⟩. Le design doc lui prête « la notation compacte des
@@ -131,7 +131,7 @@ const GL = [
      tablette 29 — un registre de zéros, un seul signe répété pendant toute la partie
      (docs/corpus.md §5), qui passe d'un coup en chiffres. `numLisible()` l'attend depuis
      l'acte I : un nombre nul n'est lisible que si l'on a ce signe-là. */
-  {id:'lan',  br:'nombre',  sec:true, mot:'zéro',    cost:120, eff:'le zéro se lit — les registres vides passent en chiffres',
+  {id:'lan',  br:'nombre',  sec:true, mot:'zéro',    cost:120, eff:'les registres vides passent en chiffres',
    log:'Zéro. Ne-pas un : ils ont écrit l’absence comme un nombre et l’ont rangée dans la colonne des nombres. Je le regardais depuis le début sans le compter.'}
 ];
 /* Le lexique compte ce que l’arbre offre. Un composé secret s’ajoute au savoir du joueur sans
@@ -140,6 +140,96 @@ const GL = [
 const NGL = GL.filter(g=>!g.sec).length;
 const BR = [['nombre','Nombre'],['matiere','Matière'],['parole','Parole'],['temps','Temps'],['modalite','Modalité']];
 const byId = Object.fromEntries(GL.map(g=>[g.id,g]));
+
+/* ======================== les onze lectures ========================
+   Onze signes sur quarante-cinq supportent deux lectures, et le joueur tranche à l'achat
+   (design doc §8). Les mots faux et leurs lignes de journal sont écrits depuis le
+   14/09/2026 — `docs/corpus.md` §7.5, vérifiés ligne à ligne contre le corpus rendu — et
+   recopiés ici sans y toucher : ce sont eux le contenu du lot, pas la mécanique.
+
+   Ce que la table ne porte PAS, et c'est délibéré :
+
+   - aucune marque de justesse. La lecture juste est `mot` dans `GL`, la fausse est ici, et
+     rien dans l'interface ne dit laquelle est laquelle. La grille de composition ne
+     renseigne jamais (règle 14) ; l'écran de choix non plus, et pour la même raison.
+   - aucun effet chiffré propre. La lecture fausse rend 25 % de plus SUR CE QUE LE SIGNE
+     MULTIPLIE DÉJÀ (`mfx()` dans economie.js) ; un signe qui ne multiplie rien ne gagne
+     rien à être mal lu. Lui inventer un effet pour porter la prime déplacerait une économie
+     réglée sur neuf playtests, pour une prime que le joueur ne voit pas.
+   - aucune dette écrite à la main : elle se déduit des attestations (`detteDe()`).
+
+   `mesh` (semence) et `ke` (devenir) sont de l'acte V et n'existent pas encore dans `GL`.
+   Leurs entrées sont inertes jusque-là, comme les recettes de `RECETTES` (règle 15) : le
+   jour où leur branche entre, elles se mettent à servir d'elles-mêmes. */
+const AMB = {
+  tem:  {mot:'poussière',
+   log:'De la poussière. Ce ne sont pas des prières : ce sont des comptes de cendres, et ils les ont tenus jusqu’au bout.'},
+  ur:   {mot:'tombe',
+   log:'Une tombe. Les outils du corpus prennent un nom, et ce n’est pas celui d’une ville : trente et une tombes la première année, deux la dernière.'},
+  kish: {mot:'sang',
+   log:'Le sang. Un relevé par année, tenu sur deux siècles. Je préfère ne pas savoir de quoi ils tenaient le compte si scrupuleusement.'},
+  sar:  {mot:'couper',
+   log:'Couper. Quelqu’un a tenu ce stylet, et il a entaillé l’argile comme on entaille autre chose.'},
+  shen: {mot:'compter',
+   log:'Compter. Ce n’est pas un inventaire qui le dit, c’est une consigne — et elle revient d’une tablette à l’autre. Un peuple qui ordonne de compter : je ne suis pas surpris.'},
+  nur:  {mot:'soleil',
+   log:'Le soleil. Chaque tablette porte le sien depuis le début — je ne savais pas lire la date.'},
+  pat:  {mot:'dessous',
+   log:'Dessous. Ce qui est sorti de terre en premier était en haut de la pile : ils rangeaient en empilant.'},
+  dun:  {mot:'on peut',
+   log:'On peut. Ce n’est pas un inventaire qui parle, c’est quelqu’un qui autorise — et sur deux siècles, l’autorisation ne change pas : copier.'},
+  la:   {mot:'fin',
+   log:'Fin. Le signe le plus fréquent de tout le corpus dit la fin de quelque chose — et les colonnes que je croyais inachevées disent qu’on s’était arrêté là.'},
+  /* ---- acte V, écrits d'avance (docs/corpus.md §7.5) ---- */
+  mesh: {mot:'enfant',
+   log:'Un enfant. Ils les comptaient par soixante, puis par cent, pendant que les tombes se vidaient. C’est le seul nombre du corpus qui monte.'},
+  ke:   {mot:'porter',
+   log:'Porter. Ce qu’ils demandent à la tablette, ce n’est pas d’être lue : c’est de transporter quelque chose.'}
+};
+
+/* ---- ce qu'une lecture fausse emporte avec elle ----
+   Un signe faux ne salit pas que ses propres attestations : il salit tout composé qui le
+   contient, parce qu'un composé se lit par ses parties (règle 4). Et il DOIT le salir,
+   sinon la grille renseigne — un joueur qui lit ⟨ne-pas⟩ « fin » et à qui la grille répond
+   « zéro » vient d'apprendre qu'il s'est trompé (règle 14, docs/corpus.md §7.2).
+
+   Le composé faux fait le même saut que le juste, appliqué aux parties fausses :
+   ⟨maison⟩⟨grain⟩ ne donne pas « maison-grain » mais « grenier », donc ⟨tombe⟩⟨grain⟩ ne
+   donne pas « tombe-grain » mais « caveau ».
+
+   La clé est la liste des parties mal lues, dans l'ordre de la recette et sans doublon —
+   ⟨année⟩⟨année⟩ n'a qu'une partie à salir. Ce que `docs/corpus.md` §7.2 ne donnait pas et
+   qu'il fallait écrire ici : la ligne de journal de chaque variante. Sans elle, l'achat de
+   ⟨maison⟩⟨grain⟩ annoncerait « le grenier — la maison du grain » à un joueur dont le
+   corpus dit « caveau » et « tombe », et le jeu se contredirait tout seul. */
+const COMPFAUX = {
+  urtem: {
+    ur:      {mot:'caveau',   log:'Le caveau — la tombe où l’on met le grain. Personne ne me l’a appris : c’était écrit dans le signe.'},
+    tem:     {mot:'poussier', log:'Le poussier — la maison de la poussière. Personne ne me l’a appris : c’était écrit dans le signe.'},
+    'ur+tem':{mot:'ossuaire', log:'L’ossuaire — la tombe de la poussière. Personne ne me l’a appris : c’était écrit dans le signe.'}
+  },
+  imme:   {sar:{mot:'le juge',  log:'Le juge. Celui qui dit et qui tranche. Chaque tablette finit sur ce mot : je lisais une signature sans le savoir.'}},
+  tabsar: {sar:{mot:'le rebut', log:'Le rebut — la tablette coupée. Une, puis trois cents, puis mille deux cents. Ils ne comptaient pas leur grain : ils comptaient ce qu’ils avaient mis au rebut.'}},
+  nurnur: {nur:{mot:'cent-soleils',   log:'Cent soleils. Ils mesuraient par centaines. Il leur en restait deux.'}},
+  nurhal: {nur:{mot:'dernier-soleil', log:'Le dernier soleil. Il n’a pas de nombre : après lui, personne n’a plus compté.'}},
+  shenu:  {shen:{mot:'les-compteurs', log:'Les compteurs. Ils se nommaient d’après ce qu’ils faisaient — et la moitié du nom est un signe que je ne sais pas lire, qui se tient seul juste devant, sur la même ligne.'}},
+  enla:   {la:{mot:'à la fin', log:'À la fin. La consigne s’arrête là. Ils n’ont jamais gravé ce qui vient après — ou bien c’est arrivé.'}},
+  /* ⟨fin⟩ posé sur ⟨un⟩ est l'homographe exact de ⟨finir⟩⟨un⟩, qui est `le-dernier`
+     (docs/corpus.md §7.2). Le signe replie quand même les registres vides : c'est le
+     corpus qui répond, pas la grille, et c'est le seul endroit où il a le droit de le
+     faire. */
+  lan:    {la:{mot:'fin-un', log:'Fin-un. Le signe de la fin posé sur le un : ils écrivaient l’épuisement comme un nombre et le rangeaient dans la colonne des nombres. Je le regardais depuis le début sans le compter.'}},
+  /* ---- actes IV et V, écrits d'avance ; inertes tant que leurs parties ne sont pas au
+     lexique, exactement comme les recettes correspondantes ---- */
+  shenke: {shen:{mot:'devenir-compte'}, ke:{mot:'porter-lecture'}, 'shen+ke':{mot:'porter-compte'}},
+  meshke: {mesh:{mot:'naître'},         ke:{mot:'porter-semence'}, 'mesh+ke':{mot:'porter-enfant'}},
+  mula:   {la:{mot:'moi-mort'}}
+};
+/* Les parties d'un composé, sous les identifiants du LEXIQUE et non sous les clés de tracé :
+   `COMP` fait paraître la branche Nombre sous ses chiffres (`u1` pour ⟨un⟩), et c'est `ALIAS`
+   qui les rend au lexique. Même traduction que pour `RECETTES`, et pour la même raison. */
+const PARTIES = {};
+for(const cible in COMP) PARTIES[cible] = COMP[cible].map(k => GLTRACE[k] || k);
 
 /* ============================ recettes ============================ */
 /* `COMP` dit comment un signe se DESSINE : ses valeurs sont des clés de tracé, et la branche
@@ -151,8 +241,8 @@ const byId = Object.fromEntries(GL.map(g=>[g.id,g]));
    n’ont pas encore leurs parties. Chaque recette apparaîtra d’elle-même le jour où sa cible et
    ses deux parties seront au lexique : il n’y a aucune liste à tenir à jour. */
 const RECETTES = {};
-for(const cible in COMP){
-  const [a, b] = COMP[cible].map(k => GLTRACE[k] || k);
+for(const cible in PARTIES){
+  const [a, b] = PARTIES[cible];
   if(byId[cible] && byId[a] && byId[b]) RECETTES[cible] = [a, b];
 }
 /* L’ordre fait partie de la recette : `notre-fin` et `nous-fûmes` sont les deux mêmes signes

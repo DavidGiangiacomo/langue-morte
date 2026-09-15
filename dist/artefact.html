@@ -244,6 +244,30 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .bloom{position:fixed;inset:0;pointer-events:none;background:radial-gradient(60% 50% at 50% 45%,rgba(214,140,70,.30),transparent 70%);opacity:0;z-index:40}
 .bloom.on{animation:bl 1.1s ease}
 @keyframes bl{0%{opacity:0}18%{opacity:1}100%{opacity:0}}
+/* ---------- trancher à l'achat ---------- */
+/* Les deux lectures sont rendues strictement pareilles : même largeur, même casse, même
+   couleur, même ordre de survol. Tout écart de traitement serait un renseignement — la
+   règle de la grille de composition (règle 14) vaut ici mot pour mot. L'ordre lui-même est
+   tiré au sort à l'ouverture (ambOuvrir), sinon une seconde partie saurait tout. */
+.amb{position:fixed;inset:0;z-index:55;background:rgba(12,9,6,.93);display:flex;align-items:center;justify-content:center;padding:24px}
+.amb[hidden]{display:none}
+.ambcard{max-width:520px;background:var(--clay);border:1px solid var(--line2);border-radius:3px;padding:26px 30px}
+.ambtete{display:flex;align-items:center;gap:13px;margin-bottom:20px}
+.ambsig{color:var(--lamp);display:flex}
+.ambsig .gl{width:26px;height:34px;stroke-width:1.5}
+.ambsig .gl2{width:44px;height:34px;stroke-width:1.5}
+.ambk{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+.ambchoix{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ambchoix button{border:1px solid var(--ochre-d);background:#302518;border-radius:2px;
+  padding:15px 10px;font-size:19px;color:var(--lamp);text-align:center;line-height:1.25}
+.ambchoix button:hover{background:#3B2C1B;border-color:var(--ochre)}
+.ambpied{display:flex;justify-content:space-between;gap:16px;margin:16px 0 20px;
+  font-family:var(--mono);font-size:9.5px;letter-spacing:.02em;color:var(--faint);line-height:1.45}
+.ambpied span:last-child{color:var(--dim);white-space:nowrap;font-variant-numeric:tabular-nums}
+.ambcard .ghost{border:1px solid var(--line);color:var(--dim);padding:8px 14px;border-radius:2px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.ambcard .ghost:hover{color:var(--lamp);border-color:var(--line2)}
+
 .end{position:fixed;inset:0;z-index:50;background:rgba(12,9,6,.93);display:flex;align-items:center;justify-content:center;padding:24px}
 .end[hidden]{display:none}
 .endcard{max-width:620px;background:var(--clay);border:1px solid var(--line2);border-radius:3px;padding:30px 34px}
@@ -340,12 +364,27 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 
 <div class="tip" id="tip" hidden></div>
 <div class="bloom" id="bloom"></div>
+<!-- Trancher à l'achat. Onze signes supportent deux lectures ; celui qui déchiffre choisit,
+     et le jeu ne dit pas laquelle est la bonne — ni ici, ni plus tard, jusqu'à `peut-être`.
+     Les deux propositions portent le même prix et la même ligne d'effet : la seule chose qui
+     les distingue est le mot, ce qui est exactement ce que le joueur a à trancher. -->
+<div class="amb" id="amb" hidden>
+  <div class="ambcard">
+    <div class="ambtete"><span class="ambsig" id="amb-sig"></span><span class="ambk">deux lectures tiennent</span></div>
+    <div class="ambchoix" id="amb-choix">
+      <button data-amb="0"></button>
+      <button data-amb="1"></button>
+    </div>
+    <div class="ambpied"><span id="amb-eff"></span><span id="amb-cost"></span></div>
+    <button class="ghost" id="amb-annuler" title="échap — le signe reste à acheter">revenir au corpus</button>
+  </div>
+</div>
 <div class="end" id="end" hidden>
   <div class="endcard">
     <h2>Fin du prototype</h2>
     <div class="k">actes I à III · <span class="ngl"></span> glyphes sur 45</div>
-    <p class="quote">La dernière année. Elle n'a pas de nombre : après elle, personne n'a plus compté.</p>
-    <p>Le corpus s'arrête ici. La suite — la deuxième personne, les lectures fausses et les contradictions — appartient aux actes IV et V.</p>
+    <p class="quote" id="endquote">La dernière année. Elle n'a pas de nombre : après elle, personne n'a plus compté.</p>
+    <p>Le corpus s'arrête ici. La suite — la deuxième personne, le doute et les contradictions — appartient aux actes IV et V.</p>
     <div class="endstats" id="endstats"></div>
     <p style="font-size:15px"><b style="color:var(--lamp);font-weight:500">La seule question qui compte&nbsp;:</b> au moment où les tablettes se sont rangées dans l'ordre du temps, est-ce que la crue qui baisse s'est vue&nbsp;? Personne ne la commente&nbsp;; elle n'est que dans les chiffres. Si elle passe inaperçue, le sommet de l'acte III est manqué et les 18 glyphes restants ne le rattraperont pas.</p>
     <div class="endacts">
@@ -571,7 +610,7 @@ const GL = [
      l’index, `après` range le texte lui-même. Ce que ce rangement découvre — la crue qui
      baisse sur deux siècles — n’est écrit nulle part et n’est commenté par personne :
      c’est dans les chiffres, et il faut les avoir mis en ordre pour le voir. */
-  {id:'nur',  br:'temps',   mot:'année',    cost:60, eff:'chaque tablette porte sa date · la grammaire devient possible',
+  {id:'nur',  br:'temps',   mot:'année',    cost:60, eff:'la première ligne de chaque tablette se lit en entier · la grammaire devient possible',
    log:'Année. Chaque tablette est datée depuis le début — je ne savais pas lire la date.'},
   {id:'pat',  br:'temps',   mot:'avant',    cost:130, eff:'la barre se range dans l’ordre du temps',
    log:'Avant. Ce qui est sorti de terre en premier n’a pas été gravé en premier.'},
@@ -581,7 +620,7 @@ const GL = [
    log:'Siècle. Ils mesuraient par centaines d’années. Il leur en restait deux.'},
   {id:'esh',  br:'temps',   mot:'nuit',     cost:360,eff:'la lecture continue hors ligne — 40 % du débit, 4 h au plus',
    log:'Nuit. Ils gravaient la nuit. Le corpus se lit maintenant sans moi.'},
-  {id:'nurhal',br:'temps',  mot:'dernière-année',cost:500,eff:'les deux dernières tablettes se datent · +50 % à l’atelier de copie',
+  {id:'nurhal',br:'temps',  mot:'dernière-année',cost:500,eff:'les deux dernières tablettes se lisent · +50 % à l’atelier de copie',
    log:'La dernière année. Elle n’a pas de nombre : après elle, personne n’a plus compté.'},
   /* ---- acte III : la modalité ----
      Quatre signes pour 816 attestations, un signe du corpus sur cinq. Ce sont les plus
@@ -615,7 +654,7 @@ const GL = [
      tablettes dégagées, ni pour la Grammaire (voir `nArbre()` dans economie.js). Le seul
      effet de `grenier` est qu’on le lit : vingt-quatre attestations qui passent en français,
      et rien de plus. Un joueur peut finir la partie sans jamais le trouver. */
-  {id:'urtem',br:'matiere', sec:true, mot:'grenier', cost:60, eff:'le grenier se lit — un mot qu’aucune branche n’offrait',
+  {id:'urtem',br:'matiere', sec:true, mot:'grenier', cost:60, eff:'un mot qu’aucune branche n’offrait — vingt-quatre attestations',
    log:'Le grenier — la maison du grain. Personne ne me l’a appris : c’était écrit dans le signe.'},
   /* `zéro` est le seul composé dont les deux parties viennent de deux branches et de deux
      actes — ⟨ne-pas⟩ posé sur ⟨un⟩. Le design doc lui prête « la notation compacte des
@@ -625,7 +664,7 @@ const GL = [
      tablette 29 — un registre de zéros, un seul signe répété pendant toute la partie
      (docs/corpus.md §5), qui passe d'un coup en chiffres. `numLisible()` l'attend depuis
      l'acte I : un nombre nul n'est lisible que si l'on a ce signe-là. */
-  {id:'lan',  br:'nombre',  sec:true, mot:'zéro',    cost:120, eff:'le zéro se lit — les registres vides passent en chiffres',
+  {id:'lan',  br:'nombre',  sec:true, mot:'zéro',    cost:120, eff:'les registres vides passent en chiffres',
    log:'Zéro. Ne-pas un : ils ont écrit l’absence comme un nombre et l’ont rangée dans la colonne des nombres. Je le regardais depuis le début sans le compter.'}
 ];
 /* Le lexique compte ce que l’arbre offre. Un composé secret s’ajoute au savoir du joueur sans
@@ -634,6 +673,96 @@ const GL = [
 const NGL = GL.filter(g=>!g.sec).length;
 const BR = [['nombre','Nombre'],['matiere','Matière'],['parole','Parole'],['temps','Temps'],['modalite','Modalité']];
 const byId = Object.fromEntries(GL.map(g=>[g.id,g]));
+
+/* ======================== les onze lectures ========================
+   Onze signes sur quarante-cinq supportent deux lectures, et le joueur tranche à l'achat
+   (design doc §8). Les mots faux et leurs lignes de journal sont écrits depuis le
+   14/09/2026 — `docs/corpus.md` §7.5, vérifiés ligne à ligne contre le corpus rendu — et
+   recopiés ici sans y toucher : ce sont eux le contenu du lot, pas la mécanique.
+
+   Ce que la table ne porte PAS, et c'est délibéré :
+
+   - aucune marque de justesse. La lecture juste est `mot` dans `GL`, la fausse est ici, et
+     rien dans l'interface ne dit laquelle est laquelle. La grille de composition ne
+     renseigne jamais (règle 14) ; l'écran de choix non plus, et pour la même raison.
+   - aucun effet chiffré propre. La lecture fausse rend 25 % de plus SUR CE QUE LE SIGNE
+     MULTIPLIE DÉJÀ (`mfx()` dans economie.js) ; un signe qui ne multiplie rien ne gagne
+     rien à être mal lu. Lui inventer un effet pour porter la prime déplacerait une économie
+     réglée sur neuf playtests, pour une prime que le joueur ne voit pas.
+   - aucune dette écrite à la main : elle se déduit des attestations (`detteDe()`).
+
+   `mesh` (semence) et `ke` (devenir) sont de l'acte V et n'existent pas encore dans `GL`.
+   Leurs entrées sont inertes jusque-là, comme les recettes de `RECETTES` (règle 15) : le
+   jour où leur branche entre, elles se mettent à servir d'elles-mêmes. */
+const AMB = {
+  tem:  {mot:'poussière',
+   log:'De la poussière. Ce ne sont pas des prières : ce sont des comptes de cendres, et ils les ont tenus jusqu’au bout.'},
+  ur:   {mot:'tombe',
+   log:'Une tombe. Les outils du corpus prennent un nom, et ce n’est pas celui d’une ville : trente et une tombes la première année, deux la dernière.'},
+  kish: {mot:'sang',
+   log:'Le sang. Un relevé par année, tenu sur deux siècles. Je préfère ne pas savoir de quoi ils tenaient le compte si scrupuleusement.'},
+  sar:  {mot:'couper',
+   log:'Couper. Quelqu’un a tenu ce stylet, et il a entaillé l’argile comme on entaille autre chose.'},
+  shen: {mot:'compter',
+   log:'Compter. Ce n’est pas un inventaire qui le dit, c’est une consigne — et elle revient d’une tablette à l’autre. Un peuple qui ordonne de compter : je ne suis pas surpris.'},
+  nur:  {mot:'soleil',
+   log:'Le soleil. Chaque tablette porte le sien depuis le début — je ne savais pas lire la date.'},
+  pat:  {mot:'dessous',
+   log:'Dessous. Ce qui est sorti de terre en premier était en haut de la pile : ils rangeaient en empilant.'},
+  dun:  {mot:'on peut',
+   log:'On peut. Ce n’est pas un inventaire qui parle, c’est quelqu’un qui autorise — et sur deux siècles, l’autorisation ne change pas : copier.'},
+  la:   {mot:'fin',
+   log:'Fin. Le signe le plus fréquent de tout le corpus dit la fin de quelque chose — et les colonnes que je croyais inachevées disent qu’on s’était arrêté là.'},
+  /* ---- acte V, écrits d'avance (docs/corpus.md §7.5) ---- */
+  mesh: {mot:'enfant',
+   log:'Un enfant. Ils les comptaient par soixante, puis par cent, pendant que les tombes se vidaient. C’est le seul nombre du corpus qui monte.'},
+  ke:   {mot:'porter',
+   log:'Porter. Ce qu’ils demandent à la tablette, ce n’est pas d’être lue : c’est de transporter quelque chose.'}
+};
+
+/* ---- ce qu'une lecture fausse emporte avec elle ----
+   Un signe faux ne salit pas que ses propres attestations : il salit tout composé qui le
+   contient, parce qu'un composé se lit par ses parties (règle 4). Et il DOIT le salir,
+   sinon la grille renseigne — un joueur qui lit ⟨ne-pas⟩ « fin » et à qui la grille répond
+   « zéro » vient d'apprendre qu'il s'est trompé (règle 14, docs/corpus.md §7.2).
+
+   Le composé faux fait le même saut que le juste, appliqué aux parties fausses :
+   ⟨maison⟩⟨grain⟩ ne donne pas « maison-grain » mais « grenier », donc ⟨tombe⟩⟨grain⟩ ne
+   donne pas « tombe-grain » mais « caveau ».
+
+   La clé est la liste des parties mal lues, dans l'ordre de la recette et sans doublon —
+   ⟨année⟩⟨année⟩ n'a qu'une partie à salir. Ce que `docs/corpus.md` §7.2 ne donnait pas et
+   qu'il fallait écrire ici : la ligne de journal de chaque variante. Sans elle, l'achat de
+   ⟨maison⟩⟨grain⟩ annoncerait « le grenier — la maison du grain » à un joueur dont le
+   corpus dit « caveau » et « tombe », et le jeu se contredirait tout seul. */
+const COMPFAUX = {
+  urtem: {
+    ur:      {mot:'caveau',   log:'Le caveau — la tombe où l’on met le grain. Personne ne me l’a appris : c’était écrit dans le signe.'},
+    tem:     {mot:'poussier', log:'Le poussier — la maison de la poussière. Personne ne me l’a appris : c’était écrit dans le signe.'},
+    'ur+tem':{mot:'ossuaire', log:'L’ossuaire — la tombe de la poussière. Personne ne me l’a appris : c’était écrit dans le signe.'}
+  },
+  imme:   {sar:{mot:'le juge',  log:'Le juge. Celui qui dit et qui tranche. Chaque tablette finit sur ce mot : je lisais une signature sans le savoir.'}},
+  tabsar: {sar:{mot:'le rebut', log:'Le rebut — la tablette coupée. Une, puis trois cents, puis mille deux cents. Ils ne comptaient pas leur grain : ils comptaient ce qu’ils avaient mis au rebut.'}},
+  nurnur: {nur:{mot:'cent-soleils',   log:'Cent soleils. Ils mesuraient par centaines. Il leur en restait deux.'}},
+  nurhal: {nur:{mot:'dernier-soleil', log:'Le dernier soleil. Il n’a pas de nombre : après lui, personne n’a plus compté.'}},
+  shenu:  {shen:{mot:'les-compteurs', log:'Les compteurs. Ils se nommaient d’après ce qu’ils faisaient — et la moitié du nom est un signe que je ne sais pas lire, qui se tient seul juste devant, sur la même ligne.'}},
+  enla:   {la:{mot:'à la fin', log:'À la fin. La consigne s’arrête là. Ils n’ont jamais gravé ce qui vient après — ou bien c’est arrivé.'}},
+  /* ⟨fin⟩ posé sur ⟨un⟩ est l'homographe exact de ⟨finir⟩⟨un⟩, qui est `le-dernier`
+     (docs/corpus.md §7.2). Le signe replie quand même les registres vides : c'est le
+     corpus qui répond, pas la grille, et c'est le seul endroit où il a le droit de le
+     faire. */
+  lan:    {la:{mot:'fin-un', log:'Fin-un. Le signe de la fin posé sur le un : ils écrivaient l’épuisement comme un nombre et le rangeaient dans la colonne des nombres. Je le regardais depuis le début sans le compter.'}},
+  /* ---- actes IV et V, écrits d'avance ; inertes tant que leurs parties ne sont pas au
+     lexique, exactement comme les recettes correspondantes ---- */
+  shenke: {shen:{mot:'devenir-compte'}, ke:{mot:'porter-lecture'}, 'shen+ke':{mot:'porter-compte'}},
+  meshke: {mesh:{mot:'naître'},         ke:{mot:'porter-semence'}, 'mesh+ke':{mot:'porter-enfant'}},
+  mula:   {la:{mot:'moi-mort'}}
+};
+/* Les parties d'un composé, sous les identifiants du LEXIQUE et non sous les clés de tracé :
+   `COMP` fait paraître la branche Nombre sous ses chiffres (`u1` pour ⟨un⟩), et c'est `ALIAS`
+   qui les rend au lexique. Même traduction que pour `RECETTES`, et pour la même raison. */
+const PARTIES = {};
+for(const cible in COMP) PARTIES[cible] = COMP[cible].map(k => GLTRACE[k] || k);
 
 /* ============================ recettes ============================ */
 /* `COMP` dit comment un signe se DESSINE : ses valeurs sont des clés de tracé, et la branche
@@ -645,8 +774,8 @@ const byId = Object.fromEntries(GL.map(g=>[g.id,g]));
    n’ont pas encore leurs parties. Chaque recette apparaîtra d’elle-même le jour où sa cible et
    ses deux parties seront au lexique : il n’y a aucune liste à tenir à jour. */
 const RECETTES = {};
-for(const cible in COMP){
-  const [a, b] = COMP[cible].map(k => GLTRACE[k] || k);
+for(const cible in PARTIES){
+  const [a, b] = PARTIES[cible];
   if(byId[cible] && byId[a] && byId[b]) RECETTES[cible] = [a, b];
 }
 /* L’ordre fait partie de la recette : `notre-fin` et `nous-fûmes` sont les deux mêmes signes
@@ -681,12 +810,14 @@ const TB = ORDRE.map(n => CORPUS.find(t => t.t === n));
    glyphes et rouvrirait sur l'écran de fin, sans moyen de continuer. */
 const KEY='langue-morte-actes-i-iii';
 const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram:0},gl:[],t:0,done:false,
-  rel:{}, prix:{}, carnet:[], comp:0});
+  rel:{}, prix:{}, carnet:[], comp:0, lect:{}, dette:0});
 /* rel : jetons relevés par tablette · prix : tarif du gisement, verrouillé
    carnet : les paires déjà tentées et fausses · comp : le nombre de tentatives, toutes issues
    confondues — c'est lui que PT10 doit lire, pas la seule liste des échecs.
-   Champs de premier niveau, donc une partie d'avant la composition les reçoit vides au
-   chargement, sans qu'on touche à `KEY`. */
+   lect : la lecture tranchée pour chaque signe ambigu ('j' ou 'f') · dette : les points
+   qu'elles coûtent, que RIEN ne lit encore — CONTR-1 sera son premier lecteur.
+   Champs de premier niveau, donc une partie d'avant la composition, ou d'avant l'ambiguïté,
+   les reçoit vides au chargement, sans qu'on touche à `KEY`. */
 let S_ = fresh(), speed = 1;
 try{ const raw=localStorage.getItem(KEY); if(raw){ const p=JSON.parse(raw);
   if(p&&p.b){ const b=Object.assign({cop:0,tab:0,con:0,ate:0,gram:0},p.b); S_=Object.assign(fresh(),p); S_.b=b; } } }catch(e){}
@@ -706,10 +837,72 @@ const nArbre = () => { let n=0; for(const id of S_.gl){ const g=byId[id]; if(!g|
    parties en cours. Chaque lot de glyphes le reproduirait. */
 if(S_.done && nArbre() < NGL) S_.done = false;
 
+/* ======================== la lecture retenue ========================
+   `S_.lect` retient, pour chacun des signes ambigus acquis, laquelle des deux lectures le
+   joueur a tranchée : 'j' ou 'f'. Un signe absent de la table est lu juste — c'est le cas
+   d'une partie commencée avant ce lot, et celui d'un composé posé à la grille, qui n'offre
+   aucun choix. Le défaut est donc ce que le joueur voyait déjà ; rien ne se perd. */
+const faux = id => S_.lect[id] === 'f';
+
+/* Les parties mal lues d'un composé, dans l'ordre de sa recette et sans doublon : c'est la
+   clé de `COMPFAUX`. ⟨année⟩⟨année⟩ n'a qu'une partie à salir, et sa clé est donc `nur` et
+   non `nur+nur`. */
+function partsFausses(id){
+  const pr = PARTIES[id]; if(!pr) return '';
+  const out = [];
+  for(const k of pr) if(faux(k) && out.indexOf(k) < 0) out.push(k);
+  return out.join('+');
+}
+/* Le mot qu'affiche le jeu — corpus, infobulle, lexique, grille, carnet, concordance. Rien
+   d'autre ne doit lire `.mot` directement : c'est cette fonction, et elle seule, qui tient
+   la promesse d'AMB-2 (le mot faux partout, y compris dans les blocs générés et dans les
+   tablettes déjà lues). Le corpus se repeint entièrement à chaque achat, il n'y a donc
+   aucune reprise à faire. */
+function motDe(id){
+  const g = byId[id]; if(!g) return null;
+  const v = COMPFAUX[id];
+  if(v){ const k = partsFausses(id); if(k && v[k]) return v[k].mot; }
+  return faux(id) ? AMB[id].mot : g.mot;
+}
+/* La ligne de journal suit la même règle, et pour la même raison : annoncer « le grenier —
+   la maison du grain » à un joueur dont le corpus dit « caveau », c'est le jeu qui se
+   contredit tout seul, donc qui renseigne. */
+function logDe(id){
+  const g = byId[id]; if(!g) return '';
+  const v = COMPFAUX[id];
+  if(v){ const k = partsFausses(id); if(k && v[k] && v[k].log) return v[k].log; }
+  return faux(id) ? AMB[id].log : g.log;
+}
+/* La dette d'une lecture fausse (AMB-3) : de 1 à 3 points, déduits des attestations et non
+   choisis. Un signe mal lu 315 fois empoisonne davantage qu'un signe mal lu quatre fois, et
+   c'est le corpus qui donne le chiffre — comme le gisement, comme les fréquences.
+   Elle n'est lisible NULLE PART avant `peut-être` (MOD-2) : ni compteur, ni infobulle, ni
+   carte de fin. Son seul lecteur sera CONTR-1. `freqGlyphe()` est dans rendu.js, chargé
+   ensuite — même report que `pushLog` ou `paintCorpus`, appelés d'ici depuis toujours. */
+const detteDe = id => { const n = freqGlyphe(id); return n >= 250 ? 3 : n >= 100 ? 2 : 1; };
+
+/* Le multiplicateur d'un signe, majoré de 25 % quand il est mal lu (design doc §8). La prime
+   porte sur le BONUS et non sur l'instrument : +30 % devient +37,5 %, pas +62,5 %. Trois
+   choses la tiennent :
+
+   - elle est SILENCIEUSE. L'écran de choix affiche la même ligne d'effet pour les deux
+     lectures, parce qu'afficher deux chiffres différents ferait de la prime un oracle :
+     « prends toujours le plus gros » et l'ambiguïté n'est plus qu'un péage. Le jeu ne
+     signale jamais que le choix a été mauvais avant `peut-être` (AMB-1), et un « +37,5 % »
+     à l'achat serait ce signal.
+   - elle ne décide donc rien à l'achat : elle mord à la RÉVISION (CONTR-2), où corriger une
+     lecture coûtera du débit en plus du prix. C'est là qu'est l'optimum local du design
+     doc §8 — pas dans le choix, dans le refus de le défaire.
+   - un signe qui ne multiplie rien ne gagne rien. Quatre des neuf signes ambigus de l'acte
+     III sont dans ce cas, et leur inventer un effet pour porter la prime déplacerait une
+     économie réglée sur neuf playtests au profit d'un chiffre que personne ne voit. */
+const AMB_R = 1.25;
+const mfx = (id, x) => has(id) ? (faux(id) ? 1 + (x - 1)*AMB_R : x) : 1;
+
 /* ---- économie ---- */
 const M = {
   click:()=> 1*(has('anna')?1.25:1)*(has('tab')?1.5:1)*(has('kal')?2:1),
-  cop:  ()=> (has('tem')?1.3:1)*(has('kal')?2:1)*(has('imme')?1.5:1),
+  cop:  ()=> mfx('tem',1.3)*(has('kal')?2:1)*(has('imme')?1.5:1),
   /* L'atelier suivait le copiste jusqu'à l'acte III ; les deux bonus de la branche Temps
      le détachent — c'est le seul instrument qui porte encore l'échelle des occurrences
      quand la Certitude, elle, passe à la grammaire. `scribe` porte les deux : l'atelier
@@ -720,14 +913,16 @@ const M = {
      (87,0 min avec ou sans), parce qu'en fin de partie les occurrences ne sont plus ce qui
      manque ; un bonus de grammaire l'aurait raccourci de cinq minutes. La Modalité reçoit
      donc ce qui se lit, pas ce qui accélère. */
-  ate:  ()=> (has('tem')?1.3:1)*(has('kal')?2:1)*(has('mille')?1.3:1)*(has('nurhal')?1.5:1)*(has('imme')?1.5:1)
-             *(has('dun')?1.5:1),
-  tabl: ()=> (has('kish')?1.3:1)*(has('kal')?2:1)*(has('tabsar')?1.5:1),
-  con:  ()=> (has('sar')?1.5:1)*(has('kal')?2:1),
+  ate:  ()=> mfx('tem',1.3)*(has('kal')?2:1)*(has('mille')?1.3:1)*(has('nurhal')?1.5:1)*(has('imme')?1.5:1)
+             *mfx('dun',1.5),
+  tabl: ()=> mfx('kish',1.3)*(has('kal')?2:1)*(has('tabsar')?1.5:1),
+  con:  ()=> mfx('sar',1.5)*(has('kal')?2:1),
   /* `lire` est le piège majeur de l'ambiguïté (docs/corpus.md §7) : sa lecture fausse,
-     « compter », devra rendre 25 % de plus. Il lui faut donc un effet chiffré, et c'est
-     celui de l'instrument qui lit. */
-  gram: ()=> (has('nurnur')?1.5:1)*(has('kal')?2:1)*(has('shen')?1.5:1)
+     « compter », rend 25 % de plus. Il lui fallait donc un effet chiffré, et c'est celui de
+     l'instrument qui lit. Cinq multiplicateurs en tout passent par `mfx` — `tem` au copiste
+     et à l'atelier, `dun` à l'atelier, `kish` à la table, `sar` à la concordance, `shen`
+     ici ; les quatre autres signes ambigus de l'acte III ne multiplient rien. */
+  gram: ()=> (has('nurnur')?1.5:1)*(has('kal')?2:1)*mfx('shen',1.5)
 };
 /* production brute d'occurrences par seconde (sert au barème du relevé manuel) */
 const oBrut = () => S_.b.cop*1.0*M.cop() + S_.b.ate*25*M.ate();
@@ -928,15 +1123,22 @@ function composer(a, b){
 }
 function acheterIns(k){ const i=INS.find(x=>x.k===k), c=insCost(i);
   if(i.unlock()&&S_.O>=c){ S_.O-=c; S_.b[k]++; } }
-function acheterGl(id){
+/* `lect` vaut 'j' ou 'f' pour un signe ambigu, et rien pour tous les autres. Une lecture
+   non tranchée est la juste : c'est le cas d'un composé posé à la grille — laquelle n'offre
+   aucun choix et ne doit surtout pas en offrir un — et de tout appel d'avant ce lot. */
+function acheterGl(id, lect){
   const g=byId[id]; if(has(id)||S_.C<g.cost) return;
   const avant = CORPUS.map(pctTablette);
   S_.C-=g.cost; S_.gl.push(id);
+  /* La dette est posée ici et nulle part ailleurs, à l'instant du choix, et personne ne la
+     relit avant CONTR-1. Le joueur n'en verra rien : pas de compteur, pas d'infobulle, pas
+     de ligne à la carte de fin (AMB-3). */
+  if(AMB[id]){ S_.lect[id] = lect==='f' ? 'f' : 'j'; if(lect==='f') S_.dette += detteDe(id); }
   majSignes();
   numCache.length = 0;
   touchees = new Set();
   CORPUS.forEach((tb,i)=>{ if(pctTablette(tb) > avant[i] + 1e-9) touchees.add(tb.t); });
-  pushLog(g.log);
+  pushLog(logDe(id));
   paintCorpus(id);
   lastPct=-1;
   if(id==='an'||id==='kal'){ const b=$('bloom'); b.classList.remove('on'); void b.offsetWidth; b.classList.add('on'); }
@@ -982,6 +1184,10 @@ function finRegarder(now){
 
 function showEnd(){
   const m=Math.floor(S_.t/60), s=Math.floor(S_.t%60);
+  /* La citation de la carte est la ligne de journal du dernier signe de la branche Temps.
+     Elle suit donc la lecture retenue : afficher « la dernière année » à qui a lu ⟨année⟩
+     « soleil », c'est le jeu qui se dédit sur son propre écran de fin. */
+  if(has('nurhal')) $('endquote').textContent = logDe('nurhal');
   const lignes=[
     ['temps de lecture', m+' min '+String(s).padStart(2,'0')],
     ['signes relevés à la main', nf.format(S_.clicks)],
@@ -1125,11 +1331,14 @@ function paintCorpus(flashId){
   elCorpus.querySelectorAll('[data-w]').forEach(el=>{
     const id=el.dataset.w, known=!!byId[id] && has(id);
     const r = rel.has(cleTok(el)) ? 'r' : '';
-    const want = (known ? 'w:'+byId[id].mot : 'g') + r;
+    /* Le mot entre dans la signature du cache : une lecture tranchée à l'achat repeint
+       les attestations déjà peintes, sans quoi le mot faux n'arriverait que sur les
+       tablettes touchées ensuite (AMB-2). */
+    const want = (known ? 'w:'+motDe(id) : 'g') + r;
     if(el.__v===want && flashId!==id) return;
     el.__v=want;
     el.className='tok '+(known?'w':'g')+(r?' rel':'')+(flashId===id?' flash':'');
-    el.innerHTML = known ? byId[id].mot : sv(id);
+    el.innerHTML = known ? motDe(id) : sv(id);
   });
   elCorpus.querySelectorAll('[data-n]').forEach(el=>{
     const n=+el.dataset.n, lis=numLisible(n), r = rel.has(cleTok(el)) ? 'r' : '';
@@ -1271,8 +1480,10 @@ function peindreGisement(){
 function titreCell(t){
   const r = gisReste(t);
   /* La date est dans le texte de la tablette ; l'infobulle ne fait que la répéter, et
-     seulement quand le joueur sait la lire. */
-  const d = !datee(t) ? '' : ANNEE[t].fin ? ' · dernière année' : ' · année '+ANNEE[t].n;
+     seulement quand le joueur sait la lire — donc avec le mot qu'il a retenu pour ⟨année⟩.
+     La répéter en français juste à qui a lu « soleil », c'est le jeu qui le corrige. */
+  const d = !datee(t) ? '' : ANNEE[t].fin ? ' · '+motDe('nurhal')
+                                          : ' · '+motDe('nur')+' '+ANNEE[t].n;
   return 'tablette '+t+d+' — gisement '+r+'/'+GISEMENT[t]
     + (r <= 0 ? ' · épuisée'
       : S_.prix[t] === undefined
@@ -1397,7 +1608,7 @@ function majConc(){
   const b = $('a-con'), ouvert = S_.b.con > 0;
   if(b.hidden !== !ouvert) b.hidden = !ouvert;
   if(!ouvert) return;
-  const mot = concSel && byId[concSel] && has(concSel) ? byId[concSel].mot : null;
+  const mot = concSel && byId[concSel] && has(concSel) ? motDe(concSel) : null;
   setHTML(b, !concSel ? (concArme ? 'choisis un signe' : 'concorder')
     : (mot || sv(concSel)) + ' · ' + nf.format(concN)
       + ' attestation' + (concN > 1 ? 's' : '') + ' ✕');
@@ -1535,7 +1746,8 @@ function paintComp(){
     const b = $('comp-choix').querySelector('[data-pion="'+g.id+'"]'), vu = has(g.id);
     if(b.hidden !== !vu) b.hidden = !vu;
     if(!vu) continue;
-    if(b.title !== g.mot) b.title = g.mot;
+    const m = motDe(g.id);
+    if(b.title !== m) b.title = m;
     b.classList.toggle('pose', compSel.indexOf(g.id) >= 0);
   }
 
@@ -1558,8 +1770,41 @@ function paintComp(){
   if($('carnet').hidden !== !n) $('carnet').hidden = !n;
   if(n) setHTML($('carnet'), '<div class="ch">Déjà tentées</div>' + S_.carnet.map(pr => {
     const [x, y] = pr.split('+');
-    return '<span class="cpair" title="'+byId[x].mot+' + '+byId[y].mot+'">'+svPaire(x, y)+'</span>';
+    return '<span class="cpair" title="'+motDe(x)+' + '+motDe(y)+'">'+svPaire(x, y)+'</span>';
   }).join(''));
+}
+
+/* ==================== trancher à l'achat ====================
+   Onze signes supportent deux lectures ; le joueur choisit au moment de payer, et paie le
+   même prix dans les deux cas (design doc §8). La fenêtre ne porte qu'une chose de plus que
+   la carte du lexique : le second mot. Tout le reste — le tracé, l'effet, le coût — est
+   commun aux deux lectures, parce que le moindre écart dirait laquelle est la bonne.
+   `revenir au corpus` laisse le signe à acheter : un clic malheureux ne coûte rien, et ce
+   n'est pas une indulgence — c'est que le choix doit se faire en lisant, pas en cliquant. */
+let ambId = null, ambOrdre = null;
+
+function ambOuvrir(id){
+  const g = byId[id];
+  if(!g || !AMB[id] || has(id) || S_.C < g.cost) return;
+  ambId = id;
+  /* L'ordre est tiré au sort à l'ouverture, une fois. La lecture juste toujours à gauche se
+     retiendrait en une partie, et la seconde n'aurait plus rien à trancher. C'est le seul
+     hasard du jeu, et il ne décide de rien : il empêche une POSITION d'être une réponse. */
+  ambOrdre = Math.random() < 0.5 ? ['j','f'] : ['f','j'];
+  setHTML($('amb-sig'), sv(id));
+  const bs = $('amb-choix').querySelectorAll('[data-amb]');
+  for(let i = 0; i < 2; i++) setHTML(bs[i], ambOrdre[i] === 'f' ? AMB[id].mot : g.mot);
+  /* Même condition qu'au lexique : sans `dire`, le jeu n'annonce pas ce qu'un signe fait. */
+  setHTML($('amb-eff'), has('im') ? g.eff : '');
+  setHTML($('amb-cost'), readC() ? String(g.cost) : numGlyphs(g.cost));
+  $('amb').hidden = false;
+}
+function ambFermer(){ ambId = null; $('amb').hidden = true; }
+function ambChoisir(i){
+  if(ambId === null) return;
+  const id = ambId, lect = ambOrdre[i];
+  ambFermer();
+  acheterGl(id, lect);
 }
 
 function buildLex(){
@@ -1590,7 +1835,7 @@ function paintLex(){
          du coup la question ne se pose jamais pour `deux`, le seul glyphe dont le comptage
          mentirait (il n'ouvre aucun signe, il ouvre le principe du redoublement). */
       const montreFreq = open && S_.b.tab > 0 && readC();
-      setHTML(b.querySelector('.ttl'), done ? g.mot
+      setHTML(b.querySelector('.ttl'), done ? motDe(g.id)
         : montreFreq ? '<span class="frq">'+nf.format(freqGlyphe(g.id))+' occ.</span>' : '');
       setHTML(b.querySelector('.cost'), done? '✓' : open? (readC()? String(g.cost) : numGlyphs(g.cost)) : '');
       setHTML(b.querySelector('.eff'), (done || (open && has('im'))) ? g.eff : '');
@@ -1606,7 +1851,7 @@ function paintLex(){
     vus++;
     if(b.className!=='gcard done') b.className='gcard done';
     b.disabled=true;
-    setHTML(b.querySelector('.ttl'), g.mot);
+    setHTML(b.querySelector('.ttl'), motDe(g.id));
     setHTML(b.querySelector('.cost'), '✓');
     setHTML(b.querySelector('.eff'), g.eff);
   }
@@ -1686,7 +1931,7 @@ const freqGlyphe = id => (FREQ[id]||0) + (NUMSYM[id]||[]).reduce((n,k)=>n+(FREQN
 const partMot = k => (k==='u1' && has('an')) ? 'un'
                    : (k==='t10' && has('sela')) ? 'dix'
                    : (k==='h100' && has('meku')) ? 'cent'
-                   : (byId[k] && has(k)) ? byId[k].mot : null;
+                   : (byId[k] && has(k)) ? motDe(k) : null;
 
 function tipHTML(el){
   if(el.dataset.w !== undefined){
@@ -1697,7 +1942,7 @@ function tipHTML(el){
         return sv(a) + '<span class="plus">+</span>' + sv(b)
              + '<span class="lab">' + (ma&&mb ? ma+' + '+mb : 'signe composé') + '</span>';
       }
-      return sv(id) + '<span class="lab">' + byId[id].mot + '</span>';
+      return sv(id) + '<span class="lab">' + motDe(id) + '</span>';
     }
     if(S_.b.tab > 0){
       const n = freqGlyphe(id);
@@ -1792,7 +2037,12 @@ enrober('formuler',  () => S_.H);
 enrober('recouper',  () => S_.rec,        a => '+' + recGain() + ' cert.'
                                                + (a[0] ? ' · ' + a[0] : ''));
 enrober('acheterIns', niveaux,            a => a[0] + ' n°' + S_.b[a[0]]);
-enrober('acheterGl', () => S_.gl.length,  a => a[0] + ' (' + byId[a[0]].mot + ') ' + byId[a[0]].cost + ' C');
+/* Le mot retenu, et non le mot juste : sur un signe ambigu, c'est la lecture tranchée qui
+   fait la partie, et le ✗ la marque pour le dépouillement. Le joueur, lui, n'en saura rien —
+   ce fichier est hors jeu et ne s'ouvre qu'après coup. */
+enrober('acheterGl', () => S_.gl.length,  a => a[0] + ' (' + motDe(a[0]) + ')'
+                                               + (faux(a[0]) ? ' ✗' : '')
+                                               + ' ' + byId[a[0]].cost + ' C');
 /* La nuit ne passe pas par `tick` et n'émettrait donc aucune ligne : une seule, au retour,
    dit ce qu'elle a rapporté. Une partie jouée en plusieurs fois se lit alors sans trou. */
 enrober('veillee',   () => Math.round(S_.O), () => Math.round(S_.O) + ' occ. hors ligne');
@@ -1916,7 +2166,7 @@ window.addEventListener('pagehide', sauverTraces);
 document.querySelectorAll('.ngl').forEach(el => { el.textContent = NGL; });
 majSignes();
 buildRail(); buildCorpus(); buildInstr(); buildComp(); buildLex();
-if(S_.gl.length){ paintCorpus(null); pushLog(byId[S_.gl[S_.gl.length-1]].log); }
+if(S_.gl.length){ paintCorpus(null); pushLog(logDe(S_.gl[S_.gl.length-1])); }
 /* `nuit` acquis, le corpus se lit sans le joueur — 40 % du débit, quatre heures au plus.
    Dit au retour, une seule fois, et seulement s'il s'est passé quelque chose. */
 const nuitPassee = veillee();
@@ -1963,13 +2213,22 @@ window.addEventListener('keydown', e=>{
   /* La concordance a sa touche : c'est le geste qu'on refait le plus souvent une fois le
      corpus rangé, et il n'a pas à passer par la souris. */
   else if(k==='c'){ e.preventDefault(); if(S_.b.con>0){ if(concSel||concArme) concFermer(); else concArmer(true); } }
-  else if(k==='escape'){ if(!$('end').hidden) fermerFin();
+  else if(k==='escape'){ if(!$('amb').hidden) ambFermer();
+    else if(!$('end').hidden) fermerFin();
     else if(recArme) recArmer(false);
     else if(concArme || concSel) concFermer();
     else if(compSel[0] || compSel[1]) compVider(); }
 });
 $('instr').addEventListener('click', e=>{ const b=e.target.closest('[data-ins]'); if(b&&!b.disabled) acheterIns(b.dataset.ins); });
-$('lex').addEventListener('click', e=>{ const b=e.target.closest('[data-gl]'); if(b&&!b.disabled) acheterGl(b.dataset.gl); });
+/* Un signe ambigu ne s'achète pas d'un clic : il ouvre les deux lectures, et c'est le
+   second clic qui paie. Les trente-quatre autres n'ont rien à trancher et passent droit. */
+$('lex').addEventListener('click', e=>{ const b=e.target.closest('[data-gl]');
+  if(!b||b.disabled) return;
+  if(AMB[b.dataset.gl]) ambOuvrir(b.dataset.gl); else acheterGl(b.dataset.gl); });
+$('amb-choix').addEventListener('click', e=>{
+  const b=e.target.closest('[data-amb]'); if(b) ambChoisir(+b.dataset.amb); });
+$('amb-annuler').addEventListener('click', ambFermer);
+$('amb').addEventListener('click', e=>{ if(e.target===$('amb')) ambFermer(); });
 /* La grille de composition. Pas de raccourci clavier et pas de répétition : poser un signe sur
    un autre n'est pas un geste qu'on martèle, c'est un geste qu'on a préparé en lisant. */
 $('comp-choix').addEventListener('click', e=>{
@@ -2003,6 +2262,7 @@ $('reset').addEventListener('click',()=>{
   /* Sans ceci la table des signes de numération garde ceux de la partie précédente :
      on repart de zéro glyphe avec 229 nombres encore lisibles à l'écran. */
   majSignes(); touchees=new Set(); recArmer(false); concFermer(); compVider(); finDesarmer();
+  ambFermer();
   $('log').innerHTML='<p class="hint">relève un signe : clique dans le corpus</p>';
   paintCorpus(null); try{localStorage.removeItem(KEY);}catch(e){}
 });

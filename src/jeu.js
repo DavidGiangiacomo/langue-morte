@@ -8,7 +8,7 @@
 document.querySelectorAll('.ngl').forEach(el => { el.textContent = NGL; });
 majSignes();
 buildRail(); buildCorpus(); buildInstr(); buildComp(); buildLex();
-if(S_.gl.length){ paintCorpus(null); pushLog(byId[S_.gl[S_.gl.length-1]].log); }
+if(S_.gl.length){ paintCorpus(null); pushLog(logDe(S_.gl[S_.gl.length-1])); }
 /* `nuit` acquis, le corpus se lit sans le joueur — 40 % du débit, quatre heures au plus.
    Dit au retour, une seule fois, et seulement s'il s'est passé quelque chose. */
 const nuitPassee = veillee();
@@ -55,13 +55,22 @@ window.addEventListener('keydown', e=>{
   /* La concordance a sa touche : c'est le geste qu'on refait le plus souvent une fois le
      corpus rangé, et il n'a pas à passer par la souris. */
   else if(k==='c'){ e.preventDefault(); if(S_.b.con>0){ if(concSel||concArme) concFermer(); else concArmer(true); } }
-  else if(k==='escape'){ if(!$('end').hidden) fermerFin();
+  else if(k==='escape'){ if(!$('amb').hidden) ambFermer();
+    else if(!$('end').hidden) fermerFin();
     else if(recArme) recArmer(false);
     else if(concArme || concSel) concFermer();
     else if(compSel[0] || compSel[1]) compVider(); }
 });
 $('instr').addEventListener('click', e=>{ const b=e.target.closest('[data-ins]'); if(b&&!b.disabled) acheterIns(b.dataset.ins); });
-$('lex').addEventListener('click', e=>{ const b=e.target.closest('[data-gl]'); if(b&&!b.disabled) acheterGl(b.dataset.gl); });
+/* Un signe ambigu ne s'achète pas d'un clic : il ouvre les deux lectures, et c'est le
+   second clic qui paie. Les trente-quatre autres n'ont rien à trancher et passent droit. */
+$('lex').addEventListener('click', e=>{ const b=e.target.closest('[data-gl]');
+  if(!b||b.disabled) return;
+  if(AMB[b.dataset.gl]) ambOuvrir(b.dataset.gl); else acheterGl(b.dataset.gl); });
+$('amb-choix').addEventListener('click', e=>{
+  const b=e.target.closest('[data-amb]'); if(b) ambChoisir(+b.dataset.amb); });
+$('amb-annuler').addEventListener('click', ambFermer);
+$('amb').addEventListener('click', e=>{ if(e.target===$('amb')) ambFermer(); });
 /* La grille de composition. Pas de raccourci clavier et pas de répétition : poser un signe sur
    un autre n'est pas un geste qu'on martèle, c'est un geste qu'on a préparé en lisant. */
 $('comp-choix').addEventListener('click', e=>{
@@ -95,6 +104,7 @@ $('reset').addEventListener('click',()=>{
   /* Sans ceci la table des signes de numération garde ceux de la partie précédente :
      on repart de zéro glyphe avec 229 nombres encore lisibles à l'écran. */
   majSignes(); touchees=new Set(); recArmer(false); concFermer(); compVider(); finDesarmer();
+  ambFermer();
   $('log').innerHTML='<p class="hint">relève un signe : clique dans le corpus</p>';
   paintCorpus(null); try{localStorage.removeItem(KEY);}catch(e){}
 });

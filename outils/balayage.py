@@ -14,11 +14,17 @@ constante dans l'un et pas dans l'autre — et il répond alors avec assurance.
 import itertools
 import sys
 
-from sim import P, run
+from sim import AMBIGUS, P, run
 
 # Une combinaison est jouée aux trois cadences et notée sur son pire cas : un réglage qui
 # ne tient qu'à 40 clics/minute ne tient pas.
 CADENCES = (5, 15, 40)
+# ... et aux deux lectures extrêmes, depuis AMB-1 : toutes justes, toutes fausses. La lecture
+# fausse majore de 25 % le bonus des cinq signes ambigus qui en portent un, ce qui RACCOURCIT
+# la partie de cinq minutes environ sans toucher aux autres garde-fous. Deux réglages entre
+# lesquels seule la lecture tranche n'existent pas : c'est le même réglage, joué par deux
+# joueurs qui n'ont pas lu la même chose, et il doit tenir pour les deux.
+LECTURES = ((), AMBIGUS)
 GRILLE = dict(rec_r=(1.26, 1.30, 1.35), con_b=(350, 400, 450), cop_b=(10, 15),
               rev_r=(1.0, 1.1, 1.25))
 
@@ -30,9 +36,13 @@ GRILLE = dict(rec_r=(1.26, 1.30, 1.35), con_b=(350, 400, 450), cop_b=(10, 15),
 # et disait « 0 sur 18 » sans que rien ne soit cassé. Re-baser cette fenêtre fait partie de
 # tout lot qui ajoute des signes.
 # 28 glyphes (`les-lecteurs` compris) : le réglage retenu mesure 89,7-92,9 min aux trois
-# cadences. Fenêtre gardée aux mêmes marges qu'au lot précédent — trois minutes sous le
-# plancher mesuré, deux au-dessus du plafond — pour qu'elle continue de trier.
-DUREE = (86.0, 95.0)
+# cadences toutes lectures justes, et 84,4-87,5 min toutes lectures fausses (AMB-1). La
+# fenêtre couvre donc les deux, aux mêmes marges qu'aux lots précédents — trois minutes sous
+# le plancher mesuré, deux au-dessus du plafond. Elle s'élargit de cinq minutes par le bas et
+# trie d'autant moins : c'est assumé, et ce sont les trois autres garde-fous qui trient
+# désormais, aucun n'étant touché par la lecture (pire tranche 26 % juste contre 25 % faux,
+# écart 5,2 contre 4,6, main 22,9 % contre 23,1 %).
+DUREE = (81.0, 95.0)
 ECART_MAX = 6.0
 I6_MAX = 30.0
 # La part manuelle des OCCURRENCES, entrée dans le tri le 14/09/2026 en même temps que
@@ -59,10 +69,11 @@ def i6_tranches(s):
 
 
 def essai(variante):
-    """Une combinaison, jouée aux trois cadences, réduite à ses pires mesures."""
+    """Une combinaison, jouée aux trois cadences et aux deux lectures extrêmes, réduite à
+    ses pires mesures."""
     durees, ecarts, con1, trs, mains = [], [], [], [], []
-    for cpm in CADENCES:
-        tt, marks, _, s = run({**P, **variante}, cpm)
+    for cpm, lect in itertools.product(CADENCES, LECTURES):
+        tt, marks, _, s = run({**P, **variante}, cpm, faux=lect)
         durees.append(tt)
         ecarts.append(max((marks[i][1] - marks[i - 1][1] for i in range(1, len(marks))),
                           default=0.0))

@@ -141,6 +141,148 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## Trancher à l'achat — la prime ne se voit pas, et c'est tout le système
+
+15/09/2026, AMB-1. Avec ce qu'AMB-2 et AMB-3 ne pouvaient pas laisser dehors : le mot faux
+partout, et la dette qui court sans être lue. Le texte était écrit depuis la veille
+(`docs/corpus.md` §7) ; ce lot est la mécanique, et elle a tenu à une seule décision.
+
+### La décision : la prime de 25 % est silencieuse
+
+Le design doc §8 dit « effet mécanique : nominal / **+25 %** ». Restait à savoir si l'écran de
+choix montre ces 25 %.
+
+Il ne les montre pas, et ce n'est pas un scrupule d'ambiance. Deux lignes d'effet
+différentes — « +50 % à la grammaire » contre « +62,5 % » — feraient de la prime un
+**oracle** : prends toujours le plus gros chiffre et tu sais, pour toujours et sans lire, que
+tu viens de choisir la lecture fausse. Onze signes ambigus deviendraient onze péages. La
+règle 14 dit que la grille de composition ne renseigne jamais, pas même par son silence ;
+l'écran de choix est le même objet, et un « +62,5 % » y serait le renseignement le plus
+franc du jeu.
+
+Les deux propositions portent donc le même tracé, le même prix, la même ligne d'effet. La
+seule chose qui les distingue est le mot — ce qui est exactement ce qu'il y a à trancher.
+
+**Corollaire, et il déplace le design doc :** la prime ne décide rien à l'achat, puisqu'on ne
+la voit pas. Elle mord à la **révision**. Rouvrir un signe pour corriger sa lecture (CONTR-2)
+coûtera le prix *et* 25 % du débit qu'il rendait. L'optimum local du §8 n'est pas dans le
+choix : il est dans le refus de le défaire. C'est plus juste que ce qu'on croyait coder — un
+biais de confirmation qu'on paie pour entretenir.
+
+Deux précisions qui en découlent :
+
+- **La prime porte sur le bonus, pas sur l'instrument.** +30 % devient +37,5 %, pas +62,5 %.
+  L'autre lecture ferait de chaque signe mal lu un quart d'instrument gratuit, ce qui à cinq
+  signes déplacerait l'économie bien au-delà de ce qu'un piège invisible doit peser.
+- **Un signe qui ne multiplie rien ne gagne rien.** Quatre des neuf signes ambigus de l'acte
+  III sont dans ce cas — ⟨maison⟩, ⟨année⟩, ⟨avant⟩, ⟨ne-pas⟩. Leur inventer un effet pour
+  porter la prime, c'est déplacer une économie réglée sur neuf playtests au profit d'un
+  chiffre que personne ne voit. Se tromper sur eux est une perte sèche, et le joueur ne peut
+  pas le savoir : le piège en est plus profond, pas moins.
+
+### Ce que la mesure a dit, et que personne n'avait annoncé
+
+Toutes lectures justes : **89,7–92,9 min**, écart max 5,2, main 22,9–23,4 %, tranches ≥ 10′
+≤ 26 % — identique au chiffre près à la veille, et c'était le contrat.
+
+Toutes lectures fausses : **84,4–87,5 min**, écart max 4,6, main 23,1–24,8 %, tranches ≥ 10′
+≤ 25 %. Se tromper partout fait gagner **cinq minutes et demie**, soit 6 %. C'est le « paie
+mieux à court terme » du §8, chiffré pour la première fois, et c'est modeste — ce qu'il faut
+pour que la révision coûte sans que la partie d'un lecteur soit punie.
+
+Mais la répartition ne ressemble à rien de ce que le récit annonce. Signe par signe, à trois
+cadences :
+
+| Signe mal lu | Ce que ça rend |
+|---|---|
+| `grain` → poussière | **−2,2 min** |
+| `graver` → couper | −1,6 min |
+| `lire` → compter | −1,3 min |
+| `il-faut` → on peut | −0,1 min |
+| `eau` → sang | **0,0 min** |
+| `maison` · `année` · `avant` · `ne-pas` | 0,0 min *(aucun multiplicateur)* |
+
+Deux choses là-dedans.
+
+`eau` ne rend **rien**, alors qu'il porte +30 % à la Table de fréquences. En fin de partie les
+hypothèses ne sont pas ce qui manque — la même raison qui faisait que le bonus d'atelier
+d'`il-faut` ne déplaçait pas la durée de l'acte (MOD-1, 12/09). Deux des cinq signes qui
+portent un multiplicateur ne paient donc pas du tout, et c'est mesuré, pas choisi.
+
+Et le signe où la prime paie le plus est **⟨grain⟩ : 3 C, acheté à la troisième minute**,
+quatre tablettes sorties de terre, aucun instrument, rien à recouper. C'est-à-dire que le
+piège est appâté le plus fort là où le joueur a le moins de quoi trancher. On peut le lire
+comme un défaut ; je le lis comme le contraire, parce que la rupture de ⟨grain⟩ est à la
+tablette 5, sixième à sortir de terre — la plus précoce du lot. Le pari le plus cher est
+aussi celui dont la réponse arrive le plus vite. À vérifier en playtest, pas à régler.
+
+### Le mot faux était la partie facile
+
+`motDe()` remplace tous les accès à `.mot`, le corpus se repeint entièrement à chaque achat,
+et AMB-2 est tenu du même coup : **1 726 attestations sur 3 838 — 45 % du corpus** — changent
+de mot selon ce qu'on a lu, blocs générés et tablettes déjà lues compris.
+
+Ce qui a demandé le travail, c'est tout ce qui **répète un mot ailleurs que dans le corpus**.
+Huit endroits où le jeu se serait contredit tout seul, et une contradiction du jeu avec
+lui-même est un renseignement :
+
+- **Les lignes de journal des composés.** `docs/corpus.md` §7.2 donnait les mots faux dérivés
+  — ⟨tombe⟩⟨grain⟩ fait « caveau » — mais pas les lignes de journal. Annoncer « le grenier —
+  la maison du grain » à un joueur dont le corpus dit « caveau » et « tombe », c'est lui dire
+  qu'il s'est trompé. Dix lignes écrites ici, dont trois pour ⟨grenier⟩ seul : poussier,
+  caveau, ossuaire.
+- **Quatre lignes d'effet présupposaient une lecture.** « chaque tablette porte sa **date** »
+  pour ⟨année⟩ était la pire, parce qu'elle s'affiche **avant** le choix : le jeu soufflait la
+  réponse au moment précis où il demandait de trancher. Réécrites pour tenir sous les deux
+  lectures. Deux autres nommaient carrément le mot — « le grenier se lit », « le zéro se lit ».
+- **L'infobulle de la barre de tablettes** répétait « · année 103 ». Elle dit maintenant le
+  mot retenu.
+- **La citation de la carte de fin** était la ligne de ⟨dernière-année⟩, en dur dans le HTML.
+
+Reste un résidu, écrit ici pour ne pas être découvert par surprise : les lignes d'effet
+d'⟨avant⟩ et ⟨après⟩ disent « dans l'ordre du temps ». Sous « dessous », l'ordre est
+stratigraphique et le jeu le nomme autrement que le joueur. C'est le seul endroit connu où il
+le fait encore, et le corriger demande de réécrire la colonne des effets en pur vocabulaire
+de mécanisme — une question pour MOD-2, quand le doute deviendra affichable.
+
+### Le seul hasard du jeu
+
+L'ordre des deux lectures est tiré au sort à chaque ouverture de la fenêtre. La juste toujours
+à gauche se retiendrait en une partie, et la seconde n'aurait plus rien à trancher. Ce tirage
+ne décide de rien : il empêche seulement une **position** d'être une réponse.
+
+### Ce que le lot ne fait pas
+
+- **La dette court et personne ne la lit.** De 1 à 3 points par lecture fausse, déduits des
+  attestations et non choisis — 315 occurrences pèsent plus que quatre. Maximum 18 points pour
+  les neuf signes de l'acte III, et une paire réparante en vaut 6 à elle seule, comme le §7.3
+  l'exigeait. Aucun compteur, aucune infobulle, aucune ligne à la carte de fin. CONTR-1 sera
+  son premier lecteur.
+- **AMB-4 est fait pour les cinq ruptures qui existent dans l'arbre d'aujourd'hui** : ⟨grain⟩
+  et ⟨maison⟩ tablette 5 (chacune testée en tenant l'autre au juste, §7.3), ⟨ne-pas⟩ sur
+  `sinon`, ⟨avant⟩ tablette 15, ⟨graver⟩ tablette 30. Un test vérifie aussi que la **paire
+  réparante passe** — « tombe 1 · poussière 20 » se rend sans que rien ne bronche, ce qui est
+  la décision du 14/09 et non un défaut.
+- **Le §7.4 reste ouvert.** `eau` et `année` n'ont toujours aucune rupture. La sortie proposée
+  — admettre une rupture *distributionnelle*, trouvable à la Concordance et à la Table de
+  fréquences — n'est pas de ce lot : elle demande une mécanique de détection, pas une table.
+
+### Le garde-fou de durée s'élargit, et c'est le prix
+
+`outils/balayage.py` gagne un axe : chaque combinaison est jouée aux trois cadences **et aux
+deux lectures extrêmes**. Deux réglages entre lesquels seule la lecture tranche n'existent
+pas — c'est le même réglage, joué par deux joueurs qui n'ont pas lu la même chose.
+
+La fenêtre de durée passe donc de (86, 95) à **(81, 95)** pour couvrir les deux bouts. Elle
+trie d'autant moins, et c'est assumé : aucun des trois autres garde-fous n'est touché par la
+lecture (pire tranche 26 % juste contre 25 % faux, écart 5,2 contre 4,6, main 22,9 % contre
+23,1 %), et ce sont eux qui trient. 38 combinaisons sur 54 passent, le réglage en place
+compris. Rappel du 14/09 : cette fenêtre n'est pas un invariant, elle se re-base à chaque lot.
+
+`outils/verifier.py` passe de 177 à **202 assertions**.
+
+---
+
 ## Les onze lectures fausses — trois ruptures n'existaient pas
 
 14/09/2026, TXT-1. Le chemin critique du projet : le texte des onze lectures fausses bloque

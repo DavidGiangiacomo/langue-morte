@@ -144,6 +144,8 @@ Onze signes sur 45 sont **ambigus** : deux lectures possibles, le joueur tranche
 
 Le piège est délibéré : se tromper *paie mieux à court terme*. C'est du biais de confirmation transformé en optimum local.
 
+**Les +25 % ne s'affichent jamais** (posé le 15/09/2026, AMB-1). Les deux lectures portent le même prix et la même ligne d'effet : deux chiffres différents feraient de la prime un oracle — « prends toujours le plus gros » — et les onze signes ambigus deviendraient onze péages. La prime porte sur le bonus du signe et non sur l'instrument (+30 % devient +37,5 %), et un signe qui ne multiplie rien ne gagne rien à être mal lu. Conséquence, et elle vaut mieux que ce qui était prévu : **la prime ne décide rien à l'achat, elle mord à la révision.** Corriger une lecture coûtera le prix *et* le quart du débit qu'elle rendait. L'optimum local n'est pas dans le choix, il est dans le refus de le défaire. Mesuré : se tromper sur les neuf signes ambigus de l'acte III fait gagner cinq minutes et demie sur quatre-vingt-dix, soit 6 %.
+
 **Contradiction** — au franchissement de chaque acte, si dette > seuil, un passage refuse de se résoudre : la production de C est divisée par deux jusqu'à révision. On ne perd jamais de progression, seulement du débit.
 
 **Révision** — rouvrir un signe, payer un coût en C, choisir à nouveau. Juste → dette effacée + bonus rétroactif. Faux → on repaie.
