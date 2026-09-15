@@ -97,7 +97,29 @@ function paintCorpus(flashId){
     el.className='tok '+(lis?'num':'g')+(r.indexOf('r')>=0?' rel':'')+(nie?' refus':'');
     el.innerHTML = lis ? nf.format(n) : numGlyphs(n);
   });
+  peindreRuptures();
   ranger(); revealer(); paintRail(); peindreRec(); peindreConc();
+}
+
+/* ==================== les passages qui ne tiennent pas ====================
+   `faux` allume les lignes où la lecture retenue ne se construit pas (MOD-3). La marque va
+   sur la LIGNE et jamais sur le jeton : désigner le signe fautif serait l'oracle que tout le
+   reste du jeu refuse, alors qu'une ligne allumée porte quatre ou cinq signes — elle réduit
+   le champ, elle ne tranche pas. Quatre des neuf signes n'allument rien du tout, et deux
+   erreurs bien choisies n'allument rien non plus : c'est le §7.3 et le §7.4, rendus
+   mécaniques. */
+let ruptVues = '';
+function peindreRuptures(){
+  const vives = ruptureLignes();
+  const sig = vives.map(r => r.t + ':' + r.l).join(',');
+  if(sig === ruptVues) return;
+  ruptVues = sig;
+  for(const el of elCorpus.querySelectorAll('.ln.rompu')) el.classList.remove('rompu');
+  for(const r of vives){
+    const tb = elCorpus.querySelector('.tablet[data-tb="'+r.t+'"]');
+    const ln = tb && tb.children[r.l];
+    if(ln) ln.classList.add('rompu');
+  }
 }
 
 /* ============================ la datation ============================ */
@@ -601,6 +623,14 @@ function paintDoute(){
   /* « L'état est affiché sans ambiguïté » (CONTR-1). Ce que le bandeau dit : la Certitude est
      divisée par deux, et une révision peut y mettre fin. Ce qu'il ne dit pas, et ne dira
      jamais : lequel des signes est en cause. */
+  /* Combien de passages ne tiennent pas — jamais lesquels, ni à cause de quoi. Le chiffre
+     aide à les chercher ; c'est au corpus de dire où, et au joueur de dire pourquoi. */
+  const nr = $('doute-rupt'), vives = ruptureLignes().length;
+  if(nr.hidden !== !has('lash')) nr.hidden = !has('lash');
+  if(has('lash')) setHTML(nr, !vives
+    ? 'Aucun passage ne se refuse à se construire.'
+    : vives > 1 ? vives + ' passages ne se construisent pas — ils sont allumés dans le corpus.'
+                : 'Un passage ne se construit pas — il est allumé dans le corpus.');
   const bn = $('doute-etat');
   if(bn.hidden !== !S_.contr) bn.hidden = !S_.contr;
   if(S_.contr) setHTML(bn, 'Un passage refuse de se résoudre. Certitude divisée par deux '

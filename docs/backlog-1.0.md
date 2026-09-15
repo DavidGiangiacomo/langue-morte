@@ -13,14 +13,14 @@
 
 | | Fait | Reste pour 1.0 |
 |---|---|---|
-| Glyphes | **29 / 45** *(+ `grenier` et `zéro`, composés, hors arbre)* | **16** |
+| Glyphes | **30 / 45** *(+ `grenier` et `zéro`, composés, hors arbre)* | **15** |
 | Instruments | 6 / 9 (Œil, Copiste, Table, Concordance, Atelier, Grammaire) | 3 (Élève, Corpus jumeau, Le Lecteur) |
 | Actes | **I, II, III — entiers** | IV, V |
 | Corpus | **30 tablettes, 705 lignes, 3 838 signes — intégral**, ⟨N1⟩/⟨N2⟩ semés, **les 11 lectures fausses écrites** | — |
 | Mécaniques centrales | relevé, recoupement, datation, rangement, concordance, hors-ligne, **composition**, **ambiguïté**, **doute, révision, contradiction** | Questions |
 | Acte III | **fini** *(PAR-2, 14/09/2026)* | — |
 | Fins | aucune *(écran « fin du prototype »)* | Achever, Interrompre, relecture |
-| Rythme mesuré | 66 min 49 pour 20 glyphes (PT9) · **90,5 à 93,7 min simulées pour 29** *(85,2 à 88,1 toutes lectures fausses)* | cible design doc : 3 h – 3 h 30 pour 45 |
+| Rythme mesuré | 66 min 49 pour 20 glyphes (PT9) · **91,1 à 94,3 min simulées pour 30** *(85,9 à 89,1 toutes lectures fausses, 98,1 à 105,1 contradiction armée)* | cible design doc : 3 h – 3 h 30 pour 45 |
 
 Le corpus étant écrit intégralement, **tout le reste est du code et de l'équilibrage** — l'inverse de
 la situation des actes I–II, où le texte était le budget. TXT-2 est tranché depuis le 11/09/2026,
@@ -145,11 +145,22 @@ un engagement de date.
   infobulle, identique pour les deux lectures. Voir `docs/journal.md`, « Le doute ne dit pas
   l'erreur ».
 
-**MOD-3 — `faux`, rétroactif** · T:M
+**MOD-3 — `faux`, rétroactif** · ~~T:M~~ **fait** (15/09/2026)
 > En tant que joueur, je veux voir d'un coup tout ce que j'ai mal traduit depuis le début.
 
 - Fini quand : l'achat repeint le corpus entier avec les erreurs commises ; la tablette 26 (« la dernière scribe marque comme fausses les tablettes qui espéraient ») se lit alors comme le geste que le joueur vient de faire.
 - Dépend de : E3, MOD-2.
+- *Fait* : 700 C, entre `il-faut` et `sinon`, aucun multiplicateur. **Il ne donne pas le
+  corrigé** — il allume les lignes où la lecture retenue ne se construit pas. C'est le §11 qui
+  l'impose : la relecture de fin surlignera les erreurs « y compris celles jamais détectées »,
+  donc `faux` n'a pas pu les nommer. Trois décisions prises séparément tombent juste d'un
+  coup : **les paires réparantes n'allument rien** (§7.3 devient mécanique, `sauf` dans
+  `RUPTURES`), **les quatre signes sans rupture n'allument rien** (§7.4 — ce sont les erreurs
+  « jamais détectées »), et **se tromper sur les neuf n'allume que trois lignes sur cinq**.
+  C'est la LIGNE qui s'allume et jamais le jeton : marquer le signe le nommerait, alors qu'une
+  ligne porte quatre ou cinq signes. Le prix est une mesure — au bout de la branche il tombe
+  2,1 min avant la fin, à 700 il en laisse six. Voir `docs/journal.md`, « `faux` ne donne pas
+  le corrigé ».
 
 ---
 
@@ -444,7 +455,7 @@ un engagement de date.
 **LIV-5 — Étendre `verifier.py`** · T:L
 > En tant qu'auteur, je veux que chaque mécanique nouvelle soit couverte bout en bout.
 
-- Le fichier porte aujourd'hui **239 assertions** sur le relevé, le recoupement, la numération, le gisement, la datation, les infobulles, la composition, la fenêtre de fin qui attend sa lecture, et la reprise d'une sauvegarde d'avant une mécanique neuve. Chaque épic de cette feuille de route doit y ajouter ses vérifications — en particulier AMB-4 (la phrase absurde est bien rendue) et COMP-3 (`zéro` replie les compteurs).
+- Le fichier porte aujourd'hui **256 assertions** sur le relevé, le recoupement, la numération, le gisement, la datation, les infobulles, la composition, la fenêtre de fin qui attend sa lecture, et la reprise d'une sauvegarde d'avant une mécanique neuve. Chaque épic de cette feuille de route doit y ajouter ses vérifications — en particulier AMB-4 (la phrase absurde est bien rendue) et COMP-3 (`zéro` replie les compteurs).
   *15/09/2026* : la section 21 en ajoute vingt-cinq sur l'ambiguïté, dont les cinq ruptures d'AMB-4
   qui existent dans l'arbre d'aujourd'hui et la vérification que **rien à l'écran ne nomme la dette** ;
   la section 22 en ajoute vingt-deux sur le doute et la révision, dont **le degré de doute est le
@@ -453,6 +464,8 @@ un engagement de date.
   chaque lot de glyphes sans que rien soit cassé — la leçon du garde-fou de durée, en petit.
   La section 23 en ajoute quinze sur la contradiction, dont **R2 mesuré en basculant la
   sanction sans rien acheter** et **le passage qui refuse ne bouge pas avec les signes mal lus**.
+  La section 24 en ajoute dix-sept sur `faux`, dont **la paire réparante n'allume rien**,
+  **les quatre signes sans rupture non plus**, et **la ligne porte la marque, jamais le jeton**.
 
 **LIV-6 — README, écran-titre, distribution** · T:S
 > En tant que curieux, je veux ouvrir un fichier et jouer.
@@ -467,15 +480,15 @@ Le graphe de dépendances avait une seule vraie contrainte forte : **le texte de
 (TXT-1) bloquait l'ambiguïté, qui bloque l'Élève, la Modalité et la relecture.** Elle est levée
 depuis le 14/09/2026 ; E3 et MOD-2 sont faits le 15/09/2026, avec CONTR-2 et CONTR-3 que
 `peut-être` ne pouvait pas laisser dehors — un doute qu'on ne peut pas payer ne sert à rien.
-CONTR-1 ferme la boucle le même jour : voir son doute, payer pour rouvrir, ou encaisser.
-**Le prochain sur le chemin critique est MOD-3** (`faux`), qui repeint rétroactivement les
-erreurs commises — le seul moment où le jeu dira enfin lesquelles — puis **E5, l'Élève**, dont
-le taux d'erreur a maintenant de quoi se nourrir. E4 est entier.
+CONTR-1 puis MOD-3 ferment la boucle le même jour : voir son doute, voir où le texte ne
+tient pas, payer pour rouvrir, ou encaisser. **J2 est fait à l'exception de E5** — l'Élève,
+dont le taux d'erreur a maintenant de quoi se nourrir, et qui est le prochain sur le chemin
+critique. Puis J3, l'acte IV.
 
 | Jalon | Contenu | Ce qu'on peut jouer à la fin |
 |---|---|---|
 | ~~**J1 — L'acte III se termine**~~ *(fait, 14/09/2026)* | ~~E1 (composition)~~ + ~~PAR-1~~ + ~~MOD-1~~ + ~~COMP-3~~ + ~~PAR-2~~ | 28 glyphes, la composition, `les-lecteurs` |
-| **J2 — Le mensonge** | ~~TXT-1~~ → ~~AMB-1 · AMB-2 · AMB-3~~ → ~~AMB-4~~ *(5 ruptures sur 7)* → ~~MOD-2 · CONTR-2 · CONTR-3 · CONTR-1~~ *(15/09/2026)* → **MOD-3** + E5 (Élève) | l'acte III entier, la confiance, **la contradiction** |
+| ~~**J2 — Le mensonge**~~ *(fait, 15/09/2026)* | ~~TXT-1 · E3 · MOD-2 · MOD-3 · E4~~ → reste **E5 (Élève)** | l'acte III entier, la confiance, la contradiction, **`faux`** |
 | **J3 — La voix** | E6 (Personne, Questions, Corpus jumeau, I2) | l'acte IV |
 | **J4 — La graine** | E7 + E8 | les cinq actes, les deux fins, la relecture |
 | **J5 — 1.0** | E9 (final) + E11 | une version publique |
