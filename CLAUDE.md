@@ -42,7 +42,9 @@ src/
 outils/
   balayage.py   simule l'économie avec un ensemble de paramètres
   corpus.py     docs/corpus.md → src/corpus.js
-  sim.py        simulateur d'économie (rythme sans jouer 40 min)
+  depouiller.py journal d'actions d'un playtest → les chiffres du journal de bord
+  sim.py        simulateur d'économie (rythme sans jouer 40 min) — porte le modèle,
+                que `balayage.py` et `depouiller.py` lisent tous les deux
   verifier.py   tests bout en bout (Playwright)
 docs/           design doc, corpus, journal de bord
 dist/           GÉNÉRÉ par build.py
@@ -57,8 +59,18 @@ python build.py                 # src/ → dist/langue-morte.html et dist/artefa
 python outils/corpus.py         # regénère src/corpus.js après modification des tablettes
 python outils/sim.py            # simule le rythme d'une partie
 python outils/balayage.py       # balaie une grille de constantes, filtre sur les garde-fous
+python outils/depouiller.py traces-20260915-2030.tsv   # dépouille un playtest
 python build.py && python outils/verifier.py    # tests
 ```
+
+`depouiller.py` **rejoue le modèle d'économie sur la timeline du journal d'actions** : les
+tarifs figés du relevé (règle 9) ne sont écrits nulle part dans le TSV et la part manuelle
+des occurrences n'est pas calculable sans eux. Il finit par un contrôle de lui-même — ΔO
+prédit contre ΔO observé sur les intervalles calmes, écart médian attendu à 0,0 % — qui est
+aussi le seul garde-fou contre une divergence entre `sim.py` et `economie.js`. Si ce chiffre
+n'est pas nul, ne rien croire de la section « la main ». Les constantes et les six
+multiplicateurs viennent de `sim.py` (`multis()`), qui les lit lui-même de `src/` : ne jamais
+en faire une troisième copie.
 
 `dist/artefact.html` est la variante sans `<!doctype>/<html>/<head>/<body>`, format attendu par l'outil Artifact de Claude.
 

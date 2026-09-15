@@ -164,10 +164,10 @@ simulateur et tous les balayages avaient manqués.
 166 000 occurrences relevées à la main sur **17,0 millions** produites. C'est le défaut que
 R9 avait été écrite pour tuer, et qui revient par une porte que personne ne gardait.
 
-Le chiffre est une reconstruction des tarifs figés depuis le TSV, contrôlée contre le journal
-lui-même : sur **74 intervalles sans achat ni relevé**, la production prédite par le modèle
-colle au ΔO relevé toutes les trente secondes à **0,0 % d'écart médian**, 0,2 % au pire. Ce
-n'est pas une estimation.
+Le chiffre est une reconstruction des tarifs figés depuis le TSV — `python outils/depouiller.py`
+— contrôlée contre le journal lui-même : sur **71 intervalles que rien ne trouble**, la
+production prédite par le modèle colle au ΔO relevé toutes les trente secondes à **0,0 %
+d'écart médian**, 0,1 à 0,2 % aux extrêmes. Ce n'est pas une estimation.
 
 La cause n'est pas le tarif, elle est dans la date. **147 des 148 relevés utiles tombent avant
 la trente-deuxième minute**, quand le débit est encore petit — et le tarif d'une tablette est
@@ -286,6 +286,26 @@ Reste que le joueur, lui, n'a aucun moyen de se souvenir d'une recette trouvée 
 le carnet ne garde que les paires fausses. Il a retenté deux fois chacune des deux qu'il avait
 trouvées, puis a fini par acheter `scribe`, `archive` et `sinon` à l'arbre, au prix fort.
 Question ouverte, pas encore un défaut.
+
+### L'outil qui manquait
+
+PT9 et PT10 ont été dépouillés à la main, et **PT10 l'a été deux fois** : la première lecture
+comptait cinq échecs de composition là où le joueur avait trouvé cinq recettes justes sans
+avoir de quoi les payer. Le journal ne faisait pas la différence — c'est corrigé — mais rien
+n'obligeait non plus à recompter à la main ce qu'un fichier contient déjà.
+
+`outils/depouiller.py` rend désormais tout ce qui est chiffré dans cette section. Il rejoue le
+modèle d'économie sur la timeline du journal, ce qui est la seule façon d'obtenir les tarifs
+figés du relevé : ils dépendent du débit à l'instant de la première visite de chaque tablette
+et ne sont écrits nulle part. Il lit aussi les journaux d'avant le 15/09/2026, où il
+reconstitue les issues de composition depuis les recettes et le dit — c'est ce qui aurait
+évité l'erreur. Les constantes viennent de `sim.py`, dont les six multiplicateurs sortent de
+`run()` pour l'occasion : trois copies du modèle divergeraient au premier réglage, et deux
+l'ont déjà fait une fois.
+
+Il finit par se contrôler lui-même, et c'est la section à lire en premier — production prédite
+contre production observée, écart médian attendu à zéro. C'est aussi le seul garde-fou contre
+une divergence entre `sim.py` et `economie.js`, que rien ne surveillait jusqu'ici.
 
 ### Ce que l'instrument ne disait pas
 
