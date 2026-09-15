@@ -7,7 +7,7 @@
 /* Le compte de l'arbre, écrit une fois : recopié dans le HTML, il mentait dès le lot suivant. */
 document.querySelectorAll('.ngl').forEach(el => { el.textContent = NGL; });
 majSignes();
-buildRail(); buildCorpus(); buildInstr(); buildComp(); buildLex();
+buildRail(); buildCorpus(); buildInstr(); buildComp(); buildDoute(); buildLex();
 if(S_.gl.length){ paintCorpus(null); pushLog(logDe(S_.gl[S_.gl.length-1])); }
 /* `nuit` acquis, le corpus se lit sans le joueur — 40 % du débit, quatre heures au plus.
    Dit au retour, une seule fois, et seulement s'il s'est passé quelque chose. */
@@ -70,6 +70,10 @@ $('lex').addEventListener('click', e=>{ const b=e.target.closest('[data-gl]');
 $('amb-choix').addEventListener('click', e=>{
   const b=e.target.closest('[data-amb]'); if(b) ambChoisir(+b.dataset.amb); });
 $('amb-annuler').addEventListener('click', ambFermer);
+/* Rouvrir une lecture. Le panneau n'existe qu'avec `peut-être`, et la fenêtre qui s'ouvre
+   est celle de l'achat : mêmes deux mots, même prix affiché, même tirage de l'ordre. */
+$('doutes').addEventListener('click', e=>{
+  const b=e.target.closest('[data-dou]'); if(b&&!b.disabled) ambOuvrir(b.dataset.dou,'revision'); });
 $('amb').addEventListener('click', e=>{ if(e.target===$('amb')) ambFermer(); });
 /* La grille de composition. Pas de raccourci clavier et pas de répétition : poser un signe sur
    un autre n'est pas un geste qu'on martèle, c'est un geste qu'on a préparé en lisant. */

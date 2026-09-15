@@ -316,6 +316,11 @@ function concArmer(v){
 function concChoisir(id){
   if(id === undefined) return;    // un nombre n'est pas un signe : rien à concorder
   concSel = id; concArme = false;
+  /* Retenu depuis MOD-2 : une concordance montre toutes les attestations d'un signe d'un
+     seul coup, et c'est le poids plein du degré de doute (`douteCalc` dans economie.js).
+     Noté ici, à l'instant du geste, et non relu plus tard — le doute d'un signe se fige à
+     l'achat, et ce qu'on lit après ne dé-aveugle pas ce qu'on a décidé avant. */
+  S_.conc[id] = 1;
   peindreConc();
 }
 function concFermer(){ concSel = null; concArme = false; peindreConc(); }
@@ -522,12 +527,17 @@ function paintComp(){
    commun aux deux lectures, parce que le moindre écart dirait laquelle est la bonne.
    `revenir au corpus` laisse le signe à acheter : un clic malheureux ne coûte rien, et ce
    n'est pas une indulgence — c'est que le choix doit se faire en lisant, pas en cliquant. */
-let ambId = null, ambOrdre = null;
+let ambId = null, ambOrdre = null, ambMode = 'achat';
 
-function ambOuvrir(id){
+/* `mode` vaut 'achat' ou 'revision'. La fenêtre est la MÊME dans les deux cas, et l'ordre
+   des deux lectures est retiré au sort à chaque ouverture : repasser par là ne rappelle pas
+   laquelle on avait prise, c'est le panneau qui le dit, en toutes lettres. */
+function ambOuvrir(id, mode){
   const g = byId[id];
-  if(!g || !AMB[id] || has(id) || S_.C < g.cost) return;
-  ambId = id;
+  if(!g || !AMB[id]) return;
+  const rev = mode === 'revision';
+  if(rev ? (!douteOuvre() || !has(id) || S_.C < revCost()) : (has(id) || S_.C < g.cost)) return;
+  ambId = id; ambMode = rev ? 'revision' : 'achat';
   /* L'ordre est tiré au sort à l'ouverture, une fois. La lecture juste toujours à gauche se
      retiendrait en une partie, et la seconde n'aurait plus rien à trancher. C'est le seul
      hasard du jeu, et il ne décide de rien : il empêche une POSITION d'être une réponse. */
@@ -536,16 +546,70 @@ function ambOuvrir(id){
   const bs = $('amb-choix').querySelectorAll('[data-amb]');
   for(let i = 0; i < 2; i++) setHTML(bs[i], ambOrdre[i] === 'f' ? AMB[id].mot : g.mot);
   /* Même condition qu'au lexique : sans `dire`, le jeu n'annonce pas ce qu'un signe fait. */
-  setHTML($('amb-eff'), has('im') ? g.eff : '');
-  setHTML($('amb-cost'), readC() ? String(g.cost) : numGlyphs(g.cost));
+  /* À la révision, le mot déjà retenu est marqué. Ce n'est pas un renseignement — il est
+     au panneau, au lexique et dans tout le corpus — et sans lui on paierait pour reprendre
+     la même lecture d'un clic malheureux. */
+  if(ambMode === 'revision'){
+    const lu = faux(id) ? 'f' : 'j';
+    for(let i = 0; i < 2; i++) bs[i].classList.toggle('lu', ambOrdre[i] === lu);
+  } else {
+    for(const b of bs) b.classList.remove('lu');
+  }
+  setHTML($('amb-eff'), ambMode === 'revision' ? 'rouvrir une lecture · le corpus se repeint'
+                      : has('im') ? g.eff : '');
+  const c = ambMode === 'revision' ? revCost() : g.cost;
+  setHTML($('amb-cost'), readC() ? big(c) : numGlyphs(c));
+  setHTML($('amb-k'), ambMode === 'revision' ? 'rouvrir' : 'deux lectures tiennent');
   $('amb').hidden = false;
 }
 function ambFermer(){ ambId = null; $('amb').hidden = true; }
 function ambChoisir(i){
   if(ambId === null) return;
-  const id = ambId, lect = ambOrdre[i];
+  const id = ambId, lect = ambOrdre[i], mode = ambMode;
   ambFermer();
-  acheterGl(id, lect);
+  if(mode === 'revision') reviser(id, lect); else acheterGl(id, lect);
+}
+
+/* ==================== le panneau du doute ====================
+   Il n'existe pas avant `peut-être`, et c'est la moitié de ce que ce signe fait : jusque-là
+   le lexique affiche chaque mot comme s'il avait été su. Chaque ligne porte ce qu'on a lu,
+   la part du signe qu'on n'avait pas sous les yeux en tranchant, et ce que le corpus sait de
+   lui — attestations, tablettes, part en cadre de nombre (docs/corpus.md §7.4). Rien de tout
+   ça ne dépend de la lecture retenue : la fiche est identique pour les deux, elle dit ce que
+   le signe FAIT et laisse le joueur en tirer ce qu'il veut. */
+function buildDoute(){
+  setHTML($('doutes'), GL.filter(g => AMB[g.id]).map(g =>
+    '<button class="drow" data-dou="'+g.id+'" hidden>'+
+      '<span class="dsig">'+sv(g.id)+'</span><span class="dmot"></span>'+
+      '<span class="dbar"><i></i></span><span class="dpc"></span>'+
+      '<span class="dfic"></span></button>').join(''));
+}
+function paintDoute(){
+  const ouvert = douteOuvre();
+  if($('pdoute').hidden !== !ouvert) $('pdoute').hidden = !ouvert;
+  if(!ouvert) return;
+  const c = revCost(), payable = S_.C >= c;
+  setHTML($('doute-c'), 'rouvrir ' + (readC() ? big(c) : numGlyphs(c)));
+  const liste = douteux();
+  for(const g of GL){
+    if(!AMB[g.id]) continue;
+    const b = $('doutes').querySelector('[data-dou="'+g.id+'"]');
+    const vu = liste.indexOf(g.id) >= 0;
+    if(b.hidden !== !vu) b.hidden = !vu;
+    if(!vu) continue;
+    b.disabled = !payable;
+    const d = douteDe(g.id);
+    setHTML(b.querySelector('.dmot'), motDe(g.id));
+    setHTML(b.querySelector('.dpc'), d + ' %');
+    b.querySelector('.dbar i').style.width = d + '%';
+    setHTML(b.querySelector('.dfic'),
+      nf.format(freqGlyphe(g.id)) + ' attest. · ' + Object.keys(ATT[g.id]||{}).length
+      + ' tabl. · ' + Math.round(100*partCadre(g.id)) + ' % en cadre de nombre');
+  }
+  /* L'ordre suit le doute : le plus aveugle en haut, qui est aussi celui sur lequel un
+     joueur pressé dépensera sa première révision. */
+  const par = $('doutes');
+  for(const id of liste) par.appendChild(par.querySelector('[data-dou="'+id+'"]'));
 }
 
 function buildLex(){
@@ -669,10 +733,59 @@ for(const tb of CORPUS) for(const l of tb.l) for(const tk of l.split(' ')){
    Compter les mots seuls afficherait 8, 4, 0, 2, 1 sur les cinq glyphes de nombre et ferait
    passer la branche la plus rentable du jeu pour la plus pauvre. */
 const freqGlyphe = id => (FREQ[id]||0) + (NUMSYM[id]||[]).reduce((n,k)=>n+(FREQNUM[k]||0), 0);
+
+/* ---- ce que le corpus sait d'un signe, et que le jeu peut compter ----
+   Deux tables de plus, construites une fois, sur le même principe que FREQ : du fait de
+   corpus, jamais du jugement. Elles ne dépendent pas de la lecture retenue — c'est ce qui
+   les autorise à être montrées (règle 17).
+
+   `ATT` : les attestations d'un signe, tablette par tablette. Sert à dire quelle part de son
+   corpus était sortie de terre au moment où le joueur a tranché — l'intrant du degré de
+   doute (`douteCalc` dans economie.js).
+
+   `CADRE` : le nombre de fois qu'un signe est suivi d'un nombre OU de ⟨ne-pas⟩, c'est-à-dire
+   qu'il paraît dans un cadre de compte. C'est la rupture distributionnelle du §7.4 de
+   `docs/corpus.md`, et elle est plus nette que ce que ce §7.4 annonçait : il disait
+   « ⟨année⟩ porte toujours un nombre », or ⟨année⟩ n'est suivi d'un nombre que 67 fois sur
+   139. Les 72 autres, il est suivi de ⟨ne-pas⟩ — « année : pas de », l'absence de compte,
+   qui est un compte (⟨zéro⟩ EST ⟨ne-pas⟩⟨un⟩). Ainsi mesuré, ⟨année⟩ est à 100 % et ⟨nuit⟩
+   à 0 % : un soleil qu'on compte, ou dont on dit qu'il n'y en a pas, n'est pas un soleil.
+   Le chiffre est le même pour les deux lectures d'un signe — il ne dit donc jamais laquelle
+   est juste. Il dit ce que le signe FAIT, et c'est au joueur d'en tirer ce qu'il veut. */
+const ATT = {}, CADRE = {};
+for(const tb of CORPUS) for(const l of tb.l){
+  const tk = l.split(' ');
+  for(let i = 0; i < tk.length; i++){
+    const t = tk[i];
+    if(t === '·' || t.charCodeAt(0) === 37) continue;
+    (ATT[t] || (ATT[t] = {}))[tb.t] = (ATT[t][tb.t] || 0) + 1;
+    const s = tk[i+1] || '';
+    if(s.charCodeAt(0) === 37 || s === 'la') CADRE[t] = (CADRE[t] || 0) + 1;
+  }
+}
+/* La part des attestations d'un signe qui est sortie de terre. Sur le dégagement et non sur
+   l'affichage : une tablette rangée ailleurs reste lisible, une tablette pas encore dégagée
+   ne l'est pas (règle 12). */
+function partOuverte(id){
+  const a = ATT[id]; if(!a) return 0;
+  let tot = 0, vu = 0;
+  for(const t in a){ tot += a[t]; if(degagee(+t)) vu += a[t]; }
+  return tot ? vu/tot : 0;
+}
+const partCadre = id => (FREQ[id] ? (CADRE[id]||0) / FREQ[id] : 0);
+
 const partMot = k => (k==='u1' && has('an')) ? 'un'
                    : (k==='t10' && has('sela')) ? 'dix'
                    : (k==='h100' && has('meku')) ? 'cent'
                    : (byId[k] && has(k)) ? motDe(k) : null;
+
+/* La part d'un signe en cadre de nombre — suivi d'un nombre, ou de ⟨ne-pas⟩ qui en est
+   l'absence. Elle n'apparaît qu'avec `peut-être`, sur les signes lus comme sur les autres :
+   c'est la rupture distributionnelle du §7.4, et elle ne se trouve qu'en comparant. ⟨année⟩
+   est à 100 %, ⟨nuit⟩ à 0 % — un soleil qu'on compte, ou dont on dit qu'il n'y en a pas,
+   n'est pas un soleil. Le jeu ne le dit nulle part ; il donne les deux chiffres. */
+const tipCadre = id => (!has('mik') || !FREQ[id]) ? ''
+  : '<span class="lab dist">' + Math.round(100*partCadre(id)) + ' % en cadre de nombre</span>';
 
 function tipHTML(el){
   if(el.dataset.w !== undefined){
@@ -681,13 +794,15 @@ function tipHTML(el){
       if(COMP[id]){
         const [a,b] = COMP[id], ma = partMot(a), mb = partMot(b);
         return sv(a) + '<span class="plus">+</span>' + sv(b)
-             + '<span class="lab">' + (ma&&mb ? ma+' + '+mb : 'signe composé') + '</span>';
+             + '<span class="lab">' + (ma&&mb ? ma+' + '+mb : 'signe composé') + '</span>'
+             + tipCadre(id);
       }
-      return sv(id) + '<span class="lab">' + motDe(id) + '</span>';
+      return sv(id) + '<span class="lab">' + motDe(id) + '</span>' + tipCadre(id);
     }
     if(S_.b.tab > 0){
       const n = freqGlyphe(id);
-      return sv(id) + '<span class="lab"><b>' + nf.format(n) + '</b> occurrence' + (n>1?'s':'') + '</span>';
+      return sv(id) + '<span class="lab"><b>' + nf.format(n) + '</b> occurrence' + (n>1?'s':'') + '</span>'
+           + tipCadre(id);
     }
     return null;
   }

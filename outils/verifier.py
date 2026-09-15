@@ -93,6 +93,11 @@ def main() -> None:
         page.wait_for_timeout(1200)
         duree = time.time() - t0
 
+        # Le dénominateur du compteur de lexique EST la taille de l'arbre. Le figer dans
+        # ces tests les fait échouer à chaque lot de glyphes sans que rien soit cassé —
+        # la leçon du garde-fou de durée de `balayage.py`, ici en petit.
+        ngl = page.evaluate("() => NGL")
+
         print("\nchargement")
         verifier(not erreurs, f"aucune erreur JS ({erreurs[:2] if erreurs else ''})")
         verifier(duree < RENDU_MAX_S, f"rendu en {duree:.2f}s (< {RENDU_MAX_S}s)")
@@ -493,7 +498,7 @@ def main() -> None:
         # Ce qui suit protège une économie réglée sur neuf playtests : un composé secret
         # s'ajoute à ce que le joueur SAIT, jamais à ce que l'arbre a rendu.
         verifier(r[3] == 0, "le compte de l'arbre ne bouge pas")
-        verifier(page.text_content("#lexr").strip() == "3 / 28", "le lexique affiche « 3 / 28 »")
+        verifier(page.text_content("#lexr").strip() == f"3 / {ngl}", f"le lexique affiche « 3 / {ngl} »")
         apres_rev = page.eval_on_selector_all("#corpus .tablet:not([hidden])", "e => e.length")
         verifier(apres_rev == avant_rev, "et aucune tablette n'est dégagée en composant")
 
@@ -551,22 +556,22 @@ def main() -> None:
         page.wait_for_timeout(250)
         verifier(r == ["acquis", 1, True, False],
                  f"dire + graver donne le scribe avant « copier », et compte dans l'arbre : {r}")
-        verifier(page.text_content("#lexr").strip() == "4 / 28", "le lexique affiche « 4 / 28 »")
+        verifier(page.text_content("#lexr").strip() == f"4 / {ngl}", f"le lexique affiche « 4 / {ngl} »")
         verifier("done" in classe("imme") and "locked" in classe("tabsar"),
                  "sa carte est cochée, sans ouvrir « archive » par-dessus « copier »")
 
-        print("\nla Modalité : ne-pas, si, il-faut, sinon")
+        print("\nla Modalité : ne-pas, si, peut-être, il-faut, sinon")
         page.evaluate("() => $('reset').click()")
         page.wait_for_timeout(200)
         ordre = page.evaluate("() => GL.filter(g => g.br === 'modalite').map(g => g.id)")
-        verifier(ordre == ["la", "en", "dun", "enla"],
-                 f"quatre signes, du plus fréquent au dernier mot du protocole : {ordre}")
+        verifier(ordre == ["la", "en", "mik", "dun", "enla"],
+                 f"cinq signes, du plus fréquent au dernier mot du protocole : {ordre}")
         page.evaluate("() => { S_.C = 99999; }")
         page.wait_for_timeout(150)
         verifier("locked" in classe("en"), "« si » reste fermé tant que « ne-pas » manque")
         # Le bonus va à l'atelier, pas à la grammaire : « il-faut copier » est une consigne de
         # copie, et la Modalité ne doit pas raccourcir l'acte qu'elle allonge (cf. economie.js).
-        r = page.evaluate("""() => { ['la','en'].forEach(acheterGl);
+        r = page.evaluate("""() => { ['la','en','mik'].forEach(acheterGl);
             const a0 = M.ate(), g0 = M.gram(); acheterGl('dun');
             return [M.ate()/a0, M.gram()/g0]; }""")
         verifier(r == [1.5, 1], f"« il-faut » : +50 % à l'atelier, rien à la grammaire : {r}")
@@ -641,7 +646,7 @@ def main() -> None:
         verifier(r[0] is True, "il ne multiplie rien : aucun instrument ne bouge à l'achat")
         verifier(r[1] is True and r[3] == [18],
                  f"il ferme l'arbre, et la seule tablette qu'il ouvre est la 18 : {r[1:]}")
-        verifier(page.text_content("#lexr").strip() == "28 / 28", "le lexique affiche « 28 / 28 »")
+        verifier(page.text_content("#lexr").strip() == f"{ngl} / {ngl}", f"le lexique affiche « {ngl} / {ngl} »")
         lus = page.eval_on_selector_all("#corpus .tok[data-w=shenu]",
             "e => [e.length, e.filter(x => x.textContent.trim() === 'les-lecteurs').length]")
         verifier(lus == [3, 3], f"ses trois attestations passent en français : {lus}")
@@ -850,7 +855,7 @@ def main() -> None:
                                "  return tipHTML(t).includes('poussière'); }") is True,
                  "l'infobulle aussi")
         # La dette (AMB-3) : de 1 à 3 points selon les attestations, invisible partout.
-        verifier(page.evaluate("() => S_.dette") == 3,
+        verifier(page.evaluate("() => dette()") == 3,
                  "trois points de dette pour un signe attesté 315 fois")
         vu = page.evaluate("() => document.querySelector('.shell').innerText")
         verifier("dette" not in vu.lower(), "et rien à l'écran ne la nomme")
@@ -954,12 +959,126 @@ def main() -> None:
                  f"tablette 30 : « {ligne(30, 6)} » — quelqu'un coupe un nom propre")
 
         print("\nla lecture tranchée tient")
+        # La dette ne se sauvegarde pas : elle se DÉDUIT des lectures, qui se sauvegardent.
+        # Tenue en solde, elle dérivait dès qu'une révision ne passait pas par le bon chemin,
+        # et un solde faux sur un chiffre que personne n'affiche ne se verrait jamais.
         r = page.evaluate("""() => { const av = JSON.stringify(S_.lect);
             sauver(); const p = JSON.parse(localStorage.getItem(KEY));
-            return [JSON.stringify(p.lect) === av, p.dette === S_.dette, p.dette > 0]; }""")
-        verifier(r == [True, True, True], f"elle passe à la sauvegarde, la dette avec : {r}")
-        r = page.evaluate("() => { $('reset').click(); return [JSON.stringify(S_.lect), S_.dette]; }")
-        verifier(r == ["{}", 0], f"et « réinitialiser » la remet à zéro : {r}")
+            return [JSON.stringify(p.lect) === av, p.dette === undefined, dette() > 0]; }""")
+        verifier(r == [True, True, True], f"les lectures passent à la sauvegarde, la dette s'en déduit : {r}")
+        r = page.evaluate("() => { $('reset').click(); return [JSON.stringify(S_.lect), dette()]; }")
+        verifier(r == ["{}", 0], f"et « réinitialiser » les remet à zéro : {r}")
+
+        # ---- le doute et la révision : MOD-2, CONTR-2, CONTR-3 ----
+        # Ce que ces vérifications tiennent est surtout négatif, comme pour AMB-1 : le degré
+        # de doute ne doit jamais dépendre de la lecture retenue, sinon c'est un oracle.
+        print("\npeut-être : le doute se chiffre")
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+        verifier(page.get_attribute("#pdoute", "hidden") is not None,
+                 "avant lui, le panneau du doute n'existe pas")
+        vu = page.evaluate("() => document.querySelector('.shell').innerText.toLowerCase()")
+        verifier("doute" not in vu and "peut-être" not in vu,
+                 "et rien à l'écran ne laisse entendre qu'une lecture puisse être autre chose")
+        r = page.evaluate("""() => { const g = byId.mik;
+            return [g.br, g.cost, GL.filter(x => x.br === 'modalite').map(x => x.id)]; }""")
+        verifier(r[:2] == ["modalite", 450] and r[2] == ["la","en","mik","dun","enla"],
+                 f"450 C, entre « si » et « il-faut » : {r}")
+        r = page.evaluate("""() => { S_.C = 9e5; const av = [M.cop(), M.ate(), M.tabl(), M.con(), M.gram()];
+            ['la','en'].forEach(acheterGl); acheterGl('mik');
+            const ap = [M.cop(), M.ate(), M.tabl(), M.con(), M.gram()];
+            return av.every((v, i) => v === ap[i]); }""")
+        page.wait_for_timeout(300)
+        verifier(r is True, f"il ne multiplie rien : {r}")
+        verifier(page.get_attribute("#pdoute", "hidden") is None, "et il ouvre le panneau du doute")
+        lus = page.eval_on_selector_all("#corpus .tok[data-w=mik]",
+            "e => [e.length, e.filter(x => x.textContent.trim() === 'peut-être').length]")
+        verifier(lus == [10, 10], f"ses dix attestations passent en français : {lus}")
+
+        print("\nle doute se fige à la décision, pas au regard")
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+        # Deux signes ambigus achetés au même instant, donc sur le même corpus dégagé : l'un
+        # concordé AVANT de trancher, l'autre après. Seul le premier doit en profiter.
+        r = page.evaluate("""() => { S_.C = 9e5;
+            ['an','anna','hem','sela','meku','im','tab','gan','kal','mille','nur'].forEach(acheterGl);
+            concChoisir('tem'); concFermer();          // on regarde ⟨grain⟩ avant de trancher
+            acheterGl('tem','j'); acheterGl('ur','j'); // ⟨maison⟩ est tranché à l'aveugle
+            const avant = [douteDe('tem'), douteDe('ur')];
+            concChoisir('ur'); concFermer();           // ... et regardé APRÈS
+            return [avant, [douteDe('tem'), douteDe('ur')]]; }""")
+        page.wait_for_timeout(250)
+        verifier(r[0][0] < r[0][1],
+                 f"concorder avant de trancher fait tomber le doute : {r[0][0]} contre {r[0][1]}")
+        verifier(r[1] == r[0],
+                 f"concorder après ne le bouge pas : {r[1]} — on ne dé-aveugle pas une décision prise")
+        # Le chiffre ne dépend pas de la lecture : c'est ce qui l'autorise à être affiché.
+        # Au même instant, sur le même état : seule la lecture change. Recalculer plus tard
+        # donnerait un autre chiffre pour une autre raison — le corpus a continué de sortir.
+        r = page.evaluate("""() => { const lu = S_.lect.ur;
+            S_.lect.ur = 'j'; const a = douteCalc('ur');
+            S_.lect.ur = 'f'; const b = douteCalc('ur');
+            S_.lect.ur = lu; return [a, b]; }""")
+        verifier(r[0] == r[1],
+                 f"et il est le même pour les deux lectures : {r} — il dit l'aveuglement, pas l'erreur")
+        # Un signe acquis avant ce lot n'a aucun relevé : le jeu ne prétend pas savoir.
+        r = page.evaluate("() => { delete S_.dte.ur; return douteDe('ur'); }")
+        verifier(r == 100, f"sans relevé de décision, le doute est entier : {r}")
+
+        print("\nla rupture distributionnelle (docs/corpus.md §7.4)")
+        r = page.evaluate("""() => ['nur','esh','tem','ur','la','sar'].map(id =>
+            Math.round(100*partCadre(id)))""")
+        verifier(r[0] == 100 and r[1] == 0,
+                 f"⟨année⟩ 100 % en cadre de nombre, ⟨nuit⟩ 0 % : {r[:2]} — et rien ne le commente")
+        verifier(r == [100, 0, 98, 100, 0, 2],
+                 f"le même fait pour les autres, identique aux deux lectures : {r}")
+        # L'infobulle ne la porte qu'après `peut-être` : avant, ce chiffre n'existe pas.
+        r = page.evaluate("""() => { const t = document.querySelector('#corpus .tok[data-w=nur]');
+            const sans = tipHTML(t).includes('cadre de nombre');
+            S_.C = 9e5; ['pat','zur','nurnur','esh','nurhal','la','en'].forEach(acheterGl);
+            acheterGl('mik');
+            return [sans, tipHTML(t).includes('cadre de nombre')]; }""")
+        page.wait_for_timeout(250)
+        verifier(r == [False, True], f"l'infobulle ne la porte qu'après « peut-être » : {r}")
+
+        print("\nrouvrir une lecture")
+        r = page.evaluate("""() => { S_.C = 9e5; S_.lect.tem = 'f'; paintCorpus(null);
+            const c0 = S_.C, d0 = douteDe('tem'), r0 = S_.rev;
+            const ok = reviser('tem','j');
+            return [ok, c0 - S_.C, revCost(), S_.rev - r0, motDe('tem'), d0, douteDe('tem')]; }""")
+        page.wait_for_timeout(300)
+        verifier(r[0] is True and r[1] == 240 and r[3] == 1,
+                 f"elle coûte 240 C la première fois : {r[:4]}")
+        verifier(r[2] == 384, f"et la suivante 384 — le prix croît par révision, jamais par signe : {r[2]}")
+        verifier(r[4] == "grain", f"le corpus repasse au mot choisi : {r[4]}")
+        mots = page.eval_on_selector_all("#corpus .tok[data-w=tem]",
+            "e => e.filter(x => x.textContent.trim() === 'grain').length")
+        verifier(mots == 315, f"partout, et d'un coup : {mots} attestations")
+        # Ce que la révision NE dit PAS. C'est tout le lot : elle repeint, elle ne juge pas.
+        vu = page.evaluate("() => document.querySelector('.shell').innerText.toLowerCase()")
+        verifier(not any(m in vu for m in ("erreur", "correct", "juste !", "mauvaise lecture")),
+                 "et elle ne dit jamais si l'on avait raison")
+        # La dette suit, et reste invisible : retirée quand on quitte une lecture fausse,
+        # reposée quand on y retombe.
+        r = page.evaluate("""() => { const d0 = dette();
+            reviser('tem','f'); const d1 = dette();
+            reviser('tem','j'); return [d0, d1 - d0, dette()]; }""")
+        page.wait_for_timeout(250)
+        verifier(r[1] == 3 and r[2] == r[0],
+                 f"la dette se repose et se retire avec la lecture : {r}")
+        vu = page.evaluate("() => document.querySelector('.shell').innerText.toLowerCase()")
+        verifier("dette" not in vu, "sans jamais s'afficher")
+
+        print("\nle coût du brute-force (CONTR-3)")
+        r = page.evaluate("""() => { S_.rev = 0; const c = [];
+            for(let i = 0; i < 9; i++){ c.push(revCost()); S_.rev++; }
+            return [c[0], c[8], c.reduce((a, b) => a + b, 0)]; }""")
+        # 4 550 C est ce qu'il reste à dépenser en signes après `peut-être` (outils/sim.py).
+        verifier(r[2] > 5 * 4550,
+                 f"balayer les neuf coûte {r[2]} C, près de six fois ce qui reste à dépenser ({r[0]} → {r[1]})")
+        r = page.evaluate("() => { S_.rev = 0; let c = 0; for(let i=0;i<3;i++){ c += revCost(); S_.rev++; } return c; }")
+        verifier(r < 4550 / 3, f"trois révisions choisies en coûtent {r} — lire reste moins cher que chercher")
+        page.evaluate("() => { S_.rev = 0; }")
 
         # ---- une sauvegarde d'avant la mécanique neuve doit se rouvrir ----
         # La clé a déjà changé une fois, et toutes les parties en cours ont été perdues. Un
@@ -983,7 +1102,7 @@ def main() -> None:
         verifier(etat == [5, 120, 9, 12], f"la partie est reprise telle quelle : {etat}")
         neufs = vieille.evaluate("() => [Array.isArray(S_.carnet), S_.carnet.length, S_.comp]")
         verifier(neufs == [True, 0, 0], f"les champs neufs arrivent vides : {neufs}")
-        verifier(vieille.text_content("#lexr").strip() == "5 / 28", "le lexique compte cinq signes")
+        verifier(vieille.text_content("#lexr").strip() == f"5 / {ngl}", "le lexique compte cinq signes")
         r = vieille.evaluate("""() => { S_.C = 9999; acheterGl('nur'); S_.H = 99999;
             const i = composer('tem','im'); sauver();
             const p = JSON.parse(localStorage.getItem('langue-morte-actes-i-iii'));
@@ -1010,7 +1129,7 @@ def main() -> None:
         verifier(not casses, f"aucune erreur au chargement : {casses[:1] or '—'}")
         etat = vieille.evaluate("() => [S_.done, $('end').hidden, S_.gl.length]")
         verifier(etat == [False, True, 20], f"pas d'écran de fin, la partie continue : {etat}")
-        verifier(vieille.text_content("#lexr").strip() == "20 / 28", "le lexique affiche « 20 / 28 »")
+        verifier(vieille.text_content("#lexr").strip() == f"20 / {ngl}", f"le lexique affiche « 20 / {ngl} »")
         verifier("locked" not in vieille.evaluate(
                      "() => $('lex').querySelector('[data-gl=shen]').className"),
                  "et « lire » attend d'être acheté")

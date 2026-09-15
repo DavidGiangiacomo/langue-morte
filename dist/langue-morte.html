@@ -247,9 +247,32 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .tip .lab{font-family:var(--mono);font-size:10px;letter-spacing:.09em;color:var(--dim);text-transform:uppercase;white-space:nowrap}
 .tip .lab b{color:var(--lamp);font-weight:500}
 .tip .plus{font-family:var(--mono);font-size:12px;color:var(--faint)}
+/* La part en cadre de nombre, séparée du mot : c'est un fait de corpus, pas une glose. */
+.tip .dist{border-left:1px solid var(--line);padding-left:9px;color:var(--faint)}
 .bloom{position:fixed;inset:0;pointer-events:none;background:radial-gradient(60% 50% at 50% 45%,rgba(214,140,70,.30),transparent 70%);opacity:0;z-index:40}
 .bloom.on{animation:bl 1.1s ease}
 @keyframes bl{0%{opacity:0}18%{opacity:1}100%{opacity:0}}
+/* ---------- le doute ---------- */
+/* Une ligne par signe ambigu acquis, la plus douteuse en haut. La barre est un fait —
+   la part du signe qu'on n'avait pas sous les yeux — et non un verdict : rien ici ne
+   change de couleur selon qu'on a eu raison, parce que le jeu ne le dit jamais. */
+.doutes{display:flex;flex-direction:column;gap:3px}
+.drow{display:grid;grid-template-columns:22px 1fr 54px 30px;align-items:center;gap:3px 8px;
+  width:100%;text-align:left;border:1px solid transparent;border-radius:2px;padding:5px 7px}
+.drow:hover{background:#2C2318;border-color:var(--line)}
+.drow:disabled{cursor:default}
+.drow:disabled:hover{background:none;border-color:transparent}
+.drow .dsig{grid-row:1/3;display:flex;align-items:center;justify-content:center;color:var(--dim)}
+.drow .dsig .gl{width:14px;height:19px}
+.drow .dsig .gl2{width:22px;height:19px}
+.drow .dmot{font-size:14.5px;color:var(--mid)}
+.drow .dbar{height:3px;background:#2E2519;border-radius:2px;overflow:hidden}
+.drow .dbar i{display:block;height:100%;background:var(--ochre-d)}
+.drow .dpc{font-family:var(--mono);font-size:10.5px;color:var(--dim);text-align:right;font-variant-numeric:tabular-nums}
+.drow .dfic{grid-column:2/5;font-family:var(--mono);font-size:9px;color:var(--faint);letter-spacing:.02em;line-height:1.45}
+.drow:not(:disabled):hover .dmot{color:var(--lamp)}
+.drow:not(:disabled):hover .dbar i{background:var(--ochre)}
+
 /* ---------- trancher à l'achat ---------- */
 /* Les deux lectures sont rendues strictement pareilles : même largeur, même casse, même
    couleur, même ordre de survol. Tout écart de traitement serait un renseignement — la
@@ -267,6 +290,10 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .ambchoix button{border:1px solid var(--ochre-d);background:#302518;border-radius:2px;
   padding:15px 10px;font-size:19px;color:var(--lamp);text-align:center;line-height:1.25}
 .ambchoix button:hover{background:#3B2C1B;border-color:var(--ochre)}
+/* À la révision, la lecture déjà retenue. Marquée pour qu'on ne la reprenne pas d'un clic
+   malheureux — elle est déjà au panneau et dans tout le corpus, elle n'apprend rien. */
+.ambchoix button.lu{border-style:dashed;border-color:var(--line2);background:#241D15;color:var(--dim)}
+.ambchoix button.lu:hover{background:#2C2318;border-color:var(--line2);color:var(--mid)}
 .ambpied{display:flex;justify-content:space-between;gap:16px;margin:16px 0 20px;
   font-family:var(--mono);font-size:9.5px;letter-spacing:.02em;color:var(--faint);line-height:1.45}
 .ambpied span:last-child{color:var(--dim);white-space:nowrap;font-variant-numeric:tabular-nums}
@@ -342,6 +369,15 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
         <div class="instr" id="instr"></div>
       </section>
 
+      <!-- Le doute. N'apparaît qu'avec `peut-être` : avant lui, RIEN dans l'interface ne
+           laisse entendre qu'une lecture puisse être autre chose que la bonne (design
+           doc §6). Chaque ligne dit ce qu'on a lu, à quel point on l'a décidé à l'aveugle,
+           et ce que le corpus sait du signe — jamais si l'on a eu raison. -->
+      <section class="panel" id="pdoute" hidden>
+        <div class="phead"><span>Doute</span><span class="r" id="doute-c"></span></div>
+        <div class="doutes" id="doutes" aria-label="Les signes qui supportaient deux lectures. Cliquez pour en rouvrir une."></div>
+      </section>
+
       <!-- La grille de composition. Elle n'apparaît qu'avec `année` : c'est l'acte III qui
            l'ouvre, comme la Grammaire. Rien n'y dit quelles paires existent — l'aperçu montre
            le signe qu'on propose, et c'est au corpus de l'avoir déjà montré. -->
@@ -377,7 +413,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
      les distingue est le mot, ce qui est exactement ce que le joueur a à trancher. -->
 <div class="amb" id="amb" hidden>
   <div class="ambcard">
-    <div class="ambtete"><span class="ambsig" id="amb-sig"></span><span class="ambk">deux lectures tiennent</span></div>
+    <div class="ambtete"><span class="ambsig" id="amb-sig"></span><span class="ambk" id="amb-k">deux lectures tiennent</span></div>
     <div class="ambchoix" id="amb-choix">
       <button data-amb="0"></button>
       <button data-amb="1"></button>
@@ -651,6 +687,27 @@ const GL = [
    log:'Ne pas. Le signe le plus fréquent de tout le corpus est une négation — et les colonnes que je croyais inachevées disent qu’il n’y avait rien.'},
   {id:'en',   br:'modalite',mot:'si',      cost:320, eff:'les conditions se lisent — un registre est plein de « si »',
    log:'Si. Ils ne consignaient pas seulement ce qui était : ils gravaient ce qu’il faudrait faire au cas où.'},
+  /* ---- le doute ----
+     `peut-être` est le pic de malaise du jeu (design doc §6), et il n'ajoute pas une
+     mécanique : il en retire une protection. Depuis la première seconde, le lexique affiche
+     ce que le joueur a lu comme s'il l'avait su ; ce signe-là lui dit que onze de ses
+     lectures en supportaient une autre, et qu'il a tranché sans jamais en être averti.
+     Aucun effet chiffré : la Modalité donne ce qui se lit, pas ce qui accélère (mesuré en
+     MOD-1, où un bonus de Grammaire raccourcissait l'acte au lieu de l'allonger). Ce qu'il
+     donne est ailleurs — le degré de doute par signe, et la révision.
+     450 C, et le prix est une mesure, pas un cran de branche : à 900 ou 1 100 il tombe deux
+     minutes avant la fin du prototype et le doute n'a pas le temps de servir. À 450 il
+     laisse **quatorze minutes**, soit quatre ou cinq révisions au coût croissant — de quoi
+     en jouer, pas de quoi toutes les faire (CONTR-3). Il passe donc avant `il-faut`, dont
+     la lecture se tranche alors le panneau déjà ouvert : la dernière décision ambiguë du
+     prototype est la seule que le joueur prenne en sachant ce qu'il risque.
+     Dix attestations seulement, mais l'une d'elles est « peut-être eau », les deux seuls
+     mots d'espoir du corpus (docs/corpus.md §5, tablette 12) — et sur la tablette 26 la
+     même paire porte à sa droite un signe qu'on ne sait pas encore lire. Ne rien annoncer
+     de tout ça : c'est le texte qui le dit, quatre-vingt-dix-sept ans plus tard. */
+  {id:'mik',  br:'modalite',mot:'peut-être', cost:450,
+   eff:'le doute se chiffre, signe par signe · une lecture peut se rouvrir',
+   log:'Peut-être. Ils avaient un signe pour ça, et pas moi. Onze de mes lectures en supportaient une autre, et je les ai toutes recopiées au propre.'},
   {id:'dun',  br:'modalite',mot:'il-faut', cost:550, eff:'+50 % à l’atelier de copie',
    log:'Il faut. Ce n’est plus un inventaire qui parle, c’est quelqu’un qui ordonne — et sur deux siècles, l’ordre ne change pas : copier.'},
   {id:'enla', br:'modalite',mot:'sinon',   cost:800, eff:'le protocole de copie se lit jusqu’à son dernier mot',
@@ -817,12 +874,15 @@ const TB = ORDRE.map(n => CORPUS.find(t => t.t === n));
    glyphes et rouvrirait sur l'écran de fin, sans moyen de continuer. */
 const KEY='langue-morte-actes-i-iii';
 const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram:0},gl:[],t:0,done:false,
-  rel:{}, prix:{}, carnet:[], comp:0, lect:{}, dette:0});
+  rel:{}, prix:{}, carnet:[], comp:0, lect:{}, dte:{}, conc:{}, recs:{}, rev:0});
 /* rel : jetons relevés par tablette · prix : tarif du gisement, verrouillé
    carnet : les paires déjà tentées et fausses · comp : le nombre de tentatives, toutes issues
    confondues — c'est lui que PT10 doit lire, pas la seule liste des échecs.
-   lect : la lecture tranchée pour chaque signe ambigu ('j' ou 'f') · dette : les points
-   qu'elles coûtent, que RIEN ne lit encore — CONTR-1 sera son premier lecteur.
+   lect : la lecture tranchée pour chaque signe ambigu ('j' ou 'f'), d'où la dette se
+   déduit — elle n'est pas stockée, voir `dette()`.
+   dte : le degré de doute figé à la décision · conc, recs : les signes concordés et le
+   nombre de recoupements par signe, qui sont ce sur quoi ce degré se calcule · rev : les
+   révisions faites, dont dépend le prix de la suivante (CONTR-3).
    Champs de premier niveau, donc une partie d'avant la composition, ou d'avant l'ambiguïté,
    les reçoit vides au chargement, sans qu'on touche à `KEY`. */
 let S_ = fresh(), speed = 1;
@@ -887,6 +947,12 @@ function logDe(id){
    carte de fin. Son seul lecteur sera CONTR-1. `freqGlyphe()` est dans rendu.js, chargé
    ensuite — même report que `pushLog` ou `paintCorpus`, appelés d'ici depuis toujours. */
 const detteDe = id => { const n = freqGlyphe(id); return n >= 250 ? 3 : n >= 100 ? 2 : 1; };
+/* La dette totale se DÉDUIT des lectures, elle ne s'accumule pas. Tenue en solde, elle
+   dérivait à la première révision qui ne passait pas exactement par le bon chemin — et un
+   solde faux sur un chiffre que personne n'affiche ne se verrait jamais. Dérivée, elle est
+   juste par construction, elle survit à n'importe quelle sauvegarde, et CONTR-1 n'aura rien
+   à migrer. Elle reste invisible jusque-là (AMB-3). */
+const dette = () => S_.gl.reduce((n, id) => n + (AMB[id] && faux(id) ? detteDe(id) : 0), 0);
 
 /* Le multiplicateur d'un signe, majoré de 25 % quand il est mal lu (design doc §8). La prime
    porte sur le BONUS et non sur l'instrument : +30 % devient +37,5 %, pas +62,5 %. Trois
@@ -905,6 +971,96 @@ const detteDe = id => { const n = freqGlyphe(id); return n >= 250 ? 3 : n >= 100
      économie réglée sur neuf playtests au profit d'un chiffre que personne ne voit. */
 const AMB_R = 1.25;
 const mfx = (id, x) => has(id) ? (faux(id) ? 1 + (x - 1)*AMB_R : x) : 1;
+
+/* ======================== le doute, et la révision ========================
+   MOD-2 et CONTR-2/3. `peut-être` ne montre pas la vérité — il montre **ce sur quoi la
+   décision reposait**. C'est la seule chose que le jeu ait le droit de calculer : la vérité
+   ferait un oracle, et rien dans ce jeu ne dit au joueur qu'il s'est trompé (règle 17).
+
+   Le degré de doute d'un signe se fait de deux moitiés, et il fallait les deux : une forme
+   multiplicative tassait les neuf signes entre 83 et 99 % — vrai, inutile, et la jauge ne
+   classait plus rien.
+
+   - **ce qui était sorti de terre** : la part des attestations du signe que le corpus offrait
+     à lire quand le joueur a tranché. On ne peut pas avoir lu ce qui n'était pas déterré.
+   - **ce qu'il en a fait** : une concordance sur ce signe vaut plein — c'est l'instrument qui
+     rassemble toutes ses attestations d'un coup, et il existe pour ça (règle 11). Un
+     recoupement de deux d'entre elles vaut moitié. N'avoir rien fait ne vaut rien, même avec
+     les trente tablettes sous les yeux : avoir pu lire n'est pas avoir lu.
+
+   Un signe acheté à la troisième minute sans rien en faire sort à 94 ; le même acheté à la
+   fin, concordance faite, sort au plancher. Entre les deux, tout l'éventail.
+
+   Deux propriétés tiennent tout le système :
+
+   1. **Le chiffre est le même pour les deux lectures.** Il ne dit jamais laquelle est juste,
+      seulement à quel point on a décidé à l'aveugle. Il ne ment donc pas, et il corrèle quand
+      même avec l'erreur : on se trompe davantage sur ce qu'on n'a pas regardé.
+   2. **Regarder après coup ne le fait pas baisser.** Une concordance faite aujourd'hui
+      n'annule pas une décision prise à la douzième minute. Seule la RÉVISION le recalcule,
+      parce qu'elle seule re-décide. C'est ce qui empêche le doute d'être une jauge qu'on
+      vide en promenant la souris, et ce qui fait de la lecture le chemin vers la révision
+      plutôt que son substitut.
+
+   Le plancher : un signe entièrement travaillé garde cinq points. Le corpus n'a jamais
+   confirmé une lecture, il l'a seulement laissée faire — un zéro serait la seule certitude
+   que ce jeu n'a pas le droit d'afficher. */
+const DOU_MIN = 5;
+function douteCalc(id){
+  const travail = S_.conc[id] ? 1 : (S_.recs[id] ? 0.5 : 0);
+  const vu = 0.5*partOuverte(id) + 0.5*travail;
+  return Math.max(DOU_MIN, Math.round(100 * (1 - vu)));
+}
+/* Les signes ambigus acquis, du plus douteux au moins douteux : l'ordre du panneau, et
+   l'ordre dans lequel un joueur qui ne lit pas dépensera ses révisions.
+   Un signe acquis avant ce lot n'a pas de relevé de doute — la partie a été jouée quand le
+   jeu ne le mesurait pas. Il compte alors pour cent : le jeu ne sait pas ce que le joueur
+   avait sous les yeux, et la seule réponse honnête à « je n'en ai aucune trace » est le
+   doute entier. Une révision lui en donnera un vrai. */
+const douteDe = id => S_.dte[id] === undefined ? 100 : S_.dte[id];
+const douteux = () => S_.gl.filter(id => AMB[id])
+                           .sort((a, b) => douteDe(b) - douteDe(a));
+const douteOuvre = () => has('mik');
+
+/* ---- la révision (CONTR-2) ----
+   Rouvrir un signe, repayer, choisir à nouveau. Ce que la révision ne fait PAS, et c'est
+   délibéré : elle ne dit pas si l'on avait raison. Elle repeint le corpus, et c'est au
+   joueur de lire ce qui en sort — « le grenier pleure trois fois par nuit » n'a pas de sens,
+   et c'est la seule chose qui le lui dira (design doc §8). Une révision qui annoncerait
+   « juste ! » serait l'oracle que la prime silencieuse d'AMB-1 refuse déjà.
+   Le design doc prévoit un **bonus rétroactif** quand on retombe sur la lecture juste. Il
+   n'est pas de ce lot, et pour cette raison-là : un bonus visible est un verdict. Il attend
+   CONTR-1, où la dette devient lisible et où il pourra être payé en dette effacée plutôt
+   qu'en Certitude — c'est-à-dire sans rien annoncer.
+
+   CONTR-3, le coût du brute-force : le prix croît par révision faite, jamais par signe.
+   C'est la leçon de `REC_R` et de `COMP_R`, pour la troisième fois — dans une économie
+   exponentielle un coût de base ne freine rien, seul un taux mord. Balayer les neuf signes
+   ambigus de l'acte III coûte alors plus que ce que le joueur peut gagner d'ici la fin,
+   tandis que trois ou quatre révisions choisies restent payables. Mesuré à `outils/sim.py`,
+   pas estimé (règle 7). */
+const REV_B = 240;      // coût de la première révision, en Certitude
+const REV_K = 1.6;      // ... et par révision déjà faite
+const revCost = () => Math.ceil(REV_B * Math.pow(REV_K, S_.rev));
+
+/* Rend true si la révision a eu lieu. `lect` vaut 'j' ou 'f' comme à l'achat — et comme à
+   l'achat, la fenêtre a tiré l'ordre des deux lectures au sort : repasser par là ne dit
+   pas laquelle on avait prise. */
+function reviser(id, lect){
+  if(!douteOuvre() || !AMB[id] || !has(id)) return false;
+  const c = revCost();
+  if(S_.C < c) return false;
+  S_.C -= c; S_.rev++;
+  /* La dette suit d'elle-même : elle se déduit des lectures, donc quitter une lecture fausse
+     l'efface et y retomber la refait courir, sans une ligne de comptabilité à tenir. Le
+     joueur n'en voit rien dans un cas comme dans l'autre (AMB-3). */
+  S_.lect[id] = lect === 'f' ? 'f' : 'j';
+  S_.dte[id] = douteCalc(id);
+  numCache.length = 0;
+  pushLog(logDe(id));
+  paintCorpus(id);
+  return true;
+}
 
 /* ---- économie ---- */
 const M = {
@@ -1081,6 +1237,9 @@ function recouper(id){
   const c=recCost();
   if(S_.O<c.O||S_.H<c.H) return false;
   S_.O-=c.O; S_.H-=c.H; S_.C+=recGain(); S_.rec++;
+  /* Compté par signe depuis MOD-2 : rapprocher deux attestations d'un même signe est l'un
+     des deux gestes sur lesquels se calcule son degré de doute. */
+  if(id) S_.recs[id] = (S_.recs[id]||0) + 1;
   return true;
 }
 /* ---- la composition ----
@@ -1140,7 +1299,13 @@ function acheterGl(id, lect){
   /* La dette est posée ici et nulle part ailleurs, à l'instant du choix, et personne ne la
      relit avant CONTR-1. Le joueur n'en verra rien : pas de compteur, pas d'infobulle, pas
      de ligne à la carte de fin (AMB-3). */
-  if(AMB[id]){ S_.lect[id] = lect==='f' ? 'f' : 'j'; if(lect==='f') S_.dette += detteDe(id); }
+  if(AMB[id]){
+    S_.lect[id] = lect==='f' ? 'f' : 'j';
+    /* Le doute se fige ici, sur l'état du corpus et du travail à cette seconde-là. Rien ne
+       le rouvrira qu'une révision : regarder après coup ne rend pas la décision moins
+       aveugle (MOD-2). La dette, elle, n'a rien à poser — elle se déduit (`dette()`). */
+    S_.dte[id] = douteCalc(id);
+  }
   majSignes();
   numCache.length = 0;
   touchees = new Set();
@@ -1256,7 +1421,7 @@ function frame(now){
   let dt=(now-last)/1000; last=now;
   if(dt>0.5) dt=0.5;
   if(!S_.done) tick(dt*speed);
-  paintRes(); paintActs(); paintInstr(); paintComp(); paintLex(); paintMeter();
+  paintRes(); paintActs(); paintInstr(); paintComp(); paintDoute(); paintLex(); paintMeter();
   finRegarder(now);
   const ch=Math.floor(S_.t/60)+':'+String(Math.floor(S_.t%60)).padStart(2,'0');
   if($('chrono').textContent!==ch) $('chrono').textContent=ch;
@@ -1582,6 +1747,11 @@ function concArmer(v){
 function concChoisir(id){
   if(id === undefined) return;    // un nombre n'est pas un signe : rien à concorder
   concSel = id; concArme = false;
+  /* Retenu depuis MOD-2 : une concordance montre toutes les attestations d'un signe d'un
+     seul coup, et c'est le poids plein du degré de doute (`douteCalc` dans economie.js).
+     Noté ici, à l'instant du geste, et non relu plus tard — le doute d'un signe se fige à
+     l'achat, et ce qu'on lit après ne dé-aveugle pas ce qu'on a décidé avant. */
+  S_.conc[id] = 1;
   peindreConc();
 }
 function concFermer(){ concSel = null; concArme = false; peindreConc(); }
@@ -1788,12 +1958,17 @@ function paintComp(){
    commun aux deux lectures, parce que le moindre écart dirait laquelle est la bonne.
    `revenir au corpus` laisse le signe à acheter : un clic malheureux ne coûte rien, et ce
    n'est pas une indulgence — c'est que le choix doit se faire en lisant, pas en cliquant. */
-let ambId = null, ambOrdre = null;
+let ambId = null, ambOrdre = null, ambMode = 'achat';
 
-function ambOuvrir(id){
+/* `mode` vaut 'achat' ou 'revision'. La fenêtre est la MÊME dans les deux cas, et l'ordre
+   des deux lectures est retiré au sort à chaque ouverture : repasser par là ne rappelle pas
+   laquelle on avait prise, c'est le panneau qui le dit, en toutes lettres. */
+function ambOuvrir(id, mode){
   const g = byId[id];
-  if(!g || !AMB[id] || has(id) || S_.C < g.cost) return;
-  ambId = id;
+  if(!g || !AMB[id]) return;
+  const rev = mode === 'revision';
+  if(rev ? (!douteOuvre() || !has(id) || S_.C < revCost()) : (has(id) || S_.C < g.cost)) return;
+  ambId = id; ambMode = rev ? 'revision' : 'achat';
   /* L'ordre est tiré au sort à l'ouverture, une fois. La lecture juste toujours à gauche se
      retiendrait en une partie, et la seconde n'aurait plus rien à trancher. C'est le seul
      hasard du jeu, et il ne décide de rien : il empêche une POSITION d'être une réponse. */
@@ -1802,16 +1977,70 @@ function ambOuvrir(id){
   const bs = $('amb-choix').querySelectorAll('[data-amb]');
   for(let i = 0; i < 2; i++) setHTML(bs[i], ambOrdre[i] === 'f' ? AMB[id].mot : g.mot);
   /* Même condition qu'au lexique : sans `dire`, le jeu n'annonce pas ce qu'un signe fait. */
-  setHTML($('amb-eff'), has('im') ? g.eff : '');
-  setHTML($('amb-cost'), readC() ? String(g.cost) : numGlyphs(g.cost));
+  /* À la révision, le mot déjà retenu est marqué. Ce n'est pas un renseignement — il est
+     au panneau, au lexique et dans tout le corpus — et sans lui on paierait pour reprendre
+     la même lecture d'un clic malheureux. */
+  if(ambMode === 'revision'){
+    const lu = faux(id) ? 'f' : 'j';
+    for(let i = 0; i < 2; i++) bs[i].classList.toggle('lu', ambOrdre[i] === lu);
+  } else {
+    for(const b of bs) b.classList.remove('lu');
+  }
+  setHTML($('amb-eff'), ambMode === 'revision' ? 'rouvrir une lecture · le corpus se repeint'
+                      : has('im') ? g.eff : '');
+  const c = ambMode === 'revision' ? revCost() : g.cost;
+  setHTML($('amb-cost'), readC() ? big(c) : numGlyphs(c));
+  setHTML($('amb-k'), ambMode === 'revision' ? 'rouvrir' : 'deux lectures tiennent');
   $('amb').hidden = false;
 }
 function ambFermer(){ ambId = null; $('amb').hidden = true; }
 function ambChoisir(i){
   if(ambId === null) return;
-  const id = ambId, lect = ambOrdre[i];
+  const id = ambId, lect = ambOrdre[i], mode = ambMode;
   ambFermer();
-  acheterGl(id, lect);
+  if(mode === 'revision') reviser(id, lect); else acheterGl(id, lect);
+}
+
+/* ==================== le panneau du doute ====================
+   Il n'existe pas avant `peut-être`, et c'est la moitié de ce que ce signe fait : jusque-là
+   le lexique affiche chaque mot comme s'il avait été su. Chaque ligne porte ce qu'on a lu,
+   la part du signe qu'on n'avait pas sous les yeux en tranchant, et ce que le corpus sait de
+   lui — attestations, tablettes, part en cadre de nombre (docs/corpus.md §7.4). Rien de tout
+   ça ne dépend de la lecture retenue : la fiche est identique pour les deux, elle dit ce que
+   le signe FAIT et laisse le joueur en tirer ce qu'il veut. */
+function buildDoute(){
+  setHTML($('doutes'), GL.filter(g => AMB[g.id]).map(g =>
+    '<button class="drow" data-dou="'+g.id+'" hidden>'+
+      '<span class="dsig">'+sv(g.id)+'</span><span class="dmot"></span>'+
+      '<span class="dbar"><i></i></span><span class="dpc"></span>'+
+      '<span class="dfic"></span></button>').join(''));
+}
+function paintDoute(){
+  const ouvert = douteOuvre();
+  if($('pdoute').hidden !== !ouvert) $('pdoute').hidden = !ouvert;
+  if(!ouvert) return;
+  const c = revCost(), payable = S_.C >= c;
+  setHTML($('doute-c'), 'rouvrir ' + (readC() ? big(c) : numGlyphs(c)));
+  const liste = douteux();
+  for(const g of GL){
+    if(!AMB[g.id]) continue;
+    const b = $('doutes').querySelector('[data-dou="'+g.id+'"]');
+    const vu = liste.indexOf(g.id) >= 0;
+    if(b.hidden !== !vu) b.hidden = !vu;
+    if(!vu) continue;
+    b.disabled = !payable;
+    const d = douteDe(g.id);
+    setHTML(b.querySelector('.dmot'), motDe(g.id));
+    setHTML(b.querySelector('.dpc'), d + ' %');
+    b.querySelector('.dbar i').style.width = d + '%';
+    setHTML(b.querySelector('.dfic'),
+      nf.format(freqGlyphe(g.id)) + ' attest. · ' + Object.keys(ATT[g.id]||{}).length
+      + ' tabl. · ' + Math.round(100*partCadre(g.id)) + ' % en cadre de nombre');
+  }
+  /* L'ordre suit le doute : le plus aveugle en haut, qui est aussi celui sur lequel un
+     joueur pressé dépensera sa première révision. */
+  const par = $('doutes');
+  for(const id of liste) par.appendChild(par.querySelector('[data-dou="'+id+'"]'));
 }
 
 function buildLex(){
@@ -1935,10 +2164,59 @@ for(const tb of CORPUS) for(const l of tb.l) for(const tk of l.split(' ')){
    Compter les mots seuls afficherait 8, 4, 0, 2, 1 sur les cinq glyphes de nombre et ferait
    passer la branche la plus rentable du jeu pour la plus pauvre. */
 const freqGlyphe = id => (FREQ[id]||0) + (NUMSYM[id]||[]).reduce((n,k)=>n+(FREQNUM[k]||0), 0);
+
+/* ---- ce que le corpus sait d'un signe, et que le jeu peut compter ----
+   Deux tables de plus, construites une fois, sur le même principe que FREQ : du fait de
+   corpus, jamais du jugement. Elles ne dépendent pas de la lecture retenue — c'est ce qui
+   les autorise à être montrées (règle 17).
+
+   `ATT` : les attestations d'un signe, tablette par tablette. Sert à dire quelle part de son
+   corpus était sortie de terre au moment où le joueur a tranché — l'intrant du degré de
+   doute (`douteCalc` dans economie.js).
+
+   `CADRE` : le nombre de fois qu'un signe est suivi d'un nombre OU de ⟨ne-pas⟩, c'est-à-dire
+   qu'il paraît dans un cadre de compte. C'est la rupture distributionnelle du §7.4 de
+   `docs/corpus.md`, et elle est plus nette que ce que ce §7.4 annonçait : il disait
+   « ⟨année⟩ porte toujours un nombre », or ⟨année⟩ n'est suivi d'un nombre que 67 fois sur
+   139. Les 72 autres, il est suivi de ⟨ne-pas⟩ — « année : pas de », l'absence de compte,
+   qui est un compte (⟨zéro⟩ EST ⟨ne-pas⟩⟨un⟩). Ainsi mesuré, ⟨année⟩ est à 100 % et ⟨nuit⟩
+   à 0 % : un soleil qu'on compte, ou dont on dit qu'il n'y en a pas, n'est pas un soleil.
+   Le chiffre est le même pour les deux lectures d'un signe — il ne dit donc jamais laquelle
+   est juste. Il dit ce que le signe FAIT, et c'est au joueur d'en tirer ce qu'il veut. */
+const ATT = {}, CADRE = {};
+for(const tb of CORPUS) for(const l of tb.l){
+  const tk = l.split(' ');
+  for(let i = 0; i < tk.length; i++){
+    const t = tk[i];
+    if(t === '·' || t.charCodeAt(0) === 37) continue;
+    (ATT[t] || (ATT[t] = {}))[tb.t] = (ATT[t][tb.t] || 0) + 1;
+    const s = tk[i+1] || '';
+    if(s.charCodeAt(0) === 37 || s === 'la') CADRE[t] = (CADRE[t] || 0) + 1;
+  }
+}
+/* La part des attestations d'un signe qui est sortie de terre. Sur le dégagement et non sur
+   l'affichage : une tablette rangée ailleurs reste lisible, une tablette pas encore dégagée
+   ne l'est pas (règle 12). */
+function partOuverte(id){
+  const a = ATT[id]; if(!a) return 0;
+  let tot = 0, vu = 0;
+  for(const t in a){ tot += a[t]; if(degagee(+t)) vu += a[t]; }
+  return tot ? vu/tot : 0;
+}
+const partCadre = id => (FREQ[id] ? (CADRE[id]||0) / FREQ[id] : 0);
+
 const partMot = k => (k==='u1' && has('an')) ? 'un'
                    : (k==='t10' && has('sela')) ? 'dix'
                    : (k==='h100' && has('meku')) ? 'cent'
                    : (byId[k] && has(k)) ? motDe(k) : null;
+
+/* La part d'un signe en cadre de nombre — suivi d'un nombre, ou de ⟨ne-pas⟩ qui en est
+   l'absence. Elle n'apparaît qu'avec `peut-être`, sur les signes lus comme sur les autres :
+   c'est la rupture distributionnelle du §7.4, et elle ne se trouve qu'en comparant. ⟨année⟩
+   est à 100 %, ⟨nuit⟩ à 0 % — un soleil qu'on compte, ou dont on dit qu'il n'y en a pas,
+   n'est pas un soleil. Le jeu ne le dit nulle part ; il donne les deux chiffres. */
+const tipCadre = id => (!has('mik') || !FREQ[id]) ? ''
+  : '<span class="lab dist">' + Math.round(100*partCadre(id)) + ' % en cadre de nombre</span>';
 
 function tipHTML(el){
   if(el.dataset.w !== undefined){
@@ -1947,13 +2225,15 @@ function tipHTML(el){
       if(COMP[id]){
         const [a,b] = COMP[id], ma = partMot(a), mb = partMot(b);
         return sv(a) + '<span class="plus">+</span>' + sv(b)
-             + '<span class="lab">' + (ma&&mb ? ma+' + '+mb : 'signe composé') + '</span>';
+             + '<span class="lab">' + (ma&&mb ? ma+' + '+mb : 'signe composé') + '</span>'
+             + tipCadre(id);
       }
-      return sv(id) + '<span class="lab">' + motDe(id) + '</span>';
+      return sv(id) + '<span class="lab">' + motDe(id) + '</span>' + tipCadre(id);
     }
     if(S_.b.tab > 0){
       const n = freqGlyphe(id);
-      return sv(id) + '<span class="lab"><b>' + nf.format(n) + '</b> occurrence' + (n>1?'s':'') + '</span>';
+      return sv(id) + '<span class="lab"><b>' + nf.format(n) + '</b> occurrence' + (n>1?'s':'') + '</span>'
+           + tipCadre(id);
     }
     return null;
   }
@@ -2172,7 +2452,7 @@ window.addEventListener('pagehide', sauverTraces);
 /* Le compte de l'arbre, écrit une fois : recopié dans le HTML, il mentait dès le lot suivant. */
 document.querySelectorAll('.ngl').forEach(el => { el.textContent = NGL; });
 majSignes();
-buildRail(); buildCorpus(); buildInstr(); buildComp(); buildLex();
+buildRail(); buildCorpus(); buildInstr(); buildComp(); buildDoute(); buildLex();
 if(S_.gl.length){ paintCorpus(null); pushLog(logDe(S_.gl[S_.gl.length-1])); }
 /* `nuit` acquis, le corpus se lit sans le joueur — 40 % du débit, quatre heures au plus.
    Dit au retour, une seule fois, et seulement s'il s'est passé quelque chose. */
@@ -2235,6 +2515,10 @@ $('lex').addEventListener('click', e=>{ const b=e.target.closest('[data-gl]');
 $('amb-choix').addEventListener('click', e=>{
   const b=e.target.closest('[data-amb]'); if(b) ambChoisir(+b.dataset.amb); });
 $('amb-annuler').addEventListener('click', ambFermer);
+/* Rouvrir une lecture. Le panneau n'existe qu'avec `peut-être`, et la fenêtre qui s'ouvre
+   est celle de l'achat : mêmes deux mots, même prix affiché, même tirage de l'ordre. */
+$('doutes').addEventListener('click', e=>{
+  const b=e.target.closest('[data-dou]'); if(b&&!b.disabled) ambOuvrir(b.dataset.dou,'revision'); });
 $('amb').addEventListener('click', e=>{ if(e.target===$('amb')) ambFermer(); });
 /* La grille de composition. Pas de raccourci clavier et pas de répétition : poser un signe sur
    un autre n'est pas un geste qu'on martèle, c'est un geste qu'on a préparé en lisant. */

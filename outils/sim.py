@@ -48,8 +48,12 @@ GL = [('an','nombre',2), ('anna','nombre',5), ('hem','nombre',11), ('sela','nomb
       # l'acte au lieu de l'allonger — mesuré 82,5 min contre 87,0, soit quatre signes de plus
       # pour une minute de jeu. Dans une économie exponentielle, un multiplicateur sur
       # l'instrument qui porte la Certitude paie plus que ce qu'il coûte.
-      ('la','modalite',150), ('en','modalite',320), ('dun','modalite',550),
-      ('enla','modalite',800),
+      # `peut-être` (MOD-2) s'intercale entre `si` et `il-faut`, et son prix est une mesure :
+      # à 900 ou 1 100 C il tombe deux minutes avant la fin du prototype et le doute n'a pas
+      # le temps de servir ; à 450 il laisse quatorze minutes, soit trois ou quatre révisions
+      # au coût croissant. Aucun multiplicateur, comme le reste de la branche.
+      ('la','modalite',150), ('en','modalite',320), ('mik','modalite',450),
+      ('dun','modalite',550), ('enla','modalite',800),
       # Composés secrets : offerts par aucune branche, ils ne s'obtiennent qu'à la grille de
       # composition. Ils comptent dans ce que le joueur SAIT, jamais dans ce que l'arbre a
       # rendu — d'où `ARBRE`, qui est le compte dont dépendent le dégagement des tablettes, la

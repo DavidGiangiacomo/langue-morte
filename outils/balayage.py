@@ -35,14 +35,14 @@ GRILLE = dict(rec_r=(1.26, 1.30, 1.35), con_b=(350, 400, 450), cop_b=(10, 15),
 # `da61b19`, ce balayage rejetait ses dix-huit combinaisons, y compris le réglage en place,
 # et disait « 0 sur 18 » sans que rien ne soit cassé. Re-baser cette fenêtre fait partie de
 # tout lot qui ajoute des signes.
-# 28 glyphes (`les-lecteurs` compris) : le réglage retenu mesure 89,7-92,9 min aux trois
-# cadences toutes lectures justes, et 84,4-87,5 min toutes lectures fausses (AMB-1). La
-# fenêtre couvre donc les deux, aux mêmes marges qu'aux lots précédents — trois minutes sous
-# le plancher mesuré, deux au-dessus du plafond. Elle s'élargit de cinq minutes par le bas et
-# trie d'autant moins : c'est assumé, et ce sont les trois autres garde-fous qui trient
-# désormais, aucun n'étant touché par la lecture (pire tranche 26 % juste contre 25 % faux,
-# écart 5,2 contre 4,6, main 22,9 % contre 23,1 %).
-DUREE = (81.0, 95.0)
+# 29 glyphes (`peut-être` compris) : le réglage retenu mesure 90,5-93,7 min aux trois
+# cadences toutes lectures justes, et 85,2-88,1 min toutes lectures fausses. La fenêtre
+# couvre les deux, aux mêmes marges qu'aux lots précédents — trois minutes sous le plancher
+# mesuré, deux au-dessus du plafond. Elle reste large depuis AMB-1, qui lui a ajouté la
+# lecture comme variable, et trie d'autant moins : c'est assumé, et ce sont les trois autres
+# garde-fous qui trient, aucun n'étant touché par la lecture (pire tranche 26 % juste contre
+# 22 % faux, écart 5,2 contre 4,6, main 21,6 % contre 23,5 %).
+DUREE = (82.0, 96.0)
 ECART_MAX = 6.0
 I6_MAX = 30.0
 # La part manuelle des OCCURRENCES, entrée dans le tri le 14/09/2026 en même temps que

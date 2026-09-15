@@ -150,6 +150,8 @@ Le piège est délibéré : se tromper *paie mieux à court terme*. C'est du bia
 
 **Révision** — rouvrir un signe, payer un coût en C, choisir à nouveau. Juste → dette effacée + bonus rétroactif. Faux → on repaie.
 
+**Ce que le doute peut dire, et ce qu'il ne peut pas** (posé le 15/09/2026, MOD-2). Le jeu connaît la vérité et n'a pas le droit de s'en servir : un doute calculé sur la justesse serait un oracle. Le corpus, lui, est le même sous les deux lectures — donc **tout degré de doute honnête est identique pour la juste et pour la fausse**. Il ne dit donc pas l'erreur, il dit ce qui la produit : **l'aveuglement au moment de trancher**, moitié « quelle part du signe était sortie de terre », moitié « qu'en a-t-on fait » (une concordance vaut plein, un recoupement moitié, n'avoir rien fait ne vaut rien). Regarder après coup ne le baisse pas — on ne dé-aveugle pas une décision prise ; seule la révision le recalcule, parce qu'elle seule re-décide. Conséquences : **la révision ne rend aucun verdict** (elle repeint le corpus, et c'est au joueur de lire ce qui en sort), et **le bonus rétroactif attend CONTR-1**, parce qu'un bonus visible est un verdict — il se paiera en dette effacée, donc sans rien annoncer. Ce que la révision coûte est déjà réel et invisible : reprendre la lecture juste retire les 25 % de prime.
+
 **Ce qui rend le système honnête** : le seul indice fiable pour trouver le signe fautif est le texte lui-même. Un joueur qui lit voit que « le grenier pleure trois fois par nuit » n'a pas de sens et sait quoi réviser. Un joueur qui optimise sans lire doit brute-forcer, ce qui coûte cher.
 
 **Le jeu récompense la lecture, mécaniquement.** C'est le cœur du design.

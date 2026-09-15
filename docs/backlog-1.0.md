@@ -13,14 +13,14 @@
 
 | | Fait | Reste pour 1.0 |
 |---|---|---|
-| Glyphes | **28 / 45** *(+ `grenier` et `zéro`, composés, hors arbre)* | **17** |
+| Glyphes | **29 / 45** *(+ `grenier` et `zéro`, composés, hors arbre)* | **16** |
 | Instruments | 6 / 9 (Œil, Copiste, Table, Concordance, Atelier, Grammaire) | 3 (Élève, Corpus jumeau, Le Lecteur) |
 | Actes | **I, II, III — entiers** | IV, V |
 | Corpus | **30 tablettes, 705 lignes, 3 838 signes — intégral**, ⟨N1⟩/⟨N2⟩ semés, **les 11 lectures fausses écrites** | — |
-| Mécaniques centrales | relevé, recoupement, datation, rangement, concordance, hors-ligne, **composition**, **ambiguïté** | confiance, contradiction, révision, Questions |
+| Mécaniques centrales | relevé, recoupement, datation, rangement, concordance, hors-ligne, **composition**, **ambiguïté**, **doute et révision** | contradiction, Questions |
 | Acte III | **fini** *(PAR-2, 14/09/2026)* | — |
 | Fins | aucune *(écran « fin du prototype »)* | Achever, Interrompre, relecture |
-| Rythme mesuré | 66 min 49 pour 20 glyphes (PT9) · **89,7 à 92,9 min simulées pour 28** *(84,4 à 87,5 toutes lectures fausses)* | cible design doc : 3 h – 3 h 30 pour 45 |
+| Rythme mesuré | 66 min 49 pour 20 glyphes (PT9) · **90,5 à 93,7 min simulées pour 29** *(85,2 à 88,1 toutes lectures fausses)* | cible design doc : 3 h – 3 h 30 pour 45 |
 
 Le corpus étant écrit intégralement, **tout le reste est du code et de l'équilibrage** — l'inverse de
 la situation des actes I–II, où le texte était le budget. TXT-2 est tranché depuis le 11/09/2026,
@@ -126,13 +126,24 @@ un engagement de date.
 - Débloque : COMP-3 (`zéro`).
 - *Fait* : 150 · 320 · 550 · 800 C, et **816 attestations** qui passent en français — un signe du corpus sur cinq, le plus gros morceau de lisibilité qui restait. Un seul effet chiffré, `il-faut` ×1,5 à l'atelier : donner à `si` le troisième ×1,5 de la Grammaire raccourcissait l'acte de cinq minutes au lieu de l'allonger. Mesuré 87,0–90,0 min pour 27 signes, écart max 5,2, tranches ≥ 10′ ≤ 27 %. `sinon` se compose de `si` + `ne-pas` (règle 15), donc derrière sa propre branche : le piège de `scribe`, en beaucoup plus doux.
 
-**MOD-2 — `peut-être` et le panneau de confiance** · T:L
+**MOD-2 — `peut-être` et le panneau de confiance** · ~~T:L~~ **fait** (15/09/2026)
 > En tant que joueur, je veux découvrir que le jeu ne m'a jamais dit qu'une lecture pouvait être fausse.
 
 - Fini quand : avant `peut-être`, aucun indice de confiance n'existe nulle part dans l'interface ; après, chaque signe ambigu porte son degré de doute, et le panneau de révision s'ouvre.
 - **Pic de malaise du jeu** (design doc §6). Ne pas l'adoucir.
 - Dépend de : E3 (il n'y a rien à douter tant que rien n'est ambigu).
 - **Et c'est la soupape du §7.3** depuis le 14/09/2026 : pour les trois paires réparantes, le texte ne trahit rien, et le degré de doute par signe — calculé par le jeu, pas lu — est le seul pointeur qui reste. Sans MOD-2, une paire réparante enferme le joueur dans le brute-force que CONTR-3 rend cher.
+- *Fait* : 450 C, entre `si` et `il-faut`, **aucun multiplicateur**. Le prix est une mesure —
+  au bout de la branche il tombe 2,4 min avant la fin du prototype, à 450 il laisse
+  **quatorze minutes**. Le degré de doute ne peut pas dire l'erreur (le corpus est le même
+  pour les deux lectures) : il dit **l'aveuglement au moment de trancher**, moitié « ce qui
+  était sorti de terre », moitié « ce qu'on en a fait » — concordance pleine, recoupement
+  moitié, rien rien. Regarder après coup ne le baisse pas ; seule la révision le recalcule.
+  Le §7.4 est refermé au passage, et sa prémisse était fausse : ⟨année⟩ n'est suivi d'un
+  nombre que 67 fois sur 139, mais 72 fois de ⟨ne-pas⟩ — l'absence de compte, qui est un
+  compte. En *cadre de nombre*, ⟨année⟩ fait 100 % et ⟨nuit⟩ 0 %. Le chiffre paraît en
+  infobulle, identique pour les deux lectures. Voir `docs/journal.md`, « Le doute ne dit pas
+  l'erreur ».
 
 **MOD-3 — `faux`, rétroactif** · T:M
 > En tant que joueur, je veux voir d'un coup tout ce que j'ai mal traduit depuis le début.
@@ -217,15 +228,27 @@ un engagement de date.
 - Fini quand : au franchissement d'acte, dette > seuil divise par deux la production de Certitude ; **aucune progression n'est perdue, seulement du débit** (R2) ; l'état est affiché sans ambiguïté.
 - Dépend de : AMB-3.
 
-**CONTR-2 — Rouvrir un signe** · T:M
+**CONTR-2 — Rouvrir un signe** · ~~T:M~~ **fait** (15/09/2026, avec MOD-2)
 > En tant que joueur, je veux revenir sur une lecture et payer pour la corriger.
 
 - Fini quand : la révision est **toujours disponible** ; juste → dette effacée + bonus rétroactif ; faux → on repaie ; le corpus se repeint dans les deux cas.
+- *Fait*, à une réserve écrite : **le bonus rétroactif n'est pas de ce lot**, parce qu'un
+  bonus visible est un verdict — payer et voir une récompense apparaître, c'est apprendre
+  qu'on s'était trompé au lieu de le lire. Il attend CONTR-1, où la dette devient lisible et
+  où il se paiera en dette effacée, donc sans rien annoncer. La révision, elle, coûte déjà :
+  reprendre la lecture juste **retire les 25 % de prime** d'AMB-1. Corriger, c'est payer en
+  Certitude et perdre du débit pour gagner du sens — l'optimum local du design doc §8, à
+  l'endroit exact où AMB-1 disait qu'il tomberait.
 
-**CONTR-3 — Le coût du brute-force** · T:S
+**CONTR-3 — Le coût du brute-force** · ~~T:S~~ **fait** (15/09/2026, avec MOD-2)
 > En tant que game designer, je veux que réviser au hasard coûte plus cher que lire.
 
 - Fini quand : le coût de révision croît assez pour qu'un balayage systématique des 11 signes soit plus cher que la lecture — **à mesurer avec `outils/sim.py`, pas à estimer** (règle 7).
+- *Fait* : 240 C, ×1,6 **par révision faite et jamais par signe** — la leçon de `REC_R` et de
+  `COMP_R` pour la troisième fois. Mesuré : le joueur dépense encore 4 550 C en signes après
+  `peut-être` ; balayer les neuf signes ambigus de l'acte III en coûte 27 088, soit six fois
+  son budget entier, tandis que trois révisions choisies en coûtent 1 238 — un quart. Lire
+  pour choisir lesquelles domine strictement le tirage au hasard.
 
 ---
 
@@ -409,9 +432,13 @@ un engagement de date.
 **LIV-5 — Étendre `verifier.py`** · T:L
 > En tant qu'auteur, je veux que chaque mécanique nouvelle soit couverte bout en bout.
 
-- Le fichier porte aujourd'hui **202 assertions** sur le relevé, le recoupement, la numération, le gisement, la datation, les infobulles, la composition, la fenêtre de fin qui attend sa lecture, et la reprise d'une sauvegarde d'avant une mécanique neuve. Chaque épic de cette feuille de route doit y ajouter ses vérifications — en particulier AMB-4 (la phrase absurde est bien rendue) et COMP-3 (`zéro` replie les compteurs).
+- Le fichier porte aujourd'hui **224 assertions** sur le relevé, le recoupement, la numération, le gisement, la datation, les infobulles, la composition, la fenêtre de fin qui attend sa lecture, et la reprise d'une sauvegarde d'avant une mécanique neuve. Chaque épic de cette feuille de route doit y ajouter ses vérifications — en particulier AMB-4 (la phrase absurde est bien rendue) et COMP-3 (`zéro` replie les compteurs).
   *15/09/2026* : la section 21 en ajoute vingt-cinq sur l'ambiguïté, dont les cinq ruptures d'AMB-4
-  qui existent dans l'arbre d'aujourd'hui et la vérification que **rien à l'écran ne nomme la dette**.
+  qui existent dans l'arbre d'aujourd'hui et la vérification que **rien à l'écran ne nomme la dette** ;
+  la section 22 en ajoute vingt-deux sur le doute et la révision, dont **le degré de doute est le
+  même pour les deux lectures** et **la révision ne dit jamais si l'on avait raison**. Les compteurs
+  de lexique n'y figent plus la taille de l'arbre : ils lisent `NGL`, sans quoi ils échouent à
+  chaque lot de glyphes sans que rien soit cassé — la leçon du garde-fou de durée, en petit.
 
 **LIV-6 — README, écran-titre, distribution** · T:S
 > En tant que curieux, je veux ouvrir un fichier et jouer.
@@ -424,16 +451,17 @@ un engagement de date.
 
 Le graphe de dépendances avait une seule vraie contrainte forte : **le texte des lectures fausses
 (TXT-1) bloquait l'ambiguïté, qui bloque l'Élève, la Modalité et la relecture.** Elle est levée
-depuis le 14/09/2026, et AMB-1 est fait depuis le 15/09/2026 — avec AMB-2 et AMB-3, qu'il ne
-pouvait pas laisser dehors. **Le prochain sur le chemin critique est MOD-2** (`peut-être`), qui
-n'a plus de dépendance ouverte : E3 est fait à l'exception du §7.4, lequel ne le bloque pas.
-Il est aussi la soupape des paires réparantes (§7.3) et la première fois que le jeu admettra
-qu'une lecture peut être fausse.
+depuis le 14/09/2026 ; E3 et MOD-2 sont faits le 15/09/2026, avec CONTR-2 et CONTR-3 que
+`peut-être` ne pouvait pas laisser dehors — un doute qu'on ne peut pas payer ne sert à rien.
+**Le prochain sur le chemin critique est CONTR-1**, la contradiction : la dette court depuis
+AMB-3 et personne ne la lit encore. Elle rendra son sens à la révision (dette effacée, donc
+bonus rétroactif payable sans rien annoncer) et fermera la boucle voir → payer → être puni de
+ne pas payer. Puis MOD-3 (`faux`) et l'Élève.
 
 | Jalon | Contenu | Ce qu'on peut jouer à la fin |
 |---|---|---|
 | ~~**J1 — L'acte III se termine**~~ *(fait, 14/09/2026)* | ~~E1 (composition)~~ + ~~PAR-1~~ + ~~MOD-1~~ + ~~COMP-3~~ + ~~PAR-2~~ | 28 glyphes, la composition, `les-lecteurs` |
-| **J2 — Le mensonge** | ~~TXT-1~~ → ~~AMB-1~~ + ~~AMB-2~~ + ~~AMB-3~~ *(15/09/2026)* → AMB-4 *(5 ruptures sur 7 faites)* → MOD-2/MOD-3 + E4 + E5 (Élève) | l'acte III entier, la confiance, la contradiction |
+| **J2 — Le mensonge** | ~~TXT-1~~ → ~~AMB-1 · AMB-2 · AMB-3~~ → ~~AMB-4~~ *(5 ruptures sur 7)* → ~~MOD-2 · CONTR-2 · CONTR-3~~ *(15/09/2026)* → **CONTR-1** + MOD-3 + E5 (Élève) | l'acte III entier, la confiance, la contradiction |
 | **J3 — La voix** | E6 (Personne, Questions, Corpus jumeau, I2) | l'acte IV |
 | **J4 — La graine** | E7 + E8 | les cinq actes, les deux fins, la relecture |
 | **J5 — 1.0** | E9 (final) + E11 | une version publique |

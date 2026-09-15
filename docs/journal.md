@@ -141,6 +141,151 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## Le doute ne dit pas l'erreur, il dit l'aveuglement
+
+15/09/2026, MOD-2 avec CONTR-2 et CONTR-3. `peut-être` est le pic de malaise du jeu, et il
+n'ajoute pas une mécanique : il retire une protection. Depuis la première seconde le lexique
+affiche chaque mot comme si le joueur l'avait su ; ce signe-là lui dit que onze de ses
+lectures en supportaient une autre, et qu'il a tranché sans jamais en être averti.
+
+### La question du lot : de quoi un degré de doute peut-il être fait ?
+
+Le §7.3 de `docs/corpus.md` demande un doute « calculé par le jeu et non par la lecture ». En
+l'écrivant on bute tout de suite sur le mur : **le jeu connaît la vérité, et il n'a pas le
+droit de s'en servir.** Un doute calculé sur la justesse serait l'oracle que la prime
+silencieuse d'AMB-1 refusait la veille.
+
+Reste ce que le jeu sait d'autre : le corpus, et le travail du joueur. Et le corpus ne
+distingue pas deux lectures d'un même signe — il est le même dans les deux cas. Donc, quel
+que soit le calcul, **le chiffre est identique pour la lecture juste et pour la fausse**.
+C'est la contrainte, et c'est elle qui a donné la réponse : si le doute ne peut pas dire
+l'erreur, qu'il dise ce qui la produit — **l'aveuglement au moment de trancher.**
+
+Le degré de doute d'un signe se fait donc de deux moitiés :
+
+- **ce qui était sorti de terre** : la part de ses attestations que le corpus offrait à lire
+  quand le joueur a payé. On ne peut pas avoir lu ce qui n'était pas déterré.
+- **ce qu'il en a fait** : une concordance sur ce signe vaut plein — c'est l'instrument qui
+  rassemble toutes ses attestations d'un coup, et il existe pour ça (règle 11). Un
+  recoupement de deux d'entre elles vaut moitié. N'avoir rien fait ne vaut rien, même avec
+  les trente tablettes sous les yeux : **avoir pu lire n'est pas avoir lu.**
+
+Trois propriétés en sortent, et ce sont elles qui font tenir le système.
+
+1. **Le chiffre ne ment pas.** Il dit « tu as décidé de ça à l'aveugle », ce qui est vrai,
+   et jamais « tu t'es trompé », ce que le jeu n'a pas le droit de dire. Il corrèle quand
+   même avec l'erreur — on se trompe davantage sur ce qu'on n'a pas regardé — sans jamais la
+   désigner.
+2. **Regarder après coup ne le fait pas baisser.** Une concordance faite aujourd'hui n'annule
+   pas une décision prise à la douzième minute. Mesuré dans les tests : ⟨grain⟩ concordé
+   avant l'achat sort à 20, ⟨maison⟩ acheté au même instant sans rien en faire sort à 72, et
+   le concorder ensuite ne bouge pas son chiffre d'un point. Sans cette règle, le doute
+   serait une jauge qu'on vide en promenant la souris.
+3. **Seule la révision le recalcule**, parce qu'elle seule re-décide. La lecture devient donc
+   le chemin vers la révision, pas son substitut.
+
+**Un premier réglage a été jeté.** La forme multiplicative — part sortie de terre × poids du
+travail — tassait les neuf signes entre 83 et 99 %. Vrai, inutile : tout était « très
+douteux » et la jauge ne classait plus rien. En deux moitiés additives, l'éventail va de 17 à
+97 sur la même partie. C'est la deuxième fois de la semaine qu'une formule juste est
+inutilisable faute d'échelle.
+
+### La révision ne dit pas si l'on avait raison
+
+CONTR-2 : rouvrir un signe, repayer, choisir à nouveau. La fenêtre est celle de l'achat —
+mêmes deux mots, même tirage au sort de l'ordre — et **elle ne rend aucun verdict.** Elle
+repeint le corpus, et c'est au joueur de lire ce qui en sort. « Vingt mesures de poussière à
+la maison 1 » n'a pas de sens ; c'est la seule chose qui le lui dira.
+
+Le design doc prévoyait un **bonus rétroactif** quand on retombe sur la lecture juste. Il
+n'est pas de ce lot, et la raison est la même que pour tout le reste : *un bonus visible est
+un verdict*. Payer 240 C et voir une récompense apparaître, c'est apprendre qu'on s'était
+trompé — et c'est acheter la réponse au lieu de la lire. Il attend CONTR-1, où la dette
+devient lisible et où il pourra être payé en dette effacée, c'est-à-dire sans rien annoncer.
+
+Ce que la révision coûte, en revanche, est bien réel et ne se voit pas non plus : reprendre
+la lecture juste **retire les 25 % de prime** que la fausse rendait. Corriger, c'est payer en
+Certitude et perdre du débit pour gagner du sens. C'est exactement l'optimum local du design
+doc §8, et il tombe là où AMB-1 disait qu'il tomberait.
+
+### CONTR-3, mesuré
+
+Le prix croît par révision faite, jamais par signe — la leçon de `REC_R` et de `COMP_R`, pour
+la troisième fois : dans une économie exponentielle un coût de base ne freine rien, seul un
+taux mord. À 240 C et ×1,6 :
+
+| Révisions | Coût cumulé | Part de ce qui reste à dépenser |
+|---|---|---|
+| 1 | 240 C | 5 % |
+| 3 | 1 238 C | 27 % |
+| 4 | 2 221 C | 49 % |
+| 5 | 3 794 C | 83 % |
+| 9 | 27 088 C | **595 %** |
+
+Les 4 550 C sont ce que le joueur dépense encore en signes après `peut-être` — mesuré, pas
+estimé. Balayer les neuf coûte donc près de six fois son budget entier, tandis que trois
+révisions choisies en coûtent un quart. Lire pour choisir lesquelles domine strictement le
+tirage au hasard, et c'est tout ce que CONTR-3 demandait.
+
+### Le prix de `peut-être` est une mesure, pas un cran de branche
+
+Placé au bout de la Modalité, à 900 ou 1 100 C, il tombe **2,4 minutes avant la fin du
+prototype** : le panneau s'ouvre, et la partie s'arrête. À 450 C, entre `si` et `il-faut`, il
+laisse **quatorze minutes** — de quoi faire trois ou quatre révisions et les payer en signes
+non achetés.
+
+Un effet de bord qu'on n'avait pas cherché : à cette place, `il-faut` se tranche **après**
+l'ouverture du panneau. La dernière décision ambiguë du prototype est donc la seule que le
+joueur prenne en sachant ce qu'il risque.
+
+### Le §7.4 est refermé, et sa prémisse était fausse
+
+Le §7.4 proposait une rupture *distributionnelle* pour `eau` et `année`, qui n'ont aucune
+rupture textuelle : « ⟨année⟩ porte toujours un nombre et n'est jamais opposé à ⟨nuit⟩ ».
+Vérifié contre le corpus : **⟨année⟩ n'est suivi d'un nombre que 67 fois sur 139.** La table
+avait tort une fois de plus, et une fois de plus le texte disait mieux.
+
+Les 72 autres, ⟨année⟩ est suivi de ⟨ne-pas⟩ — « année : pas de », l'absence de compte, qui
+est un compte, puisque ⟨zéro⟩ **est** ⟨ne-pas⟩⟨un⟩. Mesuré ainsi, en *cadre de nombre* :
+
+| | ⟨année⟩ | ⟨nuit⟩ | ⟨maison⟩ | ⟨grain⟩ | ⟨ne-pas⟩ | ⟨graver⟩ |
+|---|---|---|---|---|---|---|
+| en cadre de nombre | **100 %** | **0 %** | 100 % | 98 % | 0 % | 2 % |
+
+Le contraste est total, là où la formulation d'origine donnait 48 % contre 0 %. Un soleil
+qu'on compte, ou dont on dit qu'il n'y en a pas, n'est pas un soleil.
+
+Le chiffre paraît en infobulle, sur les signes lus comme sur les autres, et seulement après
+`peut-être`. Il est identique pour les deux lectures — c'est ce qui l'autorise à être montré.
+Et il ne se trouve **qu'en comparant deux signes** : le jeu ne dit nulle part que ⟨année⟩ et
+⟨nuit⟩ sont à comparer. Une phrase absurde se trouve en lisant ; une distribution impossible
+se trouve en travaillant, et c'est le geste que ce jeu prétend enseigner.
+
+### La dette cesse d'être un solde
+
+Trouvé par un test, et c'est le genre de défaut qui ne se serait jamais vu : tenue en solde,
+la dette d'AMB-3 dérivait dès qu'une lecture changeait autrement que par le chemin prévu. Un
+compteur faux sur un chiffre que **personne n'affiche** ne se manifeste jamais — jusqu'à
+CONTR-1, qui en fera son unique intrant, deux lots plus tard.
+
+Elle se **déduit** désormais des lectures au lieu de s'accumuler. Juste par construction,
+elle survit à n'importe quelle sauvegarde, et CONTR-1 n'aura rien à migrer. La règle générale
+vaut d'être écrite : *un état dérivable ne se stocke pas, surtout quand rien ne le lit.*
+
+### Mesuré
+
+**90,5–93,7 min** toutes lectures justes, **85,2–88,1** toutes fausses, pour 29 signes. Écart
+max 5,2 · main 21,6–25,8 % · tranches ≥ 10′ ≤ 26 %. `peut-être` tombe à 76,7–79,8′.
+
+Garde-fou de durée re-basé à **(82, 96)** — le rituel de tout lot qui ajoute un signe.
+`outils/verifier.py` passe de 202 à **224 assertions**.
+
+Une partie d'avant ce lot n'a aucun relevé de décision. Ses signes ambigus comptent alors
+pour cent : le jeu ne sait pas ce que le joueur avait sous les yeux, et la seule réponse
+honnête à « je n'en ai aucune trace » est le doute entier.
+
+---
+
 ## Trancher à l'achat — la prime ne se voit pas, et c'est tout le système
 
 15/09/2026, AMB-1. Avec ce qu'AMB-2 et AMB-3 ne pouvaient pas laisser dehors : le mot faux

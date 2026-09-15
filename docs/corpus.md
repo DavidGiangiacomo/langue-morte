@@ -573,7 +573,7 @@ Ce que la décision engage, et qu'il faut tenir ailleurs :
   qu'en fixant l'autre signe à sa lecture juste — sinon l'assertion échoue alors que le jeu se
   comporte comme décidé. À écrire dans `verifier.py` avec le test, pas après.
 
-### 7.4 Les quatre qui ne cassent pas — dont deux de trop
+### 7.4 Les quatre qui ne cassent pas — dont deux de trop *(refermé le 15/09/2026)*
 
 `lire` et `il-faut` sont conçus pour **ne pas** casser mécaniquement. Ils ne produisent qu'un corpus
 légèrement faux, cohérent, et plus plat : une civilisation de comptables qui se donne des
@@ -601,6 +601,22 @@ deux instruments que le jeu a construits pour ça. Une phrase absurde se trouve 
 distribution impossible se trouve en travaillant. AMB-4 demande aujourd'hui la première. Admettre la
 seconde donnerait à `eau` et `année` une rupture sans écrire une ligne de corpus, et rendrait à la
 Concordance un usage qu'elle n'a pas encore.
+
+**Tranché le 15/09/2026 avec MOD-2 : la rupture distributionnelle est admise — et la prémisse
+ci-dessus était fausse.** Vérifié contre le corpus : ⟨année⟩ n'est suivi d'un nombre que **67 fois
+sur 139**. Les 72 autres, il est suivi de ⟨ne-pas⟩ — « année : pas de », l'absence de compte, qui
+est un compte, puisque ⟨zéro⟩ **est** ⟨ne-pas⟩⟨un⟩. La bonne mesure n'est donc pas « suivi d'un
+nombre » mais « dans un **cadre de nombre** » : suivi d'un nombre ou de sa négation.
+
+| | ⟨année⟩ | ⟨nuit⟩ | ⟨maison⟩ | ⟨grain⟩ | ⟨eau⟩ | ⟨ne-pas⟩ | ⟨graver⟩ | ⟨lire⟩ |
+|---|---|---|---|---|---|---|---|---|
+| en cadre de nombre | **100 %** | **0 %** | 100 % | 98 % | 85 % | 0 % | 2 % | 0 % |
+
+Le contraste est total là où la formulation d'origine donnait 48 % contre 0 %. Le chiffre paraît en
+infobulle à partir de `peut-être`, sur les signes lus comme sur les autres. Il est **identique pour
+les deux lectures** — c'est ce qui l'autorise à être montré — et il ne se trouve qu'en comparant
+deux signes, ce que rien dans le jeu ne suggère de faire. Un soleil qu'on compte, ou dont on dit
+qu'il n'y en a pas, n'est pas un soleil.
 
 ### 7.5 Les entrées de lexique
 
