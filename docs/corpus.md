@@ -447,8 +447,9 @@ Trois principes non négociables :
 ## 7. Les 11 signes ambigus
 
 *(Mécanique de l'acte IV — AMB-1 à AMB-4. Les lectures fausses sont **écrites** depuis le
-14/09/2026 ; la mécanique qui les pose ne l'est pas. Tout ce qui est marqué « vérifié » ci-dessous
-l'a été contre le corpus rendu en français, ligne par ligne, et non contre l'intention.)*
+14/09/2026 et **posées dans le jeu** depuis le 15/09/2026 : neuf des onze signes sont dans l'arbre
+d'aujourd'hui, `semence` et `devenir` attendent l'acte V. Tout ce qui est marqué « vérifié »
+ci-dessous l'a été contre le corpus rendu en français, ligne par ligne, et non contre l'intention.)*
 
 Chacun a une lecture juste et une lecture fausse. La fausse marche longtemps, paie 25 % de plus
 (design doc §8), et doit finir par produire une absurdité **repérable dans le texte**. C'est le seul
@@ -499,6 +500,12 @@ grille de composition renseigne : un joueur qui lit ⟨ne-pas⟩ « fin » et à
 Le principe : **le composé faux fait le même saut que le composé juste, appliqué aux parties
 fausses.** ⟨maison⟩⟨grain⟩ ne se lit pas « maison-grain » mais « grenier » ; ⟨tombe⟩⟨grain⟩ ne se lit
 donc pas « tombe-grain » mais « caveau ».
+
+> **Ce que cette table ne donnait pas**, et qu'il a fallu écrire en l'implémentant (15/09/2026) :
+> la **ligne de journal** de chaque variante. Annoncer « le grenier — la maison du grain » à un
+> joueur dont le corpus dit « caveau » et « tombe », c'est le jeu qui se contredit sur son propre
+> écran, donc qui renseigne. Dix lignes, dans `COMPFAUX` (`src/lexique.js`), dont trois pour
+> ⟨grenier⟩ seul.
 
 | Composé | Parties | Juste | Lecture fausse dérivée |
 |---|---|---|---|
@@ -597,9 +604,14 @@ Concordance un usage qu'elle n'a pas encore.
 
 ### 7.5 Les entrées de lexique
 
-Les textes ci-dessous sont écrits. L'effet chiffré ne l'est pas : la règle est « +25 % d'effet
-mécanique » (AMB-1), et le chiffre exact de chaque signe se pose à l'implémentation, pas ici
-(règle 7).
+Les textes ci-dessous sont écrits, et servent tels quels depuis le 15/09/2026 (`AMB` dans
+`src/lexique.js`). L'effet chiffré, lui, a été posé à l'implémentation comme la règle 7 le
+demandait : la lecture fausse majore de 25 % le **bonus** du signe — +30 % devient +37,5 %, pas
++62,5 % — et **rien ne l'affiche**. Les deux lectures portent le même prix et la même ligne
+d'effet à l'écran de choix, parce que deux chiffres différents diraient au joueur laquelle est
+fausse. Quatre des neuf signes de l'acte III ne multiplient rien et ne gagnent donc rien à être
+mal lus ; mesuré, deux des cinq autres ne paient pas non plus. Voir `docs/journal.md`,
+« Trancher à l'achat ».
 
 Une remarque en les écrivant : **plusieurs lignes de journal justes fonctionnent telles quelles pour
 la lecture fausse**, à un mot près — `lire` et `eau` surtout. Ce n'est pas un hasard, c'est la

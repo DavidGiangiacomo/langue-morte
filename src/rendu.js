@@ -72,11 +72,14 @@ function paintCorpus(flashId){
   elCorpus.querySelectorAll('[data-w]').forEach(el=>{
     const id=el.dataset.w, known=!!byId[id] && has(id);
     const r = rel.has(cleTok(el)) ? 'r' : '';
-    const want = (known ? 'w:'+byId[id].mot : 'g') + r;
+    /* Le mot entre dans la signature du cache : une lecture tranchée à l'achat repeint
+       les attestations déjà peintes, sans quoi le mot faux n'arriverait que sur les
+       tablettes touchées ensuite (AMB-2). */
+    const want = (known ? 'w:'+motDe(id) : 'g') + r;
     if(el.__v===want && flashId!==id) return;
     el.__v=want;
     el.className='tok '+(known?'w':'g')+(r?' rel':'')+(flashId===id?' flash':'');
-    el.innerHTML = known ? byId[id].mot : sv(id);
+    el.innerHTML = known ? motDe(id) : sv(id);
   });
   elCorpus.querySelectorAll('[data-n]').forEach(el=>{
     const n=+el.dataset.n, lis=numLisible(n), r = rel.has(cleTok(el)) ? 'r' : '';
@@ -218,8 +221,10 @@ function peindreGisement(){
 function titreCell(t){
   const r = gisReste(t);
   /* La date est dans le texte de la tablette ; l'infobulle ne fait que la répéter, et
-     seulement quand le joueur sait la lire. */
-  const d = !datee(t) ? '' : ANNEE[t].fin ? ' · dernière année' : ' · année '+ANNEE[t].n;
+     seulement quand le joueur sait la lire — donc avec le mot qu'il a retenu pour ⟨année⟩.
+     La répéter en français juste à qui a lu « soleil », c'est le jeu qui le corrige. */
+  const d = !datee(t) ? '' : ANNEE[t].fin ? ' · '+motDe('nurhal')
+                                          : ' · '+motDe('nur')+' '+ANNEE[t].n;
   return 'tablette '+t+d+' — gisement '+r+'/'+GISEMENT[t]
     + (r <= 0 ? ' · épuisée'
       : S_.prix[t] === undefined
@@ -344,7 +349,7 @@ function majConc(){
   const b = $('a-con'), ouvert = S_.b.con > 0;
   if(b.hidden !== !ouvert) b.hidden = !ouvert;
   if(!ouvert) return;
-  const mot = concSel && byId[concSel] && has(concSel) ? byId[concSel].mot : null;
+  const mot = concSel && byId[concSel] && has(concSel) ? motDe(concSel) : null;
   setHTML(b, !concSel ? (concArme ? 'choisis un signe' : 'concorder')
     : (mot || sv(concSel)) + ' · ' + nf.format(concN)
       + ' attestation' + (concN > 1 ? 's' : '') + ' ✕');
@@ -482,7 +487,8 @@ function paintComp(){
     const b = $('comp-choix').querySelector('[data-pion="'+g.id+'"]'), vu = has(g.id);
     if(b.hidden !== !vu) b.hidden = !vu;
     if(!vu) continue;
-    if(b.title !== g.mot) b.title = g.mot;
+    const m = motDe(g.id);
+    if(b.title !== m) b.title = m;
     b.classList.toggle('pose', compSel.indexOf(g.id) >= 0);
   }
 
@@ -505,8 +511,41 @@ function paintComp(){
   if($('carnet').hidden !== !n) $('carnet').hidden = !n;
   if(n) setHTML($('carnet'), '<div class="ch">Déjà tentées</div>' + S_.carnet.map(pr => {
     const [x, y] = pr.split('+');
-    return '<span class="cpair" title="'+byId[x].mot+' + '+byId[y].mot+'">'+svPaire(x, y)+'</span>';
+    return '<span class="cpair" title="'+motDe(x)+' + '+motDe(y)+'">'+svPaire(x, y)+'</span>';
   }).join(''));
+}
+
+/* ==================== trancher à l'achat ====================
+   Onze signes supportent deux lectures ; le joueur choisit au moment de payer, et paie le
+   même prix dans les deux cas (design doc §8). La fenêtre ne porte qu'une chose de plus que
+   la carte du lexique : le second mot. Tout le reste — le tracé, l'effet, le coût — est
+   commun aux deux lectures, parce que le moindre écart dirait laquelle est la bonne.
+   `revenir au corpus` laisse le signe à acheter : un clic malheureux ne coûte rien, et ce
+   n'est pas une indulgence — c'est que le choix doit se faire en lisant, pas en cliquant. */
+let ambId = null, ambOrdre = null;
+
+function ambOuvrir(id){
+  const g = byId[id];
+  if(!g || !AMB[id] || has(id) || S_.C < g.cost) return;
+  ambId = id;
+  /* L'ordre est tiré au sort à l'ouverture, une fois. La lecture juste toujours à gauche se
+     retiendrait en une partie, et la seconde n'aurait plus rien à trancher. C'est le seul
+     hasard du jeu, et il ne décide de rien : il empêche une POSITION d'être une réponse. */
+  ambOrdre = Math.random() < 0.5 ? ['j','f'] : ['f','j'];
+  setHTML($('amb-sig'), sv(id));
+  const bs = $('amb-choix').querySelectorAll('[data-amb]');
+  for(let i = 0; i < 2; i++) setHTML(bs[i], ambOrdre[i] === 'f' ? AMB[id].mot : g.mot);
+  /* Même condition qu'au lexique : sans `dire`, le jeu n'annonce pas ce qu'un signe fait. */
+  setHTML($('amb-eff'), has('im') ? g.eff : '');
+  setHTML($('amb-cost'), readC() ? String(g.cost) : numGlyphs(g.cost));
+  $('amb').hidden = false;
+}
+function ambFermer(){ ambId = null; $('amb').hidden = true; }
+function ambChoisir(i){
+  if(ambId === null) return;
+  const id = ambId, lect = ambOrdre[i];
+  ambFermer();
+  acheterGl(id, lect);
 }
 
 function buildLex(){
@@ -537,7 +576,7 @@ function paintLex(){
          du coup la question ne se pose jamais pour `deux`, le seul glyphe dont le comptage
          mentirait (il n'ouvre aucun signe, il ouvre le principe du redoublement). */
       const montreFreq = open && S_.b.tab > 0 && readC();
-      setHTML(b.querySelector('.ttl'), done ? g.mot
+      setHTML(b.querySelector('.ttl'), done ? motDe(g.id)
         : montreFreq ? '<span class="frq">'+nf.format(freqGlyphe(g.id))+' occ.</span>' : '');
       setHTML(b.querySelector('.cost'), done? '✓' : open? (readC()? String(g.cost) : numGlyphs(g.cost)) : '');
       setHTML(b.querySelector('.eff'), (done || (open && has('im'))) ? g.eff : '');
@@ -553,7 +592,7 @@ function paintLex(){
     vus++;
     if(b.className!=='gcard done') b.className='gcard done';
     b.disabled=true;
-    setHTML(b.querySelector('.ttl'), g.mot);
+    setHTML(b.querySelector('.ttl'), motDe(g.id));
     setHTML(b.querySelector('.cost'), '✓');
     setHTML(b.querySelector('.eff'), g.eff);
   }
@@ -633,7 +672,7 @@ const freqGlyphe = id => (FREQ[id]||0) + (NUMSYM[id]||[]).reduce((n,k)=>n+(FREQN
 const partMot = k => (k==='u1' && has('an')) ? 'un'
                    : (k==='t10' && has('sela')) ? 'dix'
                    : (k==='h100' && has('meku')) ? 'cent'
-                   : (byId[k] && has(k)) ? byId[k].mot : null;
+                   : (byId[k] && has(k)) ? motDe(k) : null;
 
 function tipHTML(el){
   if(el.dataset.w !== undefined){
@@ -644,7 +683,7 @@ function tipHTML(el){
         return sv(a) + '<span class="plus">+</span>' + sv(b)
              + '<span class="lab">' + (ma&&mb ? ma+' + '+mb : 'signe composé') + '</span>';
       }
-      return sv(id) + '<span class="lab">' + byId[id].mot + '</span>';
+      return sv(id) + '<span class="lab">' + motDe(id) + '</span>';
     }
     if(S_.b.tab > 0){
       const n = freqGlyphe(id);

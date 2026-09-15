@@ -8,12 +8,14 @@
    glyphes et rouvrirait sur l'écran de fin, sans moyen de continuer. */
 const KEY='langue-morte-actes-i-iii';
 const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram:0},gl:[],t:0,done:false,
-  rel:{}, prix:{}, carnet:[], comp:0});
+  rel:{}, prix:{}, carnet:[], comp:0, lect:{}, dette:0});
 /* rel : jetons relevés par tablette · prix : tarif du gisement, verrouillé
    carnet : les paires déjà tentées et fausses · comp : le nombre de tentatives, toutes issues
    confondues — c'est lui que PT10 doit lire, pas la seule liste des échecs.
-   Champs de premier niveau, donc une partie d'avant la composition les reçoit vides au
-   chargement, sans qu'on touche à `KEY`. */
+   lect : la lecture tranchée pour chaque signe ambigu ('j' ou 'f') · dette : les points
+   qu'elles coûtent, que RIEN ne lit encore — CONTR-1 sera son premier lecteur.
+   Champs de premier niveau, donc une partie d'avant la composition, ou d'avant l'ambiguïté,
+   les reçoit vides au chargement, sans qu'on touche à `KEY`. */
 let S_ = fresh(), speed = 1;
 try{ const raw=localStorage.getItem(KEY); if(raw){ const p=JSON.parse(raw);
   if(p&&p.b){ const b=Object.assign({cop:0,tab:0,con:0,ate:0,gram:0},p.b); S_=Object.assign(fresh(),p); S_.b=b; } } }catch(e){}
@@ -33,10 +35,72 @@ const nArbre = () => { let n=0; for(const id of S_.gl){ const g=byId[id]; if(!g|
    parties en cours. Chaque lot de glyphes le reproduirait. */
 if(S_.done && nArbre() < NGL) S_.done = false;
 
+/* ======================== la lecture retenue ========================
+   `S_.lect` retient, pour chacun des signes ambigus acquis, laquelle des deux lectures le
+   joueur a tranchée : 'j' ou 'f'. Un signe absent de la table est lu juste — c'est le cas
+   d'une partie commencée avant ce lot, et celui d'un composé posé à la grille, qui n'offre
+   aucun choix. Le défaut est donc ce que le joueur voyait déjà ; rien ne se perd. */
+const faux = id => S_.lect[id] === 'f';
+
+/* Les parties mal lues d'un composé, dans l'ordre de sa recette et sans doublon : c'est la
+   clé de `COMPFAUX`. ⟨année⟩⟨année⟩ n'a qu'une partie à salir, et sa clé est donc `nur` et
+   non `nur+nur`. */
+function partsFausses(id){
+  const pr = PARTIES[id]; if(!pr) return '';
+  const out = [];
+  for(const k of pr) if(faux(k) && out.indexOf(k) < 0) out.push(k);
+  return out.join('+');
+}
+/* Le mot qu'affiche le jeu — corpus, infobulle, lexique, grille, carnet, concordance. Rien
+   d'autre ne doit lire `.mot` directement : c'est cette fonction, et elle seule, qui tient
+   la promesse d'AMB-2 (le mot faux partout, y compris dans les blocs générés et dans les
+   tablettes déjà lues). Le corpus se repeint entièrement à chaque achat, il n'y a donc
+   aucune reprise à faire. */
+function motDe(id){
+  const g = byId[id]; if(!g) return null;
+  const v = COMPFAUX[id];
+  if(v){ const k = partsFausses(id); if(k && v[k]) return v[k].mot; }
+  return faux(id) ? AMB[id].mot : g.mot;
+}
+/* La ligne de journal suit la même règle, et pour la même raison : annoncer « le grenier —
+   la maison du grain » à un joueur dont le corpus dit « caveau », c'est le jeu qui se
+   contredit tout seul, donc qui renseigne. */
+function logDe(id){
+  const g = byId[id]; if(!g) return '';
+  const v = COMPFAUX[id];
+  if(v){ const k = partsFausses(id); if(k && v[k] && v[k].log) return v[k].log; }
+  return faux(id) ? AMB[id].log : g.log;
+}
+/* La dette d'une lecture fausse (AMB-3) : de 1 à 3 points, déduits des attestations et non
+   choisis. Un signe mal lu 315 fois empoisonne davantage qu'un signe mal lu quatre fois, et
+   c'est le corpus qui donne le chiffre — comme le gisement, comme les fréquences.
+   Elle n'est lisible NULLE PART avant `peut-être` (MOD-2) : ni compteur, ni infobulle, ni
+   carte de fin. Son seul lecteur sera CONTR-1. `freqGlyphe()` est dans rendu.js, chargé
+   ensuite — même report que `pushLog` ou `paintCorpus`, appelés d'ici depuis toujours. */
+const detteDe = id => { const n = freqGlyphe(id); return n >= 250 ? 3 : n >= 100 ? 2 : 1; };
+
+/* Le multiplicateur d'un signe, majoré de 25 % quand il est mal lu (design doc §8). La prime
+   porte sur le BONUS et non sur l'instrument : +30 % devient +37,5 %, pas +62,5 %. Trois
+   choses la tiennent :
+
+   - elle est SILENCIEUSE. L'écran de choix affiche la même ligne d'effet pour les deux
+     lectures, parce qu'afficher deux chiffres différents ferait de la prime un oracle :
+     « prends toujours le plus gros » et l'ambiguïté n'est plus qu'un péage. Le jeu ne
+     signale jamais que le choix a été mauvais avant `peut-être` (AMB-1), et un « +37,5 % »
+     à l'achat serait ce signal.
+   - elle ne décide donc rien à l'achat : elle mord à la RÉVISION (CONTR-2), où corriger une
+     lecture coûtera du débit en plus du prix. C'est là qu'est l'optimum local du design
+     doc §8 — pas dans le choix, dans le refus de le défaire.
+   - un signe qui ne multiplie rien ne gagne rien. Quatre des neuf signes ambigus de l'acte
+     III sont dans ce cas, et leur inventer un effet pour porter la prime déplacerait une
+     économie réglée sur neuf playtests au profit d'un chiffre que personne ne voit. */
+const AMB_R = 1.25;
+const mfx = (id, x) => has(id) ? (faux(id) ? 1 + (x - 1)*AMB_R : x) : 1;
+
 /* ---- économie ---- */
 const M = {
   click:()=> 1*(has('anna')?1.25:1)*(has('tab')?1.5:1)*(has('kal')?2:1),
-  cop:  ()=> (has('tem')?1.3:1)*(has('kal')?2:1)*(has('imme')?1.5:1),
+  cop:  ()=> mfx('tem',1.3)*(has('kal')?2:1)*(has('imme')?1.5:1),
   /* L'atelier suivait le copiste jusqu'à l'acte III ; les deux bonus de la branche Temps
      le détachent — c'est le seul instrument qui porte encore l'échelle des occurrences
      quand la Certitude, elle, passe à la grammaire. `scribe` porte les deux : l'atelier
@@ -47,14 +111,16 @@ const M = {
      (87,0 min avec ou sans), parce qu'en fin de partie les occurrences ne sont plus ce qui
      manque ; un bonus de grammaire l'aurait raccourci de cinq minutes. La Modalité reçoit
      donc ce qui se lit, pas ce qui accélère. */
-  ate:  ()=> (has('tem')?1.3:1)*(has('kal')?2:1)*(has('mille')?1.3:1)*(has('nurhal')?1.5:1)*(has('imme')?1.5:1)
-             *(has('dun')?1.5:1),
-  tabl: ()=> (has('kish')?1.3:1)*(has('kal')?2:1)*(has('tabsar')?1.5:1),
-  con:  ()=> (has('sar')?1.5:1)*(has('kal')?2:1),
+  ate:  ()=> mfx('tem',1.3)*(has('kal')?2:1)*(has('mille')?1.3:1)*(has('nurhal')?1.5:1)*(has('imme')?1.5:1)
+             *mfx('dun',1.5),
+  tabl: ()=> mfx('kish',1.3)*(has('kal')?2:1)*(has('tabsar')?1.5:1),
+  con:  ()=> mfx('sar',1.5)*(has('kal')?2:1),
   /* `lire` est le piège majeur de l'ambiguïté (docs/corpus.md §7) : sa lecture fausse,
-     « compter », devra rendre 25 % de plus. Il lui faut donc un effet chiffré, et c'est
-     celui de l'instrument qui lit. */
-  gram: ()=> (has('nurnur')?1.5:1)*(has('kal')?2:1)*(has('shen')?1.5:1)
+     « compter », rend 25 % de plus. Il lui fallait donc un effet chiffré, et c'est celui de
+     l'instrument qui lit. Cinq multiplicateurs en tout passent par `mfx` — `tem` au copiste
+     et à l'atelier, `dun` à l'atelier, `kish` à la table, `sar` à la concordance, `shen`
+     ici ; les quatre autres signes ambigus de l'acte III ne multiplient rien. */
+  gram: ()=> (has('nurnur')?1.5:1)*(has('kal')?2:1)*mfx('shen',1.5)
 };
 /* production brute d'occurrences par seconde (sert au barème du relevé manuel) */
 const oBrut = () => S_.b.cop*1.0*M.cop() + S_.b.ate*25*M.ate();
@@ -255,15 +321,22 @@ function composer(a, b){
 }
 function acheterIns(k){ const i=INS.find(x=>x.k===k), c=insCost(i);
   if(i.unlock()&&S_.O>=c){ S_.O-=c; S_.b[k]++; } }
-function acheterGl(id){
+/* `lect` vaut 'j' ou 'f' pour un signe ambigu, et rien pour tous les autres. Une lecture
+   non tranchée est la juste : c'est le cas d'un composé posé à la grille — laquelle n'offre
+   aucun choix et ne doit surtout pas en offrir un — et de tout appel d'avant ce lot. */
+function acheterGl(id, lect){
   const g=byId[id]; if(has(id)||S_.C<g.cost) return;
   const avant = CORPUS.map(pctTablette);
   S_.C-=g.cost; S_.gl.push(id);
+  /* La dette est posée ici et nulle part ailleurs, à l'instant du choix, et personne ne la
+     relit avant CONTR-1. Le joueur n'en verra rien : pas de compteur, pas d'infobulle, pas
+     de ligne à la carte de fin (AMB-3). */
+  if(AMB[id]){ S_.lect[id] = lect==='f' ? 'f' : 'j'; if(lect==='f') S_.dette += detteDe(id); }
   majSignes();
   numCache.length = 0;
   touchees = new Set();
   CORPUS.forEach((tb,i)=>{ if(pctTablette(tb) > avant[i] + 1e-9) touchees.add(tb.t); });
-  pushLog(g.log);
+  pushLog(logDe(id));
   paintCorpus(id);
   lastPct=-1;
   if(id==='an'||id==='kal'){ const b=$('bloom'); b.classList.remove('on'); void b.offsetWidth; b.classList.add('on'); }
@@ -309,6 +382,10 @@ function finRegarder(now){
 
 function showEnd(){
   const m=Math.floor(S_.t/60), s=Math.floor(S_.t%60);
+  /* La citation de la carte est la ligne de journal du dernier signe de la branche Temps.
+     Elle suit donc la lecture retenue : afficher « la dernière année » à qui a lu ⟨année⟩
+     « soleil », c'est le jeu qui se dédit sur son propre écran de fin. */
+  if(has('nurhal')) $('endquote').textContent = logDe('nurhal');
   const lignes=[
     ['temps de lecture', m+' min '+String(s).padStart(2,'0')],
     ['signes relevés à la main', nf.format(S_.clicks)],

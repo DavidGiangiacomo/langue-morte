@@ -32,6 +32,10 @@ Contrôle :
  19. `les-lecteurs` : dernier signe de l'acte III, il n'ouvre aucune recette tant que
      ⟨nous⟩ n'est pas au lexique, ne multiplie rien, et laisse la tablette 18 à 80 %
  20. une partie finie quand l'arbre était plus petit reprend au lieu de rouvrir sur la fin
+ 21. l'ambiguïté : un signe ambigu propose ses deux lectures au même prix et au même
+     effet, la fausse repeint tout le corpus et ses composés, la prime de 25 % ne se
+     lit nulle part, la dette court sans s'afficher, et les ruptures d'AMB-4 se rendent
+     bien dans le texte
 
 Prérequis : pip install playwright && playwright install chromium
 """
@@ -112,14 +116,29 @@ def main() -> None:
         verifier(all(y >= x for x, y in zip(courbe, courbe[1:])) and max(courbe) <= 30,
                  f"et la courbe ne recule jamais : {courbe}")
 
+        def acheter_carte(trancher="j"):
+            """Achète la première carte payable du lexique et rend son identifiant. Un signe
+            ambigu n'est pas acheté au clic : il ouvre ses deux lectures (AMB-1), et c'est le
+            second clic qui paie. `trancher` dit laquelle prendre — juste par défaut, pour
+            que tout ce qui était vrai avant ce lot le reste."""
+            carte = page.query_selector("#lex .gcard.afford")
+            if not carte:
+                return None
+            gl = carte.get_attribute("data-gl")
+            carte.click()
+            page.wait_for_timeout(120)
+            if page.query_selector("#amb:not([hidden])"):
+                i = page.evaluate("(t) => ambOrdre.indexOf(t)", trancher)
+                page.query_selector(f'#amb-choix [data-amb="{i}"]').click()
+                page.wait_for_timeout(120)
+            return gl
+
         print("\néchelle de la numération")
         for mot, attendu in ECHELLE:
             page.evaluate("(m) => { const g = GL.find(x => x.mot === m); S_.C += g.cost; }", mot)
             page.wait_for_timeout(120)
-            carte = page.query_selector("#lex .gcard.afford")
-            if carte:
-                carte.click()
-            page.wait_for_timeout(220)
+            acheter_carte()
+            page.wait_for_timeout(180)
             lus = sorted({int(t) for t in page.eval_on_selector_all(
                 "#corpus .tok.num", "e => e.map(x => x.textContent.replace(/\\D/g, ''))") if t})
             verifier(attendu(lus), f"après « {mot} » : {lus[:12]}{' …' if len(lus) > 12 else ''}")
@@ -130,10 +149,8 @@ def main() -> None:
         page.evaluate("() => { S_.C = 9999; }")
         page.wait_for_timeout(120)
         for _ in range(3):
-            carte = page.query_selector("#lex .gcard.afford")
-            if carte:
-                carte.click()
-            page.wait_for_timeout(180)
+            acheter_carte()
+            page.wait_for_timeout(120)
 
         def bulle(selecteur):
             el = page.query_selector(selecteur)
@@ -788,6 +805,161 @@ def main() -> None:
         pas = [round(etats[i] - etats[i - 1]) for i in range(2, len(etats))]
         verifier(len(etats) >= 3 and all(p == 30 for p in pas),
                  f"{len(etats)} relevés d'état, cadence {set(pas) or '—'} s")
+
+        # ---- trancher à l'achat : AMB-1, AMB-2, AMB-3 ----
+        # Onze signes supportent deux lectures ; neuf sont dans l'arbre des actes I-III. Ce
+        # que ces vérifications tiennent, c'est surtout ce que le jeu NE dit PAS : rien, à
+        # aucun endroit, ne distingue la lecture juste de la fausse avant `peut-être`.
+        print("\ntrancher à l'achat : les deux lectures")
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+        r = page.evaluate("() => [Object.keys(AMB).length, Object.keys(AMB).filter(k => byId[k]).length]")
+        verifier(r == [11, 9], f"onze lectures fausses écrites, neuf dans l'arbre d'aujourd'hui : {r}")
+
+        page.evaluate("() => { S_.C = 99999; ['an','anna','im'].forEach(acheterGl); }")
+        page.wait_for_timeout(200)
+        r = page.evaluate("""() => { const c = S_.C; ambOuvrir('tem');
+            const b = [...$('amb-choix').querySelectorAll('[data-amb]')].map(x => x.textContent);
+            return [$('amb').hidden, has('tem'), c === S_.C, b.sort()]; }""")
+        verifier(r[:3] == [False, False, True] and r[3] == ["grain", "poussière"],
+                 f"un signe ambigu n'est pas acheté au clic : il propose ses deux lectures — {r[3]}")
+        # La fenêtre ne porte qu'une chose de plus que la carte du lexique : le second mot.
+        r = page.evaluate("""() => [$('amb-eff').textContent, byId.tem.eff,
+                                    $('amb-cost').textContent, String(byId.tem.cost)]""")
+        verifier(r[0] == r[1] and r[2] == r[3],
+                 f"même effet et même prix pour les deux : « {r[0]} » à {r[2]} C")
+        r = page.evaluate("""() => { const c = S_.C; ambFermer();
+            return [$('amb').hidden, has('tem'), c === S_.C]; }""")
+        verifier(r == [True, False, True], f"revenir laisse le signe à acheter, sans rien coûter : {r}")
+        # L'ordre des deux lectures est tiré au sort : la juste toujours à gauche se retiendrait
+        # en une partie, et la seconde n'aurait plus rien à trancher (règle 14, par analogie).
+        ordres = {page.evaluate("() => { ambOuvrir('tem'); ambFermer(); return ambOrdre.join(''); }")
+                  for _ in range(40)}
+        verifier(ordres == {"jf", "fj"}, f"et leur ordre n'est pas fixe : {sorted(ordres)}")
+
+        print("\nle mot faux, partout")
+        page.evaluate("() => { S_.C = 99999; acheterGl('tem','f'); }")
+        page.wait_for_timeout(300)
+        r = page.eval_on_selector_all("#corpus .tok[data-w=tem]",
+            "e => [e.length, e.filter(x => x.textContent.trim() === 'poussière').length]")
+        verifier(r == [315, 315], f"les {r[0]} attestations passent au mot faux, blocs générés compris : {r}")
+        verifier(page.evaluate("() => $('lex').querySelector('[data-gl=tem] .ttl').textContent")
+                 == "poussière", "le lexique porte le mot faux")
+        verifier("poussière" in page.text_content("#log"), "et la ligne de journal est la sienne")
+        verifier(page.evaluate("() => { const t = [...document.querySelectorAll('#corpus .tok[data-w=tem]')][0];"
+                               "  return tipHTML(t).includes('poussière'); }") is True,
+                 "l'infobulle aussi")
+        # La dette (AMB-3) : de 1 à 3 points selon les attestations, invisible partout.
+        verifier(page.evaluate("() => S_.dette") == 3,
+                 "trois points de dette pour un signe attesté 315 fois")
+        vu = page.evaluate("() => document.querySelector('.shell').innerText")
+        verifier("dette" not in vu.lower(), "et rien à l'écran ne la nomme")
+
+        print("\nla prime est silencieuse, et elle ne porte que sur ce qui multiplie")
+        r = page.evaluate("""() => { S_.gl = ['tem']; S_.lect = {};
+            const j = [M.cop(), M.ate()]; S_.lect = {tem:'f'};
+            const f = [M.cop(), M.ate()];
+            return [j, f, f.map((v, i) => +(v / j[i]).toFixed(4))]; }""")
+        verifier(r[0] == [1.3, 1.3] and r[1] == [1.375, 1.375],
+                 f"+30 % devient +37,5 % — la prime porte sur le bonus, pas sur l'instrument : {r[1]}")
+        # Quatre des neuf signes ambigus de l'acte III ne multiplient rien : mal les lire ne
+        # paie pas, et on ne leur invente pas un effet pour porter la prime.
+        r = page.evaluate("""() => ['ur','nur','pat','la'].map(g => { S_.gl = [g];
+            const cle = ['cop','ate','tabl','con','gram','click'];
+            S_.lect = {}; const j = cle.map(k => M[k]());
+            S_.lect = {[g]:'f'}; return cle.every((k, i) => M[k]() === j[i]); })""")
+        verifier(r == [True] * 4, f"maison, année, avant, ne-pas ne multiplient rien, juste ou faux : {r}")
+        # Et elle ne se lit nulle part : la carte du lexique annonce le même effet dans les
+        # deux cas. Un « +37,5 % » à l'achat serait l'oracle que le design interdit.
+        r = page.evaluate("""() => { S_.gl = []; S_.lect = {}; S_.C = 99999; acheterGl('im');
+            acheterGl('kish','f'); paintLex();
+            return $('lex').querySelector('[data-gl=kish] .eff').textContent; }""")
+        verifier(r == "+30 % à la table de fréquences",
+                 f"la carte annonce toujours l'effet de la lecture juste : « {r} »")
+
+        print("\nle composé se salit par ses parties")
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+        r = page.evaluate("""() => { S_.C = 9e5; ['an','anna','nur'].forEach(g => acheterGl(g));
+            const out = {};
+            const pose = (u, t) => { S_.gl = S_.gl.filter(g => g !== 'ur' && g !== 'tem' && g !== 'urtem');
+                delete S_.lect.ur; delete S_.lect.tem;
+                acheterGl('ur', u); acheterGl('tem', t); acheterGl('urtem');
+                return [motDe('urtem'), logDe('urtem').slice(0, 12)]; };
+            out.jj = pose('j','j'); out.fj = pose('f','j');
+            out.jf = pose('j','f'); out.ff = pose('f','f');
+            return out; }""")
+        page.wait_for_timeout(200)
+        verifier([r["jj"][0], r["fj"][0], r["jf"][0], r["ff"][0]]
+                 == ["grenier", "caveau", "poussier", "ossuaire"],
+                 f"grenier · caveau · poussier · ossuaire, selon les parties mal lues")
+        verifier(r["ff"][1].startswith("L’ossuaire"),
+                 f"et la ligne de journal suit le composé, pas ses parties : « {r['ff'][1]}… »")
+        # Règle 14 : la grille ne renseigne jamais. Un joueur qui lit ⟨ne-pas⟩ « fin » et à qui
+        # elle répond « zéro » vient d'apprendre qu'il s'est trompé.
+        r = page.evaluate("""() => { S_.C = 9e5; S_.H = 9e5; acheterGl('la','f');
+            const z = composer('la','an'); paintComp();
+            return [z, motDe('lan'), motDe('enla'), $('comp-choix')
+                .querySelector('[data-pion=la]').title]; }""")
+        verifier(r == ["acquis", "fin-un", "à la fin", "fin"],
+                 f"⟨fin⟩ posé sur ⟨un⟩ donne « fin-un », et la grille ne dit rien de plus : {r}")
+
+        print("\nl'indice est dans le texte : les ruptures d'AMB-4")
+
+        def ligne(tb, i):
+            """Une ligne du corpus telle qu'elle se lit : un mot par jeton déchiffré, le
+            nom du signe entre chevrons pour les autres. `textContent` seul recolle les
+            jetons — « maison1 · poussière20 » — et ne dit rien de ce qu'on voit."""
+            return page.evaluate(
+                "([t, i]) => [...[...document.querySelectorAll('#corpus .tablet')]"
+                "  .find(x => +x.dataset.tb === t).querySelectorAll('.ln')[i]"
+                "  .querySelectorAll('.tok')]"
+                "  .map(x => x.textContent.trim() || '⟨' + (x.dataset.w || x.dataset.n) + '⟩')"
+                "  .join(' ')", [tb, i])
+
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+        # §7.3 : une rupture de paire réparante ne se vérifie qu'en tenant l'AUTRE signe à sa
+        # lecture juste. Sinon l'assertion échoue alors que le jeu fait ce qui a été décidé.
+        page.evaluate("""() => { S_.C = 9e5; ['an','anna','hem','sela'].forEach(acheterGl);
+            acheterGl('ur','j'); acheterGl('tem','f'); }""")
+        page.wait_for_timeout(300)
+        verifier(ligne(5, 3).startswith("maison 1 · poussière 20"),
+                 f"tablette 5 : « {ligne(5, 3)[:34]} » — on ne distribue pas vingt mesures de poussière")
+        page.evaluate("() => { S_.lect.tem = 'j'; S_.lect.ur = 'f'; paintCorpus(null); }")
+        page.wait_for_timeout(250)
+        verifier(ligne(5, 3).startswith("tombe 1 · grain 20"),
+                 f"et par l'autre bout : « {ligne(5, 3)[:34]} » — ni de grain aux tombes")
+        # La paire réparante, elle, passe : c'est la décision du 14/09/2026, pas un défaut.
+        page.evaluate("() => { S_.lect.tem = 'f'; paintCorpus(null); }")
+        page.wait_for_timeout(250)
+        verifier(ligne(5, 3).startswith("tombe 1 · poussière 20"),
+                 f"les deux fausses ensemble se tiennent, et le jeu laisse passer : « {ligne(5, 3)[:36]} »")
+        # `ne-pas` → « fin » casse sur `sinon`, qui est ⟨si⟩⟨ne-pas⟩ : 131 fois sur la même ligne.
+        page.evaluate("() => { S_.C = 9e5; ['im','sar','kal','nur','pat','zur'].forEach(g => acheterGl(g));"
+                      "  acheterGl('la','f'); acheterGl('en'); acheterGl('enla'); }")
+        page.wait_for_timeout(300)
+        verifier(ligne(5, 4).endswith("si fin · à la fin"),
+                 f"tablette 5 : « {ligne(5, 4)[-24:]} » — deux signes, presque le même mot")
+        # `avant` → « dessous » casse tablette 15, lignes 3 et 4, qui se suivent.
+        page.evaluate("() => { S_.C = 9e5; acheterGl('kish'); acheterGl('nurnur');"
+                      "  S_.lect.pat = 'f'; paintCorpus(null); }")
+        page.wait_for_timeout(300)
+        verifier(ligne(15, 3) == "siècle 1 · après" and ligne(15, 4).startswith("dessous · siècle 1"),
+                 f"tablette 15 : « {ligne(15, 3)} » puis « {ligne(15, 4)} » — un siècle n'a pas de dessous")
+        # `graver` → « couper », dernière ligne du corpus et rupture la plus tardive du lot.
+        page.evaluate("() => { S_.lect.sar = 'f'; paintCorpus(null); }")
+        page.wait_for_timeout(250)
+        verifier("couper" in ligne(30, 6) and ligne(30, 6).count("couper") == 2,
+                 f"tablette 30 : « {ligne(30, 6)} » — quelqu'un coupe un nom propre")
+
+        print("\nla lecture tranchée tient")
+        r = page.evaluate("""() => { const av = JSON.stringify(S_.lect);
+            sauver(); const p = JSON.parse(localStorage.getItem(KEY));
+            return [JSON.stringify(p.lect) === av, p.dette === S_.dette, p.dette > 0]; }""")
+        verifier(r == [True, True, True], f"elle passe à la sauvegarde, la dette avec : {r}")
+        r = page.evaluate("() => { $('reset').click(); return [JSON.stringify(S_.lect), S_.dette]; }")
+        verifier(r == ["{}", 0], f"et « réinitialiser » la remet à zéro : {r}")
 
         # ---- une sauvegarde d'avant la mécanique neuve doit se rouvrir ----
         # La clé a déjà changé une fois, et toutes les parties en cours ont été perdues. Un

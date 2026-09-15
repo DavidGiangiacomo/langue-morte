@@ -17,15 +17,17 @@
 | Instruments | 6 / 9 (Œil, Copiste, Table, Concordance, Atelier, Grammaire) | 3 (Élève, Corpus jumeau, Le Lecteur) |
 | Actes | **I, II, III — entiers** | IV, V |
 | Corpus | **30 tablettes, 705 lignes, 3 838 signes — intégral**, ⟨N1⟩/⟨N2⟩ semés, **les 11 lectures fausses écrites** | — |
-| Mécaniques centrales | relevé, recoupement, datation, rangement, concordance, hors-ligne, **composition** | confiance, contradiction, révision, Questions |
+| Mécaniques centrales | relevé, recoupement, datation, rangement, concordance, hors-ligne, **composition**, **ambiguïté** | confiance, contradiction, révision, Questions |
 | Acte III | **fini** *(PAR-2, 14/09/2026)* | — |
 | Fins | aucune *(écran « fin du prototype »)* | Achever, Interrompre, relecture |
-| Rythme mesuré | 66 min 49 pour 20 glyphes (PT9) · **89,7 à 92,9 min simulées pour 28** | cible design doc : 3 h – 3 h 30 pour 45 |
+| Rythme mesuré | 66 min 49 pour 20 glyphes (PT9) · **89,7 à 92,9 min simulées pour 28** *(84,4 à 87,5 toutes lectures fausses)* | cible design doc : 3 h – 3 h 30 pour 45 |
 
 Le corpus étant écrit intégralement, **tout le reste est du code et de l'équilibrage** — l'inverse de
 la situation des actes I–II, où le texte était le budget. TXT-2 est tranché depuis le 11/09/2026,
-TXT-1 depuis le 14/09/2026 : il ne reste sur le texte que TXT-3 (la densité de l'acte II), et une
-ligne de corpus à écrire *si* AMB-1 choisit de traiter les paires réparantes par le texte (§7.3).
+TXT-1 depuis le 14/09/2026 : il ne reste sur le texte que TXT-3 (la densité de l'acte II). La ligne
+de corpus qu'AMB-1 aurait pu demander pour les paires réparantes est sans objet — le §7.3 est
+tranché par « on ne fait rien ». AMB-1 a en revanche demandé **dix lignes de journal** qui
+n'étaient écrites nulle part : celles des composés salis par une de leurs parties (§7.2).
 
 ---
 
@@ -144,13 +146,25 @@ un engagement de date.
 
 *Le piège est délibéré : se tromper paie mieux à court terme (design doc §8).*
 
-**AMB-1 — Trancher à l'achat** · T:L
+**AMB-1 — Trancher à l'achat** · ~~T:L~~ **fait** (15/09/2026)
 > En tant que joueur, je veux choisir entre deux lectures possibles d'un signe, sans savoir laquelle est juste.
 
 - Fini quand : les 11 signes de `docs/corpus.md` §7 proposent deux lectures à l'achat ; la lecture fausse rend **+25 %** d'effet mécanique ; le choix est enregistré dans la sauvegarde.
 - Le jeu ne signale **jamais** que le choix a été mauvais avant `peut-être`.
+- *Fait* : **9 des 11 signes** sont dans l'arbre d'aujourd'hui ; `semence` et `devenir` sont de
+  l'acte V et leurs entrées, écrites d'avance, sont inertes jusque-là (même idiome que
+  `RECETTES`, règle 15). **La prime de 25 % est silencieuse** — même tracé, même prix, même
+  ligne d'effet pour les deux lectures, parce que deux chiffres différents en feraient un
+  oracle (règle 14). Elle porte sur le **bonus** et non sur l'instrument (+30 % → +37,5 %), et
+  un signe qui ne multiplie rien ne gagne rien : quatre des neuf sont dans ce cas. Elle ne
+  décide donc rien à l'achat ; elle mordra à la révision (CONTR-2), et c'est là qu'est
+  l'optimum local du design doc §8. L'ordre des deux lectures est tiré au sort.
+  Mesuré : **89,7–92,9 min** toutes lectures justes (inchangé, c'était le contrat) et
+  **84,4–87,5** toutes fausses — se tromper partout fait gagner 5,5 min, soit 6 %. Écart max
+  4,6–5,2, main 22,9–24,8 %, tranches ≥ 10′ ≤ 26 %. Voir `docs/journal.md`, « Trancher à
+  l'achat ».
 
-**AMB-2 — Le mot faux, partout** · T:M
+**AMB-2 — Le mot faux, partout** · ~~T:M~~ **fait** (15/09/2026, avec AMB-1)
 > En tant que joueur, je veux que ma mauvaise lecture contamine tout le corpus, pas seulement une infobulle.
 
 - Fini quand : le mot faux remplace le juste dans **toutes** les occurrences du signe, y compris les blocs générés et les tablettes déjà lues.
@@ -158,12 +172,24 @@ un engagement de date.
 - **Et dans les composés** : un signe faux salit tout composé qui le contient, sinon la grille
   renseigne (règle 14) — un joueur qui lit ⟨ne-pas⟩ « fin » et à qui la grille répond « zéro » vient
   d'apprendre qu'il s'est trompé. Les onze lectures dérivées sont écrites au §7.2.
+- *Fait* : un seul point d'accès, `motDe()`, et le corpus se repeint entièrement à chaque
+  achat — **1 726 attestations sur 3 838, 45 % du corpus**, changent de mot selon ce qu'on a
+  lu. Ce qui a demandé le travail n'était pas le corpus mais les **huit endroits où le jeu
+  répète un mot ailleurs** : les lignes de journal des composés (dix écrites, que le §7.2 ne
+  donnait pas), quatre lignes d'effet qui présupposaient une lecture, l'infobulle de la barre
+  de tablettes, la citation de la carte de fin. Résidu connu et assumé : les effets d'⟨avant⟩
+  et ⟨après⟩ disent encore « dans l'ordre du temps ». Voir `docs/journal.md`.
 
-**AMB-3 — La dette** · T:S
+**AMB-3 — La dette** · ~~T:S~~ **fait** (15/09/2026, avec AMB-1)
 > En tant que game designer, je veux que chaque erreur porte un coût différé et invisible.
 
 - Fini quand : chaque lecture fausse ajoute +1 à +3 points de dette ; la dette n'est lisible nulle part avant `peut-être` ; elle est le seul intrant de CONTR-1.
 - **Une paire réparante paie double** (§7.3) : +2 à +6 points pour deux erreurs que le texte ne trahit pas. Le joueur est privé de l'indice, pas de la sanction — c'est ce qui rend la décision du §7.3 tenable.
+- *Fait* : les points sont **déduits des attestations et non choisis** — 315 occurrences pèsent
+  3, quatre occurrences pèsent 1. Maximum 18 pour les neuf signes de l'acte III ; ⟨grain⟩ +
+  ⟨maison⟩ en valent 6, comme le §7.3 l'exigeait. Aucun compteur, aucune infobulle, aucune
+  ligne à la carte de fin : un test vérifie que rien à l'écran ne la nomme. CONTR-1 sera son
+  premier lecteur.
 
 **AMB-4 — L'indice est dans le texte, et nulle part ailleurs** · T:M
 > En tant que joueur qui lit, je veux pouvoir trouver le signe fautif sans que le jeu me le dise.
@@ -172,6 +198,11 @@ un engagement de date.
 - Vérifier que `lire` et `il-faut` **ne cassent pas** mécaniquement : c'est voulu.
 - **Sept signes sur onze ont leur rupture, tablette et ligne connues** (§7.1) — les tests peuvent être
   écrits tels quels. `eau` et `année` n'en ont aucune et attendent la décision du §7.4.
+- *Fait pour les cinq ruptures qui existent dans l'arbre d'aujourd'hui* (15/09/2026) : ⟨grain⟩
+  et ⟨maison⟩ tablette 5, ⟨ne-pas⟩ sur `sinon`, ⟨avant⟩ tablette 15, ⟨graver⟩ tablette 30 —
+  chacune vérifiée sur le texte rendu, les deux premières en tenant l'autre signe de la paire
+  à sa lecture juste (§7.3). Un test de plus vérifie que la **paire réparante passe**. Restent
+  ⟨devenir⟩ et ⟨semence⟩, qui attendent l'acte V, et `eau`/`année`, qui attendent le §7.4.
 - **Les paires réparantes ne sont pas une exception à coder** (§7.3, tranché) : le jeu laisse passer.
   Mais le test d'une rupture de paire réparante doit tenir l'autre signe à sa lecture **juste**,
   sinon il échoue alors que le jeu fait exactement ce qui a été décidé.
@@ -378,7 +409,9 @@ un engagement de date.
 **LIV-5 — Étendre `verifier.py`** · T:L
 > En tant qu'auteur, je veux que chaque mécanique nouvelle soit couverte bout en bout.
 
-- Le fichier porte aujourd'hui **177 assertions** sur le relevé, le recoupement, la numération, le gisement, la datation, les infobulles, la composition, la fenêtre de fin qui attend sa lecture, et la reprise d'une sauvegarde d'avant une mécanique neuve. Chaque épic de cette feuille de route doit y ajouter ses vérifications — en particulier AMB-4 (la phrase absurde est bien rendue) et COMP-3 (`zéro` replie les compteurs).
+- Le fichier porte aujourd'hui **202 assertions** sur le relevé, le recoupement, la numération, le gisement, la datation, les infobulles, la composition, la fenêtre de fin qui attend sa lecture, et la reprise d'une sauvegarde d'avant une mécanique neuve. Chaque épic de cette feuille de route doit y ajouter ses vérifications — en particulier AMB-4 (la phrase absurde est bien rendue) et COMP-3 (`zéro` replie les compteurs).
+  *15/09/2026* : la section 21 en ajoute vingt-cinq sur l'ambiguïté, dont les cinq ruptures d'AMB-4
+  qui existent dans l'arbre d'aujourd'hui et la vérification que **rien à l'écran ne nomme la dette**.
 
 **LIV-6 — README, écran-titre, distribution** · T:S
 > En tant que curieux, je veux ouvrir un fichier et jouer.
@@ -391,13 +424,16 @@ un engagement de date.
 
 Le graphe de dépendances avait une seule vraie contrainte forte : **le texte des lectures fausses
 (TXT-1) bloquait l'ambiguïté, qui bloque l'Élève, la Modalité et la relecture.** Elle est levée
-depuis le 14/09/2026. J2 commence donc directement par AMB-1, avec deux décisions de conception
-posées sur la table par le texte et non par le code (`docs/corpus.md` §7.3 et §7.4).
+depuis le 14/09/2026, et AMB-1 est fait depuis le 15/09/2026 — avec AMB-2 et AMB-3, qu'il ne
+pouvait pas laisser dehors. **Le prochain sur le chemin critique est MOD-2** (`peut-être`), qui
+n'a plus de dépendance ouverte : E3 est fait à l'exception du §7.4, lequel ne le bloque pas.
+Il est aussi la soupape des paires réparantes (§7.3) et la première fois que le jeu admettra
+qu'une lecture peut être fausse.
 
 | Jalon | Contenu | Ce qu'on peut jouer à la fin |
 |---|---|---|
 | ~~**J1 — L'acte III se termine**~~ *(fait, 14/09/2026)* | ~~E1 (composition)~~ + ~~PAR-1~~ + ~~MOD-1~~ + ~~COMP-3~~ + ~~PAR-2~~ | 28 glyphes, la composition, `les-lecteurs` |
-| **J2 — Le mensonge** | ~~TXT-1~~ → E3 → MOD-2/MOD-3 + E4 + E5 (Élève) | l'acte III entier, la confiance, la contradiction |
+| **J2 — Le mensonge** | ~~TXT-1~~ → ~~AMB-1~~ + ~~AMB-2~~ + ~~AMB-3~~ *(15/09/2026)* → AMB-4 *(5 ruptures sur 7 faites)* → MOD-2/MOD-3 + E4 + E5 (Élève) | l'acte III entier, la confiance, la contradiction |
 | **J3 — La voix** | E6 (Personne, Questions, Corpus jumeau, I2) | l'acte IV |
 | **J4 — La graine** | E7 + E8 | les cinq actes, les deux fins, la relecture |
 | **J5 — 1.0** | E9 (final) + E11 | une version publique |
@@ -418,7 +454,7 @@ fréquences, donc l'équilibrage.~~ *Tranché le 11/09/2026, avant J1 comme pré
 | **R2** | La contradiction paraît punitive | On ne perd que du débit, jamais de la progression |
 | **R3** | La composition devient un jeu de devinettes | *Traité le 10/09/2026* : échec en H seulement, **au taux** (×1,40 par tentative) et non au montant — un coût fixe ne freine rien dans une économie exponentielle ; carnet ; 3 composés secrets ; et la grille ne renseigne jamais, pas même par son silence |
 | **R4** | Le texte doit tenir trois heures | Corpus écrit ; le risque s'est déplacé sur VOIX-3 (les Questions) |
-| **R9** *(nouveau)* | Deux lectures fausses se couvrent l'une l'autre et le corpus reste cohérent | Trouvé en écrivant TXT-1. **Tranché le 14/09/2026 : on laisse passer** (§7.3). Le risque est accepté, pas supprimé — il est reporté sur MOD-2 (le seul pointeur qui reste) et sur FIN-3 (le seul aveu) |
+| **R9** *(nouveau)* | Deux lectures fausses se couvrent l'une l'autre et le corpus reste cohérent | Trouvé en écrivant TXT-1. **Tranché le 14/09/2026 : on laisse passer** (§7.3). Le risque est accepté, pas supprimé — il est reporté sur MOD-2 (le seul pointeur qui reste) et sur FIN-3 (le seul aveu). Un test d'AMB-4 vérifie depuis le 15/09/2026 que la paire **passe** : c'est la décision, pas un défaut |
 | **R6** | Une action manuelle redevient la source principale de Certitude | I6 par tranches, à chaque ajout d'instrument (règle 2) |
 | **R7** *(nouveau)* | Le simulateur a surestimé de 20 % **deux fois de suite** | ECO-2 avant tout réglage des actes IV–V ; aucun chiffre annoncé sans mesure (règle 7) |
 | **R8** *(nouveau)* | Les Questions font parler le jeu au lieu de le faire lire | Chaque réponse est une ligne du corpus existant, jamais un texte écrit pour l'occasion |

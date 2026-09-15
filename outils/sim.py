@@ -104,11 +104,22 @@ for cible, a, b in re.findall(r"(\w+):\['(\w+)','(\w+)'\]", re.search(r'const CO
         RECETTES[cible] = (a, b)
 
 
-def run(P, cpm=15, cap_min=600, garde=0.0, compose=()):
+# Les onze lectures fausses (docs/corpus.md §7, AMB-1). La fausse majore le BONUS du signe
+# de 25 %, jamais l'instrument : +30 % devient +37,5 %, pas +62,5 %. Neuf des onze signes
+# sont dans l'arbre des actes I-III, mais CINQ seulement portent un multiplicateur — tem au
+# copiste et à l'atelier, dun à l'atelier, kish à la table, sar à la concordance, shen à la
+# grammaire. Les quatre autres ne rendent que de la lecture : mal les lire ne paie rien, et
+# ce simulateur ne mesure donc que la prime des cinq.
+AMB_R = 1.25
+AMBIGUS = ('tem', 'ur', 'kish', 'sar', 'shen', 'nur', 'pat', 'dun', 'la')
+
+
+def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=()):
     """cpm = clics manuels par minute. `garde` = fraction de la partie pendant laquelle
     le joueur s'interdit de relever, pour tarifer ses tablettes au débit maximal —
     c'est le pire cas contre lequel il faut se prémunir. `compose` = les signes que le
-    joueur pose à la grille dès qu'il peut les payer. Retourne (durée, jalons, ...)."""
+    joueur pose à la grille dès qu'il peut les payer. `faux` = les signes ambigus que le
+    joueur a mal lus. Retourne (durée, jalons, ...)."""
     O = H = C = 0.0
     b = {'cop': 0, 'tab': 0, 'con': 0, 'ate': 0, 'gram': 0}
     gl, rec, t, dt = set(), 0, 0.0, 0.1
@@ -120,6 +131,10 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=()):
     tr_rec, tr_ins = [0.0]*12, [0.0]*12
     o_main = o_pass = gis_use = 0.0
     has = lambda x: x in gl
+    mal_lus = set(faux)
+    # Le multiplicateur d'un signe, majoré s'il est mal lu. Le joueur n'en voit rien : la
+    # prime ne se lit ni au lexique ni à l'écran de choix (economie.js, `mfx`).
+    mf = lambda g, x: (1 + (x - 1) * AMB_R if g in mal_lus else x) if has(g) else 1
     GIS = [-(-n // P['gis_div']) for n in TOKENS]   # gisement : jetons / gis_div
     reste = list(GIS)                               # ce qu'il reste à relever, par tablette
     prix = [None] * len(GIS)                        # tarif figé au premier relevé
@@ -132,12 +147,12 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=()):
     # un problème de seuil, pas de taux — I6 y vaut 100 % tant que la première
     # Concordance n'est pas posée, quelle que soit la cadence de clic.
     premier = {}
-    mcop   = lambda: (1.3 if has('tem')  else 1) * (2 if has('kal') else 1) * (1.5 if has('imme') else 1)
+    mcop   = lambda: mf('tem', 1.3) * (2 if has('kal') else 1) * (1.5 if has('imme') else 1)
     mate   = lambda: (mcop() * (1.3 if has('mille') else 1) * (1.5 if has('nurhal') else 1)
-                      * (1.5 if has('dun') else 1))
-    mtab   = lambda: (1.3 if has('kish') else 1) * (2 if has('kal') else 1) * (1.5 if has('tabsar') else 1)
-    mcon   = lambda: (1.5 if has('sar')  else 1) * (2 if has('kal') else 1)
-    mgram  = lambda: (1.5 if has('nurnur') else 1) * (2 if has('kal') else 1) * (1.5 if has('shen') else 1)
+                      * mf('dun', 1.5))
+    mtab   = lambda: mf('kish', 1.3) * (2 if has('kal') else 1) * (1.5 if has('tabsar') else 1)
+    mcon   = lambda: mf('sar', 1.5) * (2 if has('kal') else 1)
+    mgram  = lambda: (1.5 if has('nurnur') else 1) * (2 if has('kal') else 1) * mf('shen', 1.5)
     gramp  = lambda: P['gram_p'] * (P['gram_g'] ** narbre()) * mgram()
     mclick = lambda: (1.25 if has('anna') else 1) * (1.5 if has('tab') else 1) * (2 if has('kal') else 1)
     obrut  = lambda: b['cop'] * P['cop_p'] * mcop() + b['ate'] * P['ate_p'] * mate()
@@ -292,4 +307,22 @@ if __name__ == '__main__':
             r, ins = s['tr_rec'][i], s['tr_ins'][i]
             if r + ins < 0.5: continue
             tr.append(f"{i*10}-{i*10+10}′ {100*r/(r+ins):.0f} %")
+        print("     I6 par tranche : " + " · ".join(tr))
+
+    # La même partie, toutes lectures fausses (AMB-1). La prime de 25 % ne porte que sur les
+    # CINQ signes ambigus qui multiplient quelque chose, et le joueur ne la voit nulle part :
+    # ce bloc est le seul endroit du projet où elle se lit. Ce qu'il mesure, c'est de combien
+    # se tromper paie — la promesse du design doc §8, en minutes.
+    print("\n--- toutes lectures fausses ---")
+    for cpm in (5, 15, 40):
+        tt, marks, b, s = run(P, cpm, faux=AMBIGUS)
+        gaps = [marks[i][1] - marks[i - 1][1] for i in range(1, len(marks))] or [0]
+        main = 100 * s['o_main'] / max(1e-9, s['o_main'] + s['o_pass'])
+        tr = []
+        for i in range(12):
+            r, ins = s['tr_rec'][i], s['tr_ins'][i]
+            if r + ins < 0.5: continue
+            tr.append(f"{i*10}-{i*10+10}′ {100*r/(r+ins):.0f} %")
+        print(f"--- {cpm:>2} clics/min : {tt:5.1f} min · écart max {max(gaps):4.1f} min · "
+              f"{s['rec']:>3} recoup. · la main fournit {main:.1f} % des occurrences")
         print("     I6 par tranche : " + " · ".join(tr))
