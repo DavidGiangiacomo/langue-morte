@@ -92,6 +92,16 @@ un engagement de date.
 
 - Fini quand : le carnet liste les tentatives ratées, survit à la sauvegarde, et n'apparaît qu'après la première tentative.
 
+**COMP-6 — La palette ne dit pas ce qu'elle cache** · T:S — *ouvert par PT10 (15/09/2026)*
+> En tant que joueur, je veux comprendre pourquoi deux signes que je vois dans le corpus ne peuvent pas être posés sur la grille.
+
+- Le défaut, rapporté de vive voix : le joueur tente d'assembler deux signes vus dans le texte, ne les trouve pas dans la palette, et en conclut — correctement — qu'il faut d'abord les acheter. Perplexité, sans rien à l'écran pour l'expliquer. `paintComp()` masque les pions non acquis ; la règle n'est énoncée que dans l'`aria-label` de `#comp-choix`, invisible à un joueur voyant.
+- Fini quand : la restriction de la palette est **visible**, sans rien révéler de ce qu'elle cache.
+- Ce qui est exclu, et pourquoi : afficher les pions inconnus, même grisés. La **liste** est le renseignement — combien de signes existent, et lesquels des dessins du corpus en font partie (règle 14). Les tracés, eux, ne sont pas un secret : ils sont dans le texte depuis la première seconde, et la règle 4 en dépend.
+- Attention : ne laisse **aucune trace** dans le journal d'actions. `composer()` n'est pas appelée, `S_.comp` ne bouge pas, l'enveloppe n'émet rien — et il n'y a pas d'action à envelopper. Ce défaut ne se mesure pas, il se demande.
+- Voisin, à ne pas confondre : une paire juste mais impayable répond « Rien ne vient. Ces deux signes ne se rencontrent nulle part » (PAR-1, non réglé ; PT10 y tombe cinq fois). Le message identique est voulu, mais il pourrait ne rien dire au lieu de dire le contraire du vrai.
+- Dépend de : rien.
+
 ---
 
 ### E2 — Parole III et Modalité *(10 glyphes)*
