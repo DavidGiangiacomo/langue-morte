@@ -134,6 +134,43 @@ const GL = [
    log:'Peut-être. Ils avaient un signe pour ça, et pas moi. Onze de mes lectures en supportaient une autre, et je les ai toutes recopiées au propre.'},
   {id:'dun',  br:'modalite',mot:'il-faut', cost:550, eff:'+50 % à l’atelier de copie',
    log:'Il faut. Ce n’est plus un inventaire qui parle, c’est quelqu’un qui ordonne — et sur deux siècles, l’ordre ne change pas : copier.'},
+  /* ---- faux ----
+     Le lot qui retourne les règles 17, 18 et 19 : pour la première fois, le jeu dit quelque
+     chose. Mais il ne dit pas QUOI est faux — il montre OÙ le texte ne tient pas.
+
+     La différence n'est pas un scrupule, elle est écrite dans le design doc. §11 promet que
+     la relecture de fin surlignera toutes les erreurs « **y compris celles jamais
+     détectées** » : s'il existe des erreurs jamais détectées, c'est que `faux` n'a pas donné
+     le corrigé. Et ce qu'il montre est exactement ce que le §8 appelle depuis le début le
+     seul indice fiable — le texte lui-même. `faux` ne remplace pas la lecture, il rend
+     visible ce qu'un lecteur attentif aurait vu : une ligne qui ne se construit pas.
+
+     Trois conséquences, et toutes trois tombent juste :
+
+     - **Les quatre signes sans rupture n'allument rien.** `lire` et `il-faut` sont conçus
+       pour ne casser nulle part ; `eau` et `année` n'ont aucune rupture textuelle
+       (docs/corpus.md §7.4). Mal les lire reste invisible, et c'est ce que le §11 appelle
+       une erreur jamais détectée.
+     - **Les paires réparantes n'allument rien non plus.** ⟨grain⟩ « poussière » avec
+       ⟨maison⟩ « tombe » donne « vingt mesures de poussière à la tombe 1 », qui se tient : la
+       ligne ne s'allume pas. Le §7.3 avait décidé le 14/09 que « le texte ne trahit rien »
+       pour ces trois paires-là ; c'est désormais vrai mécaniquement et pas seulement en
+       intention.
+     - **C'est la LIGNE qui s'allume, jamais le jeton.** Marquer le signe fautif le
+       nommerait, et ce serait l'oracle que tout le reste du jeu refuse. Une ligne allumée
+       porte quatre ou cinq signes : elle réduit le champ, elle ne tranche pas.
+
+     700 C, entre `il-faut` et `sinon`, et le prix est une mesure : au bout de la branche il
+     tombe deux minutes avant la fin du prototype, ici il en laisse six — de quoi lire les
+     lignes allumées et payer deux ou trois révisions. À ce rang, les neuf signes ambigus
+     sont tous tranchés avant lui, donc il ne renseigne aucun choix à venir.
+     Seize attestations, dont cinq sur la tablette 26 : la dernière scribe y reprend
+     l'archive et marque comme fausses les tablettes qui espéraient — elle annule
+     « peut-être eau » quatre-vingt-dix-sept ans plus tard. Le joueur vient de faire le même
+     geste sur son propre corpus. Ne rien commenter. */
+  {id:'lash', br:'modalite',mot:'faux',    cost:700,
+   eff:'les passages où la lecture ne tient pas s’allument',
+   log:'Faux. La dernière scribe est revenue sur l’archive pour marquer ce qui n’allait pas. Le mot me sert à la même chose — il y a des lignes, chez moi, qui ne se construisent pas.'},
   {id:'enla', br:'modalite',mot:'sinon',   cost:800, eff:'le protocole de copie se lit jusqu’à son dernier mot',
    log:'Sinon. La consigne s’arrête là. Ils n’ont jamais gravé ce qui vient après « sinon » — ou bien c’est arrivé.'},
   /* ---- les composés secrets ----
@@ -207,6 +244,38 @@ const AMB = {
   ke:   {mot:'porter',
    log:'Porter. Ce qu’ils demandent à la tablette, ce n’est pas d’être lue : c’est de transporter quelque chose.'}
 };
+
+
+/* ---- où le texte ne tient pas (AMB-4, MOD-3) ----
+   Les points de rupture des onze lectures fausses, tablette et ligne, tels que TXT-1 les a
+   vérifiés ligne à ligne contre le corpus rendu (`docs/corpus.md` §7.1). `faux` les allume ;
+   avant lui, ils sont dans le texte et il faut les voir soi-même.
+
+   `sauf` porte la décision du §7.3 sur les paires réparantes, et c'est ici qu'elle devient
+   mécanique plutôt qu'intentionnelle : la rupture de ⟨grain⟩ ne vaut que si ⟨maison⟩ est lu
+   juste. Mal lire les deux donne « vingt mesures de poussière à la tombe 1 », qui se tient —
+   la ligne ne s'allume donc pas, et le joueur n'est privé que de l'indice, jamais de la
+   sanction (la dette court, `dette()`).
+
+   Quatre signes n'ont AUCUNE entrée, et c'est la moitié du propos. `lire` et `il-faut` sont
+   conçus pour ne casser nulle part ; `eau` et `année` n'ont pas de rupture textuelle, leur
+   seul indice est distributionnel (§7.4, l'infobulle de `peut-être`). Ce sont les erreurs que
+   le design doc §11 appelle « jamais détectées », et que seule la relecture de fin avouera.
+
+   Une seule ligne par signe, la plus précoce. ⟨ne-pas⟩ « fin » casse sur `sinon` cent trente
+   et une fois ; en allumer cent trente et une noierait le signal, et AMB-4 demande « un
+   endroit précis du corpus ». */
+const RUPTURES = [
+  {gl:'tem',  t:5,  l:3,  sauf:'ur'},    // « maison 1 · poussière 20 »
+  {gl:'ur',   t:5,  l:3,  sauf:'tem'},   // la même ligne, par l'autre bout
+  {gl:'la',   t:5,  l:4},                // « si fin · à la fin »
+  {gl:'pat',  t:15, l:4},                // « dessous · siècle 1 », deux lignes après « siècle 1 · après »
+  {gl:'sar',  t:30, l:6},                // « je couper ⟨N6⟩ »
+  /* Actes IV et V, écrites d'avance et vérifiées au corpus, inertes tant que leurs signes
+     ne sont pas dans `GL` — même idiome que `AMB` et `RECETTES` (règle 15). */
+  {gl:'mesh', t:22, l:18, sauf:'ke'},    // « si semence · ne-pas germer » — un enfant ne germe pas
+  {gl:'ke',   t:17, l:6}                 // « il-faut tablette · porter lire » ne se construit pas
+];
 
 /* ---- ce qu'une lecture fausse emporte avec elle ----
    Un signe faux ne salit pas que ses propres attestations : il salit tout composé qui le

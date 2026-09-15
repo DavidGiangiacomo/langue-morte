@@ -246,6 +246,16 @@ function contrLever(){
   pushLog('Le passage se résout. Quelque chose que j’avais mal lu ne l’est plus — le corpus ne dira pas quoi.');
 }
 
+/* ---- les ruptures vives (MOD-3) ----
+   Une rupture est VIVE quand le signe est mal lu et que rien ne la répare. `sauf` est
+   l'autre moitié d'une paire réparante : si elle est mal lue aussi, la ligne se tient et ne
+   s'allume pas (docs/corpus.md §7.3). C'est la seule endroit du jeu où la décision « on ne
+   fait rien » du 14/09 prend une forme exécutable, et elle se lit en une ligne.
+   Rien ici ne dépend de `faux` : les ruptures existent depuis la première seconde, dans le
+   texte. `faux` ne fait que les allumer — `ruptureLignes()` rend le vide sans lui. */
+const ruptureVive = r => faux(r.gl) && !(r.sauf && faux(r.sauf));
+const ruptureLignes = () => has('lash') ? RUPTURES.filter(ruptureVive) : [];
+
 const REV_B = 240;      // coût de la première révision, en Certitude
 const REV_K = 1.6;      // ... et par révision déjà faite
 const revCost = () => Math.ceil(REV_B * Math.pow(REV_K, S_.rev));

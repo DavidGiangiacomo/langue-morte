@@ -42,6 +42,8 @@ Contrôle :
  23. la contradiction : elle se solde à l'ouverture du doute, le passage qui refuse ne bouge
      pas avec les signes mal lus, aucune progression n'est perdue (R2), et la révision la
      lève sans la réarmer
+ 24. `faux` : il allume les lignes où la lecture ne se construit pas — la LIGNE et jamais le
+     jeton — et n'allume rien pour les quatre signes sans rupture ni pour une paire réparante
 
 Prérequis : pip install playwright && playwright install chromium
 """
@@ -566,12 +568,12 @@ def main() -> None:
         verifier("done" in classe("imme") and "locked" in classe("tabsar"),
                  "sa carte est cochée, sans ouvrir « archive » par-dessus « copier »")
 
-        print("\nla Modalité : ne-pas, si, peut-être, il-faut, sinon")
+        print("\nla Modalité : ne-pas, si, peut-être, il-faut, faux, sinon")
         page.evaluate("() => $('reset').click()")
         page.wait_for_timeout(200)
         ordre = page.evaluate("() => GL.filter(g => g.br === 'modalite').map(g => g.id)")
-        verifier(ordre == ["la", "en", "mik", "dun", "enla"],
-                 f"cinq signes, du plus fréquent au dernier mot du protocole : {ordre}")
+        verifier(ordre == ["la", "en", "mik", "dun", "lash", "enla"],
+                 f"six signes, du plus fréquent au dernier mot du protocole : {ordre}")
         page.evaluate("() => { S_.C = 99999; }")
         page.wait_for_timeout(150)
         verifier("locked" in classe("en"), "« si » reste fermé tant que « ne-pas » manque")
@@ -988,7 +990,7 @@ def main() -> None:
                  "et rien à l'écran ne laisse entendre qu'une lecture puisse être autre chose")
         r = page.evaluate("""() => { const g = byId.mik;
             return [g.br, g.cost, GL.filter(x => x.br === 'modalite').map(x => x.id)]; }""")
-        verifier(r[:2] == ["modalite", 450] and r[2] == ["la","en","mik","dun","enla"],
+        verifier(r[:2] == ["modalite", 450] and r[2] == ["la","en","mik","dun","lash","enla"],
                  f"450 C, entre « si » et « il-faut » : {r}")
         r = page.evaluate("""() => { S_.C = 9e5; const av = [M.cop(), M.ate(), M.tabl(), M.con(), M.gram()];
             ['la','en'].forEach(acheterGl); acheterGl('mik');
@@ -1178,6 +1180,84 @@ def main() -> None:
         vu = page.evaluate("() => document.querySelector('.shell').innerText.toLowerCase()")
         verifier(not any(m in vu for m in ("dette", "erreur", "correct", "mauvaise lecture")),
                  "et rien à l'écran ne nomme la dette ni ne juge une lecture")
+
+        # ---- `faux` : où le texte ne tient pas (MOD-3) ----
+        # Le premier lot où le jeu dit quelque chose — et il ne dit toujours pas QUOI est
+        # faux, il montre OÙ ça ne se construit pas. Le §11 du design doc l'exige : la
+        # relecture de fin surlignera les erreurs « y compris celles jamais détectées », donc
+        # `faux` n'a pas donné le corrigé.
+        print("\nfaux : les passages qui ne se construisent pas")
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+        r = page.evaluate("""() => { const g = byId.lash; return [g.br, g.cost]; }""")
+        verifier(r == ["modalite", 700], f"700 C, entre « il-faut » et « sinon » : {r}")
+        rompues = lambda: page.evaluate("""() => [...document.querySelectorAll('.ln.rompu')]
+            .map(l => l.closest('.tablet').dataset.tb + ':' + [...l.parentNode.children].indexOf(l))""")
+        # Tout l'arbre sauf `faux` : les ruptures sont dans le texte, rien ne les allume.
+        page.evaluate("""() => { S_.C = 9e6; S_.H = 9e6;
+            GL.filter(g => !g.sec && g.id !== 'lash' && g.id !== 'shenu')
+              .forEach(g => acheterGl(g.id, 'f')); }""")
+        page.wait_for_timeout(400)
+        verifier(rompues() == [], "avant lui, aucune ligne n'est allumée — même toutes lectures fausses")
+        r = page.evaluate("""() => { const av = [M.cop(), M.ate(), M.tabl(), M.con(), M.gram()];
+            acheterGl('lash');
+            return av.every((v, i) => v === [M.cop(), M.ate(), M.tabl(), M.con(), M.gram()][i]); }""")
+        page.wait_for_timeout(400)
+        verifier(r is True, "il ne multiplie rien")
+        lus = page.eval_on_selector_all("#corpus .tok[data-w=lash]",
+            "e => [e.length, e.filter(x => x.textContent.trim() === 'faux').length]")
+        verifier(lus == [16, 16], f"ses seize attestations passent en français : {lus}")
+        # La tablette 26 : la dernière scribe marque comme fausses les tablettes qui espéraient.
+        # Le joueur vient de faire le même geste sur son propre corpus. Lu ici en lectures
+        # justes — le socle ci-dessus a tout acheté faux pour vérifier que rien ne s'allume.
+        l26 = page.evaluate("""() => { S_.lect = {}; paintCorpus(null);
+            const tb = [...document.querySelectorAll('.tablet')]
+            .find(x => +x.dataset.tb === 26);
+            return [27, 28, 29].map(i => [...tb.children[i].querySelectorAll('.tok')]
+              .map(t => t.textContent.trim() || '⟨⟩').join(' ')); }""")
+        verifier(l26[2] == "peut-être eau · faux",
+                 f"la tablette 26 annule l'espoir quatre-vingt-dix-sept ans plus tard : {l26}")
+
+        print("\nce qui s'allume, et surtout ce qui ne s'allume pas")
+        pose = lambda lect: page.evaluate("""(lect) => { S_.lect = {};
+            for(const k in lect) S_.lect[k] = lect[k]; paintCorpus(null); }""", lect) or rompues()
+        verifier(pose({'tem': 'f'}) == ["5:3"],
+                 "⟨grain⟩ seul allume la tablette 5 : on ne distribue pas vingt mesures de poussière")
+        verifier(pose({'ur': 'f'}) == ["5:3"], "⟨maison⟩ seul allume la même ligne, par l'autre bout")
+        # Le §7.3, rendu mécanique : deux erreurs bien choisies ne trahissent rien.
+        verifier(pose({'tem': 'f', 'ur': 'f'}) == [],
+                 "LES DEUX n'allument rien — la paire réparante se tient, et le texte ne trahit rien")
+        # Le §7.4 : les erreurs que le design doc §11 appelle « jamais détectées ».
+        verifier(pose({'kish': 'f', 'nur': 'f', 'shen': 'f', 'dun': 'f'}) == [],
+                 "⟨eau⟩, ⟨année⟩, ⟨lire⟩ et ⟨il-faut⟩ n'allument rien : ils ne cassent nulle part")
+        verifier(pose({'la': 'f'}) == ["5:4"], "⟨ne-pas⟩ allume « si fin · à la fin »")
+        verifier(pose({'pat': 'f'}) == ["15:4"], "⟨avant⟩ allume « dessous · siècle 1 »")
+        verifier(pose({'sar': 'f'}) == ["30:6"], "⟨graver⟩ allume « je couper ⟨N6⟩ »")
+        # Et la mesure qui résume le lot.
+        tout = pose({k: 'f' for k in ("tem","ur","kish","sar","shen","nur","pat","dun","la")})
+        verifier(tout == ["5:4", "15:4", "30:6"],
+                 f"tout faux n'allume que trois lignes sur cinq : se tromper partout cache deux erreurs — {tout}")
+
+        print("\nil montre où, jamais quoi")
+        # C'est la LIGNE qui s'allume : marquer le jeton nommerait le signe fautif.
+        r = page.evaluate("""() => { S_.lect = {tem:'f'}; paintCorpus(null);
+            const ln = [...document.querySelectorAll('.ln.rompu')][0];
+            return [ln.querySelectorAll('.tok').length,
+                    ln.querySelectorAll('.tok.rompu, .tok.faux').length,
+                    [...ln.querySelectorAll('.tok')].filter(t => byId[t.dataset.w] && AMB[t.dataset.w]).length]; }""")
+        page.wait_for_timeout(250)
+        verifier(r[1] == 0 and r[2] >= 2,
+                 f"la ligne porte la marque, aucun jeton — et {r[2]} signes ambigus y figurent : {r}")
+        vu = page.evaluate("() => document.querySelector('.shell').innerText.toLowerCase()")
+        verifier("poussière" in vu and "rupture" not in vu and "erreur" not in vu,
+                 "et rien à l'écran ne nomme un signe fautif")
+        n = page.evaluate("() => $('doute-rupt').textContent")
+        verifier("Un passage ne se construit pas — il est allumé" in n,
+                 f"le panneau compte les passages sans dire lesquels : « {n} »")
+        # Réviser éteint la ligne — et c'est la seule confirmation que le joueur obtiendra.
+        r = page.evaluate("() => { S_.C = 9e6; reviser('tem','j'); return 1; }") and rompues()
+        page.wait_for_timeout(300)
+        verifier(r == [], f"réviser l'éteint : {r or 'plus aucune ligne'}")
 
         # ---- une sauvegarde d'avant la mécanique neuve doit se rouvrir ----
         # La clé a déjà changé une fois, et toutes les parties en cours ont été perdues. Un

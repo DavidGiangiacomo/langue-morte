@@ -2,7 +2,7 @@
 
 Un jeu incrémental où l'interface est illisible au départ. Chaque signe déchiffré rend une zone d'écran lisible et débloque des mécaniques qu'on ne soupçonnait pas. Le corpus — trente tablettes d'un peuple disparu — se traduit sous les yeux du joueur, et finit par expliquer pourquoi ce peuple a disparu.
 
-Prototype jouable des **actes I à III** : 29 signes sur 45, et le corpus complet — 30 tablettes, 705 lignes, 3 838 signes.
+Prototype jouable des **actes I à III** : 30 signes sur 45, et le corpus complet — 30 tablettes, 705 lignes, 3 838 signes.
 
 ## Jouer
 
@@ -42,7 +42,7 @@ pip install playwright && playwright install chromium
 python build.py && python outils/verifier.py
 ```
 
-239 assertions bout en bout, en vingt-trois sections : absence d'erreur JS, rendu complet du corpus, échelle de la numération signe par signe, infobulles, gisement et tarif du relevé, recoupement, datation et rangement chronologique, concordance, composition, ambiguïté, doute, révision et contradiction, progression hors ligne, fenêtre de fin, et reprise d'une sauvegarde commencée avant une mécanique neuve. Chaque mécanique ajoutée doit y ajouter les siennes.
+256 assertions bout en bout, en vingt-quatre sections : absence d'erreur JS, rendu complet du corpus, échelle de la numération signe par signe, infobulles, gisement et tarif du relevé, recoupement, datation et rangement chronologique, concordance, composition, ambiguïté, doute, révision, contradiction et passages rompus, progression hors ligne, fenêtre de fin, et reprise d'une sauvegarde commencée avant une mécanique neuve. Chaque mécanique ajoutée doit y ajouter les siennes.
 
 ## Équilibrer
 

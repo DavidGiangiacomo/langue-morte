@@ -52,8 +52,12 @@ GL = [('an','nombre',2), ('anna','nombre',5), ('hem','nombre',11), ('sela','nomb
       # à 900 ou 1 100 C il tombe deux minutes avant la fin du prototype et le doute n'a pas
       # le temps de servir ; à 450 il laisse quatorze minutes, soit trois ou quatre révisions
       # au coût croissant. Aucun multiplicateur, comme le reste de la branche.
+      # `faux` (MOD-3) s'intercale entre `il-faut` et `sinon`, et son prix est une mesure lui
+      # aussi : au bout de la branche il tombe deux minutes avant la fin, à 700 il en laisse
+      # six — de quoi lire les lignes allumées et payer deux ou trois révisions. À ce rang,
+      # les neuf signes ambigus sont tous tranchés avant lui.
       ('la','modalite',150), ('en','modalite',320), ('mik','modalite',450),
-      ('dun','modalite',550), ('enla','modalite',800),
+      ('dun','modalite',550), ('lash','modalite',700), ('enla','modalite',800),
       # Composés secrets : offerts par aucune branche, ils ne s'obtiennent qu'à la grille de
       # composition. Ils comptent dans ce que le joueur SAIT, jamais dans ce que l'arbre a
       # rendu — d'où `ARBRE`, qui est le compte dont dépendent le dégagement des tablettes, la

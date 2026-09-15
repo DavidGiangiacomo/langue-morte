@@ -250,6 +250,12 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .detat{margin:0 0 7px;padding:7px 9px;border-left:2px solid var(--ochre-d);background:#2A2116;
   font-size:13px;line-height:1.45;color:var(--mid)}
 
+/* La ligne qui ne se construit pas (MOD-3). Le liseré est sur la LIGNE, jamais sur un
+   jeton : marquer le signe fautif le nommerait. */
+.ln.rompu{background:#2B2014;box-shadow:inset 2px 0 0 var(--ochre)}
+.drupt{margin:0 0 7px;padding:0 0 0 9px;border-left:2px solid var(--line2);
+  font-family:var(--mono);font-size:9.5px;line-height:1.5;color:var(--dim);letter-spacing:.02em}
+
 /* ---------- le doute ---------- */
 /* Une ligne par signe ambigu acquis, la plus douteuse en haut. La barre est un fait —
    la part du signe qu'on n'avait pas sous les yeux — et non un verdict : rien ici ne

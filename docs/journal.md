@@ -141,6 +141,113 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## `faux` ne donne pas le corrigé — il montre où le texte ne tient pas
+
+15/09/2026, MOD-3. Le premier lot où le jeu dit enfin quelque chose. Trois règles écrites
+cette semaine — 17, 18, 19 — tiennent toutes sur « le jeu ne dit jamais que vous vous êtes
+trompé ». Il fallait savoir ce que `faux` retourne exactement, et la réponse était dans le
+design doc depuis le début, à un endroit où personne n'était allé la chercher.
+
+### La phrase qui a tranché le lot
+
+Le §6 et le §10 disent la même chose : « `faux` affiche **rétroactivement les erreurs déjà
+commises** », « le joueur voit rétroactivement tout ce qu'il a mal traduit depuis le début ».
+Lu seul, cela veut dire : le corrigé.
+
+Le §11 dit autre chose. La relecture de fin surlignera toutes les erreurs de traduction de la
+partie, **« y compris celles jamais détectées »**.
+
+S'il existe des erreurs jamais détectées à la fin de la partie, c'est que `faux` n'a pas donné
+le corrigé. Les deux passages ne se contredisent que si l'on suppose que `faux` nomme les
+signes. Il ne les nomme pas : **il allume les lignes où la lecture retenue ne se construit
+pas.** C'est-à-dire exactement ce que le §8 appelle depuis le premier jour le seul indice
+fiable — le texte lui-même. `faux` ne remplace pas la lecture ; il rend visible ce qu'un
+lecteur attentif aurait vu tout seul.
+
+Et ce choix-là fait tomber juste, d'un coup, trois décisions prises séparément.
+
+### Ce qui ne s'allume pas
+
+| Lectures fausses | Lignes allumées |
+|---|---|
+| ⟨grain⟩ seul | tablette 5 — « maison 1 · poussière 20 » |
+| ⟨maison⟩ seul | la même ligne, par l'autre bout |
+| **les deux** | **aucune** |
+| ⟨eau⟩, ⟨année⟩, ⟨lire⟩, ⟨il-faut⟩ | **aucune** |
+| ⟨ne-pas⟩ · ⟨avant⟩ · ⟨graver⟩ | tablette 5, 15, 30 |
+| **les neuf** | **trois lignes sur cinq** |
+
+- **Les paires réparantes n'allument rien.** « Vingt mesures de poussière à la tombe 1 » se
+  tient : la ligne ne s'allume pas. Le §7.3 avait décidé le 14/09 que « le texte ne trahit
+  rien » pour ces trois paires — c'est désormais vrai *mécaniquement*, en une ligne de code
+  (`sauf` dans `RUPTURES`), et non plus seulement en intention.
+- **Les quatre signes sans rupture n'allument rien.** `lire` et `il-faut` sont conçus pour ne
+  casser nulle part ; `eau` et `année` n'ont aucune rupture textuelle, et leur seul indice
+  reste celui du §7.4, distributionnel, qu'a ouvert MOD-2. Ce sont, très exactement, les
+  erreurs « jamais détectées » que promet le §11.
+- **Se tromper partout cache deux de ses erreurs.** Neuf lectures fausses n'allument que trois
+  lignes : la paire ⟨grain⟩+⟨maison⟩ s'auto-répare, et quatre signes ne cassent nulle part.
+  C'est la mesure qui résume le lot, et elle n'était pas cherchée.
+
+### C'est la ligne qui s'allume, jamais le jeton
+
+Marquer le signe fautif le nommerait — l'oracle que tout le reste du jeu refuse. Une ligne
+allumée porte quatre ou cinq signes, dont deux ou trois ambigus : elle réduit le champ, elle
+ne tranche pas. Le joueur relit, compare, et décide ; le panneau lui dit seulement *combien*
+de passages ne se construisent pas, jamais lesquels ni pourquoi.
+
+Un test le verrouille : sur la ligne allumée, zéro jeton marqué et trois signes ambigus
+présents.
+
+### Le prix, encore une mesure
+
+Au bout de la Modalité, `faux` tombe **2,1 minutes avant la fin** du prototype, à tous les
+prix de 900 à 1 100 — le même plateau que `peut-être` la veille, et pour la même raison : la
+queue de partie est un tunnel d'achats forcés. À **700 C**, entre `il-faut` et `sinon`, il en
+laisse **six**, de quoi lire les lignes allumées et payer deux ou trois révisions. À ce rang,
+les neuf signes ambigus sont tous tranchés avant lui : il ne renseigne aucun choix à venir.
+
+### La tablette 26, sans un mot ajouté
+
+Ses cinq dernières lignes deviennent lisibles à l'achat :
+
+```
+avant · tablette 6 · faux
+avant · tablette 13 · faux
+peut-être eau · faux
+⟨je⟩ graver · faux
+il-faut faux ne-pas
+```
+
+La dernière scribe est revenue sur l'archive pour marquer comme fausses les tablettes qui
+espéraient. Elle annule « peut-être eau » — les deux seuls mots d'espoir du corpus, gravés
+quatre-vingt-dix-sept ans plus tôt et que le joueur a lus douze minutes avant, à l'achat de
+`peut-être`. Le joueur vient de faire exactement le même geste sur son propre corpus. Rien
+n'est commenté, et ⟨je⟩ reste illisible jusqu'à l'acte IV.
+
+### Ce que la boucle donne maintenant
+
+`peut-être` classe l'aveuglement, `faux` montre où ça casse, la révision paie, la
+contradiction se lève. Les quatre pièces se répondent, et aucune ne dit au joueur qu'il s'est
+trompé :
+
+- le **doute** dit ce qu'on n'avait pas regardé — le même chiffre pour les deux lectures ;
+- **`faux`** dit quelles lignes ne se construisent pas — sans nommer le signe ;
+- la **révision** repeint — sans rendre de verdict ;
+- la **contradiction** se lève — sans dire laquelle des révisions l'a levée.
+
+Un signe à fort doute dont aucune ligne ne s'allume est soit juste, soit incassable. Le joueur
+ne saura pas lequel avant la relecture de fin, et c'est FIN-3 qui portera l'aveu.
+
+### Mesuré
+
+**91,1–94,3 min** toutes lectures justes pour 30 signes, **85,9–89,1** toutes fausses,
+**98,1–101,2** quand la contradiction s'arme, **102,1–105,1** pour la paire réparante — qui
+reste le pire cas du jeu. Écart max 5,2 · main 22,2–28,0 % · tranches ≥ 10′ ≤ 26 %. Garde-fou
+de durée re-basé à **(83, 96)**. `outils/verifier.py` passe de 239 à **256 assertions**.
+
+---
+
 ## La contradiction — le pire cas n'est pas celui qui se trompe le plus
 
 15/09/2026, CONTR-1. La dette courait depuis AMB-3 et personne ne la lisait. Elle a

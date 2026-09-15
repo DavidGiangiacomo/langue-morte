@@ -111,7 +111,7 @@ Le détail des 45 signes est dans `docs/corpus.md` §2. Effets notables :
 - **Matière** — nomme les instruments et les rend opérables.
 - **Parole** — `dire` fait annoncer au lexique ce qu'il fait (avant, on achète à l'aveugle) ; `les-lecteurs` déclenche le premier basculement narratif.
 - **Temps** — `nuit` débloque la progression hors-ligne (le corpus « se lit la nuit ») ; `avant`/`après` permettent de dater les tablettes, donc de les **ordonner** — le corpus se réorganise chronologiquement à l'écran et des passages jusque-là absurdes prennent sens.
-- **Modalité** — ouvre le système de confiance. Avant `peut-être`, le jeu ne dit jamais qu'une lecture est incertaine : le joueur croit tout ce qu'il achète. `faux` affiche rétroactivement les erreurs déjà commises. Le pic de malaise du jeu.
+- **Modalité** — ouvre le système de confiance. Avant `peut-être`, le jeu ne dit jamais qu'une lecture est incertaine : le joueur croit tout ce qu'il achète. `faux` allume rétroactivement les passages où la lecture ne se construit pas — **il ne nomme aucun signe**, sans quoi le §11 ne pourrait pas promettre des erreurs « jamais détectées » à la relecture de fin. Le pic de malaise du jeu. *(Précisé le 15/09/2026, MOD-3.)*
 - **Personne** — `toi` révèle que tout le corpus est à la deuxième personne. Débloque les **Questions**. `nous-fûmes` verrouille le récit au passé, y compris les passages déjà lus.
 - **Fin** — `devenir-lecture` est le dernier signe et la clé de tout. Un joueur qui a `lire` et `devenir` peut le **composer lui-même** avant que le récit ne l'y amène, et griller la révélation de vitesse. C'est voulu.
 
