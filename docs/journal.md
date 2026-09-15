@@ -287,6 +287,40 @@ le carnet ne garde que les paires fausses. Il a retenté deux fois chacune des d
 trouvées, puis a fini par acheter `scribe`, `archive` et `sinon` à l'arbre, au prix fort.
 Question ouverte, pas encore un défaut.
 
+### Le seul retour qualitatif de la partie, et il porte sur la grille
+
+Rapporté de vive voix, après coup, par le joueur : *« j'avais tenté de mettre ensemble deux
+symboles qui apparaissent dans le corpus, et ça ne marchait pas — je crois qu'on devait les
+acheter directement dans le lexique. C'était assez perturbant. »*
+
+Le diagnostic est exact. `paintComp()` masque tout pion dont le signe n'est pas acquis : la
+palette n'offre que ce qu'on sait déjà lire. Un joueur qui a une hypothèse sur deux signes
+qu'il voit dans le texte n'a donc **nulle part où la poser** — et rien à l'écran ne lui dit
+pourquoi. La règle existe pourtant, écrite noir sur blanc : c'est l'`aria-label` de
+`#comp-choix`, « Les signes que vous savez lire. Cliquez pour en poser un. » Elle n'est
+énoncée qu'à l'endroit où un joueur voyant ne peut pas la lire.
+
+**Ce défaut ne laisse aucune trace.** `composer()` n'est même pas appelée — le joueur ne peut
+pas sélectionner —, donc `S_.comp` ne bouge pas et l'enveloppe de `traces.js` n'émet rien. Ce
+n'est pas un trou d'instrument qu'on pourrait boucher comme les quatre autres : il n'y a pas
+d'action à envelopper. Il ne se sait qu'en demandant, ce qui est exactement ce à quoi servent
+les questions « à poser de vive voix » du backlog — et la seule qui ait rapporté quelque chose
+dans un playtest joué par l'auteur.
+
+La tension à trancher est étroite, et elle n'est pas tranchée ici. Montrer les quarante-cinq
+pions renseignerait pour de bon : **la liste** dirait combien de signes le lexique contient et
+lesquels des dessins du corpus en font partie, ce que la règle 14 refuse. Mais les tracés,
+eux, ne sont pas un secret — ils sont dans le texte depuis la première seconde, et la règle 4
+en dépend. La question n'est donc pas « faut-il montrer les signes inconnus » mais « la
+palette peut-elle dire **visiblement** qu'elle ne montre que le connu ». Une ligne de texte ne
+révèle rien et supprimerait la perplexité. Ouvert en **COMP-6**.
+
+À ne pas confondre avec le piège voisin, celui-là déjà connu depuis PAR-1 : une paire JUSTE
+qu'on n'a pas les moyens de payer répond « Rien ne vient. Ces deux signes ne se rencontrent
+nulle part », ce qui est faux. PT10 y est tombé cinq fois. Le message identique est voulu — le
+distinguer dirait au joueur qu'il vient de trouver (règle 14) — mais dire *le contraire* de la
+vérité n'était pas la seule façon de ne rien dire.
+
 ### L'outil qui manquait
 
 PT9 et PT10 ont été dépouillés à la main, et **PT10 l'a été deux fois** : la première lecture
