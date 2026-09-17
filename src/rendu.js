@@ -531,6 +531,12 @@ function paintComp(){
   for(let i = 0; i < 2; i++){
     setHTML(slots[i], compSel[i] ? sv(compSel[i]) : '');
     slots[i].classList.toggle('plein', !!compSel[i]);
+    /* Un emplacement plein annonçait « poser un signe » alors que le clic l'enlève. Le
+       panneau n'a pas le droit de se tromper sur son propre geste (COMP-6) : ce qu'il cache
+       est l'affaire du corpus, pas la sienne. */
+    const t = compSel[i] ? 'retirer ce signe'
+                         : (i ? 'poser un second signe' : 'poser un signe');
+    if(slots[i].title !== t) slots[i].title = t;
   }
   const a = compSel[0], b = compSel[1], pret = !!(a && b);
   $('pcomp').querySelector('.pose').classList.toggle('pret', pret);

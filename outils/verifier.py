@@ -21,7 +21,9 @@ Contrôle :
  13. la concordance : le corpus se replie sur les attestations d'un signe, et la crue
      se lit alors de 14 à 0
  14. la composition : la grille s'ouvre à « année », l'ordre compte, l'échec ne coûte
-     jamais de Certitude, et un composé secret n'avance pas la progression de l'arbre
+     jamais de Certitude, et un composé secret n'avance pas la progression de l'arbre —
+     puis ce que le panneau dit de LUI-MÊME : la palette porte son nom, un emplacement plein
+     dit ce que le clic y fait, et les deux refus rendent le même texte, qui n'affirme rien
  15. une partie commencée avant une mécanique neuve se rouvre sans rien perdre
  16. la Parole III : `lire` après `copier`, les trois effets, `scribe` composable et compté
      dans l'arbre
@@ -528,6 +530,59 @@ def main() -> None:
         verifier(r[0] == "refus", "le grenier ne se recompose pas")
         verifier(r[1] == "refus", "un signe qu'on ne sait pas lire ne se pose pas")
         verifier(r[2] == "acquis", "année + année donne le siècle, sans passer par la branche")
+
+        # ---- ce que le panneau dit de LUI-MÊME (COMP-6) ----
+        # La grille ne renseigne jamais sur le corpus (règle 14) ; ça ne l'autorisait pas à se
+        # taire sur ses propres règles, ni à les dire faux. Trois endroits le faisaient, et
+        # PT10 a buté sur les trois.
+        print("\nle panneau de composition dit vrai sur lui-même")
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+        page.evaluate("() => { S_.C = 9999; ['nur','ur','tem'].forEach(acheterGl); }")
+        page.wait_for_timeout(250)
+        # 1. La palette ne montrait que les signes acquis et ne le disait que dans son
+        #    aria-label — le seul endroit qu'un joueur voyant ne lit pas.
+        ch = page.text_content("#pcomp .palette .ch").strip()
+        verifier(ch == "Ce que je sais lire", f"la palette porte son nom à l'écran : « {ch} »")
+        verifier(page.evaluate("() => $('comp-choix').getAttribute('aria-label')")
+                 .startswith(ch), "et l'aria-label dit exactement la même chose")
+        # Nommer la liste ne la remplit pas : ce qu'elle cache reste caché (règle 14), et le
+        # carnet, lui, n'annonce toujours pas qu'on peut se tromper avant que ça arrive.
+        vus = page.eval_on_selector_all("#comp-choix .pion:not([hidden])", "e => e.length")
+        verifier(vus == 3, f"aucun pion de plus n'apparaît : {vus}")
+        verifier(page.get_attribute("#carnet", "hidden") is not None,
+                 "et le carnet n'est toujours pas là avant la première tentative")
+
+        # 2. Un emplacement plein annonçait « poser un signe » alors que le clic l'enlève.
+        page.evaluate("() => compPoser('ur')")
+        page.wait_for_timeout(150)
+        titres = page.evaluate("() => [...$('pcomp').querySelectorAll('.slot')].map(s => s.title)")
+        verifier(titres == ["retirer ce signe", "poser un second signe"],
+                 f"un emplacement dit ce que le clic y fait : {titres}")
+        page.evaluate("() => compVider()")
+
+        # 3. La ligne de refus disait « ces deux signes ne se rencontrent nulle part » — faux
+        #    dès que la paire existe, et c'était le cas de CINQ des six tentatives de PT10. Les
+        #    deux refus doivent rester le même texte (règle 14 : distinguer, c'est renseigner)
+        #    et ce texte ne doit plus rien affirmer du corpus.
+        page.evaluate("() => { S_.C = 10; S_.H = 100000; }")   # 10 C, le grenier en coûte 60
+        lu = lambda: page.evaluate("() => $('log').querySelector('p:last-child').textContent")
+        juste = page.evaluate("""() => { const h = S_.H, i = composer('ur','tem');
+            return [i, h - S_.H, S_.carnet.slice(), has('urtem')]; }""")
+        m_juste = lu()
+        rate = page.evaluate("""() => { const h = S_.H, i = composer('tem','ur');
+            return [i, h - S_.H, S_.carnet.slice()]; }""")
+        m_rate = lu()
+        verifier(juste[0] == "rate" and juste[3] is False,
+                 "une paire juste qu'on ne peut pas payer échoue comme une autre")
+        verifier(m_juste == m_rate, f"et rend le MÊME texte qu'une paire fausse : « {m_juste} »")
+        verifier("nulle part" not in m_juste and "rencontrent" not in m_juste,
+                 "qui n'affirme plus que les deux signes ne se rencontrent nulle part")
+        verifier(juste[1] == rate[1], f"pour le même prix en hypothèses : {juste[1]}")
+        # Ce que l'écran distingue quand même, et qu'on laisse (voir le commentaire de
+        # `composer`) : le carnet, le prix de la suivante, et la paire retentable.
+        verifier(juste[2] == [] and rate[2] == ["tem+ur"],
+                 f"seul le carnet les sépare, et c'est assumé : {juste[2]} contre {rate[2]}")
 
         print("\nla Parole III : lire, scribe, archive")
         page.evaluate("() => $('reset').click()")

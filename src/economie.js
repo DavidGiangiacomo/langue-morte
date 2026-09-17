@@ -507,13 +507,26 @@ function composer(a, b){
     acheterGl(cible);                            // le coût est en Certitude, et lui seul
     return 'acquis';
   }
-  /* La tentative a eu lieu : les hypothèses sont perdues dans les deux cas. Une paire juste
-     qu'on n'a pas les moyens de payer n'entre PAS au carnet — elle se retentera plus tard —
-     mais elle coûte comme une autre et ne se distingue de rien à l'écran. Sans ça, l'absence
-     de perte dirait au joueur qu'il vient de trouver. */
+  /* La tentative a eu lieu : les hypothèses sont perdues dans les deux cas, sans quoi
+     l'absence de perte dirait au joueur qu'il vient de trouver. Une paire juste qu'on n'a pas
+     les moyens de payer n'entre PAS au carnet — elle se retentera plus tard.
+
+     La ligne de journal ne dit pas laquelle des deux on vient de faire, et n'a plus le droit
+     de le deviner : elle disait « ces deux signes ne se rencontrent nulle part », ce qui est
+     FAUX dès que la paire existe — cinq des six tentatives de PT10 (COMP-6). Le remède n'est
+     pas une meilleure explication, c'est aucune : la grille ne renseigne jamais (règle 14),
+     donc elle constate, elle n'explique pas.
+
+     L'écran, lui, les distingue quand même, et par trois signes à la fois : la fausse entre au
+     carnet, elle y fait monter le prix de la suivante, et elle rend la paire inretentable.
+     Aucun des trois n'est un oubli — ce sont les trois faces de « on ne punit pas une
+     trouvaille qu'on n'a pas les moyens de payer ». Le seul levier qui les refermerait est le
+     prix (l'indexer sur les tentatives et non sur le carnet), et il ferait payer plus cher
+     celui qui a LU juste : l'inverse exact de « lire coûte moins cher que chercher ». On
+     laisse donc, en le sachant. */
   S_.H -= c;
   if(!cible) S_.carnet.push(a+'+'+b);
-  pushLog('Rien ne vient. Ces deux signes ne se rencontrent nulle part.');
+  pushLog('Rien ne vient.');
   return 'rate';
 }
 function acheterIns(k){ const i=INS.find(x=>x.k===k), c=insCost(i);

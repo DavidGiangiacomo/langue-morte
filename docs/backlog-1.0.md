@@ -92,15 +92,34 @@ un engagement de date.
 
 - Fini quand : le carnet liste les tentatives ratées, survit à la sauvegarde, et n'apparaît qu'après la première tentative.
 
-**COMP-6 — La palette ne dit pas ce qu'elle cache** · T:S — *ouvert par PT10 (15/09/2026)*
+**COMP-6 — La palette ne dit pas ce qu'elle cache** · ~~T:S~~ **fait** (17/09/2026)
 > En tant que joueur, je veux comprendre pourquoi deux signes que je vois dans le corpus ne peuvent pas être posés sur la grille.
 
 - Le défaut, rapporté de vive voix : le joueur tente d'assembler deux signes vus dans le texte, ne les trouve pas dans la palette, et en conclut — correctement — qu'il faut d'abord les acheter. Perplexité, sans rien à l'écran pour l'expliquer. `paintComp()` masque les pions non acquis ; la règle n'est énoncée que dans l'`aria-label` de `#comp-choix`, invisible à un joueur voyant.
 - Fini quand : la restriction de la palette est **visible**, sans rien révéler de ce qu'elle cache.
 - Ce qui est exclu, et pourquoi : afficher les pions inconnus, même grisés. La **liste** est le renseignement — combien de signes existent, et lesquels des dessins du corpus en font partie (règle 14). Les tracés, eux, ne sont pas un secret : ils sont dans le texte depuis la première seconde, et la règle 4 en dépend.
 - Attention : ne laisse **aucune trace** dans le journal d'actions. `composer()` n'est pas appelée, `S_.comp` ne bouge pas, l'enveloppe n'émet rien — et il n'y a pas d'action à envelopper. Ce défaut ne se mesure pas, il se demande.
-- Voisin, à ne pas confondre : une paire juste mais impayable répond « Rien ne vient. Ces deux signes ne se rencontrent nulle part » (PAR-1, non réglé ; PT10 y tombe cinq fois). Le message identique est voulu, mais il pourrait ne rien dire au lieu de dire le contraire du vrai.
+- ~~Voisin, à ne pas confondre : une paire juste mais impayable répond « Rien ne vient. Ces deux signes ne se rencontrent nulle part » (PAR-1, non réglé ; PT10 y tombe cinq fois). Le message identique est voulu, mais il pourrait ne rien dire au lieu de dire le contraire du vrai.~~ *Traité dans le même lot : le refus ne dit plus que « Rien ne vient. » Le remède n'est pas une meilleure explication, c'est aucune — la grille ne renseigne jamais, donc elle constate.*
 - Dépend de : rien.
+- *Fait* : la palette porte son intitulé « Ce que je sais lire », dans le caractère de celui du
+  carnet — le panneau tenait **deux listes et n'en nommait qu'une**. L'`aria-label` dit
+  désormais le même texte que l'écran. Troisième endroit, trouvé en relisant : un emplacement
+  **plein** annonçait « poser un signe » alors que le clic l'enlève.
+- **La prémisse de l'exclusion était inexacte, et l'exclusion tient quand même.** « Combien de
+  signes existent » et « lesquels des dessins du corpus en font partie » sont publics dès
+  t = 0 : le sous-titre affiche « 30 glyphes sur 45 », le compteur « 0 / 30 », et le lexique
+  rend les trente cartes de l'arbre **avec leur tracé**, vingt-cinq à 28 % d'opacité. La vraie
+  raison est autre : **une liste à trous apprend qu'il y a des trous** — le lexique cache son
+  bloc « Composés » en entier, la palette est une seule rangée, et le trente et unième pion
+  dénoncerait l'existence des composés secrets. Ce qu'elle protège, c'est ça, et rien d'autre.
+- **Trouvé au passage, non traité et assumé** : une paire juste impayable *se* distingue d'une
+  paire fausse, par trois signaux (carnet, prix de la suivante, paire inretentable), alors que
+  le commentaire de `composer()` affirmait le contraire. Le seul levier qui les refermerait est
+  le prix, et il ferait payer plus cher celui qui a lu juste. Le commentaire est corrigé ; le
+  code ne bouge pas. Corollaire : ces trois signaux sont la seule mémoire d'une recette trouvée
+  et impayable — la question ouverte de PT10 a donc une demi-réponse, qui était déjà dans le
+  code.
+- Voir `docs/journal.md`, « Le corpus se tait, le panneau non », et la règle 14 de `CLAUDE.md`.
 
 ---
 
@@ -479,7 +498,7 @@ un engagement de date.
 **LIV-5 — Étendre `verifier.py`** · T:L
 > En tant qu'auteur, je veux que chaque mécanique nouvelle soit couverte bout en bout.
 
-- Le fichier porte aujourd'hui **286 assertions** sur le relevé, le recoupement, la numération, le gisement, la datation, les infobulles, la composition, la fenêtre de fin qui attend sa lecture, et la reprise d'une sauvegarde d'avant une mécanique neuve. Chaque épic de cette feuille de route doit y ajouter ses vérifications — en particulier AMB-4 (la phrase absurde est bien rendue) et COMP-3 (`zéro` replie les compteurs).
+- Le fichier porte aujourd'hui **296 assertions** sur le relevé, le recoupement, la numération, le gisement, la datation, les infobulles, la composition, la fenêtre de fin qui attend sa lecture, et la reprise d'une sauvegarde d'avant une mécanique neuve. Chaque épic de cette feuille de route doit y ajouter ses vérifications — en particulier AMB-4 (la phrase absurde est bien rendue) et COMP-3 (`zéro` replie les compteurs).
   *15/09/2026* : la section 21 en ajoute vingt-cinq sur l'ambiguïté, dont les cinq ruptures d'AMB-4
   qui existent dans l'arbre d'aujourd'hui et la vérification que **rien à l'écran ne nomme la dette** ;
   la section 22 en ajoute vingt-deux sur le doute et la révision, dont **le degré de doute est le
@@ -494,6 +513,9 @@ un engagement de date.
   surtout ce que chacun **n'a pas** — que la boucle de rendu tourne sans chronomètre, que
   « recommencer » marche sans le bouton de la barre, et que le sélecteur de vitesse se
   journalise sans doublon là où il reste.
+  *17/09/2026* : dix de plus sur ce que le panneau de composition dit **de lui-même**, dont la
+  régression de PT10 — une paire juste impayable et une paire fausse rendent le même texte,
+  pour le même prix, et ce texte n'affirme plus rien du corpus.
 
 **LIV-6 — README, écran-titre, distribution** · T:S
 > En tant que curieux, je veux ouvrir un fichier et jouer.

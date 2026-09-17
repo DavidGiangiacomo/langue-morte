@@ -185,6 +185,9 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
    reconnaître. Il ne dit jamais s'il existe. */
 .apercu{min-width:44px;height:34px;display:flex;align-items:center;justify-content:center;color:var(--grain)}
 .apercu .gl2{width:32px;height:26px}
+/* Les deux listes du panneau portent un intitulé de carnet — celle qu'on pose et celle
+   qu'on a déjà tentée. La première n'en avait pas : c'est COMP-6. */
+.palette{display:flex;flex-direction:column;gap:5px}
 .choix{display:flex;flex-wrap:wrap;gap:3px}
 .pion{width:27px;height:26px;display:flex;align-items:center;justify-content:center;
   border:1px solid transparent;background:transparent;border-radius:2px;color:var(--mid);
@@ -194,7 +197,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .pion .gl{width:13px;height:17px}
 .pion .gl2{width:22px;height:17px}
 .carnet{border-top:1px solid var(--line);padding-top:7px;display:flex;flex-wrap:wrap;gap:5px;align-items:center}
-.carnet .ch{width:100%;font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;
+.comp .ch{width:100%;font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;
   text-transform:uppercase;color:var(--faint);margin-bottom:1px}
 .cpair{display:inline-flex;opacity:.38;color:var(--dim)}
 .cpair .gl2{width:24px;height:18px}
