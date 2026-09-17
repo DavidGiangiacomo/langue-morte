@@ -47,7 +47,7 @@ outils/
                 que `balayage.py` et `depouiller.py` lisent tous les deux
   verifier.py   tests bout en bout (Playwright)
 docs/           design doc, corpus, journal de bord
-dist/           GÉNÉRÉ par build.py
+dist/           GÉNÉRÉ par build.py — quatre variantes, voir plus bas
 ```
 
 **L'ordre de chargement compte** : `signes → lexique → corpus → economie → rendu → traces → jeu`. Un `const` déclaré dans l'un est visible dans les suivants.
@@ -55,7 +55,7 @@ dist/           GÉNÉRÉ par build.py
 ### Commandes
 
 ```bash
-python build.py                 # src/ → dist/langue-morte.html et dist/artefact.html
+python build.py                 # src/ → les quatre pages de dist/ (voir plus bas)
 python outils/corpus.py         # regénère src/corpus.js après modification des tablettes
 python outils/sim.py            # simule le rythme d'une partie
 python outils/balayage.py       # balaie une grille de constantes, filtre sur les garde-fous
@@ -72,7 +72,28 @@ n'est pas nul, ne rien croire de la section « la main ». Les constantes et les
 multiplicateurs viennent de `sim.py` (`multis()`), qui les lit lui-même de `src/` : ne jamais
 en faire une troisième copie.
 
-`dist/artefact.html` est la variante sans `<!doctype>/<html>/<head>/<body>`, format attendu par l'outil Artifact de Claude.
+`python build.py` sort **quatre pages du même `src/`, en un seul passage et sans drapeau** —
+une variante qu'il faut penser à réclamer est celle qu'on oublie de reconstruire, et c'est
+celle qui part en ligne :
+
+| | barre hors jeu | `traces.js` | pour |
+|---|---|---|---|
+| `dist/langue-morte.html` | entière | oui | développer |
+| `dist/artefact.html` | entière | oui | l'outil Artifact de Claude — sans `<!doctype>/<html>/<head>/<body>` |
+| `dist/playtest.html` | chrono + `traces`/`copier` | oui | **un playtest à distance** ; c'est ce que GitHub Pages déploie |
+| `dist/public.html` | aucune | non | la version publique (LIV-2) |
+
+Ce que le build de playtest retire n'est pas cosmétique. Le sélecteur ×1/×3/×10 multiplie les
+secondes de **jeu** — celles que le journal d'actions horodate et sur lesquelles `depouiller.py`
+rejoue le modèle — et **aucun contrôle ne peut le voir après coup** : le contrôle de
+`depouiller.py` travaille dans ces mêmes secondes, où tout reste cohérent. Une partie
+accélérée par mégarde rend des minutes qui n'ont jamais été vécues. Il laisse donc une ligne
+`vitesse` dans le TSV là où il existe, et n'existe pas ailleurs. « Réinitialiser », lui,
+efface quatre-vingt-dix minutes sans rien demander, à six pixels de « copier ».
+
+Les variantes se découpent sur des **marqueurs dans `src/index.html`** dont `build.py` porte la
+grammaire : ne jamais lister un bouton dans `build.py`. Et l'en-tête du TSV dit désormais de
+quel build il sort.
 
 ---
 
@@ -320,6 +341,27 @@ pas le corrigé ».
 
 **Le journal d'actions ne mesurait pas quatre des questions qu'on lui posait** (15/09/2026) : `reviser` n'était pas enveloppée, le degré de doute n'était pas écrit à l'achat, une paire juste impayable ne se distinguait pas d'un coup de sonde — c'est ce qui a d'abord fait lire les six compositions de PT10 comme cinq échecs — et le chrono gelait au dernier signe de l'arbre, d'où six actions au même instant et aucune ligne de fin pour une partie terminée. Les quatre sont bouchés ; `finjeu` date l'arrêt et `fin` l'ouverture de la carte, dont l'écart est la mesure de FIN-1. `outils/verifier.py` passe de 256 à **265 assertions**.
 
+**PT11 se jouera à distance — trois builds** (17/09/2026, LIV-2) : `python build.py` sort quatre
+pages du même `src/`, et GitHub Pages déploie **`dist/playtest.html`**, qui garde le journal
+d'actions mais **pas le sélecteur de vitesse ni « réinitialiser »**. Le premier ne fait pas du
+bruit, il fait mentir l'axe : il multiplie les secondes de **jeu**, celles que le TSV horodate,
+et **aucun contrôle ne peut le voir après coup** — celui de `depouiller.py` travaille dans ces
+mêmes secondes et trouve tout cohérent. Il laisse donc une ligne `vitesse` là où il existe, et
+le dépouillement ouvre son rapport par un avertissement. Le second efface quatre-vingt-dix
+minutes sans rien demander. Ce que le lot a trouvé en chemin : **retirer un bouton n'est pas une
+suppression, c'est un découplage** — `frame()` écrivait dans `#chrono` à chaque frame et
+« recommencer » se déléguait à `$('reset').click()` ; la version publique se serait arrêtée à la
+première frame, et `requestAnimationFrame` n'aurait jamais été appelé. D'où `recommencer()` dans
+`rendu.js`, que `traces.js` enveloppe au lieu d'écouter un bouton. La barre de playtest dit
+« journal de partie — à renvoyer », dans la barre et non sur la carte de fin : **la partie
+abandonnée est celle dont le journal compte le plus** (ECO-1), et la carte n'arrive qu'à la
+quatre-vingt-dixième minute. Économie inchangée au chiffre près (`sim.py` 91,1–94,3 min,
+`balayage.py` 34 sur 54) ; `outils/verifier.py` passe de 265 à **286 assertions**. **LIV-3 n'est
+pas traité** et la parade est un usage : le workflow déploie à chaque poussée sur `develop`,
+donc **pendant PT11, rien ne va sur `develop`** — sans quoi le jeu change sous les pieds du
+joueur au rechargement suivant. Voir `docs/journal.md`, « Ce qui mesure ne doit pas pouvoir
+fausser ce qu'il mesure ».
+
 **Prochaine étape — PT11 avec un autre joueur, puis l'Élève (E5).** Même question qu'en PT8 et PT9, posée à quelqu'un qui ne sait pas ce qu'il cherche — plus celle que PT10 a ouverte : **revient-on dans le corpus après la quarantième minute ?** Dans le même TSV : la part manuelle des occurrences (au-delà de 40 %, plafonner `REL_K`) le stock d'hypothèses entre `année` et la dixième Grammaire (27 090 en PT9), **le nombre de recoupements** — sous une vingtaine sur la partie, le réglage du 09/09 a vidé un des deux gestes manuels et il faut revenir en arrière — et **les tentatives de composition** : le journal d'actions les compte avec leur paire et leur minute. La question neuve est celle-là : un joueur qui ignore qu'il y a quelque chose à chercher reconnaît-il ⟨maison⟩ et ⟨grain⟩ dans ⟨grenier⟩, ou ⟨ne-pas⟩ et ⟨un⟩ dans le zéro qu'il regarde depuis la première seconde ? Aucun simulateur ne répond à ça. S'y ajoutent deux questions depuis `les-lecteurs` : **achète-t-on un signe à 1 200 C qui annonce trois attestations** — le TSV date le moment où il devient payable — et, à poser de vive voix, **a-t-on vu ⟨nous⟩ dans le nom** ? Et une mesure de plus, parce que `REV_R` la déplace sans qu'aucun playtest soit derrière : **le nombre de recoupements et la part manuelle des occurrences**. Si la main descend au lieu de monter, c'est `REV_R` qu'il faut défaire en premier, avant les prix.
 
 **Et depuis AMB-1, trois questions de plus, qu'aucun simulateur ne touche.** Le journal d'actions note désormais la lecture retenue à chaque achat, avec un ✗ pour la fausse. (1) **Combien de lectures fausses sur neuf ?** Neuf pièces à pile ou face donneraient 4,5 ; nettement moins voudrait dire que quelque chose souffle la réponse, nettement plus que le corpus l'induit en erreur. (2) **⟨grain⟩ ou ⟨poussière⟩ à la troisième minute** — c'est le choix où la prime paie le plus et où le joueur a le moins de quoi trancher ; et s'il se trompe, retourne-t-il sur la tablette 5 quand elle sort de terre ? (3) À poser de vive voix, une fois seulement, **et à la fin** : a-t-on remarqué qu'on choisissait ? Le jeu ne le dira jamais avant `peut-être`.
@@ -336,6 +378,6 @@ Restent ensuite : **l'Élève** (E5), qui déchiffre tout seul et se trompe — 
 
 - Commentaires en français, au-dessus de ce qui est non évident. Expliquer **pourquoi**, pas quoi.
 - Les noms de fonctions et variables suivent la fiction quand c'est naturel : `veille()`, `consignes()`, `recouper()`, `tablette`.
-- Le sélecteur de vitesse ×1/×3/×10, le chronomètre et les boutons `traces`/`copier` en haut à droite sont des **outils de test**, marqués « hors jeu ». À retirer de toute version publique.
-- `src/traces.js` n'édite aucune règle : il **enveloppe** les actions déjà déclarées. Le retirer = supprimer le fichier, sa ligne dans `index.html` et dans `build.py`, et les deux boutons. Ne jamais y mettre de logique de jeu.
+- Le sélecteur de vitesse ×1/×3/×10, le chronomètre et les boutons `traces`/`copier` en haut à droite sont des **outils de test**, marqués « hors jeu ». **Ce n'est plus à retirer à la main** : les marqueurs de variante d'`index.html` décident de ce que chaque build en garde. Un bouton hors jeu neuf se pose dans le bloc `#dev`, pas ailleurs, tant qu'on n'a pas dit ce qu'il fait devant un joueur qu'on ne regarde pas jouer.
+- `src/traces.js` n'édite aucune règle : il **enveloppe** les actions déjà déclarées — des fonctions, jamais des écouteurs de boutons, qui ne sont pas dans tous les builds. `dist/public.html` le retire déjà (16 Ko de moins). Ne jamais y mettre de logique de jeu, et ne jamais l'appeler depuis le jeu.
 - Écrire les nombres à la française dans l'interface (espace fine insécable, virgule décimale) — `nf` et `f()` s'en chargent.

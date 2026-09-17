@@ -874,3 +874,20 @@ function pushLog(txt){
   LOGS.push(txt); if(LOGS.length>2) LOGS.shift();
   $('log').innerHTML = LOGS.map((t,i)=>'<p'+(i===LOGS.length-1?' class="new"':'')+'>'+t+'</p>').join('');
 }
+
+/* ==================== recommencer ====================
+   Était le corps de l'écouteur du bouton « réinitialiser ». Il en sort pour deux raisons :
+   le bouton disparaît du build de playtest et de la version publique (LIV-2), alors que
+   « recommencer » de la carte de fin, lui, reste — il se déléguait à un bouton qui n'existe
+   plus. Et `traces.js` enveloppe des fonctions, pas des écouteurs anonymes.
+   Ici plutôt que dans jeu.js parce que tout ce que ça remet à zéro est déclaré ici ou avant,
+   et que traces.js se charge entre les deux. */
+function recommencer(){
+  S_=fresh(); LOGS.length=0; lastPct=-1; $('end').hidden=true;
+  /* Sans ceci la table des signes de numération garde ceux de la partie précédente :
+     on repart de zéro glyphe avec 229 nombres encore lisibles à l'écran. */
+  majSignes(); touchees=new Set(); recArmer(false); concFermer(); compVider(); finDesarmer();
+  ambFermer();
+  $('log').innerHTML='<p class="hint">relève un signe : clique dans le corpus</p>';
+  paintCorpus(null); try{localStorage.removeItem(KEY);}catch(e){}
+}

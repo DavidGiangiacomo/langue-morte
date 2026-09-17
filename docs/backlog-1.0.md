@@ -41,7 +41,7 @@ Une version 1.0 est atteinte quand **toutes** ces conditions sont vraies :
 4. Les **deux fins** (Achever / Interrompre) et la **relecture** sont jouables.
 5. Les invariants I1, I2, I3, I4 et I6 sont **mesurés** sur la partie entière — I6 par tranches de dix minutes, ouverture exclue (règle 2).
 6. Au moins **trois playtests complets** par des joueurs qui ne sont pas l'auteur, dépouillés au journal d'actions.
-7. La version publique ne contient **ni la barre hors-jeu, ni `traces.js`** (conventions), et s'ouvre sans explication préalable (R1).
+7. La version publique ne contient **ni la barre hors-jeu, ni `traces.js`** (conventions), et s'ouvre sans explication préalable (R1). *Le build existe depuis le 17/09/2026 — `dist/public.html`, produit à chaque `python build.py` ; reste R1, qui est LIV-1.*
 8. `python build.py && python outils/verifier.py` passe, et `outils/sim.py` couvre les cinq actes.
 
 ---
@@ -446,11 +446,25 @@ un engagement de date.
 - Écart assumé n°7 du journal : le chrome de l'interface est aujourd'hui **en français dès t=0**, parce que l'idéal du doc (un seul mot français à l'écran, *commence*) rend le prototype injouable sans onboarding. À réexaminer une fois l'onboarding écrit.
 - Fini quand : R1 est tenu — premier signe accessible en < 60 s, un mot français en clair à t=0, le compteur bouge visiblement à chaque relevé — **et vérifié sur un joueur qui n'a rien lu.**
 
-**LIV-2 — Retirer les outils hors jeu** · T:S
+**LIV-2 — Retirer les outils hors jeu** · ~~T:S~~ **fait** (17/09/2026)
 > En tant qu'auteur, je veux une version publique sans instrumentation.
 
 - Fini quand : la barre `devbar` (chrono, ×1/×3/×10, `traces`, `copier`, `réinitialiser`) et `src/traces.js` sortent de la version publique — fichier, ligne dans `index.html`, ligne dans `build.py`, deux boutons — **sans être supprimés du dépôt** : ils servent aux playtests suivants.
-- Prévoir un drapeau de build plutôt qu'une suppression manuelle.
+- ~~Prévoir un drapeau de build plutôt qu'une suppression manuelle.~~ *Pas de drapeau : une
+  variante qu'il faut penser à réclamer est celle qu'on oublie de reconstruire, et c'est celle
+  qui part en ligne. `python build.py` sort les quatre pages à chaque passage.*
+- *Fait, et **trois** variantes et non deux, parce que PT11 se joue à distance* : `playtest.html`
+  garde le journal d'actions mais **ni le sélecteur de vitesse ni « réinitialiser »**, et c'est
+  lui que GitHub Pages déploie ; `public.html` n'a ni barre ni `traces.js` (16 Ko de moins). Le
+  sélecteur ne fait pas du bruit, il fait mentir l'axe — il multiplie les secondes de **jeu**,
+  celles du TSV, et le contrôle de `depouiller.py` ne peut pas le voir puisqu'il y travaille
+  aussi. Il laisse désormais une ligne `vitesse` là où il existe, le dépouillement ouvre par un
+  avertissement, et l'en-tête du TSV dit de quel build il sort.
+- **Trouvé en le faisant** : retirer un bouton n'est pas une suppression, c'est un découplage.
+  `frame()` écrivait dans `#chrono` à chaque frame, « recommencer » se déléguait à
+  `$('reset').click()` — la version publique se serait arrêtée à la première frame. D'où
+  `recommencer()` dans `rendu.js`, enveloppée par `traces.js` comme les autres actions.
+- Voir `docs/journal.md`, « Ce qui mesure ne doit pas pouvoir fausser ce qu'il mesure ».
 
 **LIV-3 — La sauvegarde survit aux actes** · T:M
 > En tant que joueur, je veux qu'une partie commencée ne soit pas perdue à la mise à jour.
@@ -465,7 +479,7 @@ un engagement de date.
 **LIV-5 — Étendre `verifier.py`** · T:L
 > En tant qu'auteur, je veux que chaque mécanique nouvelle soit couverte bout en bout.
 
-- Le fichier porte aujourd'hui **256 assertions** sur le relevé, le recoupement, la numération, le gisement, la datation, les infobulles, la composition, la fenêtre de fin qui attend sa lecture, et la reprise d'une sauvegarde d'avant une mécanique neuve. Chaque épic de cette feuille de route doit y ajouter ses vérifications — en particulier AMB-4 (la phrase absurde est bien rendue) et COMP-3 (`zéro` replie les compteurs).
+- Le fichier porte aujourd'hui **286 assertions** sur le relevé, le recoupement, la numération, le gisement, la datation, les infobulles, la composition, la fenêtre de fin qui attend sa lecture, et la reprise d'une sauvegarde d'avant une mécanique neuve. Chaque épic de cette feuille de route doit y ajouter ses vérifications — en particulier AMB-4 (la phrase absurde est bien rendue) et COMP-3 (`zéro` replie les compteurs).
   *15/09/2026* : la section 21 en ajoute vingt-cinq sur l'ambiguïté, dont les cinq ruptures d'AMB-4
   qui existent dans l'arbre d'aujourd'hui et la vérification que **rien à l'écran ne nomme la dette** ;
   la section 22 en ajoute vingt-deux sur le doute et la révision, dont **le degré de doute est le
@@ -476,6 +490,10 @@ un engagement de date.
   sanction sans rien acheter** et **le passage qui refuse ne bouge pas avec les signes mal lus**.
   La section 24 en ajoute dix-sept sur `faux`, dont **la paire réparante n'allume rien**,
   **les quatre signes sans rupture non plus**, et **la ligne porte la marque, jamais le jeton**.
+  *17/09/2026* : la section 25 en ajoute vingt et une sur les trois builds, et elle vérifie
+  surtout ce que chacun **n'a pas** — que la boucle de rendu tourne sans chronomètre, que
+  « recommencer » marche sans le bouton de la barre, et que le sélecteur de vitesse se
+  journalise sans doublon là où il reste.
 
 **LIV-6 — README, écran-titre, distribution** · T:S
 > En tant que curieux, je veux ouvrir un fichier et jouer.

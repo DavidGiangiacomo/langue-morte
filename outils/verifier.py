@@ -44,6 +44,8 @@ Contrôle :
      lève sans la réarmer
  24. `faux` : il allume les lignes où la lecture ne se construit pas — la LIGNE et jamais le
      jeton — et n'allume rien pour les quatre signes sans rupture ni pour une paire réparante
+ 25. les trois builds : ce que chacun n'a pas — la boucle tourne sans chronomètre, « recommencer »
+     marche sans le bouton de la barre, et le sélecteur de vitesse se journalise là où il reste
 
 Prérequis : pip install playwright && playwright install chromium
 """
@@ -1380,6 +1382,72 @@ def main() -> None:
                      "() => $('lex').querySelector('[data-gl=shen]').className"),
                  "et « lire » attend d'être acheté")
         ctx.close()
+
+        # ---- les trois builds (LIV-2) ----
+        # `python build.py` sort trois pages du même `src/`. Ce qui se vérifie ici n'est pas
+        # qu'elles existent, c'est que **retirer un bouton ne casse rien d'autre** : les
+        # liaisons de jeu.js et la boucle de rendu supposaient toutes les deux que la barre
+        # hors jeu était là, et une seule ligne qui la suppose empêche tout le reste du
+        # fichier de s'exécuter — `requestAnimationFrame` compris.
+        print("\nles trois builds")
+
+        # Le sélecteur de vitesse laisse enfin une trace. C'est la seule commande capable de
+        # fausser toute la timeline d'un playtest, et rien ne la voyait — pas même le contrôle
+        # de `outils/depouiller.py`, qui rejoue le modèle sur ces mêmes secondes de jeu.
+        page.evaluate("() => { TR.length = 0; vitesse(1); }")
+        page.evaluate("() => document.querySelector('[data-spd=\"3\"]').click()")
+        page.evaluate("() => document.querySelector('[data-spd=\"3\"]').click()")
+        page.evaluate("() => document.querySelector('[data-spd=\"1\"]').click()")
+        vit = [tuple(l.split("\t")[2:4])
+               for l in page.evaluate("() => tracesTSV()").split("\n")
+               if "\tvitesse\t" in l]
+        verifier(vit == [("vitesse", "×3"), ("vitesse", "×1")],
+                 f"le sélecteur de vitesse se journalise, sans doublon : {vit}")
+        entete = [l for l in page.evaluate("() => tracesTSV()").split("\n") if l.startswith("# build")]
+        verifier(len(entete) == 1 and "dev" in entete[0] and f"{ngl} glyphes" in entete[0],
+                 f"le journal dit de quel build il sort : « {entete[0] if entete else '—'} »")
+        page.evaluate("() => vitesse(1)")
+
+        for nom, attendu in (("playtest", True), ("public", False)):
+            page2 = nav.new_page(viewport={"width": 1440, "height": 900})
+            casses = []
+            page2.on("pageerror", lambda e: casses.append(str(e)))
+            page2.goto((RACINE / "dist" / f"{nom}.html").resolve().as_uri())
+            page2.wait_for_timeout(900)
+            print(f"\n  — {nom}.html")
+            verifier(not casses, f"aucune erreur JS ({casses[:1] or '—'})")
+            # Le corpus est rendu et la partie tourne : c'est le chrono absent qui aurait
+            # arrêté la boucle à la première frame, et rien ne l'aurait dit.
+            signes2 = page2.eval_on_selector_all("#corpus .tok:not(.sep)", "e => e.length")
+            verifier(signes2 == SIGNES_ATTENDUS, f"{signes2} signes rendus")
+            t0 = page2.evaluate("() => S_.t")
+            page2.wait_for_timeout(500)
+            verifier(page2.evaluate("() => S_.t") > t0, "la boucle tourne (le temps de jeu avance)")
+            # Ni sélecteur de vitesse ni « réinitialiser » : c'est tout l'objet des deux builds.
+            verifier(page2.eval_on_selector_all("[data-spd]", "e => e.length") == 0,
+                     "pas de sélecteur de vitesse")
+            verifier(page2.evaluate("() => !$('reset')"), "pas de « réinitialiser »")
+            # « recommencer » de la carte de fin se déléguait au bouton de la barre.
+            page2.evaluate("() => { S_.C = 9999; acheterGl('an'); $('again').click(); }")
+            page2.wait_for_timeout(200)
+            verifier(page2.evaluate("() => S_.gl.length") == 0,
+                     "« recommencer » marche sans le bouton de la barre")
+            verifier(page2.evaluate("() => typeof TR") == ("object" if attendu else "undefined"),
+                     "le journal d'actions est là" if attendu else "pas de journal d'actions")
+            if attendu:
+                verifier(page2.evaluate("() => !!$('tr-dl') && !!$('tr-cp')"),
+                         "les deux boutons d'export restent")
+                ent = [l for l in page2.evaluate("() => tracesTSV()").split("\n") if l.startswith("# build")]
+                verifier(len(ent) == 1 and nom in ent[0], f"le journal s'estampille : « {ent[0]} »")
+                verifier([g for g, d in [tuple(l.split("\t")[2:4])
+                                         for l in page2.evaluate("() => tracesTSV()").split("\n")
+                                         if "\tacheterGl\t" in l or "\treset\t" in l]] == ["acheterGl", "reset"],
+                         "et il journalise l'achat puis la coupure, dans cet ordre")
+            else:
+                verifier(page2.eval_on_selector_all(".devbar", "e => e.length") == 0,
+                         "plus de barre hors jeu du tout")
+                verifier(page2.evaluate("() => !$('chrono')"), "ni de chronomètre")
+            page2.close()
 
         nav.close()
 

@@ -14,7 +14,7 @@ Au clavier : `j` / `k` passent d'une tablette à l'autre, `c` ouvre et ferme la 
 
 Les deux actions manuelles du jeu — relever un signe, recouper deux attestations d'un même signe dans deux tablettes différentes — se choisissent **dans le texte** : aucun bouton ne produit d'occurrences ni de Certitude par lui-même.
 
-En haut à droite, la barre marquée « hors jeu » (chronomètre, ×1/×3/×10, `traces`, `copier`, `réinitialiser`) est de l'instrumentation de playtest. Elle ne fait pas partie du jeu et sortira de la version publique.
+En haut à droite, la barre marquée « hors jeu » (chronomètre, ×1/×3/×10, `traces`, `copier`, `réinitialiser`) est de l'instrumentation de playtest. Elle ne fait pas partie du jeu, et le build la réduit ou la retire selon la page produite — voir *Construire*.
 
 ## Construire
 
@@ -22,7 +22,16 @@ En haut à droite, la barre marquée « hors jeu » (chronomètre, ×1/×3/×10,
 python build.py
 ```
 
-Assemble `src/` en `dist/langue-morte.html` (page autonome) et `dist/artefact.html` (variante pour l'outil Artifact de Claude).
+Assemble `src/` en quatre pages autonomes, en un seul passage :
+
+| | contient | pour |
+|---|---|---|
+| `dist/langue-morte.html` | tout | jouer et développer |
+| `dist/artefact.html` | tout, sans `<!doctype>/<html>/<head>/<body>` | l'outil Artifact de Claude |
+| `dist/playtest.html` | le journal d'actions, sans le sélecteur de vitesse ni « réinitialiser » | un playtest à distance |
+| `dist/public.html` | ni barre hors jeu, ni journal d'actions | la version publique |
+
+Le sélecteur de vitesse sort du build de playtest parce qu'il multiplie les secondes de **jeu** — celles que le journal d'actions horodate : une partie accélérée par mégarde rendrait des minutes qui n'ont jamais été vécues, et rien, après coup, ne permettrait de s'en apercevoir.
 
 ## Modifier le texte
 
@@ -42,7 +51,7 @@ pip install playwright && playwright install chromium
 python build.py && python outils/verifier.py
 ```
 
-256 assertions bout en bout, en vingt-quatre sections : absence d'erreur JS, rendu complet du corpus, échelle de la numération signe par signe, infobulles, gisement et tarif du relevé, recoupement, datation et rangement chronologique, concordance, composition, ambiguïté, doute, révision, contradiction et passages rompus, progression hors ligne, fenêtre de fin, et reprise d'une sauvegarde commencée avant une mécanique neuve. Chaque mécanique ajoutée doit y ajouter les siennes.
+286 assertions bout en bout, en vingt-cinq sections : absence d'erreur JS, rendu complet du corpus, échelle de la numération signe par signe, infobulles, gisement et tarif du relevé, recoupement, datation et rangement chronologique, concordance, composition, ambiguïté, doute, révision, contradiction et passages rompus, progression hors ligne, fenêtre de fin, reprise d'une sauvegarde commencée avant une mécanique neuve, et ce que chacun des trois builds n'a pas. Chaque mécanique ajoutée doit y ajouter les siennes.
 
 ## Équilibrer
 

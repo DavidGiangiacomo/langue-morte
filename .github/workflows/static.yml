@@ -34,9 +34,15 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v5      
       - name: Préparer le site
+        # Le build de playtest, et non celui de développement : la page mise en ligne est
+        # jouée par quelqu'un qu'on ne regarde pas jouer. Elle garde le journal d'actions —
+        # c'est toute la mesure d'un playtest à distance — mais pas le sélecteur de vitesse,
+        # qui fausserait chaque instant du journal sans laisser de trace, ni le bouton
+        # « réinitialiser », qui efface une partie sans rien demander.
+        # Pour mettre la version publique en ligne (LIV-2) : dist/public.html.
         run: |
           mkdir -p _site
-          cp dist/langue-morte.html _site/index.html
+          cp dist/playtest.html _site/index.html
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
