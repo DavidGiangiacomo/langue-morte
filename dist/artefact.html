@@ -190,6 +190,9 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
    reconnaître. Il ne dit jamais s'il existe. */
 .apercu{min-width:44px;height:34px;display:flex;align-items:center;justify-content:center;color:var(--grain)}
 .apercu .gl2{width:32px;height:26px}
+/* Les deux listes du panneau portent un intitulé de carnet — celle qu'on pose et celle
+   qu'on a déjà tentée. La première n'en avait pas : c'est COMP-6. */
+.palette{display:flex;flex-direction:column;gap:5px}
 .choix{display:flex;flex-wrap:wrap;gap:3px}
 .pion{width:27px;height:26px;display:flex;align-items:center;justify-content:center;
   border:1px solid transparent;background:transparent;border-radius:2px;color:var(--mid);
@@ -199,7 +202,7 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .pion .gl{width:13px;height:17px}
 .pion .gl2{width:22px;height:17px}
 .carnet{border-top:1px solid var(--line);padding-top:7px;display:flex;flex-wrap:wrap;gap:5px;align-items:center}
-.carnet .ch{width:100%;font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;
+.comp .ch{width:100%;font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;
   text-transform:uppercase;color:var(--faint);margin-bottom:1px}
 .cpair{display:inline-flex;opacity:.38;color:var(--dim)}
 .cpair .gl2{width:24px;height:18px}
@@ -407,7 +410,17 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
             <span class="op eq">=</span>
             <span class="apercu" id="comp-ap"></span>
           </div>
-          <div class="choix" id="comp-choix" aria-label="Les signes que vous savez lire. Cliquez pour en poser un."></div>
+          <!-- La palette porte son nom, et c'est tout ce que COMP-6 demandait. Un joueur de
+               PT10 a cherché dans la grille deux signes vus dans le texte, ne les a pas
+               trouvés, et rien à l'écran ne disait pourquoi. La règle était pourtant écrite —
+               dans l'aria-label ci-dessous, c'est-à-dire au seul endroit qu'un joueur voyant
+               ne lit pas. Elle ne renseigne sur rien : elle nomme ce qu'on a sous les yeux,
+               jamais ce qui manque, ni combien il en manque, ni quelles paires existent
+               (règle 14). Les deux textes sont désormais le même. -->
+          <div class="palette">
+            <div class="ch">Ce que je sais lire</div>
+            <div class="choix" id="comp-choix" aria-label="Ce que je sais lire. Cliquez pour en poser un."></div>
+          </div>
           <button class="act" id="a-comp"><span class="an">Poser un signe sur l’autre</span><span class="ac" id="ac-comp"></span></button>
           <div class="carnet" id="carnet" hidden></div>
         </div>
@@ -1458,13 +1471,26 @@ function composer(a, b){
     acheterGl(cible);                            // le coût est en Certitude, et lui seul
     return 'acquis';
   }
-  /* La tentative a eu lieu : les hypothèses sont perdues dans les deux cas. Une paire juste
-     qu'on n'a pas les moyens de payer n'entre PAS au carnet — elle se retentera plus tard —
-     mais elle coûte comme une autre et ne se distingue de rien à l'écran. Sans ça, l'absence
-     de perte dirait au joueur qu'il vient de trouver. */
+  /* La tentative a eu lieu : les hypothèses sont perdues dans les deux cas, sans quoi
+     l'absence de perte dirait au joueur qu'il vient de trouver. Une paire juste qu'on n'a pas
+     les moyens de payer n'entre PAS au carnet — elle se retentera plus tard.
+
+     La ligne de journal ne dit pas laquelle des deux on vient de faire, et n'a plus le droit
+     de le deviner : elle disait « ces deux signes ne se rencontrent nulle part », ce qui est
+     FAUX dès que la paire existe — cinq des six tentatives de PT10 (COMP-6). Le remède n'est
+     pas une meilleure explication, c'est aucune : la grille ne renseigne jamais (règle 14),
+     donc elle constate, elle n'explique pas.
+
+     L'écran, lui, les distingue quand même, et par trois signes à la fois : la fausse entre au
+     carnet, elle y fait monter le prix de la suivante, et elle rend la paire inretentable.
+     Aucun des trois n'est un oubli — ce sont les trois faces de « on ne punit pas une
+     trouvaille qu'on n'a pas les moyens de payer ». Le seul levier qui les refermerait est le
+     prix (l'indexer sur les tentatives et non sur le carnet), et il ferait payer plus cher
+     celui qui a LU juste : l'inverse exact de « lire coûte moins cher que chercher ». On
+     laisse donc, en le sachant. */
   S_.H -= c;
   if(!cible) S_.carnet.push(a+'+'+b);
-  pushLog('Rien ne vient. Ces deux signes ne se rencontrent nulle part.');
+  pushLog('Rien ne vient.');
   return 'rate';
 }
 function acheterIns(k){ const i=INS.find(x=>x.k===k), c=insCost(i);
@@ -2149,6 +2175,12 @@ function paintComp(){
   for(let i = 0; i < 2; i++){
     setHTML(slots[i], compSel[i] ? sv(compSel[i]) : '');
     slots[i].classList.toggle('plein', !!compSel[i]);
+    /* Un emplacement plein annonçait « poser un signe » alors que le clic l'enlève. Le
+       panneau n'a pas le droit de se tromper sur son propre geste (COMP-6) : ce qu'il cache
+       est l'affaire du corpus, pas la sienne. */
+    const t = compSel[i] ? 'retirer ce signe'
+                         : (i ? 'poser un second signe' : 'poser un signe');
+    if(slots[i].title !== t) slots[i].title = t;
   }
   const a = compSel[0], b = compSel[1], pret = !!(a && b);
   $('pcomp').querySelector('.pose').classList.toggle('pret', pret);

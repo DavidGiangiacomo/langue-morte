@@ -142,6 +142,91 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## Le corpus se tait, le panneau non
+
+17/09/2026, COMP-6. Le seul retour qualitatif de PT10 portait sur la grille : *« j'avais tenté
+de mettre ensemble deux symboles qui apparaissent dans le corpus, et ça ne marchait pas — je
+crois qu'on devait les acheter directement dans le lexique. C'était assez perturbant. »* Le
+diagnostic du joueur était juste. Ce qui manquait, c'est que rien à l'écran ne le confirmait.
+
+La règle était pourtant écrite partout, sauf là où on joue : dans l'`aria-label` de
+`#comp-choix`, dans le commentaire de `paintComp()`, et jusque dans la prose d'une assertion
+de `outils/verifier.py` — « on ne peut poser que ce qu'on sait lire ». Partout sauf sur
+l'écran d'un joueur voyant.
+
+Le panneau tenait **deux listes et n'en nommait qu'une** : le carnet a son intitulé « DÉJÀ
+TENTÉES » depuis COMP-5, la palette n'avait rien. Elle a maintenant le sien, dans le même
+caractère et à la même place : « CE QUE JE SAIS LIRE ». Ce n'est pas un message ajouté, c'est
+une symétrie rétablie.
+
+### La prémisse du backlog était inexacte, et l'exclusion tient quand même
+
+COMP-6 excluait d'afficher les pions inconnus, même grisés, au motif que **la liste** serait le
+renseignement : « combien de signes existent, et lesquels des dessins du corpus en font
+partie ». Mesuré à t = 0, les deux moitiés sont déjà publiques. Le sous-titre affiche
+« prototype · actes I–III · 30 glyphes sur 45 », le compteur du lexique affiche « 0 / 30 », et
+le panneau lexique rend **les trente cartes de l'arbre avec leur tracé**, dont vingt-cinq à
+28 % d'opacité. Le joueur voit donc, dès la première seconde, combien de signes existent et
+lesquels des dessins du corpus en font partie.
+
+L'exclusion tient quand même, pour une autre raison, et elle est plus solide : **une liste à
+trous apprend qu'il y a des trous.** Le lexique peut tout montrer parce que son bloc
+« Composés » est caché *en entier* tant qu'on n'a rien trouvé — une absence qu'on ne peut pas
+voir. La palette, elle, est une seule rangée : trente pions grisés aujourd'hui, trente et un
+le jour où quelqu'un compose ⟨grenier⟩. Compter les cases ferait alors le travail que la
+règle 4 confie au corpus. Ce que la palette protège n'est donc pas la taille du lexique, c'est
+**l'existence de signes hors de l'arbre**.
+
+### Le remède n'était pas une meilleure explication, c'était aucune
+
+L'échec répondait « Rien ne vient. Ces deux signes ne se rencontrent nulle part. » C'est faux
+dès que la paire existe, et c'était le cas de **cinq des six tentatives de PT10** — le joueur
+avait trouvé `archive`, `scribe` et `sinon`, et le jeu lui a répondu trois fois que ces signes
+ne se rencontrent nulle part.
+
+La règle 14 interdit à la grille de renseigner ; elle ne l'autorisait pas à *deviner*. Le
+message garde sa première phrase et perd la seconde : **« Rien ne vient. »**, vrai dans les
+deux cas, identique dans les deux cas. C'est la même réponse que celle de la règle 20 (`faux`
+montre où, jamais quoi) et de la règle 18 (le doute dit l'aveuglement, pas l'erreur) : quand le
+jeu ne peut pas dire vrai sans renseigner, il en dit moins — il n'en dit pas autre chose.
+
+Troisième endroit, trouvé en relisant le panneau : un emplacement **plein** portait toujours
+« poser un signe » alors que le clic l'enlève. Il dit maintenant « retirer ce signe ».
+
+### Et le commentaire qui se trompait sur son propre code
+
+`composer()` affirmait qu'une paire juste impayable « ne se distingue de rien à l'écran ». Elle
+se distingue de trois façons, toutes visibles : la fausse **entre au carnet**, elle fait
+**monter le prix** de la tentative suivante (×1,40), et elle rend la paire **inretentable**. Un
+joueur attentif tient donc un oracle : si le prix n'a pas bougé, la paire était bonne.
+
+On laisse, et la raison n'est pas la paresse. Le seul levier qui refermerait les trois est le
+prix — indexer `compCost()` sur `S_.comp` plutôt que sur la longueur du carnet. Il ferait payer
+plus cher celui qui a **lu juste** et n'avait pas la Certitude : l'inverse exact de « lire coûte
+moins cher que chercher », qui est le cœur du design doc §8 et la réponse au risque R3. Ces
+trois signaux sont le prix de « on ne punit pas une trouvaille qu'on ne peut pas payer ».
+
+Corollaire, qui répond en partie à une question laissée ouverte par PT10 — « le joueur n'a aucun
+moyen de se souvenir d'une recette trouvée et impayable ». Il en a un, et c'est exactement
+celui-là : la paire reste retentable, au même prix. PT10 a retenté `tab + sar` et `im + sar`
+deux fois chacune sans que rien ne renchérisse. Ce n'est pas un carnet, mais ce n'est pas rien.
+Le commentaire de `composer()` dit désormais tout cela, ce qui est le seul changement à cet
+endroit.
+
+### Le mot « lire » dans un intitulé (règle 17)
+
+⟨shen⟩ se lit « lire » ou « compter », et l'intitulé neuf contient le mot « lire ». Vérifié : il
+tient sous les deux lectures, parce qu'il ne nomme pas le signe. Il nomme l'activité du joueur,
+et un joueur qui a tranché « compter » voit un signe glosé *compter* dans une liste appelée
+*ce que je sais lire* — sans contradiction, on peut savoir lire un signe qui veut dire compter.
+La règle 17 demande qu'un texte neuf tienne sous les deux lectures, pas qu'il évite les
+trente-cinq mots français du lexique.
+
+Économie inchangée — rien de ce lot n'y touche, et `sim.py` et `balayage.py` le confirment
+(91,1–94,3 min, 34 combinaisons sur 54). `outils/verifier.py` passe de 286 à **296
+assertions**, dont la régression de PT10 : les deux refus rendent le même texte, pour le même
+prix, et ce texte n'affirme plus rien du corpus.
+
 ## Ce qui mesure ne doit pas pouvoir fausser ce qu'il mesure
 
 17/09/2026, LIV-2. PT11 doit se jouer **par quelqu'un d'autre**, et depuis le 15/09 le jeu est
