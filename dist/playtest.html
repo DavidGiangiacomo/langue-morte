@@ -347,14 +347,10 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
          où rien ne le dirait — et le second efface une partie de quatre-vingt-dix minutes
          sans rien demander. Devant un joueur qu'on ne regarde pas jouer, aucun des deux. -->
     <div class="devbar">
-      <span>hors jeu</span>
+      <span title="à renvoyer même si la partie s'arrête en route">journal de partie — à renvoyer</span>
       <span id="chrono" style="color:var(--dim);min-width:44px;text-align:right">0:00</span>
-      <button data-spd="1" aria-pressed="true">×1</button>
-      <button data-spd="3" aria-pressed="false">×3</button>
-      <button data-spd="10" aria-pressed="false">×10</button>
       <button id="tr-dl" title="télécharger le journal d'actions (TSV)">traces</button>
       <button id="tr-cp" title="copier le journal d'actions dans le presse-papier">copier</button>
-      <button id="reset">réinitialiser</button>
     </div>
   </header>
 
@@ -2543,7 +2539,7 @@ const TKEY = 'langue-morte-traces-v1';
    réécrit cette ligne ; en jouant depuis `src/` elle reste « src ». Un TSV qui revient
    trois semaines après la partie ne dit rien de lui-même sans ça : ni contre quels réglages
    il a été joué, ni si le sélecteur de vitesse était même à l'écran. */
-let BUILD = 'dev · 2026-09-17';
+let BUILD = 'playtest · 2026-09-17';
 const TMAX = 20000;              // garde-fou : PT1 avait produit 3 853 clics
 let TR = [];
 try{ const raw = localStorage.getItem(TKEY); if(raw) TR = JSON.parse(raw) || []; }catch(e){}

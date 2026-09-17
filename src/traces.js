@@ -9,15 +9,21 @@
    début, plus un état toutes les 30 s pour pouvoir retracer les courbes.
 
    Il ne modifie aucune règle : il ENVELOPPE les actions déjà déclarées au lieu de
-   les éditer. Pour le retirer d'une version publique il suffit donc de supprimer ce
-   fichier, sa ligne dans index.html et dans build.py, et les deux boutons de la
-   barre « hors jeu ».
+   les éditer — des fonctions, jamais des écouteurs de boutons, qui ne sont pas dans tous
+   les builds. C'est ce qui permet à `build.py` de le retirer d'une variante sans toucher
+   à une ligne du jeu : `dist/public.html` n'emporte ni ce fichier ni la barre « hors jeu »,
+   et rien d'autre ne change (LIV-2).
 
    Chargé APRÈS rendu.js — il enveloppe versTablette et mesures — et AVANT jeu.js,
    qui lie les boutons : il faut qu'il lie les enveloppes, pas les originales. */
 "use strict";
 
 const TKEY = 'langue-morte-traces-v1';
+/* Quelle variante de build a produit ce journal, et quand elle a été assemblée. `build.py`
+   réécrit cette ligne ; en jouant depuis `src/` elle reste « src ». Un TSV qui revient
+   trois semaines après la partie ne dit rien de lui-même sans ça : ni contre quels réglages
+   il a été joué, ni si le sélecteur de vitesse était même à l'écran. */
+let BUILD = 'src';
 const TMAX = 20000;              // garde-fou : PT1 avait produit 3 853 clics
 let TR = [];
 try{ const raw = localStorage.getItem(TKEY); if(raw) TR = JSON.parse(raw) || []; }catch(e){}
@@ -124,6 +130,15 @@ enrober('composer', () => S_.comp, a => {
                      : ' ✓ ' + cible + ' · impayable (' + byId[cible].cost + ' C)');
 });
 
+/* Le sélecteur de vitesse. Hors jeu, mais c'est la seule commande capable de fausser tout
+   le reste du fichier : les instants sont en secondes de JEU, qu'un ×3 fabrique trois fois
+   plus vite. Rien ne le trahissait — pas même le contrôle de `outils/depouiller.py`, qui
+   rejoue le modèle sur ces mêmes secondes et les trouve parfaitement cohérentes. Une partie
+   accélérée par mégarde se dépouillait donc comme une partie normale. Il sort du build de
+   playtest (LIV-2) ; cette ligne est pour les parties jouées ici.
+   Enveloppé comme les autres : le témoin est `speed`, donc reposer ×1 sur ×1 n'écrit rien. */
+enrober('vitesse', () => speed, a => '×' + a[0]);
+
 /* La révision (CONTR-2) — la seule action du jeu qui ne laissait aucune trace, et PT10 est
    tombé dedans : zéro ligne, ce qui ne distingue pas « il n'a pas révisé » de « on ne le
    mesurait pas ». C'est pourtant la première question que MOD-2 pose au playtest — combien
@@ -202,6 +217,7 @@ function tracesTSV(){
   return [
     '# La langue morte — journal d\'actions',
     '# exporté le ' + horo + ' · ' + TR.length + ' entrées',
+    '# build : ' + BUILD + ' · ' + NGL + ' glyphes d\'arbre',
     '# t = secondes de JEU depuis le début (le sélecteur ×3/×10 les accélère)',
     '# une ligne « reset » marque le début d\'une nouvelle partie : le temps y repart de zéro',
     '# « finjeu » = dernier signe de l\'arbre, la production s\'arrête ; « fin » = la carte s\'ouvre',
@@ -239,9 +255,16 @@ $('tr-cp').addEventListener('click', e => {
 });
 
 /* La partie repart, le relevé non : on garde tout et on marque la coupure. Une soirée
-   de playtest tient dans un seul fichier, et rien n'est perdu par un reset distrait. */
-$('reset').addEventListener('click', () => {
-  tracer('reset'); prochainEtat = 0; derniereTablette = null; doneT0 = 0; });
+   de playtest tient dans un seul fichier, et rien n'est perdu par un reset distrait.
+   Sur la fonction et non sur le bouton « réinitialiser », qui ne sort plus dans tous les
+   builds — alors que « recommencer » de la carte de fin, qui appelle la même fonction, y
+   est partout. La ligne s'écrit AVANT la remise à zéro : c'est la fin de la partie
+   précédente qu'elle date, pas le début de la suivante. */
+const _recommencer = recommencer;
+recommencer = function(){
+  tracer('reset'); prochainEtat = 0; derniereTablette = null; doneT0 = 0;
+  return _recommencer();
+};
 
 setInterval(sauverTraces, 4000);
 window.addEventListener('pagehide', sauverTraces);

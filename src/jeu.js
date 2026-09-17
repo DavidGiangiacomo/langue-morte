@@ -99,20 +99,20 @@ $('a-rec').addEventListener('click', ()=>recArmer(!recArme));
 /* Le bouton ouvre le mode, puis referme la concordance : un aller-retour, jamais un piège. */
 $('a-con').addEventListener('click', ()=> concSel ? concFermer() : concArmer(!concArme));
 
+/* Les deux boutons hors jeu ne sont pas dans tous les builds : le sélecteur de vitesse et
+   « réinitialiser » sortent du build de playtest, toute la barre sort de la version publique
+   (LIV-2). Les liaisons doivent donc supporter leur absence — une seule ligne qui suppose le
+   bouton là, et c'est le reste du fichier qui ne s'exécute pas, `requestAnimationFrame`
+   compris. `querySelectorAll` s'en charge tout seul ; `$('reset')`, non. */
 document.querySelectorAll('[data-spd]').forEach(b=>b.addEventListener('click',()=>{
-  speed=+b.dataset.spd;
+  vitesse(+b.dataset.spd);
   document.querySelectorAll('[data-spd]').forEach(x=>x.setAttribute('aria-pressed', x===b?'true':'false'));
 }));
-$('reset').addEventListener('click',()=>{
-  S_=fresh(); LOGS.length=0; lastPct=-1; $('end').hidden=true;
-  /* Sans ceci la table des signes de numération garde ceux de la partie précédente :
-     on repart de zéro glyphe avec 229 nombres encore lisibles à l'écran. */
-  majSignes(); touchees=new Set(); recArmer(false); concFermer(); compVider(); finDesarmer();
-  ambFermer();
-  $('log').innerHTML='<p class="hint">relève un signe : clique dans le corpus</p>';
-  paintCorpus(null); try{localStorage.removeItem(KEY);}catch(e){}
-});
-$('again').addEventListener('click',()=>$('reset').click());
+const bReset=$('reset');
+if(bReset) bReset.addEventListener('click', recommencer);
+/* « recommencer » appelle la fonction et non le bouton : la carte de fin existe dans tous
+   les builds, le bouton de la barre non. */
+$('again').addEventListener('click', recommencer);
 $('fermer').addEventListener('click', fermerFin);
 $('end').addEventListener('click', e=>{ if(e.target===$('end')) fermerFin(); });
 

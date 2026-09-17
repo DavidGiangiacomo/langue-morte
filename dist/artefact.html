@@ -333,6 +333,12 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
     <h1>La langue morte</h1>
     <span class="sub">prototype · actes I–III · <span class="ngl"></span> glyphes sur 45</span>
     <span class="spacer"></span>
+    <!-- La barre hors jeu. Ce que chaque build en garde se lit dans les marqueurs de
+         variante, dont build.py porte la grammaire. Le bénéfice n'est pas d'avoir trois
+         pages : c'est que le sélecteur de vitesse et « réinitialiser » ne sortent pas d'ici.
+         Le premier multiplie les secondes de JEU — celles que le journal d'actions horodate,
+         où rien ne le dirait — et le second efface une partie de quatre-vingt-dix minutes
+         sans rien demander. Devant un joueur qu'on ne regarde pas jouer, aucun des deux. -->
     <div class="devbar">
       <span>hors jeu</span>
       <span id="chrono" style="color:var(--dim);min-width:44px;text-align:right">0:00</span>
@@ -966,6 +972,14 @@ const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram
    Champs de premier niveau, donc une partie d'avant la composition, ou d'avant l'ambiguïté,
    les reçoit vides au chargement, sans qu'on touche à `KEY`. */
 let S_ = fresh(), speed = 1;
+/* Le sélecteur ×1/×3/×10 est hors jeu, mais il multiplie les secondes de JEU — celles que
+   le journal d'actions horodate, et celles sur lesquelles `outils/depouiller.py` rejoue le
+   modèle. Un ×3 ignoré rend toute la timeline d'un playtest inexploitable **sans qu'aucun
+   contrôle puisse le voir** : le contrôle de `depouiller.py` travaille lui aussi en secondes
+   de jeu, où tout reste cohérent. D'où cette fonction, qui ne fait rien de plus que
+   l'affectation — mais `traces.js` n'édite jamais une règle, il enveloppe ce qui existe, et
+   il n'y avait ici qu'un écouteur anonyme. */
+function vitesse(n){ speed = n; }
 try{ const raw=localStorage.getItem(KEY); if(raw){ const p=JSON.parse(raw);
   if(p&&p.b){ const b=Object.assign({cop:0,tab:0,con:0,ate:0,gram:0},p.b); S_=Object.assign(fresh(),p); S_.b=b; } } }catch(e){}
 const has = id => S_.gl.indexOf(id)>=0;
@@ -1593,8 +1607,11 @@ function frame(now){
   if(!S_.done) tick(dt*speed);
   paintRes(); paintActs(); paintInstr(); paintComp(); paintDoute(); paintLex(); paintMeter();
   finRegarder(now);
-  const ch=Math.floor(S_.t/60)+':'+String(Math.floor(S_.t%60)).padStart(2,'0');
-  if($('chrono').textContent!==ch) $('chrono').textContent=ch;
+  /* Le chrono est hors jeu : la version publique n'en a pas, et une boucle qui le cherche
+     quand même s'arrêterait à la première frame. */
+  const el=$('chrono');
+  if(el){ const ch=Math.floor(S_.t/60)+':'+String(Math.floor(S_.t%60)).padStart(2,'0');
+    if(el.textContent!==ch) el.textContent=ch; }
   requestAnimationFrame(frame);
 }
 
@@ -2476,6 +2493,23 @@ function pushLog(txt){
   $('log').innerHTML = LOGS.map((t,i)=>'<p'+(i===LOGS.length-1?' class="new"':'')+'>'+t+'</p>').join('');
 }
 
+/* ==================== recommencer ====================
+   Était le corps de l'écouteur du bouton « réinitialiser ». Il en sort pour deux raisons :
+   le bouton disparaît du build de playtest et de la version publique (LIV-2), alors que
+   « recommencer » de la carte de fin, lui, reste — il se déléguait à un bouton qui n'existe
+   plus. Et `traces.js` enveloppe des fonctions, pas des écouteurs anonymes.
+   Ici plutôt que dans jeu.js parce que tout ce que ça remet à zéro est déclaré ici ou avant,
+   et que traces.js se charge entre les deux. */
+function recommencer(){
+  S_=fresh(); LOGS.length=0; lastPct=-1; $('end').hidden=true;
+  /* Sans ceci la table des signes de numération garde ceux de la partie précédente :
+     on repart de zéro glyphe avec 229 nombres encore lisibles à l'écran. */
+  majSignes(); touchees=new Set(); recArmer(false); concFermer(); compVider(); finDesarmer();
+  ambFermer();
+  $('log').innerHTML='<p class="hint">relève un signe : clique dans le corpus</p>';
+  paintCorpus(null); try{localStorage.removeItem(KEY);}catch(e){}
+}
+
 
 /* « La langue morte » — journal d'actions horodaté (HORS JEU)
    Scripts classiques, portée globale partagée, chargés dans l'ordre de index.html.
@@ -2488,15 +2522,21 @@ function pushLog(txt){
    début, plus un état toutes les 30 s pour pouvoir retracer les courbes.
 
    Il ne modifie aucune règle : il ENVELOPPE les actions déjà déclarées au lieu de
-   les éditer. Pour le retirer d'une version publique il suffit donc de supprimer ce
-   fichier, sa ligne dans index.html et dans build.py, et les deux boutons de la
-   barre « hors jeu ».
+   les éditer — des fonctions, jamais des écouteurs de boutons, qui ne sont pas dans tous
+   les builds. C'est ce qui permet à `build.py` de le retirer d'une variante sans toucher
+   à une ligne du jeu : `dist/public.html` n'emporte ni ce fichier ni la barre « hors jeu »,
+   et rien d'autre ne change (LIV-2).
 
    Chargé APRÈS rendu.js — il enveloppe versTablette et mesures — et AVANT jeu.js,
    qui lie les boutons : il faut qu'il lie les enveloppes, pas les originales. */
 "use strict";
 
 const TKEY = 'langue-morte-traces-v1';
+/* Quelle variante de build a produit ce journal, et quand elle a été assemblée. `build.py`
+   réécrit cette ligne ; en jouant depuis `src/` elle reste « src ». Un TSV qui revient
+   trois semaines après la partie ne dit rien de lui-même sans ça : ni contre quels réglages
+   il a été joué, ni si le sélecteur de vitesse était même à l'écran. */
+let BUILD = 'dev · 2026-09-17';
 const TMAX = 20000;              // garde-fou : PT1 avait produit 3 853 clics
 let TR = [];
 try{ const raw = localStorage.getItem(TKEY); if(raw) TR = JSON.parse(raw) || []; }catch(e){}
@@ -2603,6 +2643,15 @@ enrober('composer', () => S_.comp, a => {
                      : ' ✓ ' + cible + ' · impayable (' + byId[cible].cost + ' C)');
 });
 
+/* Le sélecteur de vitesse. Hors jeu, mais c'est la seule commande capable de fausser tout
+   le reste du fichier : les instants sont en secondes de JEU, qu'un ×3 fabrique trois fois
+   plus vite. Rien ne le trahissait — pas même le contrôle de `outils/depouiller.py`, qui
+   rejoue le modèle sur ces mêmes secondes et les trouve parfaitement cohérentes. Une partie
+   accélérée par mégarde se dépouillait donc comme une partie normale. Il sort du build de
+   playtest (LIV-2) ; cette ligne est pour les parties jouées ici.
+   Enveloppé comme les autres : le témoin est `speed`, donc reposer ×1 sur ×1 n'écrit rien. */
+enrober('vitesse', () => speed, a => '×' + a[0]);
+
 /* La révision (CONTR-2) — la seule action du jeu qui ne laissait aucune trace, et PT10 est
    tombé dedans : zéro ligne, ce qui ne distingue pas « il n'a pas révisé » de « on ne le
    mesurait pas ». C'est pourtant la première question que MOD-2 pose au playtest — combien
@@ -2681,6 +2730,7 @@ function tracesTSV(){
   return [
     '# La langue morte — journal d\'actions',
     '# exporté le ' + horo + ' · ' + TR.length + ' entrées',
+    '# build : ' + BUILD + ' · ' + NGL + ' glyphes d\'arbre',
     '# t = secondes de JEU depuis le début (le sélecteur ×3/×10 les accélère)',
     '# une ligne « reset » marque le début d\'une nouvelle partie : le temps y repart de zéro',
     '# « finjeu » = dernier signe de l\'arbre, la production s\'arrête ; « fin » = la carte s\'ouvre',
@@ -2718,9 +2768,16 @@ $('tr-cp').addEventListener('click', e => {
 });
 
 /* La partie repart, le relevé non : on garde tout et on marque la coupure. Une soirée
-   de playtest tient dans un seul fichier, et rien n'est perdu par un reset distrait. */
-$('reset').addEventListener('click', () => {
-  tracer('reset'); prochainEtat = 0; derniereTablette = null; doneT0 = 0; });
+   de playtest tient dans un seul fichier, et rien n'est perdu par un reset distrait.
+   Sur la fonction et non sur le bouton « réinitialiser », qui ne sort plus dans tous les
+   builds — alors que « recommencer » de la carte de fin, qui appelle la même fonction, y
+   est partout. La ligne s'écrit AVANT la remise à zéro : c'est la fin de la partie
+   précédente qu'elle date, pas le début de la suivante. */
+const _recommencer = recommencer;
+recommencer = function(){
+  tracer('reset'); prochainEtat = 0; derniereTablette = null; doneT0 = 0;
+  return _recommencer();
+};
 
 setInterval(sauverTraces, 4000);
 window.addEventListener('pagehide', sauverTraces);
@@ -2827,20 +2884,20 @@ $('a-rec').addEventListener('click', ()=>recArmer(!recArme));
 /* Le bouton ouvre le mode, puis referme la concordance : un aller-retour, jamais un piège. */
 $('a-con').addEventListener('click', ()=> concSel ? concFermer() : concArmer(!concArme));
 
+/* Les deux boutons hors jeu ne sont pas dans tous les builds : le sélecteur de vitesse et
+   « réinitialiser » sortent du build de playtest, toute la barre sort de la version publique
+   (LIV-2). Les liaisons doivent donc supporter leur absence — une seule ligne qui suppose le
+   bouton là, et c'est le reste du fichier qui ne s'exécute pas, `requestAnimationFrame`
+   compris. `querySelectorAll` s'en charge tout seul ; `$('reset')`, non. */
 document.querySelectorAll('[data-spd]').forEach(b=>b.addEventListener('click',()=>{
-  speed=+b.dataset.spd;
+  vitesse(+b.dataset.spd);
   document.querySelectorAll('[data-spd]').forEach(x=>x.setAttribute('aria-pressed', x===b?'true':'false'));
 }));
-$('reset').addEventListener('click',()=>{
-  S_=fresh(); LOGS.length=0; lastPct=-1; $('end').hidden=true;
-  /* Sans ceci la table des signes de numération garde ceux de la partie précédente :
-     on repart de zéro glyphe avec 229 nombres encore lisibles à l'écran. */
-  majSignes(); touchees=new Set(); recArmer(false); concFermer(); compVider(); finDesarmer();
-  ambFermer();
-  $('log').innerHTML='<p class="hint">relève un signe : clique dans le corpus</p>';
-  paintCorpus(null); try{localStorage.removeItem(KEY);}catch(e){}
-});
-$('again').addEventListener('click',()=>$('reset').click());
+const bReset=$('reset');
+if(bReset) bReset.addEventListener('click', recommencer);
+/* « recommencer » appelle la fonction et non le bouton : la carte de fin existe dans tous
+   les builds, le bouton de la barre non. */
+$('again').addEventListener('click', recommencer);
 $('fermer').addEventListener('click', fermerFin);
 $('end').addEventListener('click', e=>{ if(e.target===$('end')) fermerFin(); });
 

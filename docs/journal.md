@@ -142,6 +142,112 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## Ce qui mesure ne doit pas pouvoir fausser ce qu'il mesure
+
+17/09/2026, LIV-2. PT11 doit se jouer **par quelqu'un d'autre**, et depuis le 15/09 le jeu est
+déployé sur GitHub Pages — ce qui veut dire qu'il se jouera aussi *hors de portée de voix*. La
+page mise en ligne était le build de développement, avec sa barre hors jeu entière. Deux de ses
+boutons n'ont rien à faire devant un joueur qu'on ne regarde pas jouer, et l'un des deux pouvait
+détruire un playtest sans que rien ne le dise.
+
+### Le sélecteur de vitesse ne fait pas du bruit, il fait mentir l'axe
+
+`×3` et `×10` multiplient les secondes de JEU. Or ce sont exactement celles que le journal
+d'actions horodate, et celles sur lesquelles `outils/depouiller.py` rejoue le modèle d'économie.
+Un joueur curieux qui clique `×3` pendant dix minutes en vit trois et demie ; son TSV, lui, en
+écrit dix. Toutes les mesures qui font l'intérêt d'un playtest sont dans cette unité — les
+tranches d'I6 de dix minutes, « cinquante minutes sans un geste dans le corpus », la date des
+relevés qui fixe le prix de la main (règle 9).
+
+Le pire n'est pas là. **Aucun contrôle du dépouillement ne peut voir un `×3`.** Le contrôle de
+`depouiller.py` compare la production prédite au ΔO relevé toutes les trente secondes, et
+attend un écart médian nul — c'est le seul garde-fou du fichier sur lui-même. Il travaille dans
+les mêmes secondes de jeu, où l'accélération ne laisse *rien* : le modèle et le journal restent
+parfaitement d'accord. Une partie accélérée par mégarde se dépouille donc comme une partie
+normale, et rend des minutes qui n'ont jamais été vécues. C'est le défaut que le lot du 15/09
+avait traité quatre fois de suite — un instrument qui ne mesure pas ce qu'on lui demande — sauf
+qu'ici l'instrument ne se tait pas : il répond faux.
+
+D'où deux réponses et non une, parce qu'elles ne couvrent pas le même cas. Le sélecteur
+**laisse désormais une ligne** (`vitesse ×3`), pour les parties jouées ici, où il reste utile ;
+et il **ne sort pas** du build qu'un autre joueur reçoit. `depouiller.py` lit la ligne et ouvre
+le rapport par un avertissement, faute de pouvoir déduire le reste : les durées ne sont plus
+des minutes de montre, et aucun chiffre du rapport ne peut le dire à leur place.
+
+L'autre bouton est plus simple : « réinitialiser » efface une partie de quatre-vingt-dix minutes
+sans rien demander, et il est à six pixels de « copier ».
+
+### Trois builds, un seul passage, aucun drapeau
+
+`python build.py` sort maintenant **quatre fichiers** du même `src/` : `langue-morte.html` et
+`artefact.html` (développement, inchangés), `playtest.html` — le journal d'actions sans le
+sélecteur ni le reset — et `public.html`, ni barre hors jeu ni `traces.js`, 16 Ko de moins.
+C'est ce que LIV-2 demandait, à une nuance près : **pas de drapeau.** Une variante qu'il faut
+penser à réclamer est une variante qu'on oublie de reconstruire, et c'est justement celle qui
+part en ligne. Les quatre sortent d'un seul passage, toujours ; le workflow Pages copie
+`dist/playtest.html`.
+
+Le découpage tient à deux marqueurs dans `index.html`, et il en fallait bien deux :
+`<!--#nom-->…<!--/#nom-->` est présent dans la source et disparaît des variantes qui ne le
+gardent pas ; l'autre forme dort en commentaire et ne s'ouvre que pour une variante. Sans cette
+seconde forme, `src/index.html` — qui se joue tel quel, sans build — afficherait l'étiquette
+des deux builds à la fois.
+
+Anecdote qui a tranché où documenter la chose : le commentaire d'`index.html` qui expliquait la
+grammaire des marqueurs **citait les marqueurs**, et le premier build l'a proprement mangé — le
+découpage s'est appliqué à sa propre documentation. La grammaire vit donc dans `build.py`, et le
+commentaire de la barre dit *pourquoi* ces deux boutons sortent, ce qu'aucune regex ne peut
+manger.
+
+### Retirer un bouton n'est pas une suppression, c'est un découplage
+
+C'est ce que le lot a trouvé, et c'est la seule chose qui n'était pas prévue. Deux lignes
+supposaient la barre hors jeu présente :
+
+- `frame()` écrivait dans `#chrono` **à chaque frame**, sans vérifier qu'il existe ;
+- « recommencer », sur la carte de fin, se déléguait à `$('reset').click()`.
+
+La première aurait arrêté la boucle de rendu à la première frame de la version publique ; la
+seconde aurait fait de `$('reset')` un `null` au moment où `jeu.js` lie ses écouteurs, donc tué
+tout ce qui suit dans le fichier — `requestAnimationFrame(frame)` compris. Une page qui ne
+démarre pas, pour un bouton retiré.
+
+Le corps du reset sort donc dans une fonction, `recommencer()`, déclarée dans `rendu.js` : les
+deux boutons l'appellent, et `traces.js` l'enveloppe au lieu d'écouter un bouton — ce que dit sa
+propre règle depuis le premier jour. La ligne `reset` s'écrit toujours AVANT la remise à zéro :
+c'est la fin de la partie précédente qu'elle date, pas le début de la suivante.
+
+Et le TSV porte enfin **de quel build il sort** : `# build : playtest · 2026-09-17 · 30 glyphes
+d'arbre`. Un journal qui revient trois semaines après la partie ne disait rien de lui-même —
+ni contre quels réglages il a été joué, ni si le sélecteur de vitesse était seulement à l'écran.
+
+### Ce que le joueur voit, et ce qu'il n'a pas
+
+Dans le build de playtest, la barre ne porte plus que le chrono, `traces` et `copier`, et
+l'étiquette « hors jeu » devient **« journal de partie — à renvoyer »**. C'est le seul texte
+ajouté, et il est dans la barre plutôt que sur la carte de fin **exprès** : une partie
+abandonnée est celle dont le journal compte le plus — la partie 1 de PT5 a été abandonnée au
+mur des dix minutes, et c'est ECO-1 — or la carte de fin ne vient qu'au bout des
+quatre-vingt-dix minutes.
+
+Ce qu'il n'a pas : le bouton « réinitialiser ». Assumé. Repartir de zéro n'est pas un geste de
+playtest, et le journal, lui, survit de toute façon — `traces.js` le garde en `localStorage` et
+l'écrit toutes les quatre secondes.
+
+### Ce qui n'est pas fait, et la précaution qui le remplace
+
+**LIV-3 n'est pas traité** : la sauvegarde ne porte toujours pas de version et ne se migre pas.
+Le risque réel pendant un playtest à distance n'est pourtant pas dans le code, il est dans le
+dépôt — le workflow déploie **à chaque poussée sur `develop`**, donc une partie en cours peut
+changer de jeu sous les pieds du joueur au rechargement suivant. La parade est un usage et non
+une mécanique : pendant PT11, rien ne va sur `develop`. Une version de sauvegarde ne sauverait
+pas cette partie-là ; elle dirait seulement, après coup, qu'elle a été perdue.
+
+Rien de l'économie n'est touché : `sim.py` et `balayage.py` redonnent le chiffre pour chiffre
+(91,1–94,3 min, 34 combinaisons sur 54), et c'était le contrat. `outils/verifier.py` passe de
+265 à **286 assertions**, dont une section qui charge les trois builds et vérifie surtout ce
+que chacun **n'a pas**.
+
 ## PT10 — la main a disparu du corpus
 
 Playtest du 15/09/2026, le premier sur les trente signes de l'arbre : **96 min 35** au

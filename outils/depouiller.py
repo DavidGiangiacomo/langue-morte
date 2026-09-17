@@ -54,12 +54,22 @@ RE_ETAT = re.compile(r'O=(\d+) H=(-?\d+) C=(\d+) signes=(\d+) sig%=(\d+) lig%=(\
                      r'gis=(\d+)/(\d+) instr=([\d/]+)')
 
 
+# Ce que les lignes « # » du journal disent de lui-même. Rempli par `lire`, lu par `main` :
+# depuis le 17/09/2026 le TSV porte la variante de build qui l'a produit, et c'est la seule
+# chose qui dise, trois semaines plus tard, contre quels réglages la partie a été jouée.
+ENTETE = {}
+RE_BUILD = re.compile(r'#\s*build\s*:\s*(.+)')
+
+
 def lire(flux):
     """Rend la liste des événements (t, genre, détail), en-têtes et lignes vides ignorés."""
     ev = []
     for l in flux:
         l = l.rstrip('\n').rstrip('\r')
         if not l or l.startswith('#'):
+            m = RE_BUILD.match(l) if l else None
+            if m:
+                ENTETE['build'] = m.group(1).strip()
             continue
         ch = l.split('\t')
         if len(ch) < 3 or ch[0] == 'temps':
@@ -250,7 +260,11 @@ def mmss(t):
 # peut donc mesurer par-dessus eux. Le recoupement et la formulation d'hypothèse coûtent des
 # occurrences (`rec_o`, `hyp_c`) — les oublier ici faisait passer trois intervalles pour une
 # divergence du modèle, jusqu'à −56 %.
-INERTES = ('etat', 'tablette', 'concChoisir', 'fin', 'finjeu')
+# `vitesse` en fait partie, et c'est là tout le problème qu'il pose : le sélecteur ne
+# touche ni les occurrences ni les multiplicateurs, il ne change que le rapport entre ces
+# secondes-là et celles de la montre. Le contrôle ci-dessous le trouverait donc parfaitement
+# cohérent — d'où l'avertissement en tête de rapport, qui ne se déduit d'aucun chiffre.
+INERTES = ('etat', 'tablette', 'concChoisir', 'fin', 'finjeu', 'vitesse')
 
 
 def controle(ev):
@@ -314,6 +328,15 @@ def rapport(ev, nom):
         print('  ⚠ gisement du fichier %d, du build actuel %d — journal d\'un AUTRE build,'
               % (s['gis_fichier'], GIS_TOTAL))
         print('    les tarifs reconstruits sont approximatifs')
+    # Le sélecteur de vitesse ne sort pas du build de développement (LIV-2) : un journal de
+    # playtest n'en portera jamais. Ici, il veut dire que les durées qui suivent ne sont pas
+    # des minutes vécues — et aucun chiffre du rapport ne peut le dire à leur place.
+    vit = [(t, d) for t, g, d in ev if g == 'vitesse']
+    if any(d != '×1' for _, d in vit):
+        print('  ⚠ le sélecteur de vitesse a servi : %s'
+              % ' · '.join('%s %s' % (mmss(x), d) for x, d in vit[:6]))
+        print('    les instants de ce journal sont des secondes de JEU et non de montre ;')
+        print('    tout ce qui suit se lit comme tel, y compris les tranches de dix minutes')
 
     titre('les deux gestes du corpus (règle 8)')
     tot_rel = s['relev'] + s['vides']
@@ -471,6 +494,7 @@ def main():
     print('%s · %d parties dans le fichier, %d jouée%s'
           % (args[0] if args else '(entrée standard)', len(ps), len(jouees),
              's' if len(jouees) > 1 else ''))
+    print('   build : %s' % ENTETE.get('build', '— (journal d\'avant le 17/09/2026)'))
     if not jouees:
         sys.exit('aucune partie jouée dans ce fichier')
     # À défaut de choix explicite, la plus fournie : une soirée de playtest contient des

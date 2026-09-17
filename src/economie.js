@@ -21,6 +21,14 @@ const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram
    Champs de premier niveau, donc une partie d'avant la composition, ou d'avant l'ambiguïté,
    les reçoit vides au chargement, sans qu'on touche à `KEY`. */
 let S_ = fresh(), speed = 1;
+/* Le sélecteur ×1/×3/×10 est hors jeu, mais il multiplie les secondes de JEU — celles que
+   le journal d'actions horodate, et celles sur lesquelles `outils/depouiller.py` rejoue le
+   modèle. Un ×3 ignoré rend toute la timeline d'un playtest inexploitable **sans qu'aucun
+   contrôle puisse le voir** : le contrôle de `depouiller.py` travaille lui aussi en secondes
+   de jeu, où tout reste cohérent. D'où cette fonction, qui ne fait rien de plus que
+   l'affectation — mais `traces.js` n'édite jamais une règle, il enveloppe ce qui existe, et
+   il n'y avait ici qu'un écouteur anonyme. */
+function vitesse(n){ speed = n; }
 try{ const raw=localStorage.getItem(KEY); if(raw){ const p=JSON.parse(raw);
   if(p&&p.b){ const b=Object.assign({cop:0,tab:0,con:0,ate:0,gram:0},p.b); S_=Object.assign(fresh(),p); S_.b=b; } } }catch(e){}
 const has = id => S_.gl.indexOf(id)>=0;
@@ -648,7 +656,10 @@ function frame(now){
   if(!S_.done) tick(dt*speed);
   paintRes(); paintActs(); paintInstr(); paintComp(); paintDoute(); paintLex(); paintMeter();
   finRegarder(now);
-  const ch=Math.floor(S_.t/60)+':'+String(Math.floor(S_.t%60)).padStart(2,'0');
-  if($('chrono').textContent!==ch) $('chrono').textContent=ch;
+  /* Le chrono est hors jeu : la version publique n'en a pas, et une boucle qui le cherche
+     quand même s'arrêterait à la première frame. */
+  const el=$('chrono');
+  if(el){ const ch=Math.floor(S_.t/60)+':'+String(Math.floor(S_.t%60)).padStart(2,'0');
+    if(el.textContent!==ch) el.textContent=ch; }
   requestAnimationFrame(frame);
 }
