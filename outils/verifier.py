@@ -95,6 +95,11 @@ def verifier(condition, message):
 
 
 def main() -> None:
+    # Même parade que `sim.py` et `balayage.py`. Ici le défaut ne se voyait qu'une fois la
+    # sortie redirigée : la console sait afficher le → de la cinquième assertion, un fichier
+    # ou un tube en cp1252 non, et la suite mourait là avec 311 contrôles non joués.
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
     if not PAGE.exists():
         sys.exit(f"{PAGE} absent — lancer d'abord : python build.py")
 
