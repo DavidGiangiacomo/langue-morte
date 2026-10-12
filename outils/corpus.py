@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 """Génère src/corpus.js à partir des 30 tablettes.\n\nLe contenu éditorial de référence est dans docs/corpus.md : ce fichier en est la\ntranscription exécutable. Toute modification du texte se fait ICI, puis on relance\n`python outils/corpus.py`, puis `python build.py`.\n"""
-import json, re
+import json, re, sys
+
+# Le fichier généré était déjà écrit en UTF-8 (voir en bas) ; la sortie console, non.
+sys.stdout.reconfigure(encoding='utf-8')
 
 MOT = {
  'un':'an','deux':'anna','dix':'sela','vingt':'selanna','cent':'meku','zéro':'lan',

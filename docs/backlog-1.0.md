@@ -23,7 +23,7 @@
 | | Fait | Reste pour 1.0 |
 |---|---|---|
 | Glyphes | **30 / 45** *(+ `grenier` et `zéro`, composés, hors arbre)* | **15** |
-| Instruments | 6 / 9 (Œil, Copiste, Table, Concordance, Atelier, Grammaire) | 3 (Élève, Corpus jumeau, Le Lecteur) |
+| Instruments | **7 / 9** (Œil, Copiste, Table, Concordance, Atelier, Grammaire, **Élève** *— branche `eleve`, pas encore fusionnée*) | 2 (Corpus jumeau, Le Lecteur) |
 | Actes | **I, II, III — entiers** | IV, V |
 | Corpus | **30 tablettes, 705 lignes, 3 838 signes — intégral**, ⟨N1⟩/⟨N2⟩ semés, **les 11 lectures fausses écrites** | — |
 | Mécaniques centrales | relevé, recoupement, datation, rangement, concordance, hors-ligne, **composition**, **ambiguïté**, **doute, révision, contradiction** | Questions |
@@ -321,14 +321,33 @@ Suivi : [#22](https://github.com/DavidGiangiacomo/langue-morte/issues/22) — le
 
 Suivi : [#23](https://github.com/DavidGiangiacomo/langue-morte/issues/23) — les récits ouverts y sont des sous-issues.
 
-**ELV-1 — L'instrument qui multiplie tout** · T:M · [#32](https://github.com/DavidGiangiacomo/langue-morte/issues/32)
+**ELV-1 — L'instrument qui multiplie tout** · ~~T:M~~ **fait** (12/10/2026, branche `eleve`) · [#32](https://github.com/DavidGiangiacomo/langue-morte/issues/32)
 > En tant que joueur, je veux un générateur qui accélère tout le reste.
+
+- Fini quand *(écrit avec le lot, le backlog ne le disait pas)* : l'Élève est le septième
+  instrument, payé en occurrences et ouvert par la première Grammaire ; il multiplie ce que
+  rendent les cinq autres et pas le relevé ; les tranches d'I6 à partir de 10′ et l'écart max
+  sont **mesurés** inchangés (règle 2) ; `sim.py` le modélise et `balayage.py` le balaie.
+- *Fait* : 20 000 occ. ×1,8, +5 % par Élève. Mesuré — pire tranche 26 %, écart max 5,2 min,
+  comme avant ; sept Élèves font gagner 6,8 min (84,2–87,6 contre 91,1–94,3) ; main 21–31 %.
+  Un multiplicateur global ne règle que la durée : voir `docs/journal.md`, « L'Élève tranche
+  à ma place ».
 
 **ELV-2 — …et qui se trompe** · T:L · [#34](https://github.com/DavidGiangiacomo/langue-morte/issues/34)
 > En tant que joueur, je veux découvrir que ce que l'Élève déchiffre tout seul est parfois faux.
 
 - Fini quand : l'Élève déchiffre de lui-même, avec un taux d'erreur croissant avec leur nombre ; ses erreurs alimentent la dette (AMB-3) ; empiler des Élèves déchiffre **vite et faux**.
 - Dépend de : E3 en entier. **Sans lectures fausses, son taux d'erreur n'a rien à fausser** (journal, « ce qui reste de l'acte III »).
+- *Fait* (12/10/2026, branche `eleve`) : **il tranche à l'achat.** Le joueur paie toujours le
+  signe en Certitude ; dès le premier Élève, un signe ambigu n'offre plus ses deux lectures.
+  Faux `1 − 0,85ⁿ` fois — 15 % à un, 48 % à quatre, 68 % à sept. Son erreur est une lecture
+  (`S_.lect`), donc la dette s'en déduit ; son taux ne s'affiche nulle part ; le doute de ces
+  signes vaut cent. Mesuré : sept Élèves qui lisent faux ⟨avant⟩, ⟨ne-pas⟩ et ⟨lire⟩ arment
+  la contradiction à eux seuls (92,6–95,9 min), et un seul qui se trompe est le pire cas
+  (99,5–102,6).
+- *Réserve écrite* : dans le prototype, lire soi-même deux signes avant d'engager le premier
+  Élève ne coûte que 0,8 min. L'arbitrage ne mord que sur celui qui ne sait pas. À reprendre
+  avec ECO-3, quand ⟨semence⟩ et ⟨devenir⟩ seront à cent minutes de là.
 
 ---
 
@@ -423,6 +442,7 @@ Suivi : [#27](https://github.com/DavidGiangiacomo/langue-morte/issues/27) — le
 > En tant qu'auteur, je veux vérifier le rythme de trois heures sans jouer trois heures.
 
 - Fini quand : le simulateur modélise l'Élève, les Questions, la dette et la contradiction ; il sort les tranches d'I6 sur toute la partie ; `balayage.py` peut balayer les nouvelles constantes.
+- *Fait de ce récit* : la dette et la contradiction (CONTR-1), et **l'Élève** (12/10/2026) — `elv_b`, `elv_r`, `elv_p`, `elv_e` sont dans `P`, donc balayables. Restent les Questions et les actes IV–V.
 - **Bloquant pour tout réglage des actes IV–V** (règle 7).
 
 **ECO-3 — Tenir I1 et I4 sur 45 glyphes** · T:L · [#47](https://github.com/DavidGiangiacomo/langue-morte/issues/47)
@@ -561,14 +581,14 @@ Le graphe de dépendances avait une seule vraie contrainte forte : **le texte de
 depuis le 14/09/2026 ; E3 et MOD-2 sont faits le 15/09/2026, avec CONTR-2 et CONTR-3 que
 `peut-être` ne pouvait pas laisser dehors — un doute qu'on ne peut pas payer ne sert à rien.
 CONTR-1 puis MOD-3 ferment la boucle le même jour : voir son doute, voir où le texte ne
-tient pas, payer pour rouvrir, ou encaisser. **J2 est fait à l'exception de E5** — l'Élève,
-dont le taux d'erreur a maintenant de quoi se nourrir, et qui est le prochain sur le chemin
-critique. Puis J3, l'acte IV.
+tient pas, payer pour rouvrir, ou encaisser. **E5, l'Élève, est écrit le 12/10/2026 sur la
+branche `eleve`** : J2 sera fait le jour où elle sera fusionnée, c'est-à-dire après le retour
+du journal de PT11 — il déplace l'économie que PT11 doit mesurer. Puis J3, l'acte IV.
 
 | Jalon | Contenu | Ce qu'on peut jouer à la fin |
 |---|---|---|
 | ~~**J1 — L'acte III se termine**~~ *(fait, 14/09/2026)* | ~~E1 (composition)~~ + ~~PAR-1~~ + ~~MOD-1~~ + ~~COMP-3~~ + ~~PAR-2~~ | 28 glyphes, la composition, `les-lecteurs` |
-| ~~**J2 — Le mensonge**~~ *(fait, 15/09/2026)* | ~~TXT-1 · E3 · MOD-2 · MOD-3 · E4~~ → reste **E5 (Élève)** | l'acte III entier, la confiance, la contradiction, **`faux`** |
+| ~~**J2 — Le mensonge**~~ *(fait, 15/09/2026)* | ~~TXT-1 · E3 · MOD-2 · MOD-3 · E4~~ → **E5 (Élève)** écrit, à fusionner après PT11 | l'acte III entier, la confiance, la contradiction, **`faux`** |
 | **J3 — La voix** | E6 (Personne, Questions, Corpus jumeau, I2) | l'acte IV |
 | **J4 — La graine** | E7 + E8 | les cinq actes, les deux fins, la relecture |
 | **J5 — 1.0** | E9 (final) + E11 | une version publique |

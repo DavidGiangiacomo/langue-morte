@@ -77,7 +77,7 @@ function enrober(nom, temoin, detail){
   };
 }
 
-const niveaux = () => S_.b.cop + S_.b.tab + S_.b.con + S_.b.ate + S_.b.gram;
+const niveaux = () => S_.b.cop + S_.b.tab + S_.b.con + S_.b.ate + S_.b.gram + S_.b.elv;
 
 /* `relever` reçoit désormais sa tablette : c'est la seule façon de distinguer un joueur qui
    parcourt le corpus d'un joueur qui s'installe sur une tablette et martèle. La question
@@ -94,11 +94,16 @@ enrober('acheterIns', niveaux,            a => a[0] + ' n°' + S_.b[a[0]]);
    Le degré de doute suit, et lui seul dit ce que le joueur avait sous les yeux en tranchant
    (MOD-2). `CLAUDE.md` l'annonçait dans ce journal depuis le lot ; il n'y était pas, et PT10
    s'est dépouillé sans lui. `acheterGl` le fige à l'instant du choix, juste avant qu'on le
-   lise ici. Sur un signe non ambigu il ne veut rien dire et n'est pas écrit. */
+   lise ici. Sur un signe non ambigu il ne veut rien dire et n'est pas écrit.
+
+   Et qui a tranché (ELV-2) : « combien de lectures fausses sur neuf » ne mesure le joueur
+   que sur les signes qu'il a lus lui-même. Le nombre d'Élèves à cet instant donne leur taux
+   d'erreur, que le jeu n'affiche nulle part. */
 enrober('acheterGl', () => S_.gl.length,  a => a[0] + ' (' + motDe(a[0]) + ')'
                                                + (faux(a[0]) ? ' ✗' : '')
                                                + ' ' + byId[a[0]].cost + ' C'
-                                               + (AMB[a[0]] ? ' · doute ' + douteDe(a[0]) : ''));
+                                               + (AMB[a[0]] ? ' · doute ' + douteDe(a[0]) : '')
+                                               + (AMB[a[0]] && a[2] ? ' · élève ' + S_.b.elv : ''));
 /* La nuit ne passe pas par `tick` et n'émettrait donc aucune ligne : une seule, au retour,
    dit ce qu'elle a rapporté. Une partie jouée en plusieurs fois se lit alors sans trou. */
 enrober('veillee',   () => Math.round(S_.O), () => Math.round(S_.O) + ' occ. hors ligne');
@@ -203,7 +208,7 @@ tick = function(dt){
     tracer('etat', 'O=' + Math.round(S_.O) + ' H=' + Math.round(S_.H) + ' C=' + Math.round(S_.C)
                  + ' signes=' + S_.gl.length + ' sig%=' + m.sig + ' lig%=' + m.lig
                  + ' gis=' + Object.keys(S_.rel).reduce((n,t)=>n+S_.rel[t].length,0) + '/' + GIS_TOTAL
-                 + ' instr=' + [S_.b.cop, S_.b.tab, S_.b.con, S_.b.ate, S_.b.gram].join('/'));
+                 + ' instr=' + [S_.b.cop, S_.b.tab, S_.b.con, S_.b.ate, S_.b.gram, S_.b.elv].join('/'));
   }
 };
 

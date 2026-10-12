@@ -44,7 +44,7 @@ GIS_TOTAL = sum(GIS.values())
 # différence entre ce jeu et un incrémental habillé, donc c'est ça qu'on mesure)
 CORPUS_GESTES = ('relever', 'recouper', 'concChoisir', 'tablette')
 
-RE_GL = re.compile(r'^(\w+) \((.*?)\)( ✗)? (\d+) C(?: · doute (\d+))?$')
+RE_GL = re.compile(r'^(\w+) \((.*?)\)( ✗)? (\d+) C(?: · doute (\d+))?(?: · élève (\d+))?$')
 RE_REC = re.compile(r'^\+(\d+) cert\.(?: · (\S+))?$')
 RE_INS = re.compile(r'^(\w+) n°(\d+)$')
 RE_REL = re.compile(r'tablette (\d+)')
@@ -114,11 +114,11 @@ class Rejeu:
     def __init__(self, ev):
         self.ev = ev
         self.gl = {}                 # id -> 'j' | 'f'
-        self.b = dict(cop=0, tab=0, con=0, ate=0, gram=0)
+        self.b = dict(cop=0, tab=0, con=0, ate=0, gram=0, elv=0)
         self.prix, self.rel = {}, {}
         has = lambda i: i in self.gl
         mf = lambda i, x: ((1 + (x - 1) * sim.AMB_R) if self.gl.get(i) == 'f' else x) if has(i) else 1
-        self.m = sim.multis(has, mf)
+        self.m = sim.multis(has, mf, lambda: sim.eleve(P, self.b['elv']))
         self.has = has
 
     def obrut(self):
@@ -129,7 +129,7 @@ class Rejeu:
                  relev=0, vides=0, sans_tb=0, formuler=0,
                  recs=[], comps=[], concs=[], navs=[], revs=[], achats=[], etats=[],
                  couts_t=[], main_t=[], contr=None, contr_levee=None,
-                 finjeu=None, fin=None, gis_fichier=None)
+                 finjeu=None, fin=None, gis_fichier=None, eleve={})
         prev_t = self.ev[0][0]
         for t, genre, det in self.ev:
             s['o_auto'] += self.obrut() * max(0.0, t - prev_t)
@@ -165,12 +165,16 @@ class Rejeu:
                 m = RE_GL.match(det)
                 if not m:
                     continue
-                gid, mot, fx, cout, doute = m.groups()
+                gid, mot, fx, cout, doute, elv = m.groups()
                 self.gl[gid] = 'f' if fx else 'j'
                 s['cert_couts'] += float(cout)
                 s['couts_t'].append((t, float(cout)))
                 s['achats'].append((t, gid, mot, bool(fx), int(cout),
                                     int(doute) if doute else None))
+                # Lu par un Élève et non par le joueur (ELV-2) : tenu à part de `achats`,
+                # dont six lecteurs déballent déjà les six champs.
+                if elv:
+                    s['eleve'][gid] = int(elv)
                 # La contradiction se solde à l'ouverture du doute, et nulle part ailleurs
                 # (règle 19). On la rejoue au même endroit que le jeu.
                 if gid == 'mik' and s['contr'] is None and self.dette() > P['contr_s']:
@@ -426,10 +430,22 @@ def rapport(ev, nom):
         fx = [g for g, _, f in tranches if f]
         print('  %d signes ambigus tranchés, %d faux : %s'
               % (len(tranches), len(fx), ', '.join(fx) or '—'))
+        # La question de PT11 — « combien de lectures fausses sur neuf » — porte sur le
+        # JOUEUR. Ce qu'un Élève a lu à sa place n'y entre pas, et se compte à part.
+        elv = s['eleve']
+        if elv:
+            siens = [(g, f) for g, _, f in tranches if g not in elv]
+            print('  dont %d par le joueur (%d faux) et %d par l\'Élève (%d faux, %.1f attendus)'
+                  % (len(siens), sum(1 for _, f in siens if f), len(elv),
+                     sum(1 for g, _, f in tranches if f and g in elv),
+                     sum(sim.erreur(P, n) for n in elv.values())))
         for _, g, mot, f, _, dte in s['achats']:
             if g in sim.AMBIGUS:
-                print('    %-6s %-12s %s%s' % (g, mot, '✗ faux' if f else 'juste',
-                                               ' · doute %d' % dte if dte is not None else ''))
+                print('    %-6s %-12s %s%s%s' % (g, mot, '✗ faux' if f else 'juste',
+                                                 ' · doute %d' % dte if dte is not None else '',
+                                                 ' · lu par %d Élève(s), %d %% d\'erreur'
+                                                 % (elv[g], round(100 * sim.erreur(P, elv[g])))
+                                                 if g in elv else ''))
         print('  dette %d (seuil %d)' % (sum(sim.DETTE[g] for g in fx), P['contr_s']))
     if s['contr']:
         print('  ⚠ contradiction ARMÉE à %s%s' % (mmss(s['contr']),
@@ -481,6 +497,13 @@ def rapport(ev, nom):
 
 
 def main():
+    # Même parade que les autres outils, et ici elle compte : le rapport porte des ─ et des ⚠
+    # que cp1252 ne sait pas écrire, et un rapport de playtest se redirige vers un fichier.
+    # L'entrée aussi — un journal passé par un tube arrive sinon décodé en cp1252, et le ✗
+    # des lectures fausses ne se reconnaît plus.
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+    sys.stdin.reconfigure(encoding='utf-8')
     args = [a for a in sys.argv[1:] if not a.startswith('--')]
     choix = None
     for i, a in enumerate(sys.argv):

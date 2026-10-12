@@ -66,7 +66,11 @@ $('instr').addEventListener('click', e=>{ const b=e.target.closest('[data-ins]')
    second clic qui paie. Les trente-quatre autres n'ont rien à trancher et passent droit. */
 $('lex').addEventListener('click', e=>{ const b=e.target.closest('[data-gl]');
   if(!b||b.disabled) return;
-  if(AMB[b.dataset.gl]) ambOuvrir(b.dataset.gl); else acheterGl(b.dataset.gl); });
+  const id=b.dataset.gl;
+  /* ... sauf quand un Élève l'a lu avant : le clic paie, et la lecture est la sienne. */
+  if(!AMB[id]) acheterGl(id);
+  else if(elvTranche()) acheterGl(id, elvLecture(), true);
+  else ambOuvrir(id); });
 $('amb-choix').addEventListener('click', e=>{
   const b=e.target.closest('[data-amb]'); if(b) ambChoisir(+b.dataset.amb); });
 $('amb-annuler').addEventListener('click', ambFermer);

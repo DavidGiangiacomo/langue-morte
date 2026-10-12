@@ -473,7 +473,7 @@ function paintInstr(){
     b.classList.toggle('afford',can);
     b.disabled=!can;
     setHTML(b.querySelector('.sg'), sv(i.sig));
-    const muet={cop:'kal',tab:'im',con:'shen',ate:'mesh',gram:'en'}[i.k];
+    const muet={cop:'kal',tab:'im',con:'shen',ate:'mesh',gram:'en',elv:'zur'}[i.k];
     setHTML(b.querySelector('.nn'), (open&&has('ur')) ? i.nom
       : '<span style="color:var(--dim)">'+sv('dun')+sv(muet)+sv('la')+'</span>');
     setHTML(b.querySelector('.lv'), open? nf.format(S_.b[i.k]) : '');

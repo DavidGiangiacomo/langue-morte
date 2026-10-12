@@ -92,6 +92,11 @@ def scripts(nom: str, v: dict) -> str:
 
 
 def main() -> None:
+    # Même parade que `sim.py`, `balayage.py` et `verifier.py`. Ici rien ne plante — cp1252
+    # sait écrire le tiret cadratin et les guillemets — mais redirigée, la sortie n'est plus
+    # lisible par ce qui l'attend en UTF-8.
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
     index = lire("index.html")
 
     markup = re.search(r"<body>\s*(.*?)\s*<script src=", index, re.S)
