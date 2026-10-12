@@ -85,9 +85,11 @@ Les générateurs ne sont pas des bâtiments : ce sont des **méthodes philologi
 | 8 | **Corpus jumeau** | une deuxième inscription est trouvée | IV |
 | 9 | **Le Lecteur** | acheté avant qu'on sache ce que c'est. On découvre à l'acte V que ce n'est pas un instrument : c'est le corpus qui a commencé à lire. | V |
 
-*(Valeurs numériques : voir `docs/journal.md` § Réglages actuels pour les 1 à 6, qui sont implémentés et équilibrés sur sept playtests. La Grammaire est arrivée avec l'acte III ; l'Élève attend les lectures fausses de l'acte IV, sans lesquelles son taux d'erreur n'a rien à fausser.)*
+*(Valeurs numériques : voir `docs/journal.md` § Réglages actuels pour les 1 à 6, qui sont implémentés et équilibrés sur sept playtests. La Grammaire est arrivée avec l'acte III ; l'Élève a attendu les lectures fausses, sans lesquelles son taux d'erreur n'avait rien à fausser.)*
 
 **L'Élève** est le premier générateur *ambivalent*. Il multiplie tout, mais il déchiffre aussi tout seul, et il se trompe. Le joueur qui empile les Élèves déchiffre vite et faux. C'est l'arbitrage central de la seconde moitié du jeu.
+
+**Ce que « déchiffre tout seul » veut dire** (posé le 12/10/2026, ELV-2). Il **tranche à l'achat** : le joueur paie toujours chaque signe en Certitude — la règle du §4 tient — mais dès le premier Élève, un signe ambigu n'offre plus ses deux lectures. Il a déjà été recopié au propre, faux d'autant plus souvent qu'on a empilé d'Élèves. Son erreur est une lecture comme une autre : même dette, même prime silencieuse, même contradiction (§8). Le taux ne s'affiche jamais, et le doute de ces signes est entier — le joueur n'a rien tranché. Qui veut lire lui-même lit avant d'engager le premier, et retarde ce qu'il rapporte.
 
 ---
 

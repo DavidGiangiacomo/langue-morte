@@ -179,3 +179,8 @@ La parade est un usage, et un usage n'est gardé par rien : travailler sur branc
 merger avant le retour du TSV. C'est aussi pourquoi **E5 (l'Élève) n'est pas le prochain
 lot** — il ajoute un instrument, donc la règle 2 impose de reprendre les tranches d'I6, donc
 il déplace l'économie que PT11 doit mesurer.
+
+*12/10/2026 :* l'Élève est écrit quand même, sur la branche `eleve`, pendant que PT11 se joue.
+La raison ci-dessus tient entière — mesuré, il raccourcit la partie de sept minutes et retire
+au joueur quatre des neuf lectures que PT11 doit compter. **Cette branche ne se fusionne pas
+avant le retour du TSV.**

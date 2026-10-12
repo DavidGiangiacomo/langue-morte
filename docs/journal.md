@@ -142,6 +142,116 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## L'Élève tranche à ma place
+
+*12/10/2026, ELV-1 + ELV-2, sur la branche `eleve` — **à ne pas fusionner avant le retour du
+journal de PT11*** (`docs/pt11-protocole.md` §5). Septième instrument, dernier morceau de J2.
+Aucun playtest derrière ces chiffres : c'est un réglage de simulateur.
+
+### Ce que « déchiffre tout seul » veut dire
+
+Le design doc §5 tient en une phrase — « il multiplie tout, mais il déchiffre aussi tout
+seul, et il se trompe » — et le backlog n'avait pas de « fini quand » pour ELV-1. Trois
+lectures tenaient :
+
+| | Ce que fait l'Élève | Pourquoi non, ou oui |
+|---|---|---|
+| **Il tranche à l'achat** | le joueur paie le signe en Certitude ; dès le premier Élève, un signe ambigu n'offre plus ses deux lectures | **retenu** |
+| Il relit ce qui est acquis | il re-tranche au fil du temps les signes déjà lus | il écrase des choix du joueur (R2), et un Élève seul et soigneux ferait des révisions gratuites — CONTR-3 par terre |
+| Il acquiert des signes | il avance seul sur l'arbre, sans Certitude | c'est « acheter de la compréhension avec du volume », la règle du §4 ; et il déplace I4, la durée, le dégagement et la Grammaire d'un coup |
+
+La première ne casse rien : la règle du §4 tient, le rythme des signes ne bouge pas, et
+**l'erreur de l'Élève est une lecture** — posée dans `S_.lect` comme celle du joueur, donc la
+dette s'en déduit, la prime silencieuse s'y applique, la contradiction s'en solde et `faux`
+en allume les lignes, sans une ligne de comptabilité neuve (règle 18, corollaire).
+
+### Ce qu'un multiplicateur global déplace, et ce qu'il ne déplace pas
+
+Balayé sur 36 combinaisons de `elv_p` × `elv_b` × `elv_r`, trois cadences, Élèves qui lisent
+juste et Élèves qui lisent faux. **Aucune ne touche la pire tranche d'I6 ni l'écart max.** La
+pire tranche est 20-30′ (26 %) et l'Élève n'ouvre qu'avec la première Grammaire, à la 48ᵉ
+minute ; l'écart max (5,2 min) est celui de `siècle`, que rien ne rapproche. Un multiplicateur
+global ne fait que **raccourcir**, et les trois constantes ne règlent que deux choses : de
+combien, et combien on en empile.
+
+- `elv_p` — **0,05**. À 0,08 sept Élèves font gagner onze minutes, et sept Élèves qui lisent
+  tout faux finissent *avant* le joueur qui n'en a aucun : il n'y a plus d'arbitrage. À 0,15
+  la main monte à 46 % des occurrences, au-dessus du plafond de 40 %.
+- `elv_b` — **20 000**. Le premier Élève tombe 1,2 à 1,3 min après la première Grammaire
+  (I3 : ~90 s). À 60 000 il arrive après ⟨avant⟩, ses erreurs ne pèsent plus que quatre
+  points, la contradiction ne s'arme pas — et se tromper **paie** (85,9 min contre 87,1, mesuré à
+  `elv_p` 0,04).
+- `elv_r` — **1,8**, seul levier sur leur nombre (la leçon de `REC_R`, une fois de plus) :
+  sept à 1,8, dix à 1,4, quatre à 2,5.
+- `elv_e` — **0,15** pour un Élève seul, `1 − 0,85ⁿ` pour n : 28 % à deux, 48 % à quatre,
+  68 % à sept. Un Élève seul lit mieux que pile ou face ; c'est en les empilant qu'on se
+  trompe.
+
+Il ne multiplie **pas le relevé** : la main suit déjà le débit par son tarif (règle 9), et sa
+part monte d'elle-même de 22-27 % à 21-31 %.
+
+### L'arbitrage, mesuré
+
+Joueur qui lisait juste jusque-là et ne révise jamais (`python outils/sim.py`) :
+
+| Élèves | ils lisent juste | ils lisent faux | erreur à ⟨avant⟩ · ⟨ne-pas⟩ · ⟨lire⟩ |
+|---|---|---|---|
+| 0 | 91,1–94,3 min | — | — |
+| 1 | 89,1–92,3 | **99,5–102,6**, armée | 15 · 15 · 15 % |
+| 2 | 87,4–90,6 | 97,3–100,4, armée | 28 · 28 · 28 % |
+| 4 | 85,0–88,3 | 94,1–97,3, armée | 28 · 39 · 48 % |
+| 7 | **84,2–87,6** | 92,6–95,9, armée | 28 · 39 · 48 % |
+
+Sept Élèves font gagner 6,8 min s'ils lisent juste et en coûtent 1,5 s'ils lisent faux.
+⟨avant⟩, ⟨ne-pas⟩ et ⟨lire⟩ pèsent 2 + 3 + 1 = **six points**, un de plus que le seuil : les
+trois erreurs de l'Élève arment la contradiction à elles seules, sur un joueur qui n'en avait
+commis aucune. Et **un seul Élève qui se trompe est le pire cas du tableau** — la sanction
+entière pour 5 % de débit. C'est le résultat de CONTR-1 par l'autre bout : le pire n'est pas
+celui qui se trompe le plus, c'est celui qui paie la peine sans la prime.
+
+### Ce qui ne se voit pas, et pourquoi
+
+- **Le taux d'erreur ne s'affiche nulle part.** La ligne de l'instrument dit « +5 % aux
+  autres · déchiffre seul » et ne chiffre que la première moitié. ELV-2 dit « découvrir » :
+  que ce soit parfois faux se lit dans le texte, comme tout le reste (règle 17).
+- **Le doute d'un signe lu par l'Élève vaut cent, à un Élève comme à sept.** Le doute dit
+  l'aveuglement du joueur au moment de trancher, et il n'a rien tranché. L'indexer sur le
+  taux d'erreur en ferait un oracle chiffré ; à cent, il est identique pour la lecture juste
+  et pour la fausse (règle 18), et ces signes-là montent en tête du panneau — là où un joueur
+  qui ne lit pas dépensera ses révisions. La révision, elle, reste au joueur : elle rouvre
+  les deux lectures et recalcule son doute à lui.
+- **Une ligne de journal dit qui a lu** — « Un élève l'avait déjà recopié au propre. » — et
+  rien de la lecture. Sans elle, le joueur qui avait vu la fenêtre des deux mots lirait son
+  absence comme une panne.
+- **Le dé est jeté à l'achat, jamais avant.** Tiré d'avance et gardé en sauvegarde, il se
+  lirait dans le fichier.
+
+### Ce que le lot ne règle pas
+
+- **Lire soi-même coûte peu, dans le prototype.** Qui lit ⟨avant⟩ et ⟨ne-pas⟩ avant
+  d'engager son premier Élève finit en 85,0–88,4 min — **0,8 min** de plus que celui qui
+  empile tout de suite, pour cinq des six points de dette mis hors de portée. Les quatre
+  signes lus soi-même en coûtent 4,8. C'est cohérent avec « lire coûte moins cher que
+  chercher », mais c'est un arbitrage que le joueur informé gagne presque gratuitement : il
+  ne mord que sur celui qui ne sait pas, et le jeu ne le lui dira pas. Sur le jeu entier il
+  mordra autrement — ⟨semence⟩ et ⟨devenir⟩ sont à l'acte V, cent minutes plus loin, et
+  personne n'attendra jusque-là pour prendre un Élève.
+- **Quatre signes seulement lui échappent ici**, les cinq premiers ambigus étant lus avant
+  la 48ᵉ minute. Et ⟨il-faut⟩ vient après `peut-être` : son erreur court dans la dette mais
+  **n'arme jamais rien** dans le prototype, où la contradiction ne se solde qu'à l'ouverture
+  du doute (règle 19).
+- **L'acheteur simulé empile sans réfléchir**, comme il recoupe « tant que c'est rentable ».
+  Combien d'Élèves prend un joueur, et s'il relie le mot faux à l'Élève plutôt qu'à lui-même,
+  aucun simulateur ne le dira.
+- **La question de PT11 « combien de lectures fausses sur neuf » ne vaudra plus que pour les
+  signes que le joueur a lus lui-même.** Le journal d'actions marque donc chaque achat lu par
+  l'Élève (`· élève 3`), et `depouiller.py` compte les deux à part, avec le nombre d'erreurs
+  attendu.
+
+Garde-fou de durée re-basé à **(76, 96)**, par le bas seulement, et `balayage.py` gagne un
+axe — avec et sans Élève : 34 combinaisons sur 54, comme avant. `outils/verifier.py` passe de
+297 à **315 assertions**.
+
 ## La carte de fin soufflait la réponse
 
 *12/10/2026.* Trouvé en convertissant le backlog en issues, pas en jouant. La carte de fin
@@ -2843,6 +2953,7 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
 | Concordance | 450 occ., ×1,18, −0,5 hyp./s → +0,0039 cert./s |
 | Atelier de copie | 1 800 occ., ×1,15, +25 occ./s |
 | Grammaire *(acte III)* | 12 000 occ., ×1,20, −3 hyp./s → +0,0012 × 1,16^lexique cert./s. Fermée jusqu'à `année` |
+| Élève *(acte III)* | 20 000 occ., **×1,80**, +5 % à ce que rendent les cinq autres instruments, rien au relevé. Ouvert par la première Grammaire. Dès le premier, un signe ambigu est lu par lui : faux `1 − 0,85ⁿ` fois, doute 100 *(12/10/2026)* |
 | Hors ligne *(acte III)* | `nuit` : 40 % du débit, 4 h au plus, consommé au crédit |
 | Composer *(acte III)* | deux signes acquis, dans l'ordre. Ouvert par `année`. Réussite : le coût normal du glyphe en Certitude. Échec : 250 hyp. ×1,40 par paire déjà tentée, **jamais de Certitude**, et la paire entre au carnet |
 | Signes (27) | Nombre 2 · 5 · 11 · 18 · 33 · 110 — Matière 3 · 6 · 14 · 22 · 40 — Parole 8 · 27 · 48 · 300 · 600 · 900 — Temps 60 · 130 · 190 · 260 · 360 · 500 — Modalité **150 · 320 · 550 · 800** = **5 467 C** *(12/09/2026)* |

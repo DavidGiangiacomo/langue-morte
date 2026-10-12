@@ -48,6 +48,9 @@ Contrôle :
      jeton — et n'allume rien pour les quatre signes sans rupture ni pour une paire réparante
  25. les trois builds : ce que chacun n'a pas — la boucle tourne sans chronomètre, « recommencer »
      marche sans le bouton de la barre, et le sélecteur de vitesse se journalise là où il reste
+ 26. l'Élève : il s'ouvre à la première Grammaire, multiplie les cinq instruments et pas le
+     relevé, tranche les signes ambigus à la place du joueur avec un taux d'erreur qui croît
+     avec leur nombre — et ce taux ne se lit nulle part
 
 Prérequis : pip install playwright && playwright install chromium
 """
@@ -1411,6 +1414,10 @@ def main() -> None:
         verifier(etat == [5, 120, 9, 12], f"la partie est reprise telle quelle : {etat}")
         neufs = vieille.evaluate("() => [Array.isArray(S_.carnet), S_.carnet.length, S_.comp]")
         verifier(neufs == [True, 0, 0], f"les champs neufs arrivent vides : {neufs}")
+        # Un instrument neuf est un champ de `S_.b`, pas de premier niveau : sans son zéro,
+        # `elvMul()` rend NaN et toute la production avec lui.
+        neufs = vieille.evaluate("() => [S_.b.elv, M.cop() > 0]")
+        verifier(neufs == [0, True], f"et l'instrument neuf arrive à zéro, sans rien casser : {neufs}")
         verifier(vieille.text_content("#lexr").strip() == f"5 / {ngl}", "le lexique compte cinq signes")
         r = vieille.evaluate("""() => { S_.C = 9999; acheterGl('nur'); S_.H = 99999;
             const i = composer('tem','im'); sauver();
@@ -1443,6 +1450,85 @@ def main() -> None:
                      "() => $('lex').querySelector('[data-gl=shen]').className"),
                  "et « lire » attend d'être acheté")
         ctx.close()
+
+        # ---- l'Élève (ELV-1, ELV-2) ----
+        # Le premier instrument ambivalent : il multiplie ce que rendent les cinq autres, et
+        # dès qu'il y en a un, ce n'est plus le joueur qui tranche un signe ambigu. Ce qui se
+        # vérifie ici est surtout ce qu'il ne fait PAS : il ne touche pas la main, il n'achète
+        # rien à la place du joueur, et rien à l'écran ne chiffre ce qu'il rate.
+        print("\nl'Élève : il multiplie tout")
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+        # Six boutons pour sept instruments : l'Œil est le relevé, et il se fait dans le corpus.
+        verifier(page.eval_on_selector_all("#instr .ins", "e => e.dataset ? 0 : e.map(b => b.dataset.ins)")[-1] == "elv"
+                 and page.eval_on_selector_all("#instr .ins", "e => e.length") == 6,
+                 "l'Élève est au panneau, après la Grammaire")
+        elv = lambda: page.evaluate("() => INS.find(i => i.k === 'elv').unlock()")
+        page.evaluate("() => { S_.C = 9e6; acheterGl('nur', 'j'); }")
+        verifier(not elv(), "« année » ouvre la Grammaire, pas l'Élève")
+        page.evaluate("() => { S_.b.gram = 1; }")
+        verifier(elv(), "c'est la première Grammaire qui l'ouvre")
+        r = page.evaluate("""() => { const i = INS.find(x => x.k === 'elv'), a = insCost(i);
+            const av = [M.cop(), M.ate(), M.tabl(), M.con(), M.gram(), M.click()];
+            S_.O = 1e9; acheterIns('elv'); const b = insCost(i); acheterIns('elv');
+            const ap = [M.cop(), M.ate(), M.tabl(), M.con(), M.gram(), M.click()];
+            return [a, b, S_.b.elv, ap.map((v, k) => Math.round(1000 * v / av[k]) / 1000)]; }""")
+        verifier(r[:3] == [20000, 36000, 2], f"20 000 occurrences, puis ×1,8 : {r[:3]}")
+        verifier(r[3] == [1.1, 1.1, 1.1, 1.1, 1.1, 1],
+                 f"deux Élèves : +10 % aux cinq instruments, rien au relevé : {r[3]}")
+        r = page.evaluate("""() => [0, 1, 2, 7].map(n => { S_.b.elv = n;
+            return Math.round(100 * elvErr()); })""")
+        verifier(r == [0, 15, 28, 68], f"le taux d'erreur croît avec leur nombre : {r} %")
+
+        print("\nl'Élève : il tranche à ma place")
+        ouverte = lambda: page.evaluate("() => !$('amb').hidden")
+        clic = lambda g: (page.wait_for_timeout(120),
+                          page.evaluate("g => $('lex').querySelector('[data-gl=' + g + ']').click()", g),
+                          page.wait_for_timeout(120))
+        # Sans Élève, rien ne change : le signe ambigu ouvre ses deux lectures et n'est pas payé.
+        page.evaluate("() => { S_.b.elv = 0; }")
+        clic("pat")
+        verifier(ouverte() and not page.evaluate("() => has('pat')"),
+                 "sans Élève, « avant » ouvre ses deux lectures")
+        page.evaluate("() => ambFermer()")
+        # Avec un seul, le clic paie et la fenêtre ne vient pas. Le dé est tenu : c'est le
+        # seul hasard du jeu qui décide de quelque chose, et un test ne se joue pas aux dés.
+        page.evaluate("() => { S_.b.elv = 1; S_.C = 500; TR.length = 0; window._rnd = Math.random; Math.random = () => 0; }")
+        clic("pat")
+        r = page.evaluate("() => [has('pat'), S_.lect.pat, S_.dte.pat, S_.C, dette(), motDe('pat')]")
+        verifier(not ouverte() and r[0], "avec un Élève, le clic paie et la fenêtre ne vient pas")
+        verifier(r[3] == 370, f"le signe se paie toujours en Certitude, au même prix : {r[3]}")
+        verifier(r[1] == "f" and r[5] == "dessous" and r[4] == 2,
+                 f"son erreur est une lecture — le mot, et la dette qui s'en déduit : {r[1:2] + r[4:]}")
+        vu = page.evaluate("() => $('log').innerText")
+        verifier("élève" in vu and "Dessous" in vu, f"le journal dit qui a lu, puis ce qui a été lu : « {' / '.join(vu.split())[:60]}… »")
+        ligne = [l.split("\t")[3] for l in page.evaluate("() => tracesTSV()").split("\n") if "\tacheterGl\t" in l]
+        verifier(len(ligne) == 1 and ligne[0].endswith("· doute 100 · élève 1") and "✗" in ligne[0],
+                 f"et le journal d'actions aussi, pour le dépouillement : « {ligne[0] if ligne else '—'} »")
+        # Le doute vaut cent pour les deux lectures : le joueur n'a rien tranché, et un chiffre
+        # qui suivrait le taux d'erreur serait un oracle (règle 18).
+        page.evaluate("() => { S_.b.elv = 7; S_.C = 500; Math.random = () => 0.99; }")
+        clic("zur"); clic("la")
+        r = page.evaluate("() => [has('la'), S_.lect.la, S_.dte.la, S_.dte.pat, S_.dte.zur === undefined]")
+        verifier(r == [True, "j", 100, 100, True],
+                 f"lu juste ou lu faux, à un Élève ou à sept, le doute est le même : {r}")
+        page.evaluate("() => { Math.random = window._rnd; }")
+        # Rien ne chiffre l'erreur, et rien ne la juge : elle se découvre dans le texte.
+        page.evaluate("() => { acheterGl('an'); acheterGl('tem', 'j'); acheterGl('ur', 'j'); acheterGl('im'); }")
+        page.wait_for_timeout(200)
+        ds = page.evaluate("() => $('instr').querySelector('[data-ins=elv] .ds').innerText")
+        verifier("déchiffre seul" in ds and "+5 % aux autres" in ds, f"sa ligne dit les deux moitiés : « {ds} »")
+        vu = page.evaluate("() => document.querySelector('.shell').innerText.toLowerCase()")
+        verifier(not any(m in vu for m in ("erreur", "se trompe", "68 %", "15 %", "dette")),
+                 "et ne chiffre que la première — le taux d'erreur n'est nulle part à l'écran")
+        # Un composé posé à la grille n'offre aucun choix, Élève ou pas : la lecture juste, et
+        # le doute du joueur. Et la révision reste la sienne — elle rouvre les deux lectures.
+        page.evaluate("() => { S_.C = 9e6; S_.H = 9e6; S_.b.elv = 3; acheterGl('mik'); }")
+        page.wait_for_timeout(150)
+        page.evaluate("() => $('doutes').querySelector('[data-dou=pat]').click()")
+        verifier(ouverte(), "la révision d'un signe lu par l'Élève rouvre les deux lectures")
+        r = page.evaluate("() => { ambFermer(); reviser('pat', 'j'); return [S_.lect.pat, S_.dte.pat < 100, dette()]; }")
+        verifier(r == ["j", True, 0], f"et c'est alors le joueur qui tranche, avec son propre doute : {r}")
 
         # ---- les trois builds (LIV-2) ----
         # `python build.py` sort trois pages du même `src/`. Ce qui se vérifie ici n'est pas

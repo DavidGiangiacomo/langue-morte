@@ -98,6 +98,20 @@ P = dict(
     # economie.js. Ce simulateur n'a pas de modèle de lecture et ne révise donc JAMAIS : il
     # mesure le pire cas, celui du joueur qui encaisse jusqu'au bout.
     contr_s=5, contr_div=2.0,
+    # L'Élève (ELV-1) : il ne produit rien, il multiplie ce que rendent les cinq autres —
+    # +elv_p par Élève, linéaire, contre un prix géométrique. Ouvert par la première
+    # Grammaire. Et il tranche à la place du joueur (ELV-2) : `elv_e` est le taux d'erreur
+    # d'un Élève seul, et n Élèves se trompent 1 - (1 - elv_e)^n fois.
+    # Balayé le 12/10/2026 sur elv_p x elv_b x elv_r. Aucune des 36 combinaisons ne déplace
+    # la pire tranche d'I6 (26 %, à 20-30′ : l'Élève n'existe pas encore) ni l'écart max
+    # (5,2 min) ; elles ne règlent que DE COMBIEN il raccourcit et COMBIEN on en empile.
+    # elv_p : 0,05 fait gagner 6,8 min à qui en prend sept ; 0,08 en fait gagner onze, et
+    # sept Élèves qui lisent tout faux finissent ALORS avant le joueur qui n'en a aucun — il
+    # n'y a plus d'arbitrage. 0,15 pousse la main à 46 % des occurrences.
+    # elv_b : à 60 000 le premier Élève arrive après ⟨avant⟩, et ses erreurs ne pèsent plus
+    # que quatre points — sous le seuil de la contradiction, donc se tromper PAIE.
+    # elv_r : seul levier sur leur nombre, comme toujours (la leçon de `REC_R`).
+    elv_b=20000, elv_r=1.8, elv_p=0.05, elv_e=0.15,
 )
 
 BR = {}
@@ -143,35 +157,57 @@ DETTE = {g: (3 if _freq.get(g, 0) >= 250 else 2 if _freq.get(g, 0) >= 100 else 1
          for g in AMBIGUS}
 
 
-def multis(has, mf):
+def eleve(P, n):
+    """Ce que n Élèves font aux cinq instruments. Un seul endroit, pour `run()` et pour
+    `depouiller.py`, comme `multis()` et pour la même raison."""
+    return 1 + P['elv_p'] * n
+
+
+def erreur(P, n):
+    """La part des signes ambigus que n Élèves lisent faux. Zéro sans Élève : c'est alors
+    le joueur qui tranche."""
+    return 1 - (1 - P['elv_e']) ** n
+
+
+def multis(has, mf, melv=lambda: 1.0):
     """Les cinq multiplicateurs d'instrument et celui du relevé, en un seul endroit.
     Sortis de `run()` le 15/09/2026 pour que `depouiller.py` les lise ici plutôt que
     d'en tenir une troisième copie : `economie.js` a déjà la sienne, et ce fichier
     porte en tête la trace de la fois où les deux ont divergé.
     `has(id)` dit si le signe est acquis, `mf(id, x)` rend son multiplicateur majoré de
     la prime s'il est mal lu (AMB-1). Les deux viennent de l'appelant, qui seul sait
-    s'il rejoue une simulation ou un journal d'actions."""
-    mcop = lambda: mf('tem', 1.3) * (2 if has('kal') else 1) * (1.5 if has('imme') else 1)
+    s'il rejoue une simulation ou un journal d'actions. `melv()` rend le multiplicateur de
+    l'Élève, qui porte sur les cinq instruments et jamais sur le relevé : la main suit déjà
+    le débit par son tarif (règle 9), la multiplier encore la paierait deux fois."""
+    mcop = lambda: (mf('tem', 1.3) * (2 if has('kal') else 1) * (1.5 if has('imme') else 1)
+                    * melv())
     return dict(
         cop=mcop,
         ate=lambda: (mcop() * (1.3 if has('mille') else 1) * (1.5 if has('nurhal') else 1)
                      * mf('dun', 1.5)),
-        tab=lambda: mf('kish', 1.3) * (2 if has('kal') else 1) * (1.5 if has('tabsar') else 1),
-        con=lambda: mf('sar', 1.5) * (2 if has('kal') else 1),
-        gram=lambda: (1.5 if has('nurnur') else 1) * (2 if has('kal') else 1) * mf('shen', 1.5),
+        tab=lambda: (mf('kish', 1.3) * (2 if has('kal') else 1) * (1.5 if has('tabsar') else 1)
+                     * melv()),
+        con=lambda: mf('sar', 1.5) * (2 if has('kal') else 1) * melv(),
+        gram=lambda: ((1.5 if has('nurnur') else 1) * (2 if has('kal') else 1) * mf('shen', 1.5)
+                      * melv()),
         click=lambda: ((1.25 if has('anna') else 1) * (1.5 if has('tab') else 1)
                        * (2 if has('kal') else 1)),
     )
 
 
-def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=()):
+def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=(), eleves=None, eleve_lit='j',
+        eleve_apres=None):
     """cpm = clics manuels par minute. `garde` = fraction de la partie pendant laquelle
     le joueur s'interdit de relever, pour tarifer ses tablettes au débit maximal —
     c'est le pire cas contre lequel il faut se prémunir. `compose` = les signes que le
     joueur pose à la grille dès qu'il peut les payer. `faux` = les signes ambigus que le
-    joueur a mal lus. Retourne (durée, jalons, ...)."""
+    joueur a mal lus. `eleves` = le nombre d'Élèves que le joueur s'autorise (None : autant
+    que l'acheteur en veut). `eleve_lit` = ce que lisent les Élèves quand ils tranchent à sa
+    place, 'j' ou 'f' : les deux extrêmes, comme pour le joueur — ce simulateur n'a pas de
+    dé, et la part de chaque extrême se lit dans `elv_lus`. `eleve_apres` = le signe que le
+    joueur tient à lire lui-même avant d'engager son premier Élève. Retourne (durée, jalons, ...)."""
     O = H = C = 0.0
-    b = {'cop': 0, 'tab': 0, 'con': 0, 'ate': 0, 'gram': 0}
+    b = {'cop': 0, 'tab': 0, 'con': 0, 'ate': 0, 'gram': 0, 'elv': 0}
     gl, rec, t, dt = set(), 0, 0.0, 0.1
     marks, c_rec, c_con = [], 0.0, 0.0
     hyp_gl, comp_faits = {}, 0     # stock d'hypothèses à chaque jalon · compositions faites
@@ -182,6 +218,7 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=()):
     o_main = o_pass = gis_use = 0.0
     has = lambda x: x in gl
     mal_lus = set(faux)
+    elv_lus = []                   # (signe, Élèves à l'achat, taux d'erreur) — ELV-2
     # Armée une seule fois, à l'ouverture du doute, et jamais levée ici faute de révision.
     contr = [False]
     etrangle = lambda: P['contr_div'] if contr[0] else 1.0
@@ -200,7 +237,7 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=()):
     # un problème de seuil, pas de taux — I6 y vaut 100 % tant que la première
     # Concordance n'est pas posée, quelle que soit la cadence de clic.
     premier = {}
-    _m = multis(has, mf)
+    _m = multis(has, mf, lambda: eleve(P, b['elv']))
     mcop, mate, mtab, mcon, mgram = _m['cop'], _m['ate'], _m['tab'], _m['con'], _m['gram']
     gramp  = lambda: P['gram_p'] * (P['gram_g'] ** narbre()) * mgram()
     mclick = _m['click']
@@ -283,7 +320,16 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=()):
             eff_ate = cost('ate') / (P['ate_p'] * mate())
             prod = 'ate' if b['cop'] >= P['ate_socle'] and eff_ate <= eff_cop else 'cop'
             epargne = prod == 'ate' and O < cost('ate')
-            if has('nur') and netH >= P['gram_c'] and O >= cost('gram'):     k = 'gram'
+            # L'Élève passe devant tout dès qu'il rend plus, par occurrence dépensée, qu'une
+            # Grammaire de plus : il multiplie la chaîne entière, elle n'en allonge qu'un bout.
+            # On n'épargne pas pour lui — c'est un acheteur, pas un joueur qui a compris.
+            elv_ok = (P['elv_p'] > 0 and b['gram'] > 0 and O >= cost('elv')
+                      and (eleves is None or b['elv'] < eleves)
+                      and (eleve_apres is None or has(eleve_apres))
+                      and P['elv_p'] / eleve(P, b['elv']) / cost('elv')
+                          >= 1.0 / max(1, b['gram']) / cost('gram'))
+            if elv_ok:                                                       k = 'elv'
+            elif has('nur') and netH >= P['gram_c'] and O >= cost('gram'):   k = 'gram'
             elif epargne:                                                    break
             elif netH >= P['con_c'] and O >= cost('con'):                    k = 'con'
             elif netO >= P['tab_c'] and O >= cost('tab') and b['cop'] > 0:   k = 'tab'
@@ -312,6 +358,10 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=()):
             if not a: break
             a.sort(key=lambda g: g[2]); g = a[0]
             C -= g[2]; gl.add(g[0]); marks.append((g[0], t / 60)); hyp_gl[g[0]] = H
+            # Dès le premier Élève, un signe ambigu n'est plus tranché par le joueur (ELV-2).
+            if g[0] in AMBIGUS and b['elv'] > 0:
+                elv_lus.append((g[0], b['elv'], erreur(P, b['elv'])))
+                (mal_lus.add if eleve_lit == 'f' else mal_lus.discard)(g[0])
             # `peut-être` ouvre le doute ET solde les lectures faites jusque-là.
             if g[0] == 'mik':
                 contr[0] = sum(DETTE[x] for x in mal_lus if x in gl) > P['contr_s']
@@ -334,7 +384,7 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=()):
                                   obrut=obrut(), cs=b['con'] * P['con_p'] * mcon(),
                                   o_main=o_main, o_pass=o_pass, gis_use=gis_use,
                                   tr_rec=tr_rec, tr_ins=tr_ins, premier=premier,
-                                  hyp_gl=hyp_gl, comp=comp_faits,
+                                  hyp_gl=hyp_gl, comp=comp_faits, elv_lus=elv_lus,
                                   gis_tot=sum(-(-n // P['gis_div']) for n in TOKENS))
 
 
@@ -366,7 +416,7 @@ if __name__ == '__main__':
     # minutes. Le joueur ne la voit nulle part ; c'est le seul endroit du projet où elle se lit.
     print("\n--- toutes lectures fausses, sans contradiction ---")
     for cpm in (5, 15, 40):
-        tt, marks, b, s = run({**P, 'contr_s': 99}, cpm, faux=AMBIGUS)
+        tt, marks, b, s = run({**P, 'contr_s': 99}, cpm, faux=AMBIGUS, eleve_lit='f')
         gaps = [marks[i][1] - marks[i - 1][1] for i in range(1, len(marks))] or [0]
         main = 100 * s['o_main'] / max(1e-9, s['o_main'] + s['o_pass'])
         tr = []
@@ -387,7 +437,37 @@ if __name__ == '__main__':
                     ('les deux incassables (lire, il-faut)', ('shen', 'dun')),
                     ('la paire réparante (grain + maison)', ('tem', 'ur')),
                     ('toutes fausses', AMBIGUS)):
-        d = [run(P, c, faux=fx)[0] for c in (5, 15, 40)]
-        armee = run(P, 15, faux=fx)[3]['contr']
+        # Sans Élève : ce bloc mesure ce que le JOUEUR s'inflige, et un Élève relirait
+        # à sa place les quatre signes ambigus qui restent après la première Grammaire.
+        d = [run(P, c, faux=fx, eleves=0)[0] for c in (5, 15, 40)]
+        armee = run(P, 15, faux=fx, eleves=0)[3]['contr']
         print(f"    {lib:38} dette {sum(DETTE[g] for g in fx):>2} · "
               f"{'ARMÉE ' if armee else 'libre '} · {min(d):5.1f}-{max(d):5.1f} min")
+
+    # L'Élève (ELV-1, ELV-2). Chaque ligne est un joueur qui s'en autorise n, lecture parfaite
+    # jusque-là, et qui ne révise jamais. Deux extrêmes, parce que ce simulateur n'a pas de
+    # dé : les Élèves lisent tout juste, ou tout faux. Entre les deux, le taux d'erreur à
+    # chaque signe dit de quel côté la partie tombe — et la dette attendue s'arrête à
+    # `peut-être`, puisque la contradiction ne se solde que là (règle 19).
+    print("\n--- l'Élève : ce qu'il fait gagner, ce qu'il lit à ma place ---")
+    for n in (0, 1, 2, 4, None):
+        dj = [run(P, c, eleves=n)[0] for c in (5, 15, 40)]
+        df = [run(P, c, eleves=n, eleve_lit='f')[0] for c in (5, 15, 40)]
+        _, marks, b, s = run(P, 15, eleves=n, eleve_lit='f')
+        ordre = [m[0] for m in marks]
+        avant = ordre[:ordre.index('mik')]
+        lus = ' · '.join(f"{g} {100 * e:.0f} %" for g, _, e in s['elv_lus'])
+        esp = sum(e * DETTE[g] for g, _, e in s['elv_lus'] if g in avant)
+        print(f"    {b['elv']} Élève(s) · lisent juste {min(dj):5.1f}-{max(dj):5.1f} min · "
+              f"lisent faux {min(df):5.1f}-{max(df):5.1f} "
+              f"{'ARMÉE' if s['contr'] else 'libre'} · dette attendue {esp:.1f}")
+        if lus:
+            print(f"        erreur à l'achat : {lus}")
+    # Et celui qui veut trancher lui-même : il lit d'abord, il engage ensuite. Ce qu'il
+    # garde de l'Élève est ce que l'attente lui laisse — c'est le prix de la lecture.
+    for lib, g in (('⟨avant⟩', 'pat'), ('⟨ne-pas⟩', 'la'), ('⟨lire⟩', 'shen'), ('⟨il-faut⟩', 'dun')):
+        d = [run(P, c, eleve_apres=g)[0] for c in (5, 15, 40)]
+        _, _, b, s = run(P, 15, eleve_apres=g)
+        print(f"    lit lui-même jusqu'à {lib:10} puis engage · {min(d):5.1f}-{max(d):5.1f} min · "
+              f"{b['elv']} Élève(s), le premier à {s['premier'].get('elv', 0):.0f}′ · "
+              f"{len(s['elv_lus'])} signe(s) lui échappent")
