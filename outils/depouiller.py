@@ -497,6 +497,13 @@ def rapport(ev, nom):
 
 
 def main():
+    # Même parade que les autres outils, et ici elle compte : le rapport porte des ─ et des ⚠
+    # que cp1252 ne sait pas écrire, et un rapport de playtest se redirige vers un fichier.
+    # L'entrée aussi — un journal passé par un tube arrive sinon décodé en cp1252, et le ✗
+    # des lectures fausses ne se reconnaît plus.
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8')
+    sys.stdin.reconfigure(encoding='utf-8')
     args = [a for a in sys.argv[1:] if not a.startswith('--')]
     choix = None
     for i, a in enumerate(sys.argv):
