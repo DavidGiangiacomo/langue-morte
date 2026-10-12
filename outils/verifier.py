@@ -825,6 +825,12 @@ def main() -> None:
                  "mais elle finit par venir, lecture ou pas")
         # `showEnd()` désarme : sans ça la carte reviendrait sur celui qui la ferme.
         verifier(page.evaluate("() => finArmee") == 0, "et elle se désarme en s'ouvrant")
+        # Jusqu'en PT10 elle posait la question de PT8 au joueur qu'on interroge ensuite sans
+        # la nommer, et annonçait pour les actes IV et V le doute qu'il venait de jouer.
+        r = page.evaluate("() => $('end').innerText.toLowerCase()")
+        verifier(not any(m in r for m in ('crue', 'question', 'doute', 'contradiction',
+                                          'deuxième personne')),
+                 "la carte ne souffle rien, ni ce qu'il y avait à voir, ni ce qui vient après")
         # relevé en PT5 : la partie finie, l'overlay couvrait le journal d'actions —
         # inatteignable au moment précis où il faut l'exporter
         verifier(page.evaluate("""() => {

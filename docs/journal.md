@@ -142,6 +142,37 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## La carte de fin soufflait la réponse
+
+*12/10/2026.* Trouvé en convertissant le backlog en issues, pas en jouant. La carte de fin
+portait deux phrases écrites pour les playtests d'avant, et le build de PT11 les montrait
+toutes les deux.
+
+- **« La seule question qui compte : … est-ce que la crue qui baisse s'est vue ? »** C'est la
+  question de PT8 et PT9, adressée au joueur. En PT11 il la lit **avant** l'entretien, dont
+  la question 5 — « y a-t-il eu un moment où tu as compris quelque chose que le jeu ne t'avait
+  pas dit ? » — est la seule faite pour laisser remonter la crue sans la nommer. La carte la
+  nommait, et le protocole n'y pouvait rien : il règle le courrier et l'ordre des questions,
+  pas ce que l'écran dit entre les deux. Elle comptait aussi « les 18 glyphes restants » ; il
+  en reste quinze.
+- **« La suite — la deuxième personne, le doute et les contradictions — appartient aux actes
+  IV et V. »** Le doute et la contradiction sont dans le prototype depuis le 15/09/2026 : un
+  joueur qui venait de payer `peut-être`, de lire le bandeau et d'allumer des lignes avec
+  `faux` lisait le jeu se dédire sur son propre écran de fin — la famille de la règle 17. Et
+  « la deuxième personne » annonçait le retournement de l'acte IV (VOIX-2) à quiconque
+  rejouera la 1.0.
+
+Il reste « Le prototype s'arrête ici. La suite appartient aux actes IV et V. » La phrase
+d'avant commençait par « le corpus s'arrête ici », faux depuis qu'il est complet : ce qui
+s'arrête, c'est l'arbre. Les questions vivent au protocole (`docs/pt11-protocole.md`, branche
+`protocole-pt11`), pas à l'écran.
+
+Même famille que la règle 14, qui ne laisse la carte compter les compositions que si on en a
+tenté : **un écran de fin est lu avant l'entretien, il fait donc partie du protocole.** Un
+test vérifie que la carte ouverte ne contient ni « crue », ni « question », ni « doute », ni
+« contradiction », ni « deuxième personne » ; il échoue sur l'ancienne carte. Économie
+inchangée ; `outils/verifier.py` passe de 296 à **297 assertions**.
+
 ## Le corpus se tait, le panneau non
 
 17/09/2026, COMP-6. Le seul retour qualitatif de PT10 portait sur la grille : *« j'avais tenté

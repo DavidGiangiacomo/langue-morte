@@ -382,6 +382,15 @@ refermerait ferait payer plus cher celui qui a lu juste. Économie inchangée (r
 `outils/verifier.py` passe de 286 à **296 assertions**. Voir `docs/journal.md`, « Le corpus se
 tait, le panneau non ».
 
+**La carte de fin ne souffle plus** (12/10/2026) : elle posait au joueur « la seule question
+qui compte » — celle de PT8, la crue qui baisse —, qu'un joueur de PT11 aurait lue **avant**
+l'entretien dont la question 5 est faite pour la laisser remonter sans la nommer ; et elle
+annonçait pour les actes IV et V le doute et les contradictions qu'il venait de jouer. Il
+reste « Le prototype s'arrête ici. La suite appartient aux actes IV et V. » **Un écran de fin
+est lu avant l'entretien : il fait partie du protocole.** Économie inchangée ;
+`outils/verifier.py` passe de 296 à **297 assertions**. Voir `docs/journal.md`, « La carte de
+fin soufflait la réponse ».
+
 **Prochaine étape — PT11 avec un autre joueur, puis l'Élève (E5).** Même question qu'en PT8 et PT9, posée à quelqu'un qui ne sait pas ce qu'il cherche — plus celle que PT10 a ouverte : **revient-on dans le corpus après la quarantième minute ?** Dans le même TSV : la part manuelle des occurrences (au-delà de 40 %, plafonner `REL_K`) le stock d'hypothèses entre `année` et la dixième Grammaire (27 090 en PT9), **le nombre de recoupements** — sous une vingtaine sur la partie, le réglage du 09/09 a vidé un des deux gestes manuels et il faut revenir en arrière — et **les tentatives de composition** : le journal d'actions les compte avec leur paire et leur minute. La question neuve est celle-là : un joueur qui ignore qu'il y a quelque chose à chercher reconnaît-il ⟨maison⟩ et ⟨grain⟩ dans ⟨grenier⟩, ou ⟨ne-pas⟩ et ⟨un⟩ dans le zéro qu'il regarde depuis la première seconde ? Aucun simulateur ne répond à ça. S'y ajoutent deux questions depuis `les-lecteurs` : **achète-t-on un signe à 1 200 C qui annonce trois attestations** — le TSV date le moment où il devient payable — et, à poser de vive voix, **a-t-on vu ⟨nous⟩ dans le nom** ? Et une mesure de plus, parce que `REV_R` la déplace sans qu'aucun playtest soit derrière : **le nombre de recoupements et la part manuelle des occurrences**. Si la main descend au lieu de monter, c'est `REV_R` qu'il faut défaire en premier, avant les prix.
 
 **Et depuis AMB-1, trois questions de plus, qu'aucun simulateur ne touche.** Le journal d'actions note désormais la lecture retenue à chaque achat, avec un ✗ pour la fausse. (1) **Combien de lectures fausses sur neuf ?** Neuf pièces à pile ou face donneraient 4,5 ; nettement moins voudrait dire que quelque chose souffle la réponse, nettement plus que le corpus l'induit en erreur. (2) **⟨grain⟩ ou ⟨poussière⟩ à la troisième minute** — c'est le choix où la prime paie le plus et où le joueur a le moins de quoi trancher ; et s'il se trompe, retourne-t-il sur la tablette 5 quand elle sort de terre ? (3) À poser de vive voix, une fois seulement, **et à la fin** : a-t-on remarqué qu'on choisissait ? Le jeu ne le dira jamais avant `peut-être`.

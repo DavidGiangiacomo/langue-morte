@@ -525,7 +525,7 @@ Suivi : [#29](https://github.com/DavidGiangiacomo/langue-morte/issues/29) — le
 **LIV-5 — Étendre `verifier.py`** · T:L · [#53](https://github.com/DavidGiangiacomo/langue-morte/issues/53)
 > En tant qu'auteur, je veux que chaque mécanique nouvelle soit couverte bout en bout.
 
-- Le fichier porte aujourd'hui **296 assertions** sur le relevé, le recoupement, la numération, le gisement, la datation, les infobulles, la composition, la fenêtre de fin qui attend sa lecture, et la reprise d'une sauvegarde d'avant une mécanique neuve. Chaque épic de cette feuille de route doit y ajouter ses vérifications — en particulier AMB-4 (la phrase absurde est bien rendue) et COMP-3 (`zéro` replie les compteurs).
+- Le fichier porte aujourd'hui **297 assertions** sur le relevé, le recoupement, la numération, le gisement, la datation, les infobulles, la composition, la fenêtre de fin qui attend sa lecture, et la reprise d'une sauvegarde d'avant une mécanique neuve. Chaque épic de cette feuille de route doit y ajouter ses vérifications — en particulier AMB-4 (la phrase absurde est bien rendue) et COMP-3 (`zéro` replie les compteurs).
   *15/09/2026* : la section 21 en ajoute vingt-cinq sur l'ambiguïté, dont les cinq ruptures d'AMB-4
   qui existent dans l'arbre d'aujourd'hui et la vérification que **rien à l'écran ne nomme la dette** ;
   la section 22 en ajoute vingt-deux sur le doute et la révision, dont **le degré de doute est le
@@ -543,6 +543,9 @@ Suivi : [#29](https://github.com/DavidGiangiacomo/langue-morte/issues/29) — le
   *17/09/2026* : dix de plus sur ce que le panneau de composition dit **de lui-même**, dont la
   régression de PT10 — une paire juste impayable et une paire fausse rendent le même texte,
   pour le même prix, et ce texte n'affirme plus rien du corpus.
+  *12/10/2026* : une de plus — la carte de fin ouverte ne contient ni « crue », ni
+  « question », ni « doute », ni « contradiction », ni « deuxième personne ». Elle échoue
+  sur la carte d'avant, qui soufflait la question de PT8 au joueur qu'on allait interroger.
 
 **LIV-6 — README, écran-titre, distribution** · T:S · [#54](https://github.com/DavidGiangiacomo/langue-morte/issues/54)
 > En tant que curieux, je veux ouvrir un fichier et jouer.
