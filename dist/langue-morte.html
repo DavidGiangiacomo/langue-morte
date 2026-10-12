@@ -458,14 +458,19 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
     <button class="ghost" id="amb-annuler" title="échap — le signe reste à acheter">revenir au corpus</button>
   </div>
 </div>
+<!-- La carte de fin ne nomme rien de ce qu'il y avait à voir. Elle a porté jusqu'en PT10
+     « la seule question qui compte », celle de PT8 et PT9, et annonçait pour les actes IV
+     et V le doute et les contradictions : un joueur de PT11 aurait lu la réponse avant
+     l'entretien dont la question 5 est faite pour la laisser remonter sans la nommer, et
+     l'annonce démentait ce qu'il venait de jouer. Les questions sont au protocole, pas à
+     l'écran ; et rien ici n'annonce ce que les actes suivants révèlent. -->
 <div class="end" id="end" hidden>
   <div class="endcard">
     <h2>Fin du prototype</h2>
     <div class="k">actes I à III · <span class="ngl"></span> glyphes sur 45</div>
     <p class="quote" id="endquote">La dernière année. Elle n'a pas de nombre : après elle, personne n'a plus compté.</p>
-    <p>Le corpus s'arrête ici. La suite — la deuxième personne, le doute et les contradictions — appartient aux actes IV et V.</p>
+    <p>Le prototype s'arrête ici. La suite appartient aux actes IV et V.</p>
     <div class="endstats" id="endstats"></div>
-    <p style="font-size:15px"><b style="color:var(--lamp);font-weight:500">La seule question qui compte&nbsp;:</b> au moment où les tablettes se sont rangées dans l'ordre du temps, est-ce que la crue qui baisse s'est vue&nbsp;? Personne ne la commente&nbsp;; elle n'est que dans les chiffres. Si elle passe inaperçue, le sommet de l'acte III est manqué et les 18 glyphes restants ne le rattraperont pas.</p>
     <div class="endacts">
       <button class="go" id="again">recommencer</button>
       <button class="ghost" id="fermer" title="échap — le corpus reste figé sur la partie terminée">revenir au corpus</button>
@@ -2575,7 +2580,7 @@ const TKEY = 'langue-morte-traces-v1';
    réécrit cette ligne ; en jouant depuis `src/` elle reste « src ». Un TSV qui revient
    trois semaines après la partie ne dit rien de lui-même sans ça : ni contre quels réglages
    il a été joué, ni si le sélecteur de vitesse était même à l'écran. */
-let BUILD = 'dev · 2026-09-17';
+let BUILD = 'dev · 2026-10-12';
 const TMAX = 20000;              // garde-fou : PT1 avait produit 3 853 clics
 let TR = [];
 try{ const raw = localStorage.getItem(TKEY); if(raw) TR = JSON.parse(raw) || []; }catch(e){}
