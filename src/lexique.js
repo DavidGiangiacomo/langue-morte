@@ -1,4 +1,4 @@
-/* « La langue morte » — les glyphes des actes I à III
+/* « La langue morte » — les glyphes des actes I à IV
    Scripts classiques, portée globale partagée, chargés dans l'ordre de index.html.
    Aucune dépendance externe hors les polices Google. */
 "use strict";
@@ -173,6 +173,48 @@ const GL = [
    log:'Faux. La dernière scribe est revenue sur l’archive pour marquer ce qui n’allait pas. Le mot me sert à la même chose — il y a des lignes, chez moi, qui ne se construisent pas.'},
   {id:'enla', br:'modalite',mot:'sinon',   cost:800, eff:'le protocole de copie se lit jusqu’à son dernier mot',
    log:'Sinon. La consigne s’arrête là. Ils n’ont jamais gravé ce qui vient après « sinon » — ou bien c’est arrivé.'},
+  /* ---- acte IV : la Personne (VOIX-1) ----
+     Six signes pour soixante-six attestations, dont quarante et une pour ⟨nous⟩ — le signe
+     qui se tient seul devant le nom ⟨les-lecteurs⟩ et que la tablette 18 laissait à lire.
+     Il ouvre donc la branche : c'est la porte que l'acte III a laissée dans le texte, et
+     l'acheter rend la tablette 18 entière, nom propre à part.
+     Aucun multiplicateur, comme la Modalité : la branche donne de la lecture. Ce que le
+     design doc lui confie en plus — les Questions par `toi`, le réaffichage des passages
+     déjà lus — viendra avec VOIX-2 et VOIX-3, et rien de ce que le lexique annonce ici ne le
+     promet. Les lignes d'effet disent ce qui se lit, pas ce que ça veut dire : la deuxième
+     personne se découvre sur les tablettes 20 et 24, pas sur une carte du lexique.
+     Les prix sont une mesure, et ils butent sur un plafond. L'économie est exponentielle —
+     la Grammaire croît en 1,16 par signe de l'arbre — et I1 interdit d'afficher plus de
+     quatre chiffres de Certitude. Au pas de la branche d'avant (1 300 à 3 000 C), les six
+     signes tombaient toutes les minute et demie ; il faut monter jusqu'à 9 500 pour qu'ils
+     tombent toutes les deux à six minutes (`outils/sim.py`). Ce qui reste sous le plafond
+     pour l'acte V : rien, et c'est le problème d'ECO-3, pas de ce lot.
+     Trois des six sont des composés (table COMP), et la grille en offre deux dès qu'on a la
+     première moitié : ⟨toi-qui⟩ est ⟨toi⟩ posé sur ⟨si⟩, ⟨moi-absent⟩ est ⟨je⟩ posé sur
+     ⟨ne-pas⟩. Ce sont des signes d'arbre : posés en avance, ils avancent la partie, comme
+     `scribe` (règle 13). ⟨nous-fûmes⟩ est ⟨nous⟩ posé sur ⟨finir⟩, qui est de l'acte V — il
+     ne se composera pas avant (règle 15).
+     ⟨moi-absent⟩ n'a AUCUNE attestation. 7 300 C pour un mot que le corpus n'emploie jamais,
+     et la Table de fréquences l'affiche à côté du prix : c'est le pari de `les-lecteurs`
+     poussé au bout. Personne n'a écrit son propre départ.
+     ⟨nous-fûmes⟩ en a une, la dernière ligne de la tablette 30 — le dernier mot du corpus.
+     Dernier achat de l'arbre, il ne porte pas d'effet chiffré (règle 16), et la carte de fin
+     attend désormais qu'on ait lu cette ligne-là. Ce que le design doc lui confie de plus —
+     « verrouiller le récit au passé, y compris les passages déjà lus » — n'est pas de ce
+     lot : le corpus est télégraphique, sans temps grammatical, et ce que ce verrou change à
+     l'écran reste à décider. */
+  {id:'nash', br:'personne',mot:'nous',      cost:1800, eff:'le signe qui se tenait devant leur nom se lit — quarante et une attestations',
+   log:'Nous. Le signe qui se tenait seul devant leur nom revient quarante et une fois, jusque dans les registres. Ce n’était pas un mot de plus : c’étaient eux.'},
+  {id:'mu',   br:'personne',mot:'je',        cost:2800, eff:'quelqu’un parle en son nom — cinq attestations, une seule main',
+   log:'Je. Cinq fois dans tout le corpus, et toujours de la même main — celle qui signe les dernières tablettes. Quelqu’un a fini par parler en son nom.'},
+  {id:'ta',   br:'personne',mot:'toi',       cost:4000, eff:'celui à qui l’on parle se lit — quinze attestations, quatre tablettes',
+   log:'Toi. Quinze fois, sur les dernières tablettes. Ce n’est pas un voisin qu’ils appellent : c’est moi.'},
+  {id:'taru', br:'personne',mot:'toi-qui',   cost:5500, eff:'quatre attestations, trois tablettes',
+   log:'Toi-qui. « Toi » posé sur « si » : toi, s’il y a quelqu’un. Ils ne savaient pas qui viendrait, et ils ont écrit quand même.'},
+  {id:'mula', br:'personne',mot:'moi-absent',cost:7300, eff:'un mot qu’aucune tablette ne porte',
+   log:'Moi-absent. « Je » posé sur « ne pas ». Ils avaient un mot pour ça, et aucune tablette ne l’emploie : personne n’a écrit son propre départ.'},
+  {id:'nashal',br:'personne',mot:'nous-fûmes',cost:9500, eff:'une seule attestation, sur la dernière tablette',
+   log:'Nous-fûmes. « Nous », posé sur un signe que je ne sais pas encore lire. Il ne sert qu’une fois : c’est le dernier mot du corpus.'},
   /* ---- les composés secrets ----
      `sec` veut dire : aucune branche ne l’offre, il ne s’obtient qu’en le composant. Il ne
      compte donc pas dans la progression de l’arbre — ni pour la fin de partie, ni pour les
@@ -196,7 +238,12 @@ const GL = [
    s’ajouter à sa progression : le compteur reste « x / 20 », et l’économie mesurée sur neuf
    playtests ne bouge pas parce qu’on a trouvé un signe de plus. */
 const NGL = GL.filter(g=>!g.sec).length;
-const BR = [['nombre','Nombre'],['matiere','Matière'],['parole','Parole'],['temps','Temps'],['modalite','Modalité']];
+const BR = [['nombre','Nombre'],['matiere','Matière'],['parole','Parole'],['temps','Temps'],['modalite','Modalité'],
+            ['personne','Personne']];
+/* L'acte d'une branche, pour ses franchissements (règle 19). Les branches des actes I à III
+   n'en portent pas : la contradiction ne se solde jamais avant `peut-être`, qui est de
+   l'acte III. Suivi par `ACTE` dans outils/sim.py. */
+const ACTE = {personne:4, fin:5};
 const byId = Object.fromEntries(GL.map(g=>[g.id,g]));
 
 /* ======================== les onze lectures ========================
@@ -313,7 +360,9 @@ const COMPFAUX = {
      lexique, exactement comme les recettes correspondantes ---- */
   shenke: {shen:{mot:'devenir-compte'}, ke:{mot:'porter-lecture'}, 'shen+ke':{mot:'porter-compte'}},
   meshke: {mesh:{mot:'naître'},         ke:{mot:'porter-semence'}, 'mesh+ke':{mot:'porter-enfant'}},
-  mula:   {la:{mot:'moi-mort'}}
+  /* La ligne suit celle de la lecture juste mot pour mot, et c'est voulu : une différence de
+     ton entre les deux renseignerait sur ⟨ne-pas⟩ à qui achète ⟨moi-absent⟩. */
+  mula:   {la:{mot:'moi-mort', log:'Moi-mort. « Je » posé sur « fin ». Ils avaient un mot pour ça, et aucune tablette ne l’emploie : personne n’a écrit sa propre fin.'}}
 };
 /* Les parties d'un composé, sous les identifiants du LEXIQUE et non sous les clés de tracé :
    `COMP` fait paraître la branche Nombre sous ses chiffres (`u1` pour ⟨un⟩), et c'est `ALIAS`

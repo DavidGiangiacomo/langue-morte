@@ -31,8 +31,8 @@ Contrôle :
      porte l'atelier et non la grammaire, et les 816 attestations passent en français
  18. `zéro` : composé de deux branches et de deux actes, il ne s'obtient qu'à la grille,
      n'avance pas l'arbre, et rend lisibles les onze zéros du corpus
- 19. `les-lecteurs` : dernier signe de l'acte III, il n'ouvre aucune recette tant que
-     ⟨nous⟩ n'est pas au lexique, ne multiplie rien, et laisse la tablette 18 à 80 %
+ 19. `les-lecteurs` : dernier signe de l'acte III, il ne se compose qu'une fois ⟨nous⟩ acquis,
+     ne multiplie rien, ne ferme plus l'arbre, et laisse la tablette 18 à 80 %
  20. une partie finie quand l'arbre était plus petit reprend au lieu de rouvrir sur la fin
  21. l'ambiguïté : un signe ambigu propose ses deux lectures au même prix et au même
      effet, la fausse repeint tout le corpus et ses composés, la prime de 25 % ne se
@@ -51,6 +51,10 @@ Contrôle :
  26. l'Élève : il s'ouvre à la première Grammaire, multiplie les cinq instruments et pas le
      relevé, tranche les signes ambigus à la place du joueur avec un taux d'erreur qui croît
      avec leur nombre — et ce taux ne se lit nulle part
+ 27. la Personne : six signes sans multiplicateur, ⟨nous⟩ achève la tablette 18, deux
+     composés se posent à la grille et ⟨nous-fûmes⟩ non, ⟨moi-absent⟩ n'a aucune attestation,
+     le dernier mot du corpus ferme la partie, et la contradiction se solde de nouveau en
+     entrant dans l'acte IV
 
 Prérequis : pip install playwright && playwright install chromium
 """
@@ -386,7 +390,7 @@ def main() -> None:
         verifier(frq() == [], "rien sans « deux » : le nombre serait illisible")
         page.evaluate("() => { acheterGl('an'); acheterGl('anna'); }")
         page.wait_for_timeout(250)
-        verifier(len(frq()) == 5, f"un comptage par tête de branche : {frq()}")
+        verifier(len(frq()) == len(page.evaluate("() => BR")), f"un comptage par tête de branche : {frq()}")
         # La Modalité entre par le signe le plus fréquent du corpus : 290 attestations,
         # dont aucune lisible jusque-là. C'est l'arbitrage que la Table met sous les yeux.
         verifier(page.evaluate("() => freqGlyphe('la')") == 290,
@@ -469,8 +473,11 @@ def main() -> None:
         # ne valent comme règle du jeu qu'une fois traduites en glyphes, et filtrées sur ceux
         # qui existent. `selanna` (vingt) reste dessinable mais a été retiré du lexique.
         rec = page.evaluate("() => RECETTES")
-        verifier(set(rec) == {"anna", "urtem", "nurnur", "imme", "tabsar", "enla", "lan"},
-                 f"sept recettes ouvertes aujourd'hui : {sorted(rec)}")
+        # La Personne (VOIX-1) en a ouvert trois de plus d'elle-même : ⟨toi-qui⟩, ⟨moi-absent⟩,
+        # et ⟨les-lecteurs⟩, dont la seconde moitié ⟨nous⟩ est enfin au lexique.
+        verifier(set(rec) == {"anna", "urtem", "nurnur", "imme", "tabsar", "enla", "lan",
+                              "taru", "mula", "shenu"},
+                 f"dix recettes ouvertes aujourd'hui : {sorted(rec)}")
         # la Parole III les a ouvertes d'elle-même, sans qu'aucune liste soit tenue (règle 15)
         verifier(rec.get("imme") == ["im", "sar"] and rec.get("tabsar") == ["tab", "sar"],
                  "scribe = dire + graver, archive = tablette + graver")
@@ -701,28 +708,29 @@ def main() -> None:
         print("\nles-lecteurs : le nom, et ce qu'il laisse à lire")
         page.evaluate("() => $('reset').click()")
         page.wait_for_timeout(200)
-        page.evaluate("() => { S_.C = 9e6; GL.filter(g => !g.sec && g.id !== 'shenu')"
+        page.evaluate("() => { S_.C = 9e6; GL.filter(g => !g.sec && g.id !== 'shenu' && g.br !== 'personne')"
                       "                      .forEach(g => acheterGl(g.id)); }")
         page.wait_for_timeout(300)
         # Règle 15 : une recette n'existe que si sa cible et ses deux parties sont au lexique.
-        # ⟨les-lecteurs⟩ se dessine ⟨lire⟩ sur ⟨nous⟩, et ⟨nous⟩ appartient à l'acte IV — la
-        # grille ne doit donc pas l'offrir, même une fois tout l'arbre acquis.
-        r = page.evaluate("""() => [COMP.shenu, RECETTES.shenu === undefined,
-                                    recetteDe('shen','nash') === undefined,
-                                    byId.nash === undefined]""")
-        verifier(r == [["shen", "nash"], True, True, True],
-                 f"le nom se dessine sur un signe qui n'est pas au lexique, et n'ouvre aucune recette : {r}")
-        # Aucun effet chiffré, et c'est mesuré : dernier achat de l'arbre, il serait payé à la
-        # seconde où la partie s'arrête. Cinq variantes d'effet donnent la même durée simulée.
+        # ⟨les-lecteurs⟩ se dessine ⟨lire⟩ sur ⟨nous⟩ ; depuis que ⟨nous⟩ y est (VOIX-1), la
+        # recette existe — mais la palette ne montre que les signes acquis, et ⟨nous⟩ ne l'est
+        # pas tant qu'on n'a pas ouvert l'acte IV.
+        r = page.evaluate("""() => [COMP.shenu, RECETTES.shenu, has('nash')]""")
+        verifier(r == [["shen", "nash"], ["shen", "nash"], False],
+                 f"le nom se dessine ⟨lire⟩ sur ⟨nous⟩, et ne se pose qu'une fois ⟨nous⟩ acquis : {r}")
+        # Aucun effet chiffré. Il était le dernier achat de l'arbre ; il ne l'est plus, et la
+        # question s'est mesurée : un ×1,5 à la grammaire raccourcirait l'acte IV de six à huit
+        # minutes, les trois autres instruments ne déplacent presque rien (docs/journal.md).
         r = page.evaluate("""() => { const av = [M.cop(), M.ate(), M.tabl(), M.con(), M.gram(), M.click()];
             acheterGl('shenu');
             const ap = [M.cop(), M.ate(), M.tabl(), M.con(), M.gram(), M.click()];
-            return [av.every((v, i) => v === ap[i]), S_.done, $('end').hidden, [...finLire]]; }""")
+            return [av.every((v, i) => v === ap[i]), S_.done, $('end').hidden, [...touchees]]; }""")
         page.wait_for_timeout(400)
         verifier(r[0] is True, "il ne multiplie rien : aucun instrument ne bouge à l'achat")
-        verifier(r[1] is True and r[3] == [18],
-                 f"il ferme l'arbre, et la seule tablette qu'il ouvre est la 18 : {r[1:]}")
-        verifier(page.text_content("#lexr").strip() == f"{ngl} / {ngl}", f"le lexique affiche « {ngl} / {ngl} »")
+        verifier(r[1] is False and r[3] == [18],
+                 f"il ne ferme plus l'arbre, et la seule tablette qu'il touche est la 18 : {r[1:]}")
+        verifier(page.text_content("#lexr").strip() == f"{ngl - 6} / {ngl}",
+                 f"le lexique affiche « {ngl - 6} / {ngl} » : la Personne reste à lire")
         lus = page.eval_on_selector_all("#corpus .tok[data-w=shenu]",
             "e => [e.length, e.filter(x => x.textContent.trim() === 'les-lecteurs').length]")
         verifier(lus == [3, 3], f"ses trois attestations passent en français : {lus}")
@@ -746,7 +754,7 @@ def main() -> None:
         verifier(page.get_attribute("#a-con", "hidden") is None,
                  "la première Concordance le fait apparaître")
         # tout le corpus, puis la seule colonne de l'eau
-        page.evaluate("() => { S_.C = 9999; GL.forEach(g => acheterGl(g.id)); $('end').hidden = true; }")
+        page.evaluate("() => { S_.C = 9e6; GL.forEach(g => acheterGl(g.id)); $('end').hidden = true; }")
         page.wait_for_timeout(300)
         lignes = lambda: page.eval_on_selector_all(
             "#corpus .tablet:not([hidden]):not(.vide) .ln:not(.off)", "e => e.length")
@@ -806,18 +814,19 @@ def main() -> None:
         page.evaluate("() => { S_.C = 9e6; GL.forEach(g => acheterGl(g.id)); }")
         page.wait_for_timeout(400)
         # Elle ne s'ouvre plus au clic : le dernier signe de l'arbre est celui qui rend
-        # lisible la tablette 18, et un écran de statistiques posé par-dessus la couvrirait
-        # avant qu'on l'ait lue. Elle attend d'être allé voir (finRegarder(), economie.js).
+        # lisible la dernière ligne du corpus — ⟨nous-fûmes⟩, tablette 30, depuis VOIX-1 — et
+        # un écran de statistiques posé par-dessus la couvrirait avant qu'on l'ait lue. Elle
+        # attend d'être allé voir (finRegarder(), economie.js).
         verifier(page.get_attribute("#end", "hidden") is not None,
                  "elle ne couvre pas la tablette que le dernier signe vient d'ouvrir")
         page.evaluate("() => { finArmee -= 7000; versTablette(1); }")
         page.wait_for_timeout(900)
         verifier(page.get_attribute("#end", "hidden") is not None,
                  "ni ne vient sur une tablette qui n'a rien à voir")
-        page.evaluate("() => versTablette(18)")
+        page.evaluate("() => versTablette(30)")
         page.wait_for_timeout(900)
         verifier(page.get_attribute("#end", "hidden") is None,
-                 "elle vient une fois la tablette 18 sous les yeux")
+                 "elle vient une fois la tablette 30 sous les yeux")
         # Le garde-fou : un joueur qui n'y va pas doit quand même avoir une fin. Le corpus
         # est rangé dans l'ordre du temps à ce stade — remonter de la 18 à la 1 est un long
         # défilement, et `tabletteVisible()` ne change qu'une fois qu'il a abouti.
@@ -1307,13 +1316,16 @@ def main() -> None:
         verifier(r == [2, 0, 1], f"sous le seuil, la contradiction se lève : {r}")
         verifier(marques() == 0 and "⟨⟩" not in ligne(4),
                  f"et le passage se résout : « {ligne(4)} »")
-        # Levée, elle ne se réarme pas : il n'y a plus de franchissement d'acte dans le
-        # prototype, et on ne ballotte pas le joueur sur un chiffre qu'il ne voit pas.
+        # Levée, elle ne se réarme pas d'elle-même : on ne ballotte pas le joueur sur un
+        # chiffre qu'il ne voit pas. Seul le franchissement d'acte suivant la re-solde.
         r = page.evaluate("""() => { reviser('tem','f'); reviser('ur','f'); reviser('kish','f');
             return [dette(), S_.contr]; }""")
         page.wait_for_timeout(250)
         verifier(r[0] > 5 and r[1] == 0,
                  f"et ne se réarme pas, même si la dette remonte : {r}")
+        r = page.evaluate("() => { S_.C = 9e5; acheterGl('nash'); return [dette() > 5, S_.contr]; }")
+        page.wait_for_timeout(250)
+        verifier(r == [True, 1], f"jusqu'au franchissement suivant — l'entrée dans l'acte IV : {r}")
         # Rien, nulle part, ne dit si une révision était juste.
         vu = page.evaluate("() => document.querySelector('.shell').innerText.toLowerCase()")
         verifier(not any(m in vu for m in ("dette", "erreur", "correct", "mauvaise lecture")),
@@ -1534,6 +1546,77 @@ def main() -> None:
         verifier(ouverte(), "la révision d'un signe lu par l'Élève rouvre les deux lectures")
         r = page.evaluate("() => { ambFermer(); reviser('pat', 'j'); return [S_.lect.pat, S_.dte.pat < 100, dette()]; }")
         verifier(r == ["j", True, 0], f"et c'est alors le joueur qui tranche, avec son propre doute : {r}")
+
+        # ---- la Personne (VOIX-1) ----
+        # Six signes, et la porte que l'acte III laissait dans le texte : ⟨nous⟩, seul devant
+        # le nom ⟨les-lecteurs⟩. Aucun multiplicateur — la branche donne de la lecture, comme
+        # la Modalité — et des prix mesurés contre un plafond (I1 : quatre chiffres).
+        print("\nla Personne : qui parle")
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+        r = page.evaluate("() => GL.filter(g => g.br === 'personne').map(g => [g.id, g.cost])")
+        verifier([x[0] for x in r] == ["nash", "mu", "ta", "taru", "mula", "nashal"]
+                 and all(a[1] < b[1] for a, b in zip(r, r[1:])) and r[-1][1] < 10000,
+                 f"six signes, ⟨nous⟩ en tête, à prix croissants sous le plafond d'I1 : {r}")
+        page.evaluate("""() => { S_.C = 9e6; S_.H = 9e6;
+            GL.filter(g => !g.sec && g.br !== 'personne').forEach(g => acheterGl(g.id)); }""")
+        page.wait_for_timeout(300)
+        r = page.evaluate("""() => { const m = () => [M.cop(), M.ate(), M.tabl(), M.con(), M.gram(), M.click()];
+            const av = m(); acheterGl('nash'); const ap = m();
+            return [av.every((v, i) => v === ap[i]), S_.done, [...touchees].includes(18)]; }""")
+        page.wait_for_timeout(300)
+        verifier(r == [True, False, True], f"⟨nous⟩ ne multiplie rien, et rouvre la tablette 18 : {r}")
+        reste = page.eval_on_selector_all(".tablet[data-tb='18'] .tok.g", "e => e.map(x => x.dataset.w)")
+        verifier(reste == ["nm4"], f"qui se lit entière, nom propre à part : {reste}")
+        # Règle 15 : deux composés se posent dès qu'on a leur première moitié, le troisième
+        # attend ⟨finir⟩, qui est de l'acte V.
+        r = page.evaluate("() => [RECETTES.taru, RECETTES.mula, RECETTES.nashal === undefined]")
+        verifier(r == [["ta", "en"], ["mu", "la"], True],
+                 f"⟨toi-qui⟩ est ⟨toi⟩ sur ⟨si⟩, ⟨moi-absent⟩ ⟨je⟩ sur ⟨ne-pas⟩, ⟨nous-fûmes⟩ ne se pose pas : {r}")
+        r = page.evaluate("""() => { acheterGl('mu'); acheterGl('ta'); const n = nArbre();
+            const r = composer('ta', 'en');
+            return [r, has('taru'), nArbre() - n]; }""")
+        page.wait_for_timeout(250)
+        verifier(r == ["acquis", True, 1], f"posé à la grille, ⟨toi-qui⟩ compte dans l'arbre (règle 13) : {r}")
+        # ⟨moi-absent⟩ : aucune attestation, et sa lecture suit ⟨ne-pas⟩ (docs/corpus.md §7.2).
+        r = page.evaluate("""() => { const n = freqGlyphe('mula'); const j = [motDe('mula'), logDe('mula')];
+            S_.lect.la = 'f'; const f = [motDe('mula'), logDe('mula')]; S_.lect.la = 'j';
+            const pivot = 'Ils avaient un mot pour ça, et aucune tablette ne l’emploie';
+            return [n, j[0], f[0], j[1].includes(pivot) && f[1].includes(pivot),
+                    f[1].includes('ne pas')]; }""")
+        verifier(r == [0, "moi-absent", "moi-mort", True, False],
+                 f"⟨moi-absent⟩ : zéro attestation, « moi-mort » sous ⟨ne-pas⟩ mal lu, la même ligne autour : {r}")
+        # ⟨nous-fûmes⟩ : une attestation, le dernier mot du corpus — et le dernier achat.
+        r = page.evaluate("""() => { acheterGl('mula'); const avant = S_.done; acheterGl('nashal');
+            const tb = document.querySelector('.tablet[data-tb="30"]');
+            return [freqGlyphe('nashal'), avant, S_.done, [...finLire],
+                    tb.lastElementChild.textContent.trim()]; }""")
+        page.wait_for_timeout(300)
+        verifier(r == [1, False, True, [30], "nous-fûmes"],
+                 f"⟨nous-fûmes⟩ ferme l'arbre sur le dernier mot du corpus, et la carte attend la 30 : {r}")
+        # Le franchissement d'acte (règle 19, cas général) : une dette de 5 à l'ouverture du
+        # doute passe ; ⟨il-faut⟩ mal lu ensuite la porte à 7 sans que rien ne la solde ; la
+        # première Personne la solde.
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+        r = page.evaluate("""() => { S_.C = 9e6; S_.H = 9e6;
+            GL.filter(g => !g.sec && g.br !== 'personne' && g.id !== 'dun')
+              .forEach(g => acheterGl(g.id, ['tem', 'pat'].includes(g.id) ? 'f' : 'j'));
+            const doute = [dette(), S_.contr]; acheterGl('dun', 'f');
+            const ilFaut = [dette(), S_.contr]; acheterGl('nash');
+            const entree = S_.contr; acheterGl('mu');
+            return [doute, ilFaut, entree, S_.contr]; }""")
+        page.wait_for_timeout(300)
+        verifier(r == [[5, 0], [7, 0], 1, 1],
+                 f"ce qu'on a tranché après le doute se solde en entrant dans l'acte IV : {r}")
+        # Et pas avant le doute : sans ⟨peut-être⟩, aucun franchissement ne solde rien.
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+        r = page.evaluate("""() => { S_.C = 9e6;
+            GL.filter(g => !g.sec && g.br !== 'personne' && g.id !== 'mik')
+              .forEach(g => acheterGl(g.id, 'f'));
+            acheterGl('nash'); return [dette() > 5, S_.contr]; }""")
+        verifier(r == [True, 0], f"sans le doute ouvert, entrer dans l'acte IV ne solde rien : {r}")
 
         # ---- les trois builds (LIV-2) ----
         # `python build.py` sort trois pages du même `src/`. Ce qui se vérifie ici n'est pas

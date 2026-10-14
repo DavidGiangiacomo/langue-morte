@@ -142,6 +142,125 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## La Personne — qui parle, et le plafond des quatre chiffres
+
+*14/10/2026, VOIX-1. Écrit sur une branche de travail empilée sur `eleve` : PT11 attend un
+joueur, et `develop` reste figé sur la page qu'il jouera.*
+
+Six signes — ⟨nous⟩, ⟨je⟩, ⟨toi⟩, ⟨toi-qui⟩, ⟨moi-absent⟩, ⟨nous-fûmes⟩ —, soixante-six
+attestations, dont quarante et une pour ⟨nous⟩. Aucune ligne du corpus ne change : l'acte IV
+est écrit depuis le premier jour, il attendait ses mots.
+
+### La porte d'abord, le dernier mot en dernier
+
+⟨nous⟩ ouvre la branche parce que l'acte III l'a laissé dans le texte : seul devant le nom
+⟨les-lecteurs⟩, sur une tablette 18 qui s'arrêtait à 80 %. L'acheter la rend entière, nom
+propre à part. ⟨nous-fûmes⟩ la ferme parce qu'il n'a qu'une attestation, la dernière ligne de
+la tablette 30 : le dernier achat de l'arbre rend lisible le dernier mot du corpus, et la
+carte de fin attend qu'on soit allé le lire (règle 16). Entre les deux, ⟨toi⟩. La deuxième
+personne se découvre sur les tablettes 20 et 24 — « toi-qui lire · toi ne-pas nous », « si
+toi lire · nous ne-pas ⟨…⟩ » — et aucune carte du lexique ne l'annonce : les lignes d'effet
+disent ce qui se lit, jamais ce que ça veut dire.
+
+Aucun multiplicateur, comme la Modalité. Deux des six se posent à la grille dès qu'on a leur
+première moitié — ⟨toi-qui⟩ est ⟨toi⟩ sur ⟨si⟩, ⟨moi-absent⟩ ⟨je⟩ sur ⟨ne-pas⟩ — et avancent
+l'arbre comme `scribe` (règle 13). ⟨nous-fûmes⟩ est ⟨nous⟩ sur ⟨finir⟩, qui est de l'acte V :
+il ne se pose pas avant (règle 15). Et ⟨les-lecteurs⟩ devient composable de lui-même, sa
+seconde moitié étant enfin au lexique.
+
+⟨moi-absent⟩ n'a **aucune** attestation. 7 300 C pour un mot que le corpus n'emploie jamais,
+et la Table de fréquences l'affiche à côté du prix : le pari de `les-lecteurs` poussé au
+bout. Sa ligne de journal le dit — personne n'a écrit son propre départ — et sa variante
+sous ⟨ne-pas⟩ mal lu, « moi-mort », suit la même ligne au mot près : une différence de ton
+renseignerait.
+
+### Les prix butent sur un plafond
+
+Mesuré à `outils/sim.py`, l'acheteur prenant les Élèves qu'il veut :
+
+| Grille de prix (⟨nous⟩ → ⟨nous-fûmes⟩) | Durée | À 15 clics/min, la Personne tombe à |
+|---|---|---|
+| 1 400 → 3 300 C | 95,0–98,9 min | 88′ 90′ 91′ 93′ 95′ 96′ |
+| 1 600 → 9 000 C | 103,2–107,1 min | 88′ 91′ 94′ 97′ 100′ 104′ |
+| **1 800 → 9 500 C** *(retenu)* | **104,7–108,6 min** | 89′ 91′ 94′ 98′ 102′ 106′ |
+| 2 400 → 9 900 C | 107,3–111,1 min | 89′ 92′ 96′ 100′ 104′ 108′ |
+
+Au pas de la branche d'avant, les six signes tombent toutes les minute et demie. Il faut
+monter jusqu'à 9 500 C pour que l'acte IV ait un rythme, et au-delà il n'y a plus rien :
+**I1 interdit d'afficher plus de quatre chiffres de Certitude**, donc aucun prix ne passe
+9 999. Sans Élève, la grille retenue donne 118,6–122,2 min et des écarts de 2, 4, 4, 5, 5 et
+6 minutes entre les six signes — dans I4. L'écart max de la partie reste 5,2 min, la pire
+tranche d'I6 hors ouverture 25 %, la main 22,4–22,7 % des occurrences.
+
+**Ce que ça laisse à l'acte V : rien sous le plafond.** Sept signes de plus, les Questions, un
+dernier instrument — et plus un cran de prix. Dans une économie où la Grammaire croît de 16 %
+par signe, le prix ne peut plus être le levier de rythme de la fin de partie. C'est ECO-3, et
+ce lot le rend pressant.
+
+### Le premier franchissement d'acte
+
+La règle 19 disait depuis CONTR-1 : la contradiction *s'évalue à chaque franchissement d'acte
+à partir de `peut-être`*, dont le prototype ne voyait que le premier cas. Il en voit un
+second : le premier signe de la Personne, si le doute est ouvert (`franchit()`). C'est là
+que passent enfin au solde les lectures tranchées **après** `peut-être` — ⟨il-faut⟩, que le
+joueur tranche le panneau déjà ouvert, et ce que l'Élève a lu à sa place. Mesuré : une dette
+de 5 à l'ouverture du doute (⟨grain⟩ et ⟨avant⟩ mal lus), plus ⟨il-faut⟩ mal lu, arme la
+contradiction en entrant dans l'acte IV — **136,6–139,9 min au lieu de 115,6–118,9** pour qui
+ne révise jamais. Avant ce lot, ce joueur-là ne payait rien. Levée, elle ne se réarme
+toujours pas d'elle-même : seul le franchissement suivant la re-solde. `depouiller.py` la
+rejoue aux mêmes endroits.
+
+### Ce que la sanction coûte désormais
+
+Ce que ce lot n'a pas cherché, et qu'il faut regarder en face. La contradiction divise la
+Certitude par deux ; dans un acte IV dont les prix vont de 1 800 à 9 500 C, elle coûte
+beaucoup plus qu'en fin d'acte III. Chez qui ne révise jamais :
+
+| | Avant ce lot | Avec la Personne |
+|---|---|---|
+| lecture parfaite, sans Élève | 91,1–94,3 | 118,6–122,2 |
+| la paire réparante (⟨grain⟩ + ⟨maison⟩) | 102,1–105,1 *(+11)* | **150,7–153,9** *(+32)* |
+| toutes fausses | 98,1–101,2 | 143,1–146,3 |
+| un Élève qui lit faux | 99,5–102,6 | 143,1–146,6 |
+
+Pour la paire réparante sans révision, les six signes de la Personne tombent à 5, 6, 8, 9,
+9 et 11 minutes d'écart : **I4 cède**, à huit minutes. La sortie, elle, n'a pas renchéri : une
+révision coûte d'abord 240 C, puis ×1,6 à chaque fois, et la première vaut le septième du
+moins cher des signes de la Personne. Ce simulateur ne révise jamais : il mesure un joueur
+qui encaisse jusqu'au bout. Rien n'est
+réglé ici. Le seuil et la division sont calés sur des profils de lecture (CONTR-1), pas sur
+la durée de la peine ; c'est la durée de l'acte qui a changé. **Question pour le playtest qui
+jouera cette branche : un joueur sous contradiction en acte IV révise-t-il, ou encaisse-t-il ?**
+S'il encaisse, c'est R2 — « la contradiction paraît punitive » — et la réponse se cherchera
+du côté du bandeau avant celui du seuil.
+
+### ⟨les-lecteurs⟩, remesuré
+
+Sans effet chiffré parce qu'il était le dernier achat de l'arbre (règle 16) ; il ne l'est
+plus, et la règle demandait de remesurer ce jour-là. Un ×1,5 à la grammaire donne
+98,9–102,8 min — six minutes de moins sur un acte qu'on veut long, la leçon de `REC_R` par
+l'autre bout ; à la concordance 104,4–108,3, à la table 104,7–108,6, au copiste et à
+l'atelier 103,9–107,8. Il reste sans effet : ce qu'on y paie est une phrase.
+
+### Ce qui n'est pas fait
+
+- **Le verrou du passé de ⟨nous-fûmes⟩.** Le design doc lui confie de « verrouiller le récit
+  au passé, y compris les passages déjà lus ». Le corpus est télégraphique et sans temps
+  grammatical — « toi-qui lire », « je graver » —, donc ce que ce verrou change à l'écran
+  reste à décider. Le signe existe, se lit, ferme la partie ; le verrou attend.
+- **VOIX-2** (⟨toi⟩ réaffiche les passages déjà lus), **VOIX-3** (les Questions), et la zone
+  d'interface de la Personne, « le journal » — qui est en français depuis t = 0 (écart
+  assumé n° 7).
+- Le sous-titre et la carte de fin disent toujours « actes I à III » : l'acte IV n'est qu'à
+  moitié là.
+
+`outils/balayage.py`, fenêtre de durée re-basée à **(95, 124)** : 42 combinaisons sur 54 passent,
+contre 34 avant ce lot. Le réglage en place donne 97,8–122,2 min sur ses douze variantes
+(trois cadences, deux lectures, avec et sans Élève), écart max **5,8 min** — c'est le joueur
+sans Élève, dont les six signes de la Personne s'espacent le plus —, main ≥ 18 % des
+occurrences, pire tranche hors ouverture 25 %. `outils/verifier.py` passe de 315 à
+**325 assertions**.
+
 ## L'Élève tranche à ma place
 
 *12/10/2026, ELV-1 + ELV-2, sur la branche `eleve` — **à ne pas fusionner avant le retour du

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Simulateur d'économie — « La langue morte », actes I à III.
+Simulateur d'économie — « La langue morte », actes I à IV.
 Rejoue la boucle du prototype avec un acheteur heuristique et une cadence
 de clic paramétrable, pour vérifier le rythme sans avoir à jouer 40 minutes.
 
@@ -61,6 +61,15 @@ GL = [('an','nombre',2), ('anna','nombre',5), ('hem','nombre',11), ('sela','nomb
       # les neuf signes ambigus sont tous tranchés avant lui.
       ('la','modalite',150), ('en','modalite',320), ('mik','modalite',450),
       ('dun','modalite',550), ('lash','modalite',700), ('enla','modalite',800),
+      # Personne (acte IV, VOIX-1). Aucun multiplicateur : comme la Modalité, la branche
+      # donne de la lecture — soixante-six attestations, dont quarante et une pour ⟨nous⟩.
+      # Les prix sont une mesure, et ils butent sur un plafond : l'économie est exponentielle
+      # (la Grammaire croît en 1,16^arbre), et la règle I1 interdit d'afficher plus de quatre
+      # chiffres de Certitude. Au pas de la branche d'avant (1 300 à 3 000 C), les six signes
+      # tombent toutes les 1,5 min ; il faut aller jusqu'à 9 500 pour qu'ils tombent toutes
+      # les 2 à 4 min. Ce que ça laisse à l'acte V : rien sous le plafond — c'est ECO-3.
+      ('nash','personne',1800), ('mu','personne',2800), ('ta','personne',4000),
+      ('taru','personne',5500), ('mula','personne',7300), ('nashal','personne',9500),
       # Composés secrets : offerts par aucune branche, ils ne s'obtiennent qu'à la grille de
       # composition. Ils comptent dans ce que le joueur SAIT, jamais dans ce que l'arbre a
       # rendu — d'où `ARBRE`, qui est le compte dont dépendent le dégagement des tablettes, la
@@ -68,6 +77,10 @@ GL = [('an','nombre',2), ('anna','nombre',5), ('hem','nombre',11), ('sela','nomb
       ('urtem','matiere',60), ('lan','nombre',120)]
 SECRETS = {'urtem', 'lan'}
 ARBRE = [g for g in GL if g[0] not in SECRETS]
+# L'acte d'une branche, pour ses franchissements. Les branches des actes I à III n'en ont pas
+# besoin : la contradiction ne se solde jamais avant `peut-être`, qui est de l'acte III.
+# Suit `ACTE` dans lexique.js.
+ACTE = {'personne': 4, 'fin': 5}
 
 # ---- constantes économiques ----------------------------------------------
 P = dict(
@@ -222,6 +235,9 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=(), eleves=None, ele
     # Armée une seule fois, à l'ouverture du doute, et jamais levée ici faute de révision.
     contr = [False]
     etrangle = lambda: P['contr_div'] if contr[0] else 1.0
+    # Le signe qu'on vient d'acquérir est-il le premier de son acte ? (déjà dans `gl`)
+    franchit = lambda g: (g[1] in ACTE and not any(
+        ACTE.get(x[1], 0) == ACTE[g[1]] for x in ARBRE if x[0] in gl and x[0] != g[0]))
     # Le multiplicateur d'un signe, majoré s'il est mal lu. Le joueur n'en voit rien : la
     # prime ne se lit ni au lexique ni à l'écran de choix (economie.js, `mfx`).
     mf = lambda g, x: (1 + (x - 1) * AMB_R if g in mal_lus else x) if has(g) else 1
@@ -362,9 +378,12 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=(), eleves=None, ele
             if g[0] in AMBIGUS and b['elv'] > 0:
                 elv_lus.append((g[0], b['elv'], erreur(P, b['elv'])))
                 (mal_lus.add if eleve_lit == 'f' else mal_lus.discard)(g[0])
-            # `peut-être` ouvre le doute ET solde les lectures faites jusque-là.
-            if g[0] == 'mik':
-                contr[0] = sum(DETTE[x] for x in mal_lus if x in gl) > P['contr_s']
+            # `peut-être` ouvre le doute ET solde les lectures faites jusque-là — et chaque
+            # franchissement d'acte les solde de nouveau, une fois le doute ouvert (règle 19).
+            # Le premier signe d'une branche d'acte IV est le premier franchissement que le
+            # prototype connaisse ; les lectures tranchées après `peut-être` y passent enfin.
+            if g[0] == 'mik' or (has('mik') and franchit(g)):
+                contr[0] = contr[0] or sum(DETTE[x] for x in mal_lus if x in gl) > P['contr_s']
 
         # La composition : elle ne crée ni ne consomme de flux, elle change le catalogue. Un
         # joueur qui a vu ⟨grenier⟩ dans le texte le pose dès qu'il peut ; ce qu'on mesure ici
@@ -436,6 +455,9 @@ if __name__ == '__main__':
     for lib, fx in (('lecture parfaite', ()),
                     ('les deux incassables (lire, il-faut)', ('shen', 'dun')),
                     ('la paire réparante (grain + maison)', ('tem', 'ur')),
+                    # Le doute passé à cinq points, puis ⟨il-faut⟩ mal lu le panneau ouvert :
+                    # rien ne le soldait avant l'acte IV, le franchissement le solde (règle 19).
+                    ('doute à 5, puis il-faut (grain, avant)', ('tem', 'pat', 'dun')),
                     ('toutes fausses', AMBIGUS)):
         # Sans Élève : ce bloc mesure ce que le JOUEUR s'inflige, et un Élève relirait
         # à sa place les quatre signes ambigus qui restent après la première Grammaire.

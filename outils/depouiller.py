@@ -36,6 +36,7 @@ import sim
 
 P = sim.P
 NGL = len(sim.ARBRE)
+BRANCHE = {g[0]: g[1] for g in sim.GL}
 COUT = {g[0]: g[2] for g in sim.GL}
 GIS = {t: -(-n // P['gis_div']) for t, n in sim.JETONS.items()}
 GIS_TOTAL = sum(GIS.values())
@@ -175,10 +176,16 @@ class Rejeu:
                 # dont six lecteurs déballent déjà les six champs.
                 if elv:
                     s['eleve'][gid] = int(elv)
-                # La contradiction se solde à l'ouverture du doute, et nulle part ailleurs
-                # (règle 19). On la rejoue au même endroit que le jeu.
-                if gid == 'mik' and s['contr'] is None and self.dette() > P['contr_s']:
-                    s['contr'] = t
+                # La contradiction se solde à l'ouverture du doute, puis au premier signe de
+                # chaque acte une fois le doute ouvert (règle 19, VOIX-1) — et nulle part
+                # ailleurs. On la rejoue aux mêmes endroits que le jeu. Re-soldée après une
+                # levée, elle écrase la précédente : c'est l'état de la fin qui se rapporte.
+                franchi = 'mik' in self.gl and BRANCHE.get(gid) in sim.ACTE and not any(
+                    x != gid and BRANCHE.get(x) in sim.ACTE
+                    and sim.ACTE[BRANCHE[x]] == sim.ACTE[BRANCHE[gid]] for x in self.gl)
+                if ((gid == 'mik' or franchi) and (s['contr'] is None or s['contr_levee'])
+                        and self.dette() > P['contr_s']):
+                    s['contr'], s['contr_levee'] = t, None
 
             elif genre == 'recouper':
                 m = RE_REC.match(det)

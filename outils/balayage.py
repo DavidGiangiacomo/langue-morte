@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Balayage de constantes — « La langue morte », actes I à III.
+Balayage de constantes — « La langue morte », actes I à IV.
 Rejoue `sim.run` sur une grille de valeurs et ne rend qu'une ligne par combinaison,
 pour choisir un réglage sans lire quatre cents lignes de journal.
 
@@ -54,7 +54,11 @@ GRILLE = dict(rec_r=(1.26, 1.30, 1.35), con_b=(350, 400, 450), cop_b=(10, 15),
 # garde-fou qui ne trie plus que les réglages franchement cassés — même constat qu'à AMB-1,
 # aggravé, et même réponse : I6, l'écart et la main ne bougent ni avec la lecture ni avec
 # l'Élève, et ce sont eux qui trient.
-DUREE = (76.0, 96.0)
+# Re-basée le 14/10/2026 avec la Personne (VOIX-1, trente-six glyphes) : 118,6-122,2 min pour
+# le joueur sans Élève et tout juste, 97,8-101,6 pour celui qui en empile et lit tout faux.
+# Mêmes marges — trois minutes sous le plancher, deux au-dessus du plafond. 42 combinaisons
+# sur 54 passent, dont le réglage en place (97,8-122,2 min, écart 5,8, main 18 %, 25 %).
+DUREE = (95.0, 124.0)
 ECART_MAX = 6.0
 I6_MAX = 30.0
 # La part manuelle des OCCURRENCES, entrée dans le tri le 14/09/2026 en même temps que

@@ -200,9 +200,17 @@ const douteOuvre = () => has('mik');
 
    **Elle se lève dès que la dette repasse sous le seuil**, c'est-à-dire par la révision — et
    c'est là que le « bonus rétroactif » du design doc se paie enfin, en dette effacée et sans
-   rien annoncer (voir `reviser`). Levée, elle ne se réarme pas : il n'y a plus de
-   franchissement d'acte dans le prototype, et on ne ballotte pas un joueur entre deux états
-   pour un chiffre qu'il ne voit pas.
+   rien annoncer (voir `reviser`). Levée, elle ne se réarme pas d'elle-même — on ne ballotte
+   pas un joueur entre deux états pour un chiffre qu'il ne voit pas : seul le franchissement
+   d'acte suivant la re-solde.
+
+   **Le premier franchissement est l'entrée dans l'acte IV** (VOIX-1, 14/10/2026) : le premier
+   signe de la Personne, si le doute est ouvert. C'est là que les lectures tranchées APRÈS
+   `peut-être` passent enfin au solde — `il-faut`, que le joueur tranche le panneau déjà
+   ouvert, et ce que les Élèves ont lu à sa place. Sans lui, qui passait le doute à cinq
+   points et lisait ⟨il-faut⟩ de travers n'en payait jamais rien. Mesuré : une dette de 5 à
+   l'ouverture du doute (⟨grain⟩ et ⟨avant⟩), plus ⟨il-faut⟩ mal lu, arme la contradiction en
+   entrant dans l'acte IV — 136,6-139,9 min au lieu de 115,6-118,9 pour qui ne révise jamais.
 
    **Le seuil est mesuré.** Les poids de dette étant tirés des attestations, il vaut 0 pour
    une lecture parfaite, 3 pour qui ne rate que les deux signes conçus pour ne pas casser
@@ -219,8 +227,9 @@ const douteOuvre = () => has('mik');
    texte ne peut pas prévenir est celui qui paie le plus, et c'est exactement ce que le §7.3
    annonçait en la laissant passer.
 
-   `S_.contr` est armé à l'achat de `peut-être`, jamais ailleurs ; il n'y a pas de tick qui
-   l'allume, pour qu'aucune sanction ne tombe sans un geste du joueur juste avant. */
+   `S_.contr` est armé à l'achat de `peut-être` ou d'un signe qui franchit un acte, jamais
+   ailleurs ; il n'y a pas de tick qui l'allume, pour qu'aucune sanction ne tombe sans un
+   geste du joueur juste avant. */
 const CONTR_SEUIL = 5;
 const CONTR_DIV = 2;
 const contrDiv = () => S_.contr ? CONTR_DIV : 1;
@@ -241,7 +250,8 @@ function refusJetons(){
   return ln ? ln.querySelectorAll('.tok') : null;
 }
 
-/* Soldée à l'ouverture du doute, et nulle part ailleurs. */
+/* Soldée à l'ouverture du doute, puis à chaque franchissement d'acte — et nulle part
+   ailleurs. */
 function contrSolder(){
   if(S_.contr || dette() <= CONTR_SEUIL) return;
   S_.contr = 1;
@@ -586,6 +596,13 @@ function composer(a, b){
 }
 function acheterIns(k){ const i=INS.find(x=>x.k===k), c=insCost(i);
   if(i.unlock()&&S_.O>=c){ S_.O-=c; S_.b[k]++; } }
+/* Le signe qu'on vient d'acquérir est-il le premier de son acte ? Appelée après l'ajout à
+   `S_.gl`. Un composé secret ne franchit rien : il n'avance pas l'arbre (règle 13). */
+const franchit = id => {
+  const a = ACTE[byId[id].br];
+  return !!a && !byId[id].sec
+    && !S_.gl.some(x => x !== id && byId[x] && !byId[x].sec && ACTE[byId[x].br] === a);
+};
 /* `lect` vaut 'j' ou 'f' pour un signe ambigu, et rien pour tous les autres. Une lecture
    non tranchée est la juste : c'est le cas d'un composé posé à la grille — laquelle n'offre
    aucun choix et ne doit surtout pas en offrir un — et de tout appel d'avant ce lot.
@@ -615,7 +632,7 @@ function acheterGl(id, lect, eleve){
   /* Avant le repeint, et non après : c'est lui qui retire le passage retenu. Le corpus ne se
      repeint qu'à l'achat, jamais à la frame — un solde posé ensuite n'apparaîtrait qu'au
      glyphe suivant, et sur `peut-être` il n'y en a pas forcément. */
-  if(id === 'mik') contrSolder();
+  if(id === 'mik' || (douteOuvre() && franchit(id))) contrSolder();
   paintCorpus(id);
   lastPct=-1;
   if(id==='an'||id==='kal'){ const b=$('bloom'); b.classList.remove('on'); void b.offsetWidth; b.classList.add('on'); }

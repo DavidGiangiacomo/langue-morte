@@ -22,7 +22,7 @@
 
 | | Fait | Reste pour 1.0 |
 |---|---|---|
-| Glyphes | **30 / 45** *(+ `grenier` et `zéro`, composés, hors arbre)* | **15** |
+| Glyphes | **30 / 45** *(+ `grenier` et `zéro`, composés, hors arbre)* — **36** avec la Personne, sur une branche de travail pas encore fusionnée | **15** *(9)* |
 | Instruments | **7 / 9** (Œil, Copiste, Table, Concordance, Atelier, Grammaire, **Élève** *— branche `eleve`, pas encore fusionnée*) | 2 (Corpus jumeau, Le Lecteur) |
 | Actes | **I, II, III — entiers** | IV, V |
 | Corpus | **30 tablettes, 705 lignes, 3 838 signes — intégral**, ⟨N1⟩/⟨N2⟩ semés, **les 11 lectures fausses écrites** | — |
@@ -355,10 +355,24 @@ Suivi : [#23](https://github.com/DavidGiangiacomo/langue-morte/issues/23) — le
 
 Suivi : [#24](https://github.com/DavidGiangiacomo/langue-morte/issues/24) — les récits ouverts y sont des sous-issues.
 
-**VOIX-1 — La branche Personne** *(`je`, `toi`, `nous`, `toi-qui`, `moi-absent`, `nous-fûmes`)* · T:L · [#33](https://github.com/DavidGiangiacomo/langue-morte/issues/33)
+**VOIX-1 — La branche Personne** *(`je`, `toi`, `nous`, `toi-qui`, `moi-absent`, `nous-fûmes`)* · T:L — *les six glyphes faits (14/10/2026, branche de travail empilée sur `eleve`) ; reste le verrou du passé de `nous-fûmes`* · [#33](https://github.com/DavidGiangiacomo/langue-morte/issues/33)
 > En tant que joueur, je veux découvrir qui parle.
 
 - Fini quand : les six glyphes existent ; `nous-fûmes` verrouille le récit au passé, **y compris les passages déjà lus**, et n'apparaît qu'une fois dans tout le corpus (dernier mot de la tablette 30).
+- *Fait, sauf le verrou* : ⟨nous⟩ (1 800 C) ouvre la branche — la porte que la tablette 18
+  laissait, qu'il rend entière —, ⟨nous-fûmes⟩ (9 500 C) la ferme, et avec elle la partie, sur
+  le dernier mot du corpus. Aucun multiplicateur. ⟨toi-qui⟩ et ⟨moi-absent⟩ se posent à la
+  grille dès leur première moitié ; ⟨moi-absent⟩ n'a aucune attestation. **Les prix butent sur
+  I1** : il faut monter à 9 500 C pour que l'acte IV ait un rythme (104,7–108,6 min,
+  118,6–122,2 sans Élève, écarts de 2 à 6 min), et il ne reste rien sous le plafond pour
+  l'acte V — voir ECO-3. **Premier franchissement d'acte** de la règle 19 : l'entrée dans
+  l'acte IV re-solde la contradiction, et les lectures tranchées après `peut-être` y passent
+  enfin. **Et la sanction coûte trois fois plus** chez qui ne révise jamais : +32 min pour la
+  paire réparante au lieu de +11, I4 cède à huit minutes. Non réglé, à observer. Voir
+  `docs/journal.md`, « La Personne ».
+- **Reste : le verrou du passé.** Le corpus est télégraphique et sans temps grammatical ; ce
+  que « verrouiller le récit au passé, y compris les passages déjà lus » change à l'écran est
+  une décision d'écriture, pas de code.
 
 **VOIX-2 — Le corpus était à la deuxième personne depuis le début** · T:M · [#35](https://github.com/DavidGiangiacomo/langue-morte/issues/35)
 > En tant que joueur, je veux qu'on me réaffiche ce que j'ai déjà lu, désormais adressé à moi.
@@ -442,13 +456,14 @@ Suivi : [#27](https://github.com/DavidGiangiacomo/langue-morte/issues/27) — le
 > En tant qu'auteur, je veux vérifier le rythme de trois heures sans jouer trois heures.
 
 - Fini quand : le simulateur modélise l'Élève, les Questions, la dette et la contradiction ; il sort les tranches d'I6 sur toute la partie ; `balayage.py` peut balayer les nouvelles constantes.
-- *Fait de ce récit* : la dette et la contradiction (CONTR-1), et **l'Élève** (12/10/2026) — `elv_b`, `elv_r`, `elv_p`, `elv_e` sont dans `P`, donc balayables. Restent les Questions et les actes IV–V.
+- *Fait de ce récit* : la dette et la contradiction (CONTR-1), et **l'Élève** (12/10/2026) — `elv_b`, `elv_r`, `elv_p`, `elv_e` sont dans `P`, donc balayables. **La Personne** (14/10/2026) et le franchissement d'acte de la règle 19. Restent les Questions et l'acte V.
 - **Bloquant pour tout réglage des actes IV–V** (règle 7).
 
 **ECO-3 — Tenir I1 et I4 sur 45 glyphes** · T:L · [#47](https://github.com/DavidGiangiacomo/langue-morte/issues/47)
 > En tant que joueur, je veux un déblocage toutes les 4 à 6 minutes, et jamais plus de 8 minutes sans rien.
 
 - La Certitude ne dépasse jamais 4 chiffres à l'écran (I1) alors que les Occurrences vont à ~10¹⁰. **La divergence est le propos ; la tenir sur 25 glyphes de plus est le vrai travail d'équilibrage restant.**
+- **Depuis la Personne (14/10/2026), le prix ne suffit plus.** Il a fallu monter ⟨nous-fûmes⟩ à 9 500 C pour que l'acte IV tienne quatre à six minutes par signe sans Élève ; au-delà, I1 interdit. L'acte V n'a donc plus un cran de prix pour régler son rythme, alors que la Grammaire croît encore de 16 % par signe. Les leviers restants sont des taux — l'exposant de la Grammaire, ou un puits de Certitude (les Questions ?) — et c'est à mesurer, pas à estimer (règle 7).
 - Depuis le 14/09/2026, la **courbe de dégagement** (`REV_R`) est un paramètre balayé et non plus une constante implicite. C'est le seul bouton connu qui tire à la fois la part manuelle des occurrences et la pire tranche d'I6 — et dans le même sens : le ralentir améliore les deux. À rebalayer quand `sim.py` couvrira les actes IV et V (ECO-2), parce que tout ce qu'on sait de son comportement au-delà de 28 signes vient d'un arbre tronqué.
 
 **ECO-4 — PT10 et suivants** · T:M *(récurrent)* · [#48](https://github.com/DavidGiangiacomo/langue-morte/issues/48)
