@@ -86,10 +86,10 @@ Trois contrôles à lire en premier :
 
 **L'ordre est la moitié du travail.** Chaque question enseigne quelque chose au joueur ; une
 fois enseignée, elle contamine toutes les suivantes. On va donc de l'ouvert au précis, et les
-trois dernières — celles qui révèlent — se posent à la fin, dans cet ordre-là.
+quatre dernières — celles qui révèlent — se posent à la fin, dans cet ordre-là.
 
-Les questions 1 à 8 peuvent se poser par écrit. **Les questions 9 à 11 se posent de vive
-voix**, et la 11 une seule fois.
+Les questions 1 à 8 peuvent se poser par écrit. **Les questions 9 à 12 se posent de vive
+voix**, et la 12 une seule fois.
 
 ### Premier tour — ouvert, ne rien nommer
 
@@ -106,9 +106,10 @@ voix**, et la 11 une seule fois.
    → *R4, et la remarque de PT3 : « la qualité de ce qui se découvre sera déterminante ».
    Question ouverte — ne surtout pas suggérer qu'il y a une histoire.*
 5. **Y a-t-il eu un moment où tu as compris quelque chose que le jeu ne t'avait pas dit ?**
-   → *La plus large du lot, et la seule qui puisse faire remonter la crue, les composés ou les
-   deux lectures sans qu'on les nomme. Si quelque chose remonte ici, c'est la meilleure
-   réponse de tout le playtest.*
+   → *La plus large du lot, et la seule qui puisse faire remonter la crue, les composés, les
+   deux lectures ou la numération du compteur sans qu'on les nomme. Si quelque chose remonte
+   ici, c'est la meilleure réponse de tout le playtest. Pour la numération en particulier,
+   c'est aussi la seule façon de l'apprendre sans rien enseigner : voir la question 11.*
 
 ### Deuxième tour — les mécaniques, sans dire ce qu'elles cachent
 
@@ -130,7 +131,7 @@ voix**, et la 11 une seule fois.
    → *Si elles n'ont servi à choisir aucune révision, la marque ne suffit pas — mais la
    réponse ne sera jamais de nommer le signe.*
 
-### Troisième tour — les trois qui révèlent
+### Troisième tour — les quatre qui révèlent
 
 *À partir d'ici chaque question apprend quelque chose de définitif. Ne pas remonter au tour
 précédent après les avoir posées.*
@@ -145,7 +146,26 @@ précédent après les avoir posées.*
     elle n'est nulle part ailleurs que dans le texte. La ligne de journal de l'achat le dit
     déjà (« la moitié du nom est un signe que je ne sais pas lire ») : la question est donc
     s'il l'a lue, et s'il est allé voir.*
-11. **« Tu as remarqué que tu choisissais ? »**
+11. **« Au tout début, avant ton premier achat, les compteurs en haut montaient en signes.
+    Tu en as fait quoi ? »**
+    → *Ne pas demander « tu les as lus ? », qui souffle qu'il y avait quelque chose à lire.
+    Laisser venir, puis, seulement s'il a lu : « jusqu'où ? »*
+    → **Après la 9, jamais avant.** Demander si le compteur se lisait apprend à regarder les
+    signes de nombre comme des composés — ce qui est exactement ce que la question 9 mesure
+    sur le zéro. Posée dans l'autre ordre, elle lui donne sa réponse.
+    → *Le point : ⟨un⟩ coûte 2 C, c'est le signe le moins cher de l'arbre et l'achat évident
+    de la première minute, et il fait passer les trois compteurs en chiffres arabes d'un bloc
+    (`readN`, `src/economie.js:434`). Le design doc §10 appelle le décodage du compteur « le
+    premier plaisir du jeu » et demande qu'on le protège absolument ; il a une espérance de
+    vie de deux Certitude. La conversion est-elle reçue comme une récompense, ou comme une
+    énigme qu'on vient de perdre ? L'auteur ne peut pas répondre, il connaît la numération.*
+    → *Croiser avec le TSV : la minute du premier achat, et si c'est ⟨un⟩. Tombé dans la
+    première minute, le compteur n'a jamais servi de pierre de Rosette — et le joueur ne
+    saura pas qu'il l'a perdue. S'il a tardé, ce qu'il a fait pendant ce temps est la donnée.*
+    → *Rien n'est à régler avant cette réponse : issue
+    [#57](https://github.com/DavidGiangiacomo/langue-morte/issues/57),
+    `docs/journal.md` « Le compteur n'est pas le corpus ».*
+12. **« Tu as remarqué que tu choisissais ? »**
     → **Une seule fois, en dernier, et jamais avant.** Neuf signes proposent deux lectures au
     moment de payer, à prix, tracé et ligne d'effet identiques ; le jeu ne l'admet pas avant
     `peut-être`. Cette question révèle la colonne vertébrale des actes III à V — une fois
@@ -164,6 +184,8 @@ précédent après les avoir posées.*
 - Qu'un signe puisse avoir deux lectures, ou qu'on ait pu se tromper.
 - Qu'il existe un relevé, un recoupement, une concordance — les trois gestes du corpus se
   trouvent ou ne se trouvent pas.
+- Que les nombres du compteur se lisaient avant ⟨un⟩, et qu'on pouvait les décoder seul —
+  c'est la question 11, et elle ne se pose qu'après la 9.
 - Qu'il y a une fin, et à quelle minute elle tombe.
 - Combien de joueurs sont passés avant, et ce qu'ils ont fait.
 

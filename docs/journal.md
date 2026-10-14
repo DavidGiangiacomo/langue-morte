@@ -142,6 +142,100 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## Le compteur n'est pas le corpus — trois portes, et une qui s'ouvre à 2 C
+
+*14/10/2026.* Trouvé en jouant : **dès ⟨un⟩, les trois compteurs passent en chiffres arabes
+en entier** — 2, 3, 200, 14 523 — alors que le joueur ne sait lire aucun de ces nombres dans
+le corpus. La question posée était « est-ce normal ? ». Oui, c'est voulu et annoncé ; mais le
+**seuil** ne l'est pas, et il contredit un argument que ce journal a écrit lui-même.
+Rien n'est modifié dans `src/` : la question part en mesure de PT11. Issue
+[#57](https://github.com/DavidGiangiacomo/langue-morte/issues/57).
+
+### Il y a trois portes, et aucune n'est `numLisible()`
+
+`src/economie.js:434-436` :
+
+```js
+const readN  = () => has('an');     // un   → les trois compteurs O / H / C
+const readC  = () => has('anna');   // deux → les coûts, le gisement, les fréquences
+const readR  = () => has('sela');   // dix  → les débits /s
+```
+
+Trois booléens globaux, pas un test par nombre. `readN` ouvre `#vl-O`, `#vl-H` et `#vl-C`
+d'un bloc (`src/rendu.js:725-727`). Le corpus, lui, reste strict : `numLisible()`
+(`src/signes.js:112`) exige chaque signe du nombre *et* ⟨deux⟩ pour le redoublement.
+
+**La règle 3 n'est donc pas violée** — elle est écrite pour « un nombre **du corpus** », et
+elle tient là où elle est écrite. Les compteurs n'y ont jamais été soumis, et le code date du
+premier commit (`f55d211`) sans avoir jamais été rouvert.
+
+### Et c'est annoncé trois fois
+
+Les lignes d'effet portent les trois portes (`src/lexique.js:8-15`) : ⟨un⟩ « **les relevés en
+chiffres** », ⟨deux⟩ « **les coûts en chiffres** », ⟨dix⟩ « **les débits en chiffres** ». Et
+la ligne de journal de ⟨un⟩ dit la chose entière : *« Un trait. Un. Mes propres comptes se
+tiennent enfin — les leurs, à peine. »*
+
+C'est la fiction, et elle est cohérente : **les compteurs sont la notation du joueur, pas
+celle de la langue morte.** ⟨un⟩ est le moment où le scribe se dote d'une écriture pour ses
+propres comptes ; le corpus reste les nombres de quelqu'un d'autre, et ceux-là se paient
+signe par signe. Le design doc en fait une catégorie à part depuis le premier jour, au §9,
+invariant **I2** : « le joueur perd la lisibilité de **ses propres nombres** au moment où ils
+deviennent énormes ». `readN` ouvre cette lisibilité à l'acte I ; VOIX-5 la refermera à
+l'acte IV. Les deux portes se tiennent par le même mot.
+
+### Pourquoi la règle 3 ne *peut pas* s'appliquer là
+
+Deux conséquences mécaniques, qui ne sont pas des objections de goût :
+
+1. **Ça scintillerait.** Avec ⟨un⟩ et ⟨dix⟩ mais sans ⟨deux⟩ : 10 lisible, 11 lisible, 12 non
+   (deux `u1`), 20 non (deux `t10`). Le compteur passerait des chiffres aux glyphes d'une
+   seconde à l'autre, au rythme de la production — et le nombre affiché serait le seul
+   indice de ce qui manque, ce qui est exactement un renseignement.
+2. **Ça resterait un mur de glyphes toute la partie.** Au-delà de 2 000 il faut ⟨mille⟩ *et*
+   ⟨deux⟩ ; les Occurrences montent à 10¹⁰ et `numGlyphs()` plafonne à 24 tracés. Le compteur
+   serait une barre pleine jusqu'à la fin.
+
+### Ce qui reste douteux, et n'est pas réglé
+
+1. **Le seuil contredit l'argument de ce journal.** « Le point aveugle de `deux` », plus bas,
+   défend `readC` à ⟨deux⟩ ainsi : *« le comptage est aussi conditionné à `deux` : sans lui le
+   nombre affiché serait lui-même illisible. »* C'est exactement le cas que `readN` à ⟨un⟩
+   produit. Deux portes voisines, deux justifications incompatibles — l'une de fiction,
+   l'autre d'équilibrage.
+2. **Le joueur achète la conversion sans être prévenu.** La ligne d'effet d'un glyphe encore à
+   acheter ne s'affiche que si `has('im')` (`src/rendu.js:697`) — ⟨dire⟩ coûte 8 C, quatre
+   fois ⟨un⟩. Au moment du premier achat, « les relevés en chiffres » est invisible.
+3. **Le premier plaisir du jeu a une espérance de vie de 2 C.** Design doc §10, acte I :
+   *« Un joueur attentif peut décoder les chiffres tout seul en observant son compteur monter,
+   avant d'acheter le signe. C'est le premier plaisir du jeu et il faut le protéger
+   absolument. »* Or ⟨un⟩ est **le signe le moins cher de l'arbre** (2 C, contre 3 pour
+   ⟨grain⟩), c'est l'achat évident de la première minute, et la branche est une chaîne stricte
+   (`open = prevDone && !done`, `src/rendu.js:682`) : on ne peut pas atteindre ⟨deux⟩ sans
+   passer par ⟨un⟩. La pierre de Rosette s'éteint au premier achat possible.
+
+Aucun test ne verrouille ça — `readN` n'apparaît pas dans `outils/verifier.py`.
+
+### Pourquoi on ne tranche pas maintenant
+
+Parce que la question n'est pas « quel seuil », c'est **« la conversion est-elle lue comme une
+récompense ou comme une énigme qu'on vient de perdre ? »** — et l'auteur ne peut pas y
+répondre : il connaît la numération. Déplacer `readN` sur `anna` serait une ligne, mais ça ne
+rachèterait que trois Certitude, soit une trentaine de secondes de jeu. Si le réglage ne vaut
+rien, c'est la question qui vaut.
+
+D'où la **question 11 du protocole** (`docs/pt11-protocole.md`), placée après ⟨grenier⟩ et le
+zéro, et l'ordre n'est pas négociable : demander si le compteur se lisait apprend à regarder
+les signes de nombre comme des composés, ce qui est exactement ce que la question 9 mesure.
+Le TSV répond à la moitié tout seul — la minute du premier achat, et si c'est ⟨un⟩. Et le
+meilleur cas est qu'on ne pose rien : si la numération remonte seule à la question 5, la
+réponse ne coûte aucun renseignement.
+
+**Détail de rédaction, en marge** : « les relevés en chiffres » (⟨un⟩) et « +25 % au relevé »
+(⟨deux⟩) emploient *relevé* dans deux sens différents, sur deux cartes voisines de la même
+branche — l'affichage et le geste de la règle 8. Non corrigé : ça entre dans le même
+arbitrage.
+
 ## La carte de fin soufflait la réponse
 
 *12/10/2026.* Trouvé en convertissant le backlog en issues, pas en jouant. La carte de fin
@@ -2932,7 +3026,17 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
    depuis PT6**, et il attend la mesure de PT11 avant tout réglage : ne pas toucher `REL_K`,
    c'est la date des relevés qui est en cause, pas leur prix.
 
-8. **Un garde-fou qui ne contraint que le simulateur ne garde rien.** Le plancher de 15 % sur
+8. **Le seuil des compteurs en chiffres** *(14/10/2026)* — ⟨un⟩ coûte 2 C, c'est le signe le
+   moins cher de l'arbre, et il fait passer les trois compteurs en chiffres arabes d'un bloc
+   (`readN`). C'est voulu, annoncé et cohérent avec I2 ; ce qui ne l'est pas, c'est que le
+   design doc §10 demande de protéger « absolument » le décodage du compteur, qui s'éteint
+   donc au premier achat possible. **Rien à régler avant la réponse de PT11** (question 11 du
+   protocole) : la question n'est pas le seuil, c'est de savoir si la conversion est reçue
+   comme une récompense ou comme une énigme perdue, et l'auteur ne peut pas y répondre. Issue
+   [#57](https://github.com/DavidGiangiacomo/langue-morte/issues/57). Voir « Le compteur n'est
+   pas le corpus ».
+
+9. **Un garde-fou qui ne contraint que le simulateur ne garde rien.** Le plancher de 15 % sur
    la part manuelle des occurrences, entré dans `outils/balayage.py` le 14/09/2026, donne 22,9
    à 23,4 % sur le réglage en place et n'a pas vu venir le 1,0 % de PT10 — parce qu'il mesure
    l'acheteur simulé, qui relève tant que c'est rentable, et pas un joueur qui s'arrête. Vrai
