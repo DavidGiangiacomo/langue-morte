@@ -437,9 +437,20 @@ milieu de l'arbre, il reste sans effet. **Le verrou du passé est à l'écran** 
 dernier mot du corpus met le récit au passé, jusque dans ce qui est déjà lu — « je gravé ·
 toi lire », « après · nous · il-fallait » —, sauf ce qui s'adresse à ⟨toi⟩. Mesuré :
 **104,7–108,6 min** (118,6–122,2 sans Élève), écart max 5,2, tranches ≥ 10′ ≤ 25 %, main
-22,4–22,7 %. **Pas fait** : VOIX-2, VOIX-3. `outils/verifier.py` passe de 315 à **330
-assertions**. Voir `docs/journal.md`, « La
-Personne ».
+22,4–22,7 %. `outils/verifier.py` passe de 315 à **330 assertions**. Voir `docs/journal.md`,
+« La Personne ».
+
+**VOIX-2 — ce qui m'était adressé** (14/10/2026, même branche) : l'achat de ⟨toi⟩ replie le
+corpus une fois, comme une concordance, sur les quatre-vingt-douze lignes qui portent ⟨toi⟩,
+⟨toi-qui⟩ ou ⟨lire⟩ — treize disent « toi », les autres sont déjà lues : « il-faut lire ·
+eau », les registres qui finissent sur « si lire », l'abécédaire. Rien n'est ajouté au texte ;
+c'est le choix des lignes qui dit « toi » (tranché par l'auteur, contre une relecture déroulée
+et une deuxième personne conjuguée). Le choix porte sur les signes, jamais sur les mots
+(règle 17), et le repli ne compte pas comme une concordance dans le degré de doute : c'est le
+jeu qui montre, pas le joueur qui rassemble (règle 18). Le journal d'actions date l'ouverture
+et la sortie, et `depouiller.py` en tire la durée de la relecture. **Pour le playtest qui
+jouera cette branche : relit-on, ou referme-t-on tout de suite ?** `outils/verifier.py` passe
+de 330 à **332 assertions**. Voir `docs/journal.md`, « VOIX-2 ».
 
 **Prochaine étape — PT11 avec un autre joueur, puis fusionner l'Élève (E5), puis l'acte IV.** *PT11 est en attente depuis le 14/10/2026, faute de joueur : le travail continue sur des branches empilées sur `eleve`, et `develop` ne bouge pas.* Même question qu'en PT8 et PT9, posée à quelqu'un qui ne sait pas ce qu'il cherche — plus celle que PT10 a ouverte : **revient-on dans le corpus après la quarantième minute ?** Dans le même TSV : la part manuelle des occurrences (au-delà de 40 %, plafonner `REL_K`) le stock d'hypothèses entre `année` et la dixième Grammaire (27 090 en PT9), **le nombre de recoupements** — sous une vingtaine sur la partie, le réglage du 09/09 a vidé un des deux gestes manuels et il faut revenir en arrière — et **les tentatives de composition** : le journal d'actions les compte avec leur paire et leur minute. La question neuve est celle-là : un joueur qui ignore qu'il y a quelque chose à chercher reconnaît-il ⟨maison⟩ et ⟨grain⟩ dans ⟨grenier⟩, ou ⟨ne-pas⟩ et ⟨un⟩ dans le zéro qu'il regarde depuis la première seconde ? Aucun simulateur ne répond à ça. S'y ajoutent deux questions depuis `les-lecteurs` : **achète-t-on un signe à 1 200 C qui annonce trois attestations** — le TSV date le moment où il devient payable — et, à poser de vive voix, **a-t-on vu ⟨nous⟩ dans le nom** ? Et une mesure de plus, parce que `REV_R` la déplace sans qu'aucun playtest soit derrière : **le nombre de recoupements et la part manuelle des occurrences**. Si la main descend au lieu de monter, c'est `REV_R` qu'il faut défaire en premier, avant les prix.
 
@@ -451,7 +462,7 @@ Personne ».
 
 **Et deux de plus le jour où l'Élève sera fusionné**, donc pour PT12. (1) **Combien d'Élèves, et avant ou après ⟨avant⟩ et ⟨ne-pas⟩ ?** Le simulateur en empile sept sans réfléchir. (2) À poser de vive voix : **à qui le joueur attribue-t-il un mot faux** — à lui, ou à l'Élève ? Et « combien de lectures fausses sur neuf » ne vaut plus que pour les signes qu'il a lus lui-même ; le dépouillement les sépare.
 
-Restent ensuite : fusionner **l'Élève** (E5), écrit et mesuré sur la branche `eleve` — c'est le dernier morceau de J2. Puis le reste de l'**acte IV** (la Personne est écrite ; restent le verrou du passé, le réaffichage, les Questions, le Corpus jumeau), l'**acte V**, et la relecture de fin, seul endroit où le jeu avouera les erreurs jamais détectées. Voir `docs/design-doc.md` §7 et §8, et `docs/backlog-1.0.md` pour le découpage.
+Restent ensuite : fusionner **l'Élève** (E5), écrit et mesuré sur la branche `eleve` — c'est le dernier morceau de J2. Puis le reste de l'**acte IV** (la Personne, son verrou du passé et le réaffichage sont écrits ; restent les Questions et le Corpus jumeau), l'**acte V**, et la relecture de fin, seul endroit où le jeu avouera les erreurs jamais détectées. Voir `docs/design-doc.md` §7 et §8, et `docs/backlog-1.0.md` pour le découpage.
 
 ---
 

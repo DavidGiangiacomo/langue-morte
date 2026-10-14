@@ -791,10 +791,10 @@ const GL = [
      qui se tient seul devant le nom ⟨les-lecteurs⟩ et que la tablette 18 laissait à lire.
      Il ouvre donc la branche : c'est la porte que l'acte III a laissée dans le texte, et
      l'acheter rend la tablette 18 entière, nom propre à part.
-     Aucun multiplicateur, comme la Modalité : la branche donne de la lecture. Ce que le
-     design doc lui confie en plus — les Questions par `toi`, le réaffichage des passages
-     déjà lus — viendra avec VOIX-2 et VOIX-3, et rien de ce que le lexique annonce ici ne le
-     promet. Les lignes d'effet disent ce qui se lit, pas ce que ça veut dire : la deuxième
+     Aucun multiplicateur, comme la Modalité : la branche donne de la lecture. ⟨toi⟩ replie le
+     corpus, une fois, sur ce qui s'adressait au lecteur (VOIX-2, `adresser()` dans rendu.js) ;
+     les Questions qu'il ouvre aussi viendront avec VOIX-3, et rien de ce que le lexique
+     annonce ici ne les promet. Les lignes d'effet disent ce qui se lit, pas ce que ça veut dire : la deuxième
      personne se découvre sur les tablettes 20 et 24, pas sur une carte du lexique.
      Les prix sont une mesure, et ils butent sur un plafond. L'économie est exponentielle —
      la Grammaire croît en 1,16 par signe de l'arbre — et I1 interdit d'afficher plus de
@@ -821,8 +821,8 @@ const GL = [
    log:'Nous. Le signe qui se tenait seul devant leur nom revient quarante et une fois, jusque dans les registres. Ce n’était pas un mot de plus : c’étaient eux.'},
   {id:'mu',   br:'personne',mot:'je',        cost:2800, eff:'quelqu’un parle en son nom — cinq attestations, une seule main',
    log:'Je. Cinq fois dans tout le corpus, et toujours de la même main — celle qui signe les dernières tablettes. Quelqu’un a fini par parler en son nom.'},
-  {id:'ta',   br:'personne',mot:'toi',       cost:4000, eff:'celui à qui l’on parle se lit — quinze attestations, quatre tablettes',
-   log:'Toi. Quinze fois, sur les dernières tablettes. Ce n’est pas un voisin qu’ils appellent : c’est moi.'},
+  {id:'ta',   br:'personne',mot:'toi',       cost:4000, eff:'celui à qui l’on parle se lit · le corpus se replie sur ce qui lui était adressé',
+   log:'Toi. Quinze fois, sur les dernières tablettes. Ce n’est pas un voisin qu’ils appellent : c’est moi — et ce que j’avais déjà lu m’était adressé aussi.'},
   {id:'taru', br:'personne',mot:'toi-qui',   cost:5500, eff:'quatre attestations, trois tablettes',
    log:'Toi-qui. « Toi » posé sur « si » : toi, s’il y a quelqu’un. Ils ne savaient pas qui viendrait, et ils ont écrit quand même.'},
   {id:'mula', br:'personne',mot:'moi-absent',cost:7300, eff:'un mot qu’aucune tablette ne porte',
@@ -1688,6 +1688,9 @@ function acheterGl(id, lect, eleve){
      glyphe suivant, et sur `peut-être` il n'y en a pas forcément. */
   if(id === 'mik' || (douteOuvre() && franchit(id))) contrSolder();
   paintCorpus(id);
+  /* ⟨toi⟩ replie le corpus sur ce qui s'adressait au lecteur (VOIX-2, rendu.js). Une fois, à
+     l'achat : la relecture suffit. */
+  if(id === 'ta') adresser();
   lastPct=-1;
   if(id==='an'||id==='kal'){ const b=$('bloom'); b.classList.remove('on'); void b.offsetWidth; b.classList.add('on'); }
   if(nArbre()===NGL){ S_.done=true; finArmer(); }
@@ -2180,6 +2183,30 @@ function rejouerFlash(el){
    jusqu'à 0, en soixante-dix lignes au lieu de six cent soixante-seize. Personne ne la
    commente ; c'est au joueur de lire les nombres. */
 let concArme = false, concSel = null, concN = 0;
+/* ---- ce qui s'adresse au lecteur (VOIX-2) ----
+   « Le corpus n'est pas un registre : il est écrit à la deuxième personne, et il l'a toujours
+   été — le jeu réaffiche les passages déjà lus, désormais adressés au joueur » (design doc
+   §10). Rien n'est ajouté au texte : c'est le CHOIX DES LIGNES qui dit « toi ». À l'achat de
+   ⟨toi⟩, le corpus se replie une fois, comme une concordance, sur les lignes qui portent
+   ⟨toi⟩, ⟨toi-qui⟩ ou ⟨lire⟩ — quatre-vingt-douze lignes sur vingt-cinq tablettes, presque
+   toutes déjà lues : les consignes « il-faut lire · eau », les registres qui finissent sur
+   « si lire », l'abécédaire, la fabrique. Le joueur les relit, et revient au corpus quand il
+   veut. Tranché par l'auteur le 14/10/2026, contre une relecture déroulée et contre une
+   deuxième personne conjuguée à l'écran.
+   Le choix est fait sur les SIGNES, jamais sur les mots : ⟨lire⟩ lu « compter » se replie de
+   la même façon, et le repli ne renseigne sur aucune lecture (règle 17). Il ne compte pas
+   comme une concordance dans le degré de doute (`S_.conc`) : c'est le jeu qui montre, pas le
+   joueur qui rassemble, et le doute mesure ce que le joueur a fait (règle 18). */
+const ADRESSE = ['ta', 'taru', 'shen'];
+let concToi = false;
+function adresser(){
+  concSel = null; concArme = false; concToi = true;
+  peindreConc();
+  /* Tout ce qui précède la première tablette gardée est replié : le haut du corpus EST le
+     début de la relecture. `versTablette()` mesure depuis la première tablette, qui est
+     masquée ici, et s'arrêtait une ligne trop bas. */
+  elCorpus.scrollTo({top: 0});
+}
 
 function concArmer(v){
   concArme = v;
@@ -2199,21 +2226,23 @@ function concChoisir(id){
   S_.conc[id] = 1;
   peindreConc();
 }
-function concFermer(){ concSel = null; concArme = false; peindreConc(); }
+function concFermer(){ concSel = null; concArme = false; concToi = false; peindreConc(); }
 
 function peindreConc(){
-  elCorpus.classList.toggle('filtre', !!concSel);
+  elCorpus.classList.toggle('filtre', !!concSel || concToi);
   elCorpus.classList.toggle('conc-arme', concArme);
   concN = 0;
   for(const tb of elCorpus.children){
-    if(!concSel){
+    if(!concSel && !concToi){
       tb.classList.remove('vide');
       for(const ln of tb.children) ln.classList.remove('off');
       continue;
     }
     let n = 0, premiere = true;
     for(const ln of tb.children){
-      const a = ln.querySelectorAll('[data-w="'+concSel+'"]').length;
+      /* Une concordance compte des attestations ; le repli « à toi » compte des lignes. */
+      const a = concToi ? +ADRESSE.some(id => ln.querySelector('[data-w="'+id+'"]'))
+                        : ln.querySelectorAll('[data-w="'+concSel+'"]').length;
       n += a;
       /* La première ligne reste toujours : sans elle, la colonne n'aurait plus de date —
          et cette date est du texte ancien, pas un en-tête ajouté par le jeu. */
@@ -2227,9 +2256,15 @@ function peindreConc(){
 }
 
 function majConc(){
-  const b = $('a-con'), ouvert = S_.b.con > 0;
+  /* Le bouton sert aussi à sortir du repli « à toi », Concordance achetée ou non. */
+  const b = $('a-con'), ouvert = S_.b.con > 0 || concToi;
   if(b.hidden !== !ouvert) b.hidden = !ouvert;
   if(!ouvert) return;
+  if(concToi){
+    setHTML(b, 'à '+motDe('ta')+' · '+nf.format(concN)+' ligne'+(concN > 1 ? 's' : '')+' ✕');
+    b.classList.add('on');
+    return;
+  }
   const mot = concSel && byId[concSel] && has(concSel) ? motDe(concSel) : null;
   setHTML(b, !concSel ? (concArme ? 'choisis un signe' : 'concorder')
     : (mot || sv(concSel)) + ' · ' + nf.format(concN)
@@ -2858,6 +2893,12 @@ enrober('veillee',   () => Math.round(S_.O), () => Math.round(S_.O) + ' occ. hor
    les ressources. C'est pourtant le geste que PT9 doit mesurer — quels signes le joueur
    rassemble, et s'il le fait du tout. */
 enrober('concChoisir', () => concSel, a => a[0] + ' · ' + concN + ' attest.');
+/* Le repli « à toi » (VOIX-2) s'ouvre tout seul à l'achat de ⟨toi⟩, et la question qu'il
+   pose au playtest est celle du temps : combien de temps le joueur reste à relire avant de
+   revenir au corpus. D'où l'ouverture ET la fermeture, et la fermeture de toute
+   concordance avec elle — le journal ne disait jusqu'ici ni quand ni si l'on en sortait. */
+enrober('adresser',    () => concToi, () => concN + ' lignes');
+enrober('concFermer',  () => (concToi ? '@toi' : concSel), (a, avant) => avant || '');
 /* La composition. Le témoin est le compteur de tentatives et non la longueur du carnet : une
    paire juste qu'on n'a pas les moyens de payer n'y entre pas, et son essai passerait à la
    trappe. PT10 doit pouvoir compter les tentatives, voir sur quelles paires, et à quelle
@@ -3078,11 +3119,11 @@ window.addEventListener('keydown', e=>{
   else if(k==='k'){ e.preventDefault(); saut(-1); }
   /* La concordance a sa touche : c'est le geste qu'on refait le plus souvent une fois le
      corpus rangé, et il n'a pas à passer par la souris. */
-  else if(k==='c'){ e.preventDefault(); if(S_.b.con>0){ if(concSel||concArme) concFermer(); else concArmer(true); } }
+  else if(k==='c'){ e.preventDefault(); if(S_.b.con>0){ if(concSel||concArme||concToi) concFermer(); else concArmer(true); } }
   else if(k==='escape'){ if(!$('amb').hidden) ambFermer();
     else if(!$('end').hidden) fermerFin();
     else if(recArme) recArmer(false);
-    else if(concArme || concSel) concFermer();
+    else if(concArme || concSel || concToi) concFermer();
     else if(compSel[0] || compSel[1]) compVider(); }
 });
 $('instr').addEventListener('click', e=>{ const b=e.target.closest('[data-ins]'); if(b&&!b.disabled) acheterIns(b.dataset.ins); });
@@ -3125,7 +3166,7 @@ repeat($('a-hyp'), formuler);
    passages. Le bouton ne fait plus qu'armer le corpus. */
 $('a-rec').addEventListener('click', ()=>recArmer(!recArme));
 /* Le bouton ouvre le mode, puis referme la concordance : un aller-retour, jamais un piège. */
-$('a-con').addEventListener('click', ()=> concSel ? concFermer() : concArmer(!concArme));
+$('a-con').addEventListener('click', ()=> concSel || concToi ? concFermer() : concArmer(!concArme));
 
 /* Les deux boutons hors jeu ne sont pas dans tous les builds : le sélecteur de vitesse et
    « réinitialiser » sortent du build de playtest, toute la barre sort de la version publique

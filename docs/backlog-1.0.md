@@ -375,10 +375,16 @@ Suivi : [#24](https://github.com/DavidGiangiacomo/langue-morte/issues/24) — le
   « après · nous · il-fallait » —, sauf ce qui s'adresse à ⟨toi⟩, qui reste au présent. Il est
   dans la traduction, jamais dans le texte : voir la règle 22 de `CLAUDE.md`.
 
-**VOIX-2 — Le corpus était à la deuxième personne depuis le début** · T:M · [#35](https://github.com/DavidGiangiacomo/langue-morte/issues/35)
+**VOIX-2 — Le corpus était à la deuxième personne depuis le début** · ~~T:M~~ **fait** (14/10/2026, branche de travail empilée sur `eleve`) · [#35](https://github.com/DavidGiangiacomo/langue-morte/issues/35)
 > En tant que joueur, je veux qu'on me réaffiche ce que j'ai déjà lu, désormais adressé à moi.
 
 - Fini quand : `toi` déclenche un réaffichage des passages déjà lus ; rien n'est ajouté au texte — la relecture suffit (règle 5).
+- *Fait* : l'achat de ⟨toi⟩ replie le corpus une fois, comme une concordance, sur les
+  quatre-vingt-douze lignes qui portent ⟨toi⟩, ⟨toi-qui⟩ ou ⟨lire⟩ — treize disent « toi », les
+  autres sont déjà lues. Tranché par l'auteur contre une relecture déroulée et une deuxième
+  personne conjuguée. Le choix porte sur les signes (règle 17), ne compte pas dans le doute
+  (règle 18), et le journal d'actions date l'ouverture et la sortie : la durée de la relecture
+  est la question du playtest. Voir `docs/journal.md`, « VOIX-2 ».
 
 **VOIX-3 — Les Questions** · T:XL · [#36](https://github.com/DavidGiangiacomo/langue-morte/issues/36)
 > En tant que joueur, je veux interroger le texte et qu'il réponde, dans les limites de ce qui a été gravé il y a quatre mille ans.

@@ -370,6 +370,30 @@ function rejouerFlash(el){
    jusqu'à 0, en soixante-dix lignes au lieu de six cent soixante-seize. Personne ne la
    commente ; c'est au joueur de lire les nombres. */
 let concArme = false, concSel = null, concN = 0;
+/* ---- ce qui s'adresse au lecteur (VOIX-2) ----
+   « Le corpus n'est pas un registre : il est écrit à la deuxième personne, et il l'a toujours
+   été — le jeu réaffiche les passages déjà lus, désormais adressés au joueur » (design doc
+   §10). Rien n'est ajouté au texte : c'est le CHOIX DES LIGNES qui dit « toi ». À l'achat de
+   ⟨toi⟩, le corpus se replie une fois, comme une concordance, sur les lignes qui portent
+   ⟨toi⟩, ⟨toi-qui⟩ ou ⟨lire⟩ — quatre-vingt-douze lignes sur vingt-cinq tablettes, presque
+   toutes déjà lues : les consignes « il-faut lire · eau », les registres qui finissent sur
+   « si lire », l'abécédaire, la fabrique. Le joueur les relit, et revient au corpus quand il
+   veut. Tranché par l'auteur le 14/10/2026, contre une relecture déroulée et contre une
+   deuxième personne conjuguée à l'écran.
+   Le choix est fait sur les SIGNES, jamais sur les mots : ⟨lire⟩ lu « compter » se replie de
+   la même façon, et le repli ne renseigne sur aucune lecture (règle 17). Il ne compte pas
+   comme une concordance dans le degré de doute (`S_.conc`) : c'est le jeu qui montre, pas le
+   joueur qui rassemble, et le doute mesure ce que le joueur a fait (règle 18). */
+const ADRESSE = ['ta', 'taru', 'shen'];
+let concToi = false;
+function adresser(){
+  concSel = null; concArme = false; concToi = true;
+  peindreConc();
+  /* Tout ce qui précède la première tablette gardée est replié : le haut du corpus EST le
+     début de la relecture. `versTablette()` mesure depuis la première tablette, qui est
+     masquée ici, et s'arrêtait une ligne trop bas. */
+  elCorpus.scrollTo({top: 0});
+}
 
 function concArmer(v){
   concArme = v;
@@ -389,21 +413,23 @@ function concChoisir(id){
   S_.conc[id] = 1;
   peindreConc();
 }
-function concFermer(){ concSel = null; concArme = false; peindreConc(); }
+function concFermer(){ concSel = null; concArme = false; concToi = false; peindreConc(); }
 
 function peindreConc(){
-  elCorpus.classList.toggle('filtre', !!concSel);
+  elCorpus.classList.toggle('filtre', !!concSel || concToi);
   elCorpus.classList.toggle('conc-arme', concArme);
   concN = 0;
   for(const tb of elCorpus.children){
-    if(!concSel){
+    if(!concSel && !concToi){
       tb.classList.remove('vide');
       for(const ln of tb.children) ln.classList.remove('off');
       continue;
     }
     let n = 0, premiere = true;
     for(const ln of tb.children){
-      const a = ln.querySelectorAll('[data-w="'+concSel+'"]').length;
+      /* Une concordance compte des attestations ; le repli « à toi » compte des lignes. */
+      const a = concToi ? +ADRESSE.some(id => ln.querySelector('[data-w="'+id+'"]'))
+                        : ln.querySelectorAll('[data-w="'+concSel+'"]').length;
       n += a;
       /* La première ligne reste toujours : sans elle, la colonne n'aurait plus de date —
          et cette date est du texte ancien, pas un en-tête ajouté par le jeu. */
@@ -417,9 +443,15 @@ function peindreConc(){
 }
 
 function majConc(){
-  const b = $('a-con'), ouvert = S_.b.con > 0;
+  /* Le bouton sert aussi à sortir du repli « à toi », Concordance achetée ou non. */
+  const b = $('a-con'), ouvert = S_.b.con > 0 || concToi;
   if(b.hidden !== !ouvert) b.hidden = !ouvert;
   if(!ouvert) return;
+  if(concToi){
+    setHTML(b, 'à '+motDe('ta')+' · '+nf.format(concN)+' ligne'+(concN > 1 ? 's' : '')+' ✕');
+    b.classList.add('on');
+    return;
+  }
   const mot = concSel && byId[concSel] && has(concSel) ? motDe(concSel) : null;
   setHTML(b, !concSel ? (concArme ? 'choisis un signe' : 'concorder')
     : (mot || sv(concSel)) + ' · ' + nf.format(concN)

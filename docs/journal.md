@@ -142,6 +142,44 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## VOIX-2 — ce qui m'était adressé
+
+*14/10/2026, sur la même branche de travail que la Personne.*
+
+Le design doc : « Le corpus n'est pas un registre : il est écrit à la deuxième personne, et il
+l'a toujours été — le jeu réaffiche les passages déjà lus, désormais adressés au joueur. » Le
+backlog : « rien n'est ajouté au texte — la relecture suffit ». Trois lectures tenaient — un
+repli sur ce qui s'adresse au lecteur, une relecture déroulée qui rejoue l'apparition des mots
+depuis la première tablette, une deuxième personne conjuguée à l'écran comme le verrou du
+passé. **Tranché par l'auteur : le repli.**
+
+À l'achat de ⟨toi⟩, le corpus se replie une fois, comme une concordance, sur les lignes qui
+portent ⟨toi⟩, ⟨toi-qui⟩ ou ⟨lire⟩ : **quatre-vingt-douze lignes sur vingt-cinq tablettes**,
+dont treize seulement disent « toi ». Les soixante-dix-neuf autres sont déjà lues, et c'est
+tout le propos : « il-faut lire · eau », « après · il-faut lire », les registres de
+distribution qui finissent sur « si lire », l'abécédaire, la fabrique. Chaque tablette garde
+sa première ligne, celle qui la date, et le corpus étant rangé à ce stade, la relecture se
+fait dans l'ordre du temps. Rien n'est ajouté : c'est le choix des lignes qui dit « toi ».
+Le bouton de la concordance dit « à toi · 84 lignes ✕ » — les tablettes encore sous terre
+n'y sont pas — et c'est lui, ou échap, qui rend le corpus entier.
+
+Trois décisions prises en l'écrivant :
+
+- **Le choix porte sur les signes, jamais sur les mots.** ⟨lire⟩ lu « compter » se replie de
+  la même façon : le repli ne dit rien d'une lecture (règle 17).
+- **Il ne compte pas comme une concordance dans le degré de doute.** Le repli met sous les
+  yeux toutes les attestations de ⟨lire⟩, ce qui vaudrait le poids plein à la prochaine
+  révision de ce signe. Mais c'est le jeu qui montre, pas le joueur qui rassemble, et le
+  doute mesure ce que le joueur a fait (règle 18).
+- **Une fois, à l'achat.** Qui veut y revenir a la Concordance : ⟨toi⟩ et ⟨lire⟩ s'y
+  rassemblent comme les autres.
+
+Le journal d'actions date l'ouverture et la sortie — `concFermer` n'était jusqu'ici pas
+enveloppée, et le journal ne disait ni quand ni si l'on sortait d'une concordance —, et
+`depouiller.py` en tire la durée de la relecture. **C'est la question de ce lot pour le
+playtest qui jouera la branche : relit-on, ou referme-t-on tout de suite ?** Aucun effet sur
+l'économie. `outils/verifier.py` passe de 330 à **332 assertions**.
+
 ## La Personne — qui parle, et le plafond des quatre chiffres
 
 *14/10/2026, VOIX-1. Écrit sur une branche de travail empilée sur `eleve` : PT11 attend un

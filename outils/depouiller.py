@@ -130,7 +130,7 @@ class Rejeu:
                  relev=0, vides=0, sans_tb=0, formuler=0,
                  recs=[], comps=[], concs=[], navs=[], revs=[], achats=[], etats=[],
                  couts_t=[], main_t=[], contr=None, contr_levee=None,
-                 finjeu=None, fin=None, gis_fichier=None, eleve={})
+                 finjeu=None, fin=None, gis_fichier=None, eleve={}, toi=None)
         prev_t = self.ev[0][0]
         for t, genre, det in self.ev:
             s['o_auto'] += self.obrut() * max(0.0, t - prev_t)
@@ -210,6 +210,14 @@ class Rejeu:
 
             elif genre == 'concChoisir':
                 s['concs'].append((t, det))
+
+            # Le repli « à toi » (VOIX-2) : ouvert par l'achat de ⟨toi⟩, refermé par le joueur.
+            # Sa durée est la question du playtest — relit-on ce qui s'adressait à soi ?
+            elif genre == 'adresser':
+                s['toi'] = [t, None, det]
+            elif genre == 'concFermer':
+                if det == '@toi' and s['toi'] and s['toi'][1] is None:
+                    s['toi'][1] = t
 
             elif genre == 'tablette':
                 s['navs'].append((t, det))
@@ -420,6 +428,11 @@ def rapport(ev, nom):
           % (len(s['concs']),
              (' (' + ', '.join(c[1].split(' ·')[0] for c in s['concs'][:8]) + ')') if s['concs'] else '',
              len(s['navs'])))
+    if s['toi']:
+        o, f, det = s['toi']
+        print('  repli « à toi » ouvert à %s (%s)%s'
+              % (mmss(o), det, ' · refermé à %s, %d s de relecture' % (mmss(f), f - o)
+                 if f is not None else ' · jamais refermé'))
     gestes = sorted(t for t, g, _ in ev if g in CORPUS_GESTES)
     if len(gestes) > 1:
         trous = sorted(((gestes[i + 1] - gestes[i], gestes[i], gestes[i + 1])

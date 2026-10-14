@@ -634,6 +634,9 @@ function acheterGl(id, lect, eleve){
      glyphe suivant, et sur `peut-être` il n'y en a pas forcément. */
   if(id === 'mik' || (douteOuvre() && franchit(id))) contrSolder();
   paintCorpus(id);
+  /* ⟨toi⟩ replie le corpus sur ce qui s'adressait au lecteur (VOIX-2, rendu.js). Une fois, à
+     l'achat : la relecture suffit. */
+  if(id === 'ta') adresser();
   lastPct=-1;
   if(id==='an'||id==='kal'){ const b=$('bloom'); b.classList.remove('on'); void b.offsetWidth; b.classList.add('on'); }
   if(nArbre()===NGL){ S_.done=true; finArmer(); }

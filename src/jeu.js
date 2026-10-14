@@ -54,11 +54,11 @@ window.addEventListener('keydown', e=>{
   else if(k==='k'){ e.preventDefault(); saut(-1); }
   /* La concordance a sa touche : c'est le geste qu'on refait le plus souvent une fois le
      corpus rangé, et il n'a pas à passer par la souris. */
-  else if(k==='c'){ e.preventDefault(); if(S_.b.con>0){ if(concSel||concArme) concFermer(); else concArmer(true); } }
+  else if(k==='c'){ e.preventDefault(); if(S_.b.con>0){ if(concSel||concArme||concToi) concFermer(); else concArmer(true); } }
   else if(k==='escape'){ if(!$('amb').hidden) ambFermer();
     else if(!$('end').hidden) fermerFin();
     else if(recArme) recArmer(false);
-    else if(concArme || concSel) concFermer();
+    else if(concArme || concSel || concToi) concFermer();
     else if(compSel[0] || compSel[1]) compVider(); }
 });
 $('instr').addEventListener('click', e=>{ const b=e.target.closest('[data-ins]'); if(b&&!b.disabled) acheterIns(b.dataset.ins); });
@@ -101,7 +101,7 @@ repeat($('a-hyp'), formuler);
    passages. Le bouton ne fait plus qu'armer le corpus. */
 $('a-rec').addEventListener('click', ()=>recArmer(!recArme));
 /* Le bouton ouvre le mode, puis referme la concordance : un aller-retour, jamais un piège. */
-$('a-con').addEventListener('click', ()=> concSel ? concFermer() : concArmer(!concArme));
+$('a-con').addEventListener('click', ()=> concSel || concToi ? concFermer() : concArmer(!concArme));
 
 /* Les deux boutons hors jeu ne sont pas dans tous les builds : le sélecteur de vitesse et
    « réinitialiser » sortent du build de playtest, toute la barre sort de la version publique

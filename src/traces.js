@@ -111,6 +111,12 @@ enrober('veillee',   () => Math.round(S_.O), () => Math.round(S_.O) + ' occ. hor
    les ressources. C'est pourtant le geste que PT9 doit mesurer — quels signes le joueur
    rassemble, et s'il le fait du tout. */
 enrober('concChoisir', () => concSel, a => a[0] + ' · ' + concN + ' attest.');
+/* Le repli « à toi » (VOIX-2) s'ouvre tout seul à l'achat de ⟨toi⟩, et la question qu'il
+   pose au playtest est celle du temps : combien de temps le joueur reste à relire avant de
+   revenir au corpus. D'où l'ouverture ET la fermeture, et la fermeture de toute
+   concordance avec elle — le journal ne disait jusqu'ici ni quand ni si l'on en sortait. */
+enrober('adresser',    () => concToi, () => concN + ' lignes');
+enrober('concFermer',  () => (concToi ? '@toi' : concSel), (a, avant) => avant || '');
 /* La composition. Le témoin est le compteur de tentatives et non la longueur du carnet : une
    paire juste qu'on n'a pas les moyens de payer n'y entre pas, et son essai passerait à la
    trappe. PT10 doit pouvoir compter les tentatives, voir sur quelles paires, et à quelle

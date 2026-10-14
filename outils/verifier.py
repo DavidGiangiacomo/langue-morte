@@ -51,8 +51,9 @@ Contrôle :
  26. l'Élève : il s'ouvre à la première Grammaire, multiplie les cinq instruments et pas le
      relevé, tranche les signes ambigus à la place du joueur avec un taux d'erreur qui croît
      avec leur nombre — et ce taux ne se lit nulle part
- 27. la Personne : six signes sans multiplicateur, ⟨nous⟩ achève la tablette 18, deux
-     composés se posent à la grille et ⟨nous-fûmes⟩ non, ⟨moi-absent⟩ n'a aucune attestation,
+ 27. la Personne : six signes sans multiplicateur, ⟨nous⟩ achève la tablette 18, ⟨toi⟩ replie
+     le corpus sur ce qui s'adressait au lecteur, deux composés se posent à la grille et
+     ⟨nous-fûmes⟩ non, ⟨moi-absent⟩ n'a aucune attestation,
      le dernier mot du corpus ferme la partie et met le récit au passé — sauf ce qui s'adresse
      à ⟨toi⟩ —, et la contradiction se solde de nouveau en entrant dans l'acte IV
 
@@ -754,7 +755,10 @@ def main() -> None:
         verifier(page.get_attribute("#a-con", "hidden") is None,
                  "la première Concordance le fait apparaître")
         # tout le corpus, puis la seule colonne de l'eau
-        page.evaluate("() => { S_.C = 9e6; GL.forEach(g => acheterGl(g.id)); $('end').hidden = true; }")
+        # ⟨toi⟩ est dans l'arbre depuis VOIX-1, et son achat replie le corpus sur ce qui
+        # s'adresse au lecteur (VOIX-2) : on le referme pour partir du corpus entier.
+        page.evaluate("() => { S_.C = 9e6; GL.forEach(g => acheterGl(g.id)); $('end').hidden = true;"
+                      "        concFermer(); }")
         page.wait_for_timeout(300)
         lignes = lambda: page.eval_on_selector_all(
             "#corpus .tablet:not([hidden]):not(.vide) .ln:not(.off)", "e => e.length")
@@ -1578,6 +1582,23 @@ def main() -> None:
             return [r, has('taru'), nArbre() - n]; }""")
         page.wait_for_timeout(250)
         verifier(r == ["acquis", True, 1], f"posé à la grille, ⟨toi-qui⟩ compte dans l'arbre (règle 13) : {r}")
+        # VOIX-2 : l'achat de ⟨toi⟩ a replié le corpus, une fois, sur ce qui s'adressait au
+        # lecteur — les lignes qui portent ⟨toi⟩, ⟨toi-qui⟩ ou ⟨lire⟩. Rien d'ajouté au texte.
+        r = page.evaluate("""() => { const vis = [...elCorpus.querySelectorAll('.tablet')]
+                .filter(t => !t.hidden && !t.classList.contains('vide'));
+            const lignes = vis.flatMap(t => [...t.children].slice(1).filter(l => !l.classList.contains('off')));
+            const porte = l => ADRESSE.some(id => l.querySelector('[data-w="'+id+'"]'));
+            return [concToi, lignes.length === concN, lignes.every(porte),
+                    lignes.filter(l => !l.querySelector('[data-w="ta"],[data-w="taru"]')).length > 20,
+                    $('a-con').hidden, $('a-con').textContent.startsWith('à toi'), S_.conc.shen || 0]; }""")
+        verifier(r == [True, True, True, True, False, True, 0],
+                 f"⟨toi⟩ replie le corpus sur ce qui s'adressait au lecteur, ⟨lire⟩ compris, sans compter comme une concordance : {r}")
+        page.keyboard.press("Escape")
+        page.wait_for_timeout(150)
+        r = page.evaluate("""() => [concToi, elCorpus.classList.contains('filtre'),
+            TR.some(x => x[1] === 'adresser'), TR.some(x => x[1] === 'concFermer' && x[2] === '@toi')]""")
+        verifier(r == [False, False, True, True],
+                 f"échap rend le corpus entier, et le journal d'actions date l'ouverture et la sortie : {r}")
         # ⟨moi-absent⟩ : aucune attestation, et sa lecture suit ⟨ne-pas⟩ (docs/corpus.md §7.2).
         r = page.evaluate("""() => { const n = freqGlyphe('mula'); const j = [motDe('mula'), logDe('mula')];
             S_.lect.la = 'f'; const f = [motDe('mula'), logDe('mula')]; S_.lect.la = 'j';
