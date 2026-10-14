@@ -177,6 +177,8 @@ quel build il sort.
 
     **Un multiplicateur global ne déplace que la durée.** Mesuré sur 36 combinaisons : ni la pire tranche d'I6 (elle est à 20–30′, l'Élève ouvre à la 48ᵉ minute) ni l'écart max ne bougent. Trois constantes pour deux réglages — de combien il raccourcit (`ELV_P`), combien on en empile (le taux `r` de son prix, encore la leçon de `REC_R`) — et une contrainte : à +8 % par tête, sept Élèves qui lisent tout faux finissent avant le joueur qui n'en a aucun, et il n'y a plus d'arbitrage.
 
+22. **Le verrou du passé est dans la traduction, jamais dans le texte.** ⟨nous-fûmes⟩ « verrouille le récit au passé, y compris les passages déjà lus » (design doc §6), et c'est la seule exception à « la couche d'affichage n'ajoute rien » (`docs/corpus.md` §1). Tranché à l'écran par l'auteur le 14/10/2026. Il se décide **segment par segment** entre deux « · », une fois pour toutes à la construction du corpus (`auPasseLigne()` dans `rendu.js`) : un segment adressé à ⟨toi⟩ reste au présent, parce que le lecteur est vivant ; un segment sans sujet hérite de celui d'avant ; ⟨il-faut⟩ devient « il-fallait » et garde l'infinitif qui le suit ; les autres verbes passent au participe. La table `PASSE` est indexée par le **mot affiché**, pas par le signe, pour tenir sous les deux lectures sans une ligne de plus (règle 17). Le lexique, l'infobulle et la concordance gardent l'infinitif : c'est le récit qui passe au passé, pas le dictionnaire. Un verbe neuf (acte V) s'ajoute à `VERBES` et à `PASSE`, jamais au texte.
+
 ---
 
 ## Ce qui a été tranché
@@ -431,10 +433,12 @@ Aucun multiplicateur ; ⟨toi-qui⟩ et ⟨moi-absent⟩ se posent à la grille,
 re-solde la contradiction, et ⟨il-faut⟩ mal lu après le doute cesse d'être gratuit. **La
 sanction coûte trois fois plus** chez qui ne révise jamais — +32 min pour la paire réparante
 au lieu de +11, et I4 cède à huit minutes. Non réglé : à observer. ⟨les-lecteurs⟩ remesuré au
-milieu de l'arbre, il reste sans effet. Mesuré : **104,7–108,6 min** (118,6–122,2 sans Élève),
-écart max 5,2, tranches ≥ 10′ ≤ 25 %, main 22,4–22,7 %. **Pas fait** : le verrou du passé de
-⟨nous-fûmes⟩ (une décision d'écriture, le corpus n'ayant pas de temps grammatical), VOIX-2,
-VOIX-3. `outils/verifier.py` passe de 315 à **325 assertions**. Voir `docs/journal.md`, « La
+milieu de l'arbre, il reste sans effet. **Le verrou du passé est à l'écran** (règle 22) : le
+dernier mot du corpus met le récit au passé, jusque dans ce qui est déjà lu — « je gravé ·
+toi lire », « après · nous · il-fallait » —, sauf ce qui s'adresse à ⟨toi⟩. Mesuré :
+**104,7–108,6 min** (118,6–122,2 sans Élève), écart max 5,2, tranches ≥ 10′ ≤ 25 %, main
+22,4–22,7 %. **Pas fait** : VOIX-2, VOIX-3. `outils/verifier.py` passe de 315 à **330
+assertions**. Voir `docs/journal.md`, « La
 Personne ».
 
 **Prochaine étape — PT11 avec un autre joueur, puis fusionner l'Élève (E5), puis l'acte IV.** *PT11 est en attente depuis le 14/10/2026, faute de joueur : le travail continue sur des branches empilées sur `eleve`, et `develop` ne bouge pas.* Même question qu'en PT8 et PT9, posée à quelqu'un qui ne sait pas ce qu'il cherche — plus celle que PT10 a ouverte : **revient-on dans le corpus après la quarantième minute ?** Dans le même TSV : la part manuelle des occurrences (au-delà de 40 %, plafonner `REL_K`) le stock d'hypothèses entre `année` et la dixième Grammaire (27 090 en PT9), **le nombre de recoupements** — sous une vingtaine sur la partie, le réglage du 09/09 a vidé un des deux gestes manuels et il faut revenir en arrière — et **les tentatives de composition** : le journal d'actions les compte avec leur paire et leur minute. La question neuve est celle-là : un joueur qui ignore qu'il y a quelque chose à chercher reconnaît-il ⟨maison⟩ et ⟨grain⟩ dans ⟨grenier⟩, ou ⟨ne-pas⟩ et ⟨un⟩ dans le zéro qu'il regarde depuis la première seconde ? Aucun simulateur ne répond à ça. S'y ajoutent deux questions depuis `les-lecteurs` : **achète-t-on un signe à 1 200 C qui annonce trois attestations** — le TSV date le moment où il devient payable — et, à poser de vive voix, **a-t-on vu ⟨nous⟩ dans le nom** ? Et une mesure de plus, parce que `REV_R` la déplace sans qu'aucun playtest soit derrière : **le nombre de recoupements et la part manuelle des occurrences**. Si la main descend au lieu de monter, c'est `REV_R` qu'il faut défaire en premier, avant les prix.

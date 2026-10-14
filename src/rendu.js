@@ -43,13 +43,15 @@ function buildCorpus(){
     let j=0;
     for(const line of tb.l){
       h+='<div class="ln">';
-      for(const tk of line.split(' ')){
+      const toks = line.split(' '), passe = auPasseLigne(toks);
+      toks.forEach((tk, k)=>{
         /* data-j : rang du jeton dans sa tablette. C'est lui qui permet au relevé de savoir
-           si l'on découvre un signe ou si l'on repasse sur ses propres pas. */
+           si l'on découvre un signe ou si l'on repasse sur ses propres pas.
+           data-t : ce jeton passe au passé sous le verrou de ⟨nous-fûmes⟩ (VOIX-1). */
         if(tk==='·') h+='<span class="tok sep">·</span>';
         else if(tk.charCodeAt(0)===37) h+='<span class="tok" data-j="'+(j++)+'" data-n="'+tk.slice(1)+'"></span>';
-        else h+='<span class="tok" data-j="'+(j++)+'" data-w="'+tk+'"></span>';
-      }
+        else h+='<span class="tok" data-j="'+(j++)+'" data-w="'+tk+'"'+(passe[k]?' data-t="1"':'')+'></span>';
+      });
       h+='</div>';
     }
     h+='</div>';
@@ -67,6 +69,36 @@ function releves(){
 }
 const cleTok = el => el.closest('.tablet').dataset.tb + ':' + el.dataset.j;
 
+/* ---- le verrou du passé (VOIX-1) ----
+   Les règles sont dans lexique.js, au-dessus de `PASSE`. Ce qui est ici les applique à une
+   ligne, une fois, à la construction : rien ne dépend de ce que le joueur a lu, seulement du
+   texte. Rend, pour chaque jeton de la ligne, s'il passe au passé sous le verrou. */
+function auPasseLigne(toks){
+  const out = new Array(toks.length).fill(false);
+  let adresse = false, debut = 0;
+  for(let k = 0; k <= toks.length; k++){
+    if(k < toks.length && toks[k] !== '·') continue;
+    const seg = toks.slice(debut, k);
+    if(seg.some(x => x === 'ta' || x === 'taru')) adresse = true;
+    else if(seg.some(x => x === 'nash' || x === 'mu')) adresse = false;
+    if(!adresse){
+      let modal = false;
+      seg.forEach((x, i) => {
+        if(x === 'dun'){ out[debut + i] = true; modal = true; }
+        else if(VERBES.has(x) && !modal) out[debut + i] = true;
+      });
+    }
+    debut = k + 1;
+  }
+  return out;
+}
+const auPasse = () => has('nashal');
+/* Le mot d'un jeton du corpus : celui du lexique (`motDe`), au passé si le verrou est posé et
+   que la ligne le veut. Le lexique, l'infobulle et la concordance gardent l'infinitif — c'est
+   le récit qui passe au passé, pas le dictionnaire. */
+const motTok = el => { const m = motDe(el.dataset.w);
+  return el.dataset.t && auPasse() ? (PASSE[m] || m) : m; };
+
 function paintCorpus(flashId){
   const rel = releves();
   /* La ligne que la contradiction retient (CONTR-1). Un Set vide quand elle n'est pas armée,
@@ -81,12 +113,16 @@ function paintCorpus(flashId){
     /* Le mot entre dans la signature du cache : une lecture tranchée à l'achat repeint
        les attestations déjà peintes, sans quoi le mot faux n'arriverait que sur les
        tablettes touchées ensuite (AMB-2). */
-    const want = (known ? 'w:'+motDe(id) : 'g') + r;
-    if(el.__v===want && flashId!==id) return;
+    const mot = known ? motTok(el) : null;
+    const want = (known ? 'w:'+mot : 'g') + r;
+    /* Sous le verrou, ce qui change de temps s'allume comme un mot qu'on vient de lire : « y
+       compris les passages déjà lus » doit se voir, pas se constater. */
+    const passe = flashId==='nashal' && known && !!el.dataset.t;
+    if(el.__v===want && flashId!==id && !passe) return;
     el.__v=want;
     el.className='tok '+(known?'w':'g')+(r.indexOf('r')>=0?' rel':'')+(nie?' refus':'')
-                +(flashId===id?' flash':'');
-    el.innerHTML = known ? motDe(id) : sv(id);
+                +(flashId===id || passe?' flash':'');
+    el.innerHTML = known ? mot : sv(id);
   });
   elCorpus.querySelectorAll('[data-n]').forEach(el=>{
     const n=+el.dataset.n, nie = !!refus && refus.has(el), lis = !nie && numLisible(n);

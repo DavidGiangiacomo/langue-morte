@@ -53,8 +53,8 @@ Contrôle :
      avec leur nombre — et ce taux ne se lit nulle part
  27. la Personne : six signes sans multiplicateur, ⟨nous⟩ achève la tablette 18, deux
      composés se posent à la grille et ⟨nous-fûmes⟩ non, ⟨moi-absent⟩ n'a aucune attestation,
-     le dernier mot du corpus ferme la partie, et la contradiction se solde de nouveau en
-     entrant dans l'acte IV
+     le dernier mot du corpus ferme la partie et met le récit au passé — sauf ce qui s'adresse
+     à ⟨toi⟩ —, et la contradiction se solde de nouveau en entrant dans l'acte IV
 
 Prérequis : pip install playwright && playwright install chromium
 """
@@ -1587,6 +1587,8 @@ def main() -> None:
         verifier(r == [0, "moi-absent", "moi-mort", True, False],
                  f"⟨moi-absent⟩ : zéro attestation, « moi-mort » sous ⟨ne-pas⟩ mal lu, la même ligne autour : {r}")
         # ⟨nous-fûmes⟩ : une attestation, le dernier mot du corpus — et le dernier achat.
+        verifier(page.evaluate("() => [...document.querySelectorAll('#corpus .tok')].some(x => x.textContent.trim() === 'il-fallait')") is False,
+                 "avant ⟨nous-fûmes⟩, rien n'est au passé")
         r = page.evaluate("""() => { acheterGl('mula'); const avant = S_.done; acheterGl('nashal');
             const tb = document.querySelector('.tablet[data-tb="30"]');
             return [freqGlyphe('nashal'), avant, S_.done, [...finLire],
@@ -1594,6 +1596,25 @@ def main() -> None:
         page.wait_for_timeout(300)
         verifier(r == [1, False, True, [30], "nous-fûmes"],
                  f"⟨nous-fûmes⟩ ferme l'arbre sur le dernier mot du corpus, et la carte attend la 30 : {r}")
+        # Le verrou du passé : le récit se relit au passé, y compris ce qui est déjà lu — sauf
+        # ce qui s'adresse à ⟨toi⟩. La couche de traduction change ; le texte, jamais.
+        textes = lambda: page.evaluate("""() => [...document.querySelectorAll('#corpus .ln')]
+            .map(ln => [...ln.querySelectorAll('.tok')].map(x => x.textContent.trim()).join(' '))""")
+        tx = textes()
+        verifier(page.evaluate("() => document.querySelectorAll('#corpus [data-t]').length") == 275,
+                 "deux cent soixante-quinze jetons portent le temps, marqués une fois pour toutes")
+        verifier("je gravé · toi lire" in tx and "il-faut toi" in tx
+                 and sum("· nous · il-fallait" in l for l in tx) == 30,
+                 "« je gravé · toi lire », « il-faut toi » intact, et trente « après · nous · il-fallait »")
+        verifier(not any("il-fallait copié" in l or "toi lu" in l or "il-faut copier" in l for l in tx),
+                 "le verbe qui suit « il-fallait » garde son infinitif, et le lecteur reste au présent")
+        r = page.evaluate("""() => [GL.filter(g => ['sar','kal','shen','dun'].includes(g.id)).map(g => motDe(g.id)),
+            (S_.lect.dun = 'f', S_.lect.shen = 'f', paintCorpus(null),
+             [...document.querySelectorAll('#corpus .tok[data-t]')].map(x => x.textContent.trim())
+               .filter(m => m === 'on pouvait' || m === 'compté').length > 0)]""")
+        page.evaluate("() => { S_.lect.dun = 'j'; S_.lect.shen = 'j'; paintCorpus(null); }")
+        verifier(r == [["graver", "copier", "lire", "il-faut"], True],
+                 f"le lexique garde l'infinitif, et le verrou suit la lecture retenue (« on pouvait », « compté ») : {r}")
         # Le franchissement d'acte (règle 19, cas général) : une dette de 5 à l'ouverture du
         # doute passe ; ⟨il-faut⟩ mal lu ensuite la porte à 7 sans que rien ne la solde ; la
         # première Personne la solde.

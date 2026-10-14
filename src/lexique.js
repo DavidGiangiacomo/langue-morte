@@ -199,10 +199,11 @@ const GL = [
      poussé au bout. Personne n'a écrit son propre départ.
      ⟨nous-fûmes⟩ en a une, la dernière ligne de la tablette 30 — le dernier mot du corpus.
      Dernier achat de l'arbre, il ne porte pas d'effet chiffré (règle 16), et la carte de fin
-     attend désormais qu'on ait lu cette ligne-là. Ce que le design doc lui confie de plus —
-     « verrouiller le récit au passé, y compris les passages déjà lus » — n'est pas de ce
-     lot : le corpus est télégraphique, sans temps grammatical, et ce que ce verrou change à
-     l'écran reste à décider. */
+     attend désormais qu'on ait lu cette ligne-là. Ce qu'il fait d'autre est écrit dans le
+     design doc : il « verrouille le récit au passé, y compris les passages déjà lus ». Le
+     corpus est télégraphique et sans temps grammatical ; le verrou en met un, dans la couche
+     de traduction et nulle part ailleurs — voir `PASSE` ci-dessous et `auPasse()` dans
+     rendu.js. */
   {id:'nash', br:'personne',mot:'nous',      cost:1800, eff:'le signe qui se tenait devant leur nom se lit — quarante et une attestations',
    log:'Nous. Le signe qui se tenait seul devant leur nom revient quarante et une fois, jusque dans les registres. Ce n’était pas un mot de plus : c’étaient eux.'},
   {id:'mu',   br:'personne',mot:'je',        cost:2800, eff:'quelqu’un parle en son nom — cinq attestations, une seule main',
@@ -213,8 +214,8 @@ const GL = [
    log:'Toi-qui. « Toi » posé sur « si » : toi, s’il y a quelqu’un. Ils ne savaient pas qui viendrait, et ils ont écrit quand même.'},
   {id:'mula', br:'personne',mot:'moi-absent',cost:7300, eff:'un mot qu’aucune tablette ne porte',
    log:'Moi-absent. « Je » posé sur « ne pas ». Ils avaient un mot pour ça, et aucune tablette ne l’emploie : personne n’a écrit son propre départ.'},
-  {id:'nashal',br:'personne',mot:'nous-fûmes',cost:9500, eff:'une seule attestation, sur la dernière tablette',
-   log:'Nous-fûmes. « Nous », posé sur un signe que je ne sais pas encore lire. Il ne sert qu’une fois : c’est le dernier mot du corpus.'},
+  {id:'nashal',br:'personne',mot:'nous-fûmes',cost:9500, eff:'le récit se relit au passé, sauf ce qui s’adresse à « toi » · une seule attestation',
+   log:'Nous-fûmes. « Nous », posé sur un signe que je ne sais pas encore lire. Il ne sert qu’une fois, en dernier, et tout ce qu’ils ont écrit se relit au passé — sauf ce qui m’est adressé.'},
   /* ---- les composés secrets ----
      `sec` veut dire : aucune branche ne l’offre, il ne s’obtient qu’en le composant. Il ne
      compte donc pas dans la progression de l’arbre — ni pour la fin de partie, ni pour les
@@ -245,6 +246,38 @@ const BR = [['nombre','Nombre'],['matiere','Matière'],['parole','Parole'],['tem
    l'acte III. Suivi par `ACTE` dans outils/sim.py. */
 const ACTE = {personne:4, fin:5};
 const byId = Object.fromEntries(GL.map(g=>[g.id,g]));
+
+/* ======================== le verrou du passé ========================
+   ⟨nous-fûmes⟩ « verrouille le récit au passé, y compris les passages déjà lus » (design doc
+   §6). Le corpus n'a pas de temps grammatical : « je graver · toi lire » est le texte, et la
+   couche d'affichage n'y ajoute rien (docs/corpus.md §1). Le verrou est la seule exception, et
+   il est dans la traduction, pas dans le texte : le joueur qui a lu le dernier mot sait que
+   tout ce qu'ils ont écrit était déjà du passé quand il a commencé à lire, et il le lit ainsi.
+
+   Ce qui passe au passé se décide segment par segment, entre deux « · », et une fois pour
+   toutes à la construction du corpus (`buildCorpus()` dans rendu.js) :
+   - un segment adressé à ⟨toi⟩ ou à ⟨toi-qui⟩ reste au présent. Le lecteur est vivant ; « si
+     toi lire · nous ne-pas finir » garde le premier verbe et met le second au passé ;
+   - un segment sans sujet hérite de celui d'avant — « toi · lire », sur la tablette 20, est
+     un appel au lecteur et le reste ; un segment qui nomme ⟨nous⟩ ou ⟨je⟩ rend le récit au
+     passé ;
+   - ⟨il-faut⟩ devient « il-fallait », et le verbe qui le suit dans son segment garde son
+     infinitif : « il-fallait copier », jamais « il-fallait copié » ;
+   - les autres verbes passent au participe : « je gravé · toi lire ».
+
+   La table est indexée par le MOT affiché et non par le signe, pour que le verrou tienne sous
+   les deux lectures sans une ligne de plus : ⟨il-faut⟩ lu « on peut » devient « on pouvait »,
+   ⟨lire⟩ lu « compter » devient « compté » (règle 17). Un mot absent de la table ne change
+   pas. Les verbes de l'acte V y sont d'avance et inertes tant que leurs signes ne sont pas au
+   lexique ; les composés faux de ⟨germer⟩ (« porter-semence », « porter-enfant ») restent à
+   écrire avec lui. */
+const VERBES = new Set(['dun','im','sar','kal','shen','hal','ke','meshke']);
+const PASSE = {
+  'il-faut':'il-fallait', 'on peut':'on pouvait',
+  'dire':'dit', 'graver':'gravé', 'couper':'coupé', 'copier':'copié',
+  'lire':'lu', 'compter':'compté',
+  'finir':'fini', 'devenir':'devenu', 'porter':'porté', 'germer':'germé', 'naître':'né'
+};
 
 /* ======================== les onze lectures ========================
    Onze signes sur quarante-cinq supportent deux lectures, et le joueur tranche à l'achat

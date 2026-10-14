@@ -15,7 +15,7 @@ Trois conséquences de production :
 
 - **La masse répétitive n'est pas du remplissage, elle est le substrat du déchiffrement.** Elle se génère à partir de règles (§6), elle ne s'écrit pas à la main.
 - **Tout le corpus tient dans 45 mots** plus les nombres et six noms propres jamais déchiffrés. Cette contrainte n'est pas une limite subie : c'est elle qui produit le style. Un peuple qui n'a que « ne-pas » pour dire l'absence écrit « eau ne-pas », et c'est plus dur que n'importe quelle phrase qu'on pourrait écrire à sa place.
-- **Le français lu est télégraphique.** Pas d'articles, pas de prépositions, pas d'accord. La couche d'affichage n'ajoute rien. « champ 3 · grain 140 » est le texte, pas un résumé du texte.
+- **Le français lu est télégraphique.** Pas d'articles, pas de prépositions, pas d'accord. La couche d'affichage n'ajoute rien. « champ 3 · grain 140 » est le texte, pas un résumé du texte. *Une seule exception, depuis le 14/10/2026 : le verrou du passé de ⟨nous-fûmes⟩, qui met le récit au passé dans la traduction et jamais dans le texte (règle 22 de `CLAUDE.md`).*
 
 **Réalisé** : 705 lignes, **3 838 signes**, dont 58 % lisibles avec les 13 signes du MVP.
 

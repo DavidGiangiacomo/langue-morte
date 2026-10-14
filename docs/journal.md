@@ -242,12 +242,37 @@ plus, et la règle demandait de remesurer ce jour-là. Un ×1,5 à la grammaire 
 l'autre bout ; à la concordance 104,4–108,3, à la table 104,7–108,6, au copiste et à
 l'atelier 103,9–107,8. Il reste sans effet : ce qu'on y paie est une phrase.
 
+### Le verrou du passé
+
+Le design doc confie à ⟨nous-fûmes⟩ de « verrouiller le récit au passé, y compris les passages
+déjà lus ». Le corpus est télégraphique et sans temps grammatical — « je graver · toi lire »
+est le texte, et la couche d'affichage n'y ajoute rien (`docs/corpus.md` §1). Deux lectures
+tenaient : un verrou purement narratif, dans la ligne de journal, ou un verrou **à l'écran**.
+**Tranché par l'auteur le 14/10/2026 : à l'écran.** C'est la seule exception à « l'affichage
+n'ajoute rien », et elle est dans la traduction, pas dans le texte : qui a lu le dernier mot
+sait que tout ce qu'ils ont écrit était déjà du passé quand il a commencé à lire.
+
+La règle se décide segment par segment, entre deux « · », une fois pour toutes à la
+construction du corpus :
+
+- **un segment adressé à ⟨toi⟩ reste au présent** — le lecteur est vivant. « Si toi lire ·
+  nous ne-pas ⟨finir⟩ » garde le premier verbe et met le peuple au passé ;
+- un segment sans sujet hérite de celui d'avant — « toi · lire », tablette 20, reste un appel ;
+  un segment qui nomme ⟨nous⟩ ou ⟨je⟩ rend le récit au passé ;
+- ⟨il-faut⟩ devient « il-fallait », et le verbe qui le suit garde son infinitif ;
+- les autres verbes passent au participe.
+
+Ce que ça donne, sur 275 jetons : « je gravé · toi lire », « il-fallait copier · si ne-pas ·
+sinon » vingt-deux fois, « lu · gravé · copié » sur la fabrique, « je ne-pas dit ⟨N6⟩ · dit
+⟨…⟩ » sur la dernière tablette — et trente fois, dans les registres de distribution,
+« après · nous · il-fallait ». Le lexique, l'infobulle et la concordance gardent l'infinitif :
+c'est le récit qui passe au passé, pas le dictionnaire. La table est indexée par le mot
+affiché, donc le verrou tient sous les deux lectures sans une ligne de plus — ⟨il-faut⟩ lu
+« on peut » devient « on pouvait » (règle 17). Ce qui change de temps s'allume à l'achat,
+comme un mot qu'on vient de lire. Aucun effet sur l'économie : c'est le dernier achat.
+
 ### Ce qui n'est pas fait
 
-- **Le verrou du passé de ⟨nous-fûmes⟩.** Le design doc lui confie de « verrouiller le récit
-  au passé, y compris les passages déjà lus ». Le corpus est télégraphique et sans temps
-  grammatical — « toi-qui lire », « je graver » —, donc ce que ce verrou change à l'écran
-  reste à décider. Le signe existe, se lit, ferme la partie ; le verrou attend.
 - **VOIX-2** (⟨toi⟩ réaffiche les passages déjà lus), **VOIX-3** (les Questions), et la zone
   d'interface de la Personne, « le journal » — qui est en français depuis t = 0 (écart
   assumé n° 7).
@@ -259,7 +284,7 @@ contre 34 avant ce lot. Le réglage en place donne 97,8–122,2 min sur ses douz
 (trois cadences, deux lectures, avec et sans Élève), écart max **5,8 min** — c'est le joueur
 sans Élève, dont les six signes de la Personne s'espacent le plus —, main ≥ 18 % des
 occurrences, pire tranche hors ouverture 25 %. `outils/verifier.py` passe de 315 à
-**325 assertions**.
+**330 assertions**.
 
 ## L'Élève tranche à ma place
 

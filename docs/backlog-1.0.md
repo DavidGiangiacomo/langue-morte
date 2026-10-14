@@ -355,11 +355,11 @@ Suivi : [#23](https://github.com/DavidGiangiacomo/langue-morte/issues/23) — le
 
 Suivi : [#24](https://github.com/DavidGiangiacomo/langue-morte/issues/24) — les récits ouverts y sont des sous-issues.
 
-**VOIX-1 — La branche Personne** *(`je`, `toi`, `nous`, `toi-qui`, `moi-absent`, `nous-fûmes`)* · T:L — *les six glyphes faits (14/10/2026, branche de travail empilée sur `eleve`) ; reste le verrou du passé de `nous-fûmes`* · [#33](https://github.com/DavidGiangiacomo/langue-morte/issues/33)
+**VOIX-1 — La branche Personne** *(`je`, `toi`, `nous`, `toi-qui`, `moi-absent`, `nous-fûmes`)* · ~~T:L~~ **fait** (14/10/2026, branche de travail empilée sur `eleve`) · [#33](https://github.com/DavidGiangiacomo/langue-morte/issues/33)
 > En tant que joueur, je veux découvrir qui parle.
 
 - Fini quand : les six glyphes existent ; `nous-fûmes` verrouille le récit au passé, **y compris les passages déjà lus**, et n'apparaît qu'une fois dans tout le corpus (dernier mot de la tablette 30).
-- *Fait, sauf le verrou* : ⟨nous⟩ (1 800 C) ouvre la branche — la porte que la tablette 18
+- *Fait* : ⟨nous⟩ (1 800 C) ouvre la branche — la porte que la tablette 18
   laissait, qu'il rend entière —, ⟨nous-fûmes⟩ (9 500 C) la ferme, et avec elle la partie, sur
   le dernier mot du corpus. Aucun multiplicateur. ⟨toi-qui⟩ et ⟨moi-absent⟩ se posent à la
   grille dès leur première moitié ; ⟨moi-absent⟩ n'a aucune attestation. **Les prix butent sur
@@ -370,9 +370,10 @@ Suivi : [#24](https://github.com/DavidGiangiacomo/langue-morte/issues/24) — le
   enfin. **Et la sanction coûte trois fois plus** chez qui ne révise jamais : +32 min pour la
   paire réparante au lieu de +11, I4 cède à huit minutes. Non réglé, à observer. Voir
   `docs/journal.md`, « La Personne ».
-- **Reste : le verrou du passé.** Le corpus est télégraphique et sans temps grammatical ; ce
-  que « verrouiller le récit au passé, y compris les passages déjà lus » change à l'écran est
-  une décision d'écriture, pas de code.
+- **Le verrou du passé est à l'écran** (tranché par l'auteur le 14/10/2026) : le dernier mot du
+  corpus met le récit au passé, jusque dans ce qui est déjà lu — « je gravé · toi lire »,
+  « après · nous · il-fallait » —, sauf ce qui s'adresse à ⟨toi⟩, qui reste au présent. Il est
+  dans la traduction, jamais dans le texte : voir la règle 22 de `CLAUDE.md`.
 
 **VOIX-2 — Le corpus était à la deuxième personne depuis le début** · T:M · [#35](https://github.com/DavidGiangiacomo/langue-morte/issues/35)
 > En tant que joueur, je veux qu'on me réaffiche ce que j'ai déjà lu, désormais adressé à moi.
