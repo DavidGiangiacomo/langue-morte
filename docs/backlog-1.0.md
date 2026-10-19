@@ -532,10 +532,30 @@ Suivi : [#29](https://github.com/DavidGiangiacomo/langue-morte/issues/29) — le
   `recommencer()` dans `rendu.js`, enveloppée par `traces.js` comme les autres actions.
 - Voir `docs/journal.md`, « Ce qui mesure ne doit pas pouvoir fausser ce qu'il mesure ».
 
-**LIV-3 — La sauvegarde survit aux actes** · T:M · [#51](https://github.com/DavidGiangiacomo/langue-morte/issues/51)
+**LIV-3 — La sauvegarde survit aux actes** · ~~T:M~~ **fait** (19/10/2026) · [#51](https://github.com/DavidGiangiacomo/langue-morte/issues/51)
 > En tant que joueur, je veux qu'une partie commencée ne soit pas perdue à la mise à jour.
 
 - La clé a déjà changé une fois (`langue-morte-actes-i-iii`) parce qu'une partie du MVP rouvrait sur l'écran de fin sans moyen de continuer. **Ça va se reproduire à chaque acte livré.** Fini quand : une sauvegarde porte un numéro de version et se migre, au lieu d'être abandonnée.
+- *Fait* : la clé s'appelle `langue-morte-partie` et **ne change plus** ; la version est écrite
+  dans la sauvegarde (`v`), et une partie trouvée sous `langue-morte-actes-i-iii` y déménage au
+  premier chargement, nuit comprise. La version **se compte** sur la liste des migrations, elle
+  ne se règle pas. Et **aucune migration n'est écrite** : chaque lot depuis l'acte III n'a fait
+  qu'ajouter des champs, que `fresh()` donne déjà aux parties qui ne les ont pas — c'est la
+  mesure, pas un oubli. La première qu'on voit venir est celle de **FIN-2**, qui devra
+  distinguer une partie interrompue (`nArbre() < NGL` par définition) d'une partie que l'arbre
+  a dépassée.
+- **Trouvé en le faisant** : la liste des instruments était recopiée à la main dans le
+  chargement, donc tout instrument neuf s'écrivait à deux endroits — l'Élève
+  ([#56](https://github.com/DavidGiangiacomo/langue-morte/pull/56)) a dû l'écrire aux deux.
+  Oublié au second, il arrivait à `undefined` dans les parties d'avant lui, et son prix à NaN.
+  `fusionner()` le donne désormais un niveau plus bas aussi : un instrument s'écrit dans
+  `fresh()` et nulle part ailleurs.
+- **Une sauvegarde que le jeu ne sait pas lire ne s'écrase pas** — écrite par un jeu plus
+  récent, ou dont la migration casse : on joue une partie neuve, qui ne se garde pas, et ni la
+  sauvegarde des quatre secondes ni « recommencer » n'y touchent.
+- *Ne fait pas* : lever la règle « rien sur `develop` pendant un playtest », qui protège de
+  tout ce qu'un déploiement change d'autre que le format. Ni reprendre `langue-morte-mvp-v2`,
+  et c'est un choix. Voir `docs/journal.md`, « La version entre dans la sauvegarde ».
 
 **LIV-4 — Le corpus reste fluide à 45 glyphes** · T:M · [#52](https://github.com/DavidGiangiacomo/langue-morte/issues/52)
 > En tant que joueur, je veux que le corpus se repeigne sans à-coups.
@@ -545,7 +565,7 @@ Suivi : [#29](https://github.com/DavidGiangiacomo/langue-morte/issues/29) — le
 **LIV-5 — Étendre `verifier.py`** · T:L · [#53](https://github.com/DavidGiangiacomo/langue-morte/issues/53)
 > En tant qu'auteur, je veux que chaque mécanique nouvelle soit couverte bout en bout.
 
-- Le fichier porte aujourd'hui **297 assertions** sur le relevé, le recoupement, la numération, le gisement, la datation, les infobulles, la composition, la fenêtre de fin qui attend sa lecture, et la reprise d'une sauvegarde d'avant une mécanique neuve. Chaque épic de cette feuille de route doit y ajouter ses vérifications — en particulier AMB-4 (la phrase absurde est bien rendue) et COMP-3 (`zéro` replie les compteurs).
+- Le fichier porte aujourd'hui **325 assertions** sur le relevé, le recoupement, la numération, le gisement, la datation, les infobulles, la composition, la fenêtre de fin qui attend sa lecture, et la reprise d'une sauvegarde d'avant une mécanique neuve. Chaque épic de cette feuille de route doit y ajouter ses vérifications — en particulier AMB-4 (la phrase absurde est bien rendue) et COMP-3 (`zéro` replie les compteurs).
   *15/09/2026* : la section 21 en ajoute vingt-cinq sur l'ambiguïté, dont les cinq ruptures d'AMB-4
   qui existent dans l'arbre d'aujourd'hui et la vérification que **rien à l'écran ne nomme la dette** ;
   la section 22 en ajoute vingt-deux sur le doute et la révision, dont **le degré de doute est le
@@ -566,6 +586,13 @@ Suivi : [#29](https://github.com/DavidGiangiacomo/langue-morte/issues/29) — le
   *12/10/2026* : une de plus — la carte de fin ouverte ne contient ni « crue », ni
   « question », ni « doute », ni « contradiction », ni « deuxième personne ». Elle échoue
   sur la carte d'avant, qui soufflait la question de PT8 au joueur qu'on allait interroger.
+  *19/10/2026* : dix de plus sur la sauvegarde (LIV-3) — une partie de l'ancienne clé
+  déménage numérotée et **sans perdre sa nuit**, chaque instrument qu'elle ne connaissait pas
+  arrive à zéro **sans que le test les nomme**, la version se compte sur une migration posée
+  le temps du test, et une sauvegarde qu'on ne sait pas lire ne s'écrase ni par la
+  sauvegarde automatique ni par « recommencer ». Deux mutants vérifiés à la main : un
+  déménagement qui re-date la partie, et une sauvegarde plus récente chargée quand même —
+  les deux font échouer leur assertion.
 
 **LIV-6 — README, écran-titre, distribution** · T:S · [#54](https://github.com/DavidGiangiacomo/langue-morte/issues/54)
 > En tant que curieux, je veux ouvrir un fichier et jouer.

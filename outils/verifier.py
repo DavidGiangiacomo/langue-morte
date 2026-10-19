@@ -51,6 +51,10 @@ Contrôle :
  26. l'Élève : il s'ouvre à la première Grammaire, multiplie les cinq instruments et pas le
      relevé, tranche les signes ambigus à la place du joueur avec un taux d'erreur qui croît
      avec leur nombre — et ce taux ne se lit nulle part
+ 27. la sauvegarde survit aux actes : une partie écrite sous l'ancienne clé déménage, numérotée,
+     sans perdre sa nuit ni un instrument qu'elle n'avait pas ; la version se compte sur les
+     migrations ; et une sauvegarde que le jeu ne sait pas lire — plus récente, ou dont la
+     migration casse — ne se charge pas et ne s'écrase pas
 
 Prérequis : pip install playwright && playwright install chromium
 """
@@ -1399,9 +1403,11 @@ def main() -> None:
 
         # ---- une sauvegarde d'avant la mécanique neuve doit se rouvrir ----
         # La clé a déjà changé une fois, et toutes les parties en cours ont été perdues. Un
-        # champ neuf est censé se migrer tout seul (`Object.assign(fresh(), p)`) ; ce test le
-        # vérifie au lieu de le supposer. L'injection passe par un contexte neuf : recharger
-        # l'onglet ferait sauvegarder la page courante par-dessus, via `pagehide`.
+        # champ neuf est censé se migrer tout seul (`fusionner()`) ; ce test le vérifie au lieu
+        # de le supposer. La partie est posée sous la clé d'avant LIV-3 : c'est là que toutes
+        # celles d'avant la composition ont été écrites. L'injection passe par un contexte
+        # neuf : recharger l'onglet ferait sauvegarder la page courante par-dessus, via
+        # `pagehide`.
         print("\nune partie d'avant la composition se rouvre")
         ancienne = ('{"O":5000,"H":300,"C":120,"rec":9,"clicks":40,'
                     '"b":{"cop":12,"tab":8,"con":3,"ate":1,"gram":0},'
@@ -1426,7 +1432,7 @@ def main() -> None:
         verifier(vieille.text_content("#lexr").strip() == f"5 / {ngl}", "le lexique compte cinq signes")
         r = vieille.evaluate("""() => { S_.C = 9999; acheterGl('nur'); S_.H = 99999;
             const i = composer('tem','im'); sauver();
-            const p = JSON.parse(localStorage.getItem('langue-morte-actes-i-iii'));
+            const p = JSON.parse(localStorage.getItem(KEY));
             return [i, p.carnet, p.comp]; }""")
         verifier(r == ["rate", ["tem+im"], 1], f"et la composition s'y enregistre : {r}")
         ctx.close()
@@ -1534,6 +1540,83 @@ def main() -> None:
         verifier(ouverte(), "la révision d'un signe lu par l'Élève rouvre les deux lectures")
         r = page.evaluate("() => { ambFermer(); reviser('pat', 'j'); return [S_.lect.pat, S_.dte.pat < 100, dette()]; }")
         verifier(r == ["j", True, 0], f"et c'est alors le joueur qui tranche, avec son propre doute : {r}")
+
+        # ---- la sauvegarde survit aux actes (LIV-3) ----
+        # La clé ne change plus : la version est dans la sauvegarde, et elle se migre. Une
+        # partie écrite sous l'ancienne clé déménage — sans y perdre sa nuit, que `ts` mesure,
+        # ni un instrument qu'elle n'avait pas encore. Un instrument absent de `b` arrivait à
+        # zéro par une liste recopiée à la main dans le chargement ; oubliée au lot suivant,
+        # il serait arrivé à `undefined`, et son prix à NaN. La sauvegarde n'en porte ici
+        # qu'un seul : tous les autres doivent arriver à zéro, ceux d'aujourd'hui comme ceux
+        # des actes IV et V, sans qu'aucune ligne de ce test ait à les nommer.
+        print("\nla sauvegarde survit aux actes")
+        nuitee = ('{"O":5000,"H":300,"C":120,"rec":9,"clicks":40,"b":{"cop":12},'
+                  '"gl":%s,"t":3000,"done":false}' % json.dumps(vingt))
+        ctx = nav.new_context()
+        ctx.add_init_script("localStorage.setItem('langue-morte-actes-i-iii', "
+                            "JSON.stringify(Object.assign(%s, {ts: Date.now() - 2*3600e3})))" % nuitee)
+        vieille = ctx.new_page()
+        casses = []
+        vieille.on("pageerror", lambda e: casses.append(str(e)))
+        vieille.goto(PAGE.resolve().as_uri())
+        vieille.wait_for_timeout(700)
+        verifier(not casses, f"aucune erreur au chargement : {casses[:1] or '—'}")
+        r = vieille.evaluate("""() => { const p = JSON.parse(localStorage.getItem(KEY) || 'null');
+            return [S_.gl.length, Math.round(S_.C), S_.b.cop,
+                    localStorage.getItem('langue-morte-actes-i-iii'),
+                    p && p.v, p && p.gl.length, versionSauvegarde()]; }""")
+        verifier(r[:3] == [20, 120, 12] and r[3] is None and r[4] == r[6] and r[5] == 20,
+                 f"la partie d'avant déménage sous la nouvelle clé, numérotée, et quitte l'ancienne : {r}")
+        verifier(vieille.evaluate("() => nuitPassee") > 0,
+                 "elle n'y perd pas sa nuit : deux heures hors ligne, rattrapées au retour")
+        r = vieille.evaluate("""() => [Object.keys(fresh().b).filter(k => S_.b[k] !== (k === 'cop' ? 12 : 0)),
+                                       INS.filter(i => !Number.isFinite(insCost(i))).map(i => i.k)]""")
+        verifier(r == [[], []], f"chaque instrument qu'elle ne connaissait pas arrive à zéro, aucun prix à NaN : {r}")
+
+        # La chaîne elle-même. Aucune migration n'est écrite aujourd'hui — tout ce que les lots
+        # ont changé depuis l'acte III était un ajout —, donc on en pose une, le temps du test :
+        # la version se compte sur la liste, une sauvegarde sans numéro part de la version 1,
+        # et une sauvegarde déjà à jour ne repasse par rien.
+        r = vieille.evaluate("""() => { MIGRATIONS.push(p => { p.essai = (p.essai || 0) + 1; });
+            const r = [versionSauvegarde(), migrer({b:{}}).v, migrer({b:{}}).essai || 0,
+                       migrer({v:2, b:{}}).essai || 0];
+            MIGRATIONS.pop(); return r; }""")
+        verifier(r == [2, 2, 1, 0], f"une migration ajoutée fait la version, et ne passe qu'une fois : {r}")
+        # Une migration qui casse est un défaut du jeu, pas de la partie : la sauvegarde reste
+        # telle quelle pour le jeu corrigé, et rien ne s'écrit par-dessus en attendant.
+        r = vieille.evaluate("""() => { sauver(); const avant = localStorage.getItem(KEY);
+            MIGRATIONS.push(() => { throw new Error('cassée'); });
+            const lue = charger(), garde = sauvegardeIntouchable;
+            S_.C += 1000; sauver(); const apres = localStorage.getItem(KEY);
+            MIGRATIONS.pop(); sauvegardeIntouchable = false; S_.C -= 1000;
+            return [lue, garde, apres === avant]; }""")
+        verifier(r == [None, True, True], f"une migration qui casse ne charge rien et n'écrase rien : {r}")
+        ctx.close()
+
+        # Une sauvegarde écrite par un jeu PLUS RÉCENT — un déploiement défait, un vieux
+        # fichier rouvert dans le navigateur où l'on joue le neuf. Ce jeu-ci ne sait pas ce que
+        # ses champs veulent dire : il joue une partie neuve, et ni la sauvegarde des quatre
+        # secondes ni « recommencer » ne touchent à l'autre.
+        future = ('{"v":999,"O":7,"H":0,"C":40,"rec":0,"clicks":3,"b":{"cop":2},'
+                  '"gl":["an","anna"],"t":120,"done":false,"inconnu":{"x":1}}')
+        ctx = nav.new_context()
+        ctx.add_init_script("localStorage.setItem('langue-morte-partie', %r)" % future)
+        vieille = ctx.new_page()
+        casses = []
+        vieille.on("pageerror", lambda e: casses.append(str(e)))
+        vieille.goto(PAGE.resolve().as_uri())
+        vieille.wait_for_timeout(700)
+        verifier(not casses, f"aucune erreur au chargement : {casses[:1] or '—'}")
+        r = vieille.evaluate("() => [KEY, S_.gl.length, sauvegardeIntouchable]")
+        verifier(r == ["langue-morte-partie", 0, True],
+                 f"une sauvegarde d'une version plus récente ne se charge pas : {r}")
+        t0 = vieille.evaluate("() => S_.t")
+        vieille.wait_for_timeout(400)
+        verifier(vieille.evaluate("() => S_.t") > t0, "la partie neuve se joue quand même")
+        r = vieille.evaluate("""() => { S_.C = 9999; acheterGl('an'); sauver(); const a = localStorage.getItem(KEY);
+            recommencer(); return [a, localStorage.getItem(KEY)]; }""")
+        verifier(r == [future, future], "et ni la sauvegarde ni « recommencer » ne l'écrasent")
+        ctx.close()
 
         # ---- les trois builds (LIV-2) ----
         # `python build.py` sort trois pages du même `src/`. Ce qui se vérifie ici n'est pas
