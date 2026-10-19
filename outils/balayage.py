@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Balayage de constantes — « La langue morte », actes I à IV.
+Balayage de constantes — « La langue morte », actes I à V.
 Rejoue `sim.run` sur une grille de valeurs et ne rend qu'une ligne par combinaison,
 pour choisir un réglage sans lire quatre cents lignes de journal.
 
@@ -77,7 +77,21 @@ I6_MAX = 30.0
 # précédents ne le voyait passer. Le plancher est donc la borne utile ici ; le plafond de
 # 40 % du CLAUDE.md, lui, porte sur la mesure RÉELLE d'un playtest (36,3 % en PT9 pour
 # 22 % simulés), que ce simulateur n'atteint jamais.
-MAIN_MIN = 15.0
+# Re-basé le 19/10/2026 avec la Fin (GRAINE-1), et pour la raison qui fait re-baser la
+# durée : sur la partie entière, cette part n'est pas un invariant non plus. Le gisement est
+# fini et la production passive ne l'est pas, donc chaque minute ajoutée au bout la fait
+# baisser — la Fin en ajoute trente-cinq, gisement vidé à 395 relevés sur 399, et la main
+# passe de 17,2 % à l'entrée de l'acte V à 13,1 % au dernier signe. À 15, les 54
+# combinaisons tombaient, réglage en place compris, sans que rien ne soit cassé. Le plancher
+# est re-calé sur ce qu'il doit attraper, mesuré dans l'arbre de quarante-trois signes : la
+# grille fait 12 à 14 %, « tout dégager à 80 % de l'arbre » 9,7 %, à 90 % 11,5 %. À 11, le
+# premier est rejeté et la grille entière admise. Il trie moins bien qu'avant — l'écart entre
+# la famille fautive et la grille passe de dix points à trois, la queue passive de la Fin
+# tassant tout — et c'est noté, pas réglé : la règle 9 interdit de régler contre ce chiffre
+# avant PT11. 42 combinaisons sur 54 passent, comme à la Personne, dont le réglage en place
+# (124,1-162,6 min, écart 7,2, main 13 %, pire tranche 25 %) ; les douze autres ont toutes le
+# Copiste à 15 et passent le plafond de durée de quelques dixièmes.
+MAIN_MIN = 11.0
 NT = 6                  # tranches retenues : 0-10′ à 50-60′, au-delà tout est à zéro
 
 

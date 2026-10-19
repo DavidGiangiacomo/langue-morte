@@ -200,15 +200,32 @@ de la chaîne près. I4 tient des deux côtés ; la pire tranche d'I6 hors ouver
 à 20–30′.
 
 **Ce qui bouge, et qu'il faut regarder en face.** La main tombe de 22,4 à **16,7 %** des
-occurrences : l'acte V dure vingt-huit à quarante minutes sur un gisement presque épuisé
-(395 relevés sur 399), et les instruments y produisent à plein. Encore au-dessus du plancher
-de `balayage.py`, et la règle 9 dit de ne pas régler contre ce chiffre avant PT11. Et la
+occurrences au réglage en place, et à **13,1 %** chez le joueur sans Élève : l'acte V dure
+vingt-huit à quarante minutes sur un gisement presque épuisé (395 relevés sur 399), et les
+instruments y produisent à plein. À l'entrée de l'acte V elle pèse encore 17,2 % sans Élève ;
+c'est la Fin seule qui la fait descendre, minute après minute, parce que le gisement est fini
+et la production passive non. Le plancher de `balayage.py` était à 15 % : les 54 combinaisons
+tombaient, réglage en place compris — « 0 sur 54 », la panne que la durée avait déjà faite à
+vingt-trois glyphes. Recalé sur ce qu'il doit attraper, mesuré dans l'arbre de quarante-trois
+signes : la grille fait 12 à 14 %, « tout dégager à 80 % de l'arbre » 9,7 %, à 90 % 11,5 %.
+**Plancher à 11.** Il trie moins bien qu'avant — trois points entre la famille fautive et la
+grille, contre dix à trente glyphes, la queue passive tassant tout — et la règle 9 dit de ne
+pas régler contre ce chiffre avant PT11. Ce que la Fin y ajoute pour le playtest : à l'acte V,
+la main n'a plus rien à relever, et le geste qui reste dans le corpus est la question —
+chercher un « si » pour savoir quoi demander. C'est la réponse de l'acte V à « revient-on dans
+le corpus après la quarantième minute ? », et rien ne dit encore qu'elle suffit. Et la
 contradiction coûte désormais une heure à qui ne révise jamais : 223,6–226,6 min pour la paire
-réparante, contre 159,5–162,6 en lecture parfaite. Un Élève qui lit faux : 207,9–211,0. La
+réparante, contre 159,5–162,6 en lecture parfaite. Un Élève qui lit faux : 207,9–211,0. Et
+I4 y cède : 11,4 à 12,9 min sans rien à acheter avant ⟨finir⟩, le premier mot qu'une question
+ouvre — la sanction divise la Certitude, donc aussi le surplus qui remplit les questions. À
+l'acte IV, elle cédait à huit minutes ; non réglé, pour la même raison qu'alors. La
 question que la Personne posait au playtest — révise-t-on, ou encaisse-t-on ? — est devenue la
 plus chère du jeu.
 
-`balayage.py` re-basé : durée (121, 165), et **écart max à 8**, la borne d'I4, au lieu de 6.
+`balayage.py` re-basé : durée (121, 165), **écart max à 8**, la borne d'I4, au lieu de 6, et
+main à 11 au lieu de 15. **42 combinaisons sur 54**, comme à la Personne, dont le réglage en
+place (124,1–162,6 min, écart 7,2, main 13 %, pire tranche 25 %) ; les douze autres ont toutes
+le Copiste à 15 et passent le plafond de durée de quelques dixièmes.
 L'acte V espace par construction ses mots ouverts par une question, de 6,6 à 7,2 min chez le
 joueur sans Élève : c'est le rythme mesuré en choisissant les prix, pas un défaut à cacher.
 
