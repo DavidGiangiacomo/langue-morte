@@ -142,6 +142,189 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## La version entre dans la sauvegarde, et la clé ne bouge plus
+
+*19/10/2026, LIV-3.* La clé de sauvegarde changeait chaque fois qu'une partie gênait —
+`langue-morte-mvp-v2`, puis `langue-morte-actes-i-iii` à l'ouverture de l'acte III — et
+chaque fois toutes les parties en cours partaient avec. Le backlog le disait : ça se
+reproduirait à chaque acte livré. Elle s'appelle désormais `langue-morte-partie` et ne
+changera plus : **la version est écrite dans la sauvegarde**, et c'est elle qui migre. Une
+partie trouvée sous l'ancienne clé y déménage au premier chargement. Rien de l'économie ne
+bouge — `sim.py` redonne 91,1–94,3 min, `balayage.py` 34 combinaisons sur 54 — et rien de
+l'écran non plus. `outils/verifier.py` passe de 297 à **307 assertions**.
+
+### Aucune migration n'est écrite, et c'est la mesure
+
+Tout ce que les lots ont changé à la sauvegarde depuis l'acte III — le carnet, les lectures
+tranchées, le doute, les révisions, la contradiction — était un **ajout**, et un ajout se
+migre tout seul : `fresh()` donne le champ à toute partie qui ne l'a pas. Le lot livre donc
+une chaîne de migrations vide, et c'est exact : aucun champ n'a encore changé de sens. Ce
+qui en demandera une est écrit en tête de `MIGRATIONS` — un champ qui change de sens, de nom
+ou de forme, un signe qui quitte le lexique ou change d'identifiant.
+
+La version **se compte** sur cette liste au lieu de se régler à côté : `versionSauvegarde()`
+vaut le nombre de migrations plus un. On ne peut ni oublier de l'incrémenter, ni l'incrémenter
+sans dire comment on passe d'une version à l'autre — un état dérivable ne se stocke pas, même
+dans le code. Les sauvegardes d'avant ce lot n'ont pas de numéro ; elles sont en version 1, il
+ne leur manque que le chiffre. Et ce chiffre est posé par `sauver()`, pas par `fresh()` : il
+dit ce qu'est le fichier, pas ce qu'était la partie.
+
+La chaîne vide se teste quand même : une migration posée le temps du test fait la version 2,
+passe une fois sur une sauvegarde sans numéro, et ne repasse pas sur une sauvegarde déjà à
+jour.
+
+### La première qu'on voit venir : FIN-2
+
+Une partie `done` quand l'arbre était plus petit redevient une partie en cours. C'est
+`nArbre() < NGL`, posé avec la Parole III, et c'est juste tant que finir veut dire acheter le
+dernier signe. **FIN-2 casse cette équivalence** : interrompre, c'est laisser un signe non lu
+(design doc §11), donc `nArbre() < NGL` par définition — et une partie interrompue « ne
+propose pas de reprendre ». Telle quelle, la règle la rouvrirait au chargement suivant. Il
+faudra écrire à quelle taille d'arbre une partie s'est arrêtée, et l'écrire pour les parties
+déjà finies sera la première migration. C'est noté dans le code, au-dessus de la règle.
+
+### Ce qui se migrait déjà, à deux endroits
+
+Le chargement faisait déjà la moitié du travail sans le dire : `Object.assign(fresh(), p)`
+donnait les champs de premier niveau. Mais pas ceux de `b`, que l'assignation remplace en
+bloc — d'où une seconde ligne, qui recopiait **la liste des instruments à la main**. Tout
+instrument neuf s'écrivait donc à deux endroits, et l'Élève
+([#56](https://github.com/DavidGiangiacomo/langue-morte/pull/56)) a dû l'écrire aux deux.
+Oublié au second, il serait arrivé à `undefined` dans toute partie d'avant lui : `insCost()`
+rendait NaN, et rien ne le disait. `fusionner()` descend désormais d'un niveau : un instrument
+s'écrit dans `fresh()` et nulle part ailleurs. Le test ne nomme aucun instrument — il pose une
+partie qui ne connaît que le Copiste et vérifie que tous les autres arrivent à zéro, ceux des
+actes IV et V compris. La PR de l'Élève se fusionnera donc avec une ligne de moins : sa
+retouche du chargement devient inutile, et le conflit se résout en gardant `fusionner()`.
+
+### Une sauvegarde qu'on ne sait pas lire ne s'écrase pas
+
+Un numéro de version peut être **plus grand** que celui du jeu qui le lit : un déploiement
+défait, un vieux fichier rouvert dans le navigateur où l'on joue le neuf. Et une migration
+peut casser — c'est un défaut du jeu, pas de la partie. Dans les deux cas, la seule réponse
+qui ne perde rien est de n'y pas toucher : on joue une partie neuve, qui ne se garde pas, et
+ni la sauvegarde des quatre secondes ni « recommencer » n'écrivent par-dessus. Jouer quand
+même — la charger telle quelle, ou repartir de zéro en laissant la sauvegarde automatique
+faire le reste —, c'était remplacer la partie par ce qu'un jeu qui ne la comprenait pas en
+aurait fait, quatre secondes plus tard.
+
+### Le déménagement ne mange pas la nuit
+
+Une partie trouvée sous l'ancienne clé est écrite sous la nouvelle, puis effacée de
+l'ancienne — dans cet ordre, pour qu'une écriture ratée ne perde rien —, et elle part **telle
+quelle**. Le piège était dans le geste le plus simple, qui serait de l'enregistrer comme
+n'importe quelle partie : enregistrer, c'est dater de maintenant (`sauver()` pose `ts`), et
+`ts` est ce qui mesure la nuit (`veillee()`). Le joueur qui revient après deux heures
+retrouverait une nuit d'une seconde. Le test pose sous l'ancienne clé une partie quittée
+depuis deux heures et vérifie que la nuit est rattrapée. Deux mutants vérifiés à la main —
+un déménagement qui re-date la partie, une sauvegarde plus récente chargée quand même — font
+chacun échouer leur assertion.
+
+### Ce que LIV-3 ne fait pas
+
+- **Il ne lève pas la règle « rien sur `develop` pendant un playtest ».** Une version protège
+  le format d'une partie, pas son économie : un déploiement qui touche un réglage change le
+  jeu sous les pieds du joueur sans changer une virgule de sa sauvegarde, et rien dans le
+  journal d'actions ne date ce changement. Ce que disait LIV-2 reste vrai.
+- **`langue-morte-mvp-v2` n'est pas repris**, et c'est un choix : ses parties sont celles du
+  prototype à treize signes, abandonnées le 08/09/2026, et l'économie qui les a produites
+  n'existe plus. Une ligne dans `CLES_ANCIENNES` suffirait à les rouvrir.
+- **Le journal d'actions garde sa clé** (`langue-morte-traces-v1`) : hors jeu, il se décrit
+  lui-même par l'en-tête du TSV.
+
+## Le compteur n'est pas le corpus — trois portes, et une qui s'ouvre à 2 C
+
+*14/10/2026.* Trouvé en jouant : **dès ⟨un⟩, les trois compteurs passent en chiffres arabes
+en entier** — 2, 3, 200, 14 523 — alors que le joueur ne sait lire aucun de ces nombres dans
+le corpus. La question posée était « est-ce normal ? ». Oui, c'est voulu et annoncé ; mais le
+**seuil** ne l'est pas, et il contredit un argument que ce journal a écrit lui-même.
+Rien n'est modifié dans `src/` : la question part en mesure de PT11. Issue
+[#57](https://github.com/DavidGiangiacomo/langue-morte/issues/57).
+
+### Il y a trois portes, et aucune n'est `numLisible()`
+
+`src/economie.js:434-436` :
+
+```js
+const readN  = () => has('an');     // un   → les trois compteurs O / H / C
+const readC  = () => has('anna');   // deux → les coûts, le gisement, les fréquences
+const readR  = () => has('sela');   // dix  → les débits /s
+```
+
+Trois booléens globaux, pas un test par nombre. `readN` ouvre `#vl-O`, `#vl-H` et `#vl-C`
+d'un bloc (`src/rendu.js:725-727`). Le corpus, lui, reste strict : `numLisible()`
+(`src/signes.js:112`) exige chaque signe du nombre *et* ⟨deux⟩ pour le redoublement.
+
+**La règle 3 n'est donc pas violée** — elle est écrite pour « un nombre **du corpus** », et
+elle tient là où elle est écrite. Les compteurs n'y ont jamais été soumis, et le code date du
+premier commit (`f55d211`) sans avoir jamais été rouvert.
+
+### Et c'est annoncé trois fois
+
+Les lignes d'effet portent les trois portes (`src/lexique.js:8-15`) : ⟨un⟩ « **les relevés en
+chiffres** », ⟨deux⟩ « **les coûts en chiffres** », ⟨dix⟩ « **les débits en chiffres** ». Et
+la ligne de journal de ⟨un⟩ dit la chose entière : *« Un trait. Un. Mes propres comptes se
+tiennent enfin — les leurs, à peine. »*
+
+C'est la fiction, et elle est cohérente : **les compteurs sont la notation du joueur, pas
+celle de la langue morte.** ⟨un⟩ est le moment où le scribe se dote d'une écriture pour ses
+propres comptes ; le corpus reste les nombres de quelqu'un d'autre, et ceux-là se paient
+signe par signe. Le design doc en fait une catégorie à part depuis le premier jour, au §9,
+invariant **I2** : « le joueur perd la lisibilité de **ses propres nombres** au moment où ils
+deviennent énormes ». `readN` ouvre cette lisibilité à l'acte I ; VOIX-5 la refermera à
+l'acte IV. Les deux portes se tiennent par le même mot.
+
+### Pourquoi la règle 3 ne *peut pas* s'appliquer là
+
+Deux conséquences mécaniques, qui ne sont pas des objections de goût :
+
+1. **Ça scintillerait.** Avec ⟨un⟩ et ⟨dix⟩ mais sans ⟨deux⟩ : 10 lisible, 11 lisible, 12 non
+   (deux `u1`), 20 non (deux `t10`). Le compteur passerait des chiffres aux glyphes d'une
+   seconde à l'autre, au rythme de la production — et le nombre affiché serait le seul
+   indice de ce qui manque, ce qui est exactement un renseignement.
+2. **Ça resterait un mur de glyphes toute la partie.** Au-delà de 2 000 il faut ⟨mille⟩ *et*
+   ⟨deux⟩ ; les Occurrences montent à 10¹⁰ et `numGlyphs()` plafonne à 24 tracés. Le compteur
+   serait une barre pleine jusqu'à la fin.
+
+### Ce qui reste douteux, et n'est pas réglé
+
+1. **Le seuil contredit l'argument de ce journal.** « Le point aveugle de `deux` », plus bas,
+   défend `readC` à ⟨deux⟩ ainsi : *« le comptage est aussi conditionné à `deux` : sans lui le
+   nombre affiché serait lui-même illisible. »* C'est exactement le cas que `readN` à ⟨un⟩
+   produit. Deux portes voisines, deux justifications incompatibles — l'une de fiction,
+   l'autre d'équilibrage.
+2. **Le joueur achète la conversion sans être prévenu.** La ligne d'effet d'un glyphe encore à
+   acheter ne s'affiche que si `has('im')` (`src/rendu.js:697`) — ⟨dire⟩ coûte 8 C, quatre
+   fois ⟨un⟩. Au moment du premier achat, « les relevés en chiffres » est invisible.
+3. **Le premier plaisir du jeu a une espérance de vie de 2 C.** Design doc §10, acte I :
+   *« Un joueur attentif peut décoder les chiffres tout seul en observant son compteur monter,
+   avant d'acheter le signe. C'est le premier plaisir du jeu et il faut le protéger
+   absolument. »* Or ⟨un⟩ est **le signe le moins cher de l'arbre** (2 C, contre 3 pour
+   ⟨grain⟩), c'est l'achat évident de la première minute, et la branche est une chaîne stricte
+   (`open = prevDone && !done`, `src/rendu.js:682`) : on ne peut pas atteindre ⟨deux⟩ sans
+   passer par ⟨un⟩. La pierre de Rosette s'éteint au premier achat possible.
+
+Aucun test ne verrouille ça — `readN` n'apparaît pas dans `outils/verifier.py`.
+
+### Pourquoi on ne tranche pas maintenant
+
+Parce que la question n'est pas « quel seuil », c'est **« la conversion est-elle lue comme une
+récompense ou comme une énigme qu'on vient de perdre ? »** — et l'auteur ne peut pas y
+répondre : il connaît la numération. Déplacer `readN` sur `anna` serait une ligne, mais ça ne
+rachèterait que trois Certitude, soit une trentaine de secondes de jeu. Si le réglage ne vaut
+rien, c'est la question qui vaut.
+
+D'où la **question 11 du protocole** (`docs/pt11-protocole.md`), placée après ⟨grenier⟩ et le
+zéro, et l'ordre n'est pas négociable : demander si le compteur se lisait apprend à regarder
+les signes de nombre comme des composés, ce qui est exactement ce que la question 9 mesure.
+Le TSV répond à la moitié tout seul — la minute du premier achat, et si c'est ⟨un⟩. Et le
+meilleur cas est qu'on ne pose rien : si la numération remonte seule à la question 5, la
+réponse ne coûte aucun renseignement.
+
+**Détail de rédaction, en marge** : « les relevés en chiffres » (⟨un⟩) et « +25 % au relevé »
+(⟨deux⟩) emploient *relevé* dans deux sens différents, sur deux cartes voisines de la même
+branche — l'affichage et le geste de la règle 8. Non corrigé : ça entre dans le même
+arbitrage.
 ## VOIX-2 — ce qui m'était adressé
 
 *14/10/2026, sur la même branche de travail que la Personne.*
@@ -3225,7 +3408,17 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
    depuis PT6**, et il attend la mesure de PT11 avant tout réglage : ne pas toucher `REL_K`,
    c'est la date des relevés qui est en cause, pas leur prix.
 
-8. **Un garde-fou qui ne contraint que le simulateur ne garde rien.** Le plancher de 15 % sur
+8. **Le seuil des compteurs en chiffres** *(14/10/2026)* — ⟨un⟩ coûte 2 C, c'est le signe le
+   moins cher de l'arbre, et il fait passer les trois compteurs en chiffres arabes d'un bloc
+   (`readN`). C'est voulu, annoncé et cohérent avec I2 ; ce qui ne l'est pas, c'est que le
+   design doc §10 demande de protéger « absolument » le décodage du compteur, qui s'éteint
+   donc au premier achat possible. **Rien à régler avant la réponse de PT11** (question 11 du
+   protocole) : la question n'est pas le seuil, c'est de savoir si la conversion est reçue
+   comme une récompense ou comme une énigme perdue, et l'auteur ne peut pas y répondre. Issue
+   [#57](https://github.com/DavidGiangiacomo/langue-morte/issues/57). Voir « Le compteur n'est
+   pas le corpus ».
+
+9. **Un garde-fou qui ne contraint que le simulateur ne garde rien.** Le plancher de 15 % sur
    la part manuelle des occurrences, entré dans `outils/balayage.py` le 14/09/2026, donne 22,9
    à 23,4 % sur le réglage en place et n'a pas vu venir le 1,0 % de PT10 — parce qu'il mesure
    l'acheteur simulé, qui relève tant que c'est rentable, et pas un joueur qui s'arrête. Vrai

@@ -1062,9 +1062,18 @@ const TB = ORDRE.map(n => CORPUS.find(t => t.t === n));
 "use strict";
 
 /* ============================ état ============================ */
-/* Changé à l'ouverture de l'acte III : une partie sauvegardée au MVP est `done` à treize
-   glyphes et rouvrirait sur l'écran de fin, sans moyen de continuer. */
-const KEY='langue-morte-actes-i-iii';
+/* La clé ne change plus (LIV-3). Elle s'appelait `langue-morte-mvp-v2` avant de devenir
+   `langue-morte-actes-i-iii` à l'ouverture de l'acte III, parce qu'une partie du MVP, `done` à
+   treize glyphes, rouvrait sur l'écran de fin sans moyen de continuer — et toutes les parties
+   en cours ont été perdues avec elle. Ce qu'un lot change à la sauvegarde se dit désormais
+   DANS la sauvegarde, par son numéro de version, et se migre (`charger()`). */
+const KEY='langue-morte-partie';
+/* Les clés d'avant, lues seulement quand la nouvelle est vide. Une partie trouvée là déménage :
+   elle ne se dédouble pas, parce que deux copies d'une même partie finissent par diverger et
+   que rien ne dirait laquelle est la bonne.
+   `langue-morte-mvp-v2` n'y est pas, et c'est un choix : ses parties sont celles du prototype
+   à treize signes, abandonnées le 08/09/2026, et l'économie qui les a produites n'existe plus. */
+const CLES_ANCIENNES = ['langue-morte-actes-i-iii'];
 const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram:0,elv:0},gl:[],t:0,done:false,
   rel:{}, prix:{}, carnet:[], comp:0, lect:{}, dte:{}, conc:{}, recs:{}, rev:0, contr:0});
 /* rel : jetons relevés par tablette · prix : tarif du gisement, verrouillé
@@ -1076,8 +1085,8 @@ const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram
    nombre de recoupements par signe, qui sont ce sur quoi ce degré se calcule · rev : les
    révisions faites, dont dépend le prix de la suivante (CONTR-3) · contr : la contradiction,
    armée ou non (CONTR-1) — le seul de ces champs que le joueur voie.
-   Champs de premier niveau, donc une partie d'avant la composition, ou d'avant l'ambiguïté,
-   les reçoit vides au chargement, sans qu'on touche à `KEY`. */
+   Une partie d'avant la composition, ou d'avant l'ambiguïté, les reçoit vides au chargement
+   (`fusionner()`) : un champ ajouté ne demande ni nouvelle clé ni migration. */
 let S_ = fresh(), speed = 1;
 /* Le sélecteur ×1/×3/×10 est hors jeu, mais il multiplie les secondes de JEU — celles que
    le journal d'actions horodate, et celles sur lesquelles `outils/depouiller.py` rejoue le
@@ -1087,8 +1096,79 @@ let S_ = fresh(), speed = 1;
    l'affectation — mais `traces.js` n'édite jamais une règle, il enveloppe ce qui existe, et
    il n'y avait ici qu'un écouteur anonyme. */
 function vitesse(n){ speed = n; }
-try{ const raw=localStorage.getItem(KEY); if(raw){ const p=JSON.parse(raw);
-  if(p&&p.b){ const b=Object.assign({cop:0,tab:0,con:0,ate:0,gram:0,elv:0},p.b); S_=Object.assign(fresh(),p); S_.b=b; } } }catch(e){}
+
+/* ======================== la sauvegarde (LIV-3) ========================
+   Le numéro de version ne se règle pas, il se COMPTE : c'est le nombre de migrations écrites,
+   plus un. On ne peut donc ni oublier de l'incrémenter, ni l'incrémenter sans dire comment on
+   passe d'une version à l'autre. MIGRATIONS[0] fait passer une sauvegarde de la version 1 à la
+   2, MIGRATIONS[1] de la 2 à la 3 ; chacune reçoit la sauvegarde brute, telle qu'elle sort du
+   JSON, et la modifie en place. Aucune ne se retire : une partie laissée en version 1 doit
+   pouvoir les traverser toutes, le jour où son joueur revient.
+
+   **Un champ AJOUTÉ n'en demande pas**, et c'est le cas de chaque lot depuis l'acte III :
+   `fresh()` le donne à toute partie qui ne l'a pas. En demandent une : un champ qui change de
+   sens, de nom ou de forme, et un signe qui quitte le lexique ou change d'identifiant. La
+   première qu'on voit venir est celle de FIN-2 (voir `S_.done`, plus bas).
+
+   Version 1 : tout ce qui s'écrit depuis l'acte III. Les sauvegardes d'avant ce lot n'ont pas
+   de numéro ; elles sont en version 1, il ne leur manque que le chiffre. */
+const MIGRATIONS = [];
+const versionSauvegarde = () => MIGRATIONS.length + 1;
+/* Vrai quand la clé porte une sauvegarde que ce jeu ne sait pas lire : il ne la charge pas,
+   et rien ici ne l'écrit ni ne l'efface (`sauver`, `recommencer`). On joue alors une partie
+   neuve, qui ne se garde pas. */
+let sauvegardeIntouchable = false;
+
+function migrer(p){
+  if(!Number.isInteger(p.v) || p.v < 1) p.v = 1;
+  while(p.v < versionSauvegarde()){ MIGRATIONS[p.v - 1](p); p.v++; }
+  return p;
+}
+/* Une sauvegarde se pose sur une partie neuve, champ par champ : ce qu'elle n'a pas, `fresh()`
+   le donne — un niveau plus bas aussi, et c'est pour `b`, où un instrument neuf doit arriver à
+   zéro. La liste des instruments était recopiée à la main dans le chargement : tout instrument
+   neuf s'écrivait donc à deux endroits, et, oublié au second, il arrivait à `undefined` dans
+   toute partie d'avant lui — `insCost()` rendait NaN, et rien ne le disait. Un champ nul garde sa
+   valeur neuve : JSON écrit `null` pour un NaN, et une partie ne doit pas casser au chargement
+   pour un chiffre qu'elle avait déjà perdu. */
+function fusionner(p){
+  const s = fresh();
+  for(const k of Object.keys(p)){
+    const v = p[k], d = s[k];
+    if(v === null) continue;
+    s[k] = d && typeof d === 'object' && !Array.isArray(d) && typeof v === 'object' && !Array.isArray(v)
+         ? Object.assign(d, v) : v;
+  }
+  return s;
+}
+/* La partie sauvegardée, migrée, posée sur une partie neuve — ou null, et la partie neuve
+   reste. */
+function charger(){
+  let raw = null, ancienne = null;
+  try{
+    raw = localStorage.getItem(KEY);
+    for(const k of CLES_ANCIENNES) if(raw === null && (raw = localStorage.getItem(k)) !== null) ancienne = k;
+  }catch(e){ return null; }
+  let p = null;
+  try{ p = JSON.parse(raw); }catch(e){}
+  if(!p || typeof p !== 'object' || !p.b) return null;
+  /* Deux cas où la sauvegarde existe et où ce jeu ne sait pas la lire, et une seule réponse :
+     ne pas y toucher. Écrite par un jeu PLUS RÉCENT — un déploiement défait, un vieux fichier
+     rouvert dans le navigateur où l'on joue le neuf —, ce jeu-ci ignore ce que ses champs
+     veulent dire. Une migration qui CASSE, c'est un défaut du jeu, pas de la partie. Dans les
+     deux cas, jouer par-dessus — la charger telle quelle, ou repartir de zéro et laisser la
+     sauvegarde des quatre secondes faire le reste — c'est la perdre ; la laisser intacte, c'est
+     la rendre entière au jeu qui saura la lire. */
+  if(Number.isInteger(p.v) && p.v > versionSauvegarde()){ sauvegardeIntouchable = true; return null; }
+  try{ migrer(p); }catch(e){ sauvegardeIntouchable = true; return null; }
+  /* Trouvée sous une clé d'avant : écrite sous la nouvelle, puis effacée de l'ancienne — dans
+     cet ordre, pour qu'une écriture qui échoue ne perde rien. Elle part telle quelle, `ts`
+     compris : c'est lui qui mesure la nuit au retour (`veillee()`), et le déménagement ne
+     doit pas la manger. */
+  if(ancienne){ try{ localStorage.setItem(KEY, JSON.stringify(p)); localStorage.removeItem(ancienne); }catch(e){} }
+  return fusionner(p);
+}
+S_ = charger() || S_;
 const has = id => S_.gl.indexOf(id)>=0;
 /* Ce que l'arbre a rendu, qui n'est pas ce que le joueur sait : un composé secret s'acquiert
    hors de toute branche. Les deux comptes se confondaient tant qu'il n'y avait qu'une façon
@@ -1102,7 +1182,13 @@ const nArbre = () => { let n=0; for(const id of S_.gl){ const g=byId[id]; if(!g|
 /* Une partie finie quand l'arbre comptait moins de signes n'est plus finie : l'arbre a
    grandi sous elle. Sans ça elle rouvrirait sur l'écran de fin, `tick` arrêté, sans moyen
    de continuer — le cas exact qui a déjà coûté un changement de `KEY` et toutes les
-   parties en cours. Chaque lot de glyphes le reproduirait. */
+   parties en cours. Chaque lot de glyphes le reproduirait.
+   Ce n'est pas une migration : l'arbre grandit sans que le format bouge, donc ceci passe à
+   chaque chargement, quelle que soit la version. Mais **FIN-2 devra le reprendre** : une
+   partie interrompue laisse un signe non lu, `nArbre()` y est inférieur à `NGL` par
+   définition, et elle ne doit pas reprendre (design doc §11). Il faudra savoir à quelle
+   taille d'arbre la partie s'est arrêtée, donc l'écrire — et l'écrire, pour les parties
+   déjà finies, sera une migration. */
 if(S_.done && nArbre() < NGL) S_.done = false;
 
 /* ======================== la lecture retenue ========================
@@ -2780,7 +2866,9 @@ function recommencer(){
   majSignes(); touchees=new Set(); recArmer(false); concFermer(); compVider(); finDesarmer();
   ambFermer();
   $('log').innerHTML='<p class="hint">relève un signe : clique dans le corpus</p>';
-  paintCorpus(null); try{localStorage.removeItem(KEY);}catch(e){}
+  /* Recommencer efface la partie qu'on voit — jamais une sauvegarde que ce jeu n'a pas su
+     lire, qui n'est pas celle-là et qu'il n'a pas chargée (`charger()`). */
+  paintCorpus(null); if(!sauvegardeIntouchable) try{localStorage.removeItem(KEY);}catch(e){}
 }
 
 
@@ -2809,7 +2897,7 @@ const TKEY = 'langue-morte-traces-v1';
    réécrit cette ligne ; en jouant depuis `src/` elle reste « src ». Un TSV qui revient
    trois semaines après la partie ne dit rien de lui-même sans ça : ni contre quels réglages
    il a été joué, ni si le sélecteur de vitesse était même à l'écran. */
-let BUILD = 'dev · 2026-10-14';
+let BUILD = 'dev · 2026-10-19';
 const TMAX = 20000;              // garde-fou : PT1 avait produit 3 853 clics
 let TR = [];
 try{ const raw = localStorage.getItem(TKEY); if(raw) TR = JSON.parse(raw) || []; }catch(e){}
@@ -3190,8 +3278,12 @@ $('fermer').addEventListener('click', fermerFin);
 $('end').addEventListener('click', e=>{ if(e.target===$('end')) fermerFin(); });
 
 /* `ts` est l'heure de la dernière sauvegarde : c'est elle, et rien d'autre, qui mesure
-   la nuit au retour. Écrite à chaque enregistrement, y compris à la fermeture. */
-const sauver = () => { try{ S_.ts = Date.now(); localStorage.setItem(KEY, JSON.stringify(S_)); }catch(e){} };
+   la nuit au retour. Écrite à chaque enregistrement, y compris à la fermeture.
+   `v` est la version dans laquelle ce jeu écrit (LIV-3). Posée ici et non dans `fresh()` :
+   elle dit ce qu'est le fichier, pas ce qu'était la partie. Rien ne s'écrit par-dessus une
+   sauvegarde que ce jeu n'a pas su lire (`charger()`). */
+const sauver = () => { if(sauvegardeIntouchable) return;
+  try{ S_.v = versionSauvegarde(); S_.ts = Date.now(); localStorage.setItem(KEY, JSON.stringify(S_)); }catch(e){} };
 setInterval(sauver, 4000);
 window.addEventListener('pagehide', sauver);
 
