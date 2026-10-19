@@ -339,19 +339,26 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
   font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
 .ambcard .ghost:hover{color:var(--lamp);border-color:var(--line2)}
 
-.end{position:fixed;inset:0;z-index:50;background:rgba(12,9,6,.93);display:flex;align-items:center;justify-content:center;padding:24px}
-.end[hidden]{display:none}
-.endcard{max-width:620px;background:var(--clay);border:1px solid var(--line2);border-radius:3px;padding:30px 34px}
-.endcard h2{font-size:24px;font-weight:600;margin:0 0 4px;letter-spacing:.04em}
-.endcard .k{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-bottom:18px}
-.endcard p{margin:0 0 13px;color:var(--mid);max-width:60ch}
-.endcard .quote{border-left:2px solid var(--ochre-d);padding-left:14px;font-style:italic;color:var(--lamp);font-size:17px}
-.endstats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px 20px;margin:20px 0;font-family:var(--mono);font-size:11px;color:var(--dim)}
-.endstats b{color:var(--lamp);font-weight:500;float:right;font-variant-numeric:tabular-nums}
-.endcard .go{border:1px solid var(--ochre-d);color:var(--ochre);padding:9px 18px;border-radius:2px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
-.endcard .go:hover{background:#33261A}
-.endacts{display:flex;align-items:center;gap:10px}
-.endcard .ghost{border:1px solid var(--line);color:var(--dim);padding:9px 14px;border-radius:2px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
-.endcard .ghost:hover{color:var(--lamp);border-color:var(--line2)}
+/* Les deux fins : même habit, et le geste écrit sous le verbe. */
+.finschoix button b{display:block;font-weight:500}
+.finschoix button span{display:block;margin-top:5px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--dim)}
+
+/* Ce qui s'en va après les deux fins (FIN-1, FIN-2). Les délais viennent de `FIN_EFF`
+   (rendu.js), écrits sur chaque élément : la feuille ne porte que la durée d'un fondu. */
+.fin-x{transition:opacity 2.4s ease var(--fin-d,0s),visibility 0s linear calc(var(--fin-d,0s) + 2.4s)}
+body.fin .fin-x{opacity:0;visibility:hidden;pointer-events:none}
+.fin-cadre{transition:border-color 2.4s ease var(--fin-d,0s),background-color 2.4s ease var(--fin-d,0s)}
+body.fin .fin-cadre{border-color:transparent;background-color:transparent}
+.corpus-wrap.fin-cadre{transition:border-color 2.4s ease var(--fin-d,0s),background-color 2.4s ease var(--fin-d,0s),transform 3s ease}
+body.fin #corpus{cursor:default}
+body.fin-texte #corpus{opacity:0;visibility:hidden;
+  transition:opacity var(--fin-t,24s) ease,visibility 0s linear var(--fin-t,24s)}
+body.fin-sec .fin-x,body.fin-sec .fin-cadre,body.fin-sec #corpus{transition:none}
+.apres{position:fixed;left:0;right:0;bottom:30px;z-index:40;display:flex;justify-content:center;animation:apres 2.4s ease}
+.apres[hidden]{display:none}
+.apres .ghost{border:1px solid var(--line);color:var(--dim);background:var(--ink);padding:9px 16px;border-radius:2px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.apres .ghost:hover{color:var(--lamp);border-color:var(--line2)}
+@keyframes apres{from{opacity:0}to{opacity:1}}
 
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}

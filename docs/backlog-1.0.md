@@ -426,6 +426,7 @@ Suivi : [#25](https://github.com/DavidGiangiacomo/langue-morte/issues/25) — le
 > En tant que joueur, je veux comprendre que la langue a été conçue pour être cassée par un inconnu.
 
 - Fini quand : les tablettes 28 (« la fabrique ») et 21 (« l'abécédaire ») sont pleinement lisibles et se répondent ; le joueur reconnaît dans la tablette 28 **l'ordre des branches de l'arbre qu'il suit depuis trois heures**.
+- *Constaté le 19/10/2026* : la première moitié est tenue par GRAINE-1. Avec les quarante-cinq signes, les seuls signes du corpus hors du lexique sont les six noms propres, qui ne se déchiffrent jamais : les tablettes 21 et 28 se lisent entières, à leurs noms près. La seconde moitié — le joueur reconnaît-il l'ordre de l'arbre — est une question de playtest.
 
 ---
 
@@ -433,15 +434,18 @@ Suivi : [#25](https://github.com/DavidGiangiacomo/langue-morte/issues/25) — le
 
 Suivi : [#26](https://github.com/DavidGiangiacomo/langue-morte/issues/26) — les récits ouverts y sont des sous-issues.
 
-**FIN-1 — Achever** · T:M · [#42](https://github.com/DavidGiangiacomo/langue-morte/issues/42)
+**FIN-1 — Achever** · ~~T:M~~ **fait** (19/10/2026, branche de travail empilée sur `eleve`) · [#42](https://github.com/DavidGiangiacomo/langue-morte/issues/42)
 > En tant que joueur, je veux lire le dernier signe et voir l'interface disparaître.
 
 - Fini quand : le corpus passe à 100 % ; l'écran se vide progressivement (compteurs, instruments, lexique), il ne reste que le texte, entièrement en français ; puis le texte s'efface.
+- *Fait*, avec FIN-2 : le dernier signe de l'arbre ouvre une fenêtre à deux boutons, au lexique comme à la grille, et seulement quand on peut le payer. Achever : l'effacement attend qu'on ait lu la tablette du dernier signe (règle 16), l'interface s'en va pièce à pièce, le texte glisse au milieu, reste seul, et s'efface ; il ne reste que « recommencer ». La carte de statistiques est retirée. Voir la règle 26 de `CLAUDE.md` et `docs/journal.md`, « Les deux fins ».
+- **« Le corpus passe à 100 % » n'est pas tenu, et c'est voulu** : les noms propres ne se déchiffrent jamais, et un composé secret jamais trouvé reste en signes. L'effacement montre le corpus tel qu'il a été lu ; le rendre entier est le travail de FIN-3.
 
-**FIN-2 — Interrompre** · T:S · [#43](https://github.com/DavidGiangiacomo/langue-morte/issues/43)
+**FIN-2 — Interrompre** · ~~T:S~~ **fait** (19/10/2026, avec FIN-1) · [#43](https://github.com/DavidGiangiacomo/langue-morte/issues/43)
 > En tant que joueur, je veux pouvoir laisser un signe non lu.
 
 - Fini quand : le jeu se ferme sur le corpus figé et **ne propose pas de reprendre** ; aucune des deux fins n'est présentée comme la bonne ; aucun score.
+- *Fait* : l'interface s'en va, le corpus reste figé et ne s'efface pas, et la partie ne se reprend jamais, pas même au chargement. Les deux boutons portent le même habit, dans un ordre tiré au sort, et interrompre ne s'offre qu'à qui pourrait achever — sans quoi il serait un repli. **La première migration de sauvegarde** est écrite pour lui (version 2).
 
 **FIN-3 — La relecture** · T:M · [#46](https://github.com/DavidGiangiacomo/langue-morte/issues/46)
 > En tant que joueur qui a achevé, je veux relire le corpus en sachant tout, y compris ce que j'ai raté.
@@ -571,7 +575,9 @@ Suivi : [#29](https://github.com/DavidGiangiacomo/langue-morte/issues/29) — le
   qu'ajouter des champs, que `fresh()` donne déjà aux parties qui ne les ont pas — c'est la
   mesure, pas un oubli. La première qu'on voit venir est celle de **FIN-2**, qui devra
   distinguer une partie interrompue (`nArbre() < NGL` par définition) d'une partie que l'arbre
-  a dépassée.
+  a dépassée. *Écrite le 19/10/2026* : la règle de réouverture lit `S_.fin`, et une partie
+  finie avant les deux fins est achevée (version 2). Il n'a pas fallu écrire la taille de
+  l'arbre à l'arrêt : c'est le choix qui distingue les deux parties, pas leur taille.
 - **Trouvé en le faisant** : la liste des instruments était recopiée à la main dans le
   chargement, donc tout instrument neuf s'écrivait à deux endroits — l'Élève
   ([#56](https://github.com/DavidGiangiacomo/langue-morte/pull/56)) a dû l'écrire aux deux.
@@ -614,6 +620,10 @@ Suivi : [#29](https://github.com/DavidGiangiacomo/langue-morte/issues/29) — le
   *12/10/2026* : une de plus — la carte de fin ouverte ne contient ni « crue », ni
   « question », ni « doute », ni « contradiction », ni « deuxième personne ». Elle échoue
   sur la carte d'avant, qui soufflait la question de PT8 au joueur qu'on allait interroger.
+  *19/10/2026* : la section 6 est réécrite pour les deux fins (FIN-1, FIN-2) — la fenêtre au
+  lexique et à la grille, l'attente de lecture, ce qui reste à l'écran (« recommencer » et pas un
+  chiffre), la partie interrompue qui ne reprend pas au chargement — et la section 27 vérifie la
+  première migration écrite : 395 assertions.
   *19/10/2026* : dix de plus sur la sauvegarde (LIV-3) — une partie de l'ancienne clé
   déménage numérotée et **sans perdre sa nuit**, chaque instrument qu'elle ne connaissait pas
   arrive à zéro **sans que le test les nomme**, la version se compte sur une migration posée

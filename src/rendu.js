@@ -786,6 +786,118 @@ function ambChoisir(i){
   if(mode === 'revision') reviser(id, lect); else acheterGl(id, lect);
 }
 
+/* ==================== les deux fins (FIN-1, FIN-2) ====================
+   « Un dernier signe reste à l'écran. Deux boutons » (design doc §11) : le lire, ou le laisser
+   non lu. La fenêtre s'ouvre quand on va prendre le dernier signe de l'arbre, au lexique ou à
+   la grille, et seulement quand on peut le payer : interrompre n'est pas le repli de celui
+   qui ne peut pas achever, c'est un refus. C'est ce qui permet qu'aucune des deux ne soit
+   présentée comme la bonne — et, pour la même raison, elles portent le même habit, et leur
+   ordre est tiré au sort comme celui des deux lectures : la place de gauche se lit comme le
+   choix par défaut.
+   La fenêtre dit sa règle — la partie s'arrête dans les deux cas — et rien d'autre. Sans
+   elle, « le laisser non lu » se lirait comme « pas maintenant ».
+   `voie` : 'lexique', ou la paire posée à la grille, que `achever` repose pour payer. */
+let finsId = null, finsVoie = null;
+function finsOuvrir(id, voie){
+  if(S_.done || !estDernier(id) || S_.C < byId[id].cost) return;
+  finsId = id; finsVoie = voie || 'lexique';
+  setHTML($('fins-sig'), sv(id));
+  setHTML($('fins-cost'), readC() ? big(byId[id].cost) : numGlyphs(byId[id].cost));
+  const c = $('fins-choix'), bs = [...c.children];
+  if(Math.random() < 0.5) c.append(...bs.reverse());
+  $('fins').hidden = false;
+}
+function finsFermer(){ finsId = null; finsVoie = null; $('fins').hidden = true; }
+function finsChoisir(k){
+  if(finsId === null) return;
+  const id = finsId, voie = finsVoie;
+  finsFermer();
+  if(k === 'interrompre'){ interrompre(id); return; }
+  /* Achever, c'est acheter comme on achète : par la grille si c'est elle qui l'a trouvé — la
+     tentative se compte alors —, et sinon par le chemin du lexique, qui ouvre les deux
+     lectures si le signe en porte deux et qu'aucun Élève ne l'a lu avant. */
+  if(Array.isArray(voie)) composer(voie[0], voie[1], true);
+  else if(!AMB[id]) acheterGl(id);
+  else if(elvTranche()) acheterGl(id, elvLecture(), true);
+  else ambOuvrir(id);
+}
+
+/* ---- ce qui reste à l'écran ----
+   Achever : « l'écran se vide progressivement de son interface : plus de compteurs, plus
+   d'instruments, juste le texte, entièrement en français. Puis le texte s'efface aussi. »
+   Interrompre : « le jeu se ferme sur le corpus figé ». Les deux vident l'interface ; seule
+   la première emporte le texte. Ce qui reste ensuite est un seul bouton, « recommencer » —
+   et « relire » quand FIN-3 existera. Plus de carte de statistiques : « signes déchiffrés
+   87 % » était un score, et le design doc n'en veut aucun. Le journal d'actions les garde
+   pour l'auteur ; le joueur n'en a pas besoin pour savoir ce qu'il a lu.
+   La barre hors jeu reste, elle : le journal d'actions doit pouvoir partir après la fin, et
+   c'est au moment précis où la partie est finie qu'on l'exporte (PT5).
+   Les durées sont des secondes d'horloge — le jeu est arrêté — et des choix de mise en scène,
+   pas des réglages mesurés : le journal d'actions date le début de l'effacement (« fin »),
+   et c'est au playtest de dire si quarante secondes de texte seul sont trop ou trop peu. */
+const FIN_EFF = { interface: 14, lecture: 40, texte: 24 };
+const FIN_FONDU = 2.4;        // la durée d'un fondu, en secondes : le reste n'est que délais
+let finMinuteur = null, finCentreMin = null;
+/* L'interface, dans l'ordre où elle s'en va : les compteurs d'abord, les instruments, les
+   panneaux, le lexique, puis ce qui entoure le corpus, puis le titre. Le corpus et la barre
+   hors jeu n'y sont pas. */
+const finInterface = () => [
+  $('vl-O').closest('.panel'), $('a-hyp').closest('.panel'), $('instr').closest('.panel'),
+  $('pdoute'), $('pcomp'), $('pquest'), $('lex').closest('.panel'),
+  ...elCorpus.parentElement.querySelectorAll('.phead, .meter, .rail, .log'),
+  ...document.querySelectorAll('.masthead h1, .masthead .sub'),
+];
+/* `sec` : sans fondu, pour une partie terminée qu'on rouvre — la fin a déjà eu lieu. */
+function finVider(sec){
+  tipCacher(); ambFermer(); finsFermer(); recArmer(false);
+  const els = finInterface(), d = i => (sec ? 0 : i * FIN_EFF.interface / els.length) + 's';
+  els.forEach((el, i) => { el.classList.add('fin-x'); el.style.setProperty('--fin-d', d(i)); });
+  /* Le filet sous le titre et le fond du panneau du corpus partent avec le dernier élément :
+     à la fin, le texte ne doit plus être dans un cadre. */
+  for(const el of [document.querySelector('.masthead'), elCorpus.parentElement]){
+    el.classList.add('fin-cadre'); el.style.setProperty('--fin-d', d(els.length - 1)); }
+  document.body.style.setProperty('--fin-t', FIN_EFF.texte + 's');
+  document.body.classList.toggle('fin-sec', !!sec);
+  document.body.classList.add('fin');
+  /* L'interface partie, le texte glisse au milieu de la page : laissé dans sa colonne, il se
+     lisait comme un panneau oublié à gauche d'un écran vide. Un glissement et non une
+     nouvelle mise en page — le texte ne doit pas sauter sous les yeux de qui le lit. */
+  clearTimeout(finCentreMin);
+  finCentreMin = setTimeout(() => {
+    const w = elCorpus.parentElement, r = w.getBoundingClientRect();
+    w.style.transform = 'translateX(' + Math.round((innerWidth - r.width) / 2 - r.left) + 'px)';
+  }, sec ? 0 : (FIN_EFF.interface + FIN_FONDU) * 1000);
+}
+function finEffacer(){
+  finVider(false);
+  clearTimeout(finMinuteur);
+  finMinuteur = setTimeout(() => {
+    document.body.classList.add('fin-texte');
+    finMinuteur = setTimeout(() => { S_.efface = true; $('apres').hidden = false; },
+                             (FIN_EFF.texte + FIN_FONDU) * 1000);
+  }, (FIN_EFF.interface + FIN_FONDU + FIN_EFF.lecture) * 1000);
+}
+function finFiger(sec){
+  finVider(sec);
+  clearTimeout(finMinuteur);
+  finMinuteur = setTimeout(() => { $('apres').hidden = false; },
+                           sec ? 0 : (FIN_EFF.interface + FIN_FONDU) * 1000);
+}
+/* Au chargement d'une partie terminée. Une partie achevée dont l'effacement n'est pas allé à
+   son terme le reprend du début, sans attendre la tablette : on l'avait déjà lue. */
+function finPoser(){
+  if(S_.fin === 'interrompue') finFiger(true);
+  else if(S_.fin === 'achevee' && !S_.efface) finEffacer();
+  else if(S_.fin === 'achevee'){ finVider(true); document.body.classList.add('fin-texte'); $('apres').hidden = false; }
+}
+function finDefaire(){
+  clearTimeout(finMinuteur); clearTimeout(finCentreMin); finMinuteur = finCentreMin = null;
+  elCorpus.parentElement.style.transform = '';
+  document.querySelectorAll('.fin-x, .fin-cadre').forEach(el => el.classList.remove('fin-x', 'fin-cadre'));
+  document.body.classList.remove('fin', 'fin-texte', 'fin-sec');
+  $('apres').hidden = true; finsFermer();
+}
+
 /* ==================== le panneau du doute ====================
    Il n'existe pas avant `peut-être`, et c'est la moitié de ce que ce signe fait : jusque-là
    le lexique affiche chaque mot comme s'il avait été su. Chaque ligne porte ce qu'on a lu,
@@ -1070,12 +1182,12 @@ function pushLog(txt){
 /* ==================== recommencer ====================
    Était le corps de l'écouteur du bouton « réinitialiser ». Il en sort pour deux raisons :
    le bouton disparaît du build de playtest et de la version publique (LIV-2), alors que
-   « recommencer » de la carte de fin, lui, reste — il se déléguait à un bouton qui n'existe
-   plus. Et `traces.js` enveloppe des fonctions, pas des écouteurs anonymes.
+   « recommencer », qui reste seul à l'écran après les deux fins, est partout — il se
+   déléguait à un bouton qui n'existe plus. Et `traces.js` enveloppe des fonctions, pas des écouteurs anonymes.
    Ici plutôt que dans jeu.js parce que tout ce que ça remet à zéro est déclaré ici ou avant,
    et que traces.js se charge entre les deux. */
 function recommencer(){
-  S_=fresh(); LOGS.length=0; lastPct=-1; $('end').hidden=true;
+  S_=fresh(); LOGS.length=0; lastPct=-1; finDefaire();
   /* Sans ceci la table des signes de numération garde ceux de la partie précédente :
      on repart de zéro glyphe avec 229 nombres encore lisibles à l'écran. */
   majSignes(); touchees=new Set(); recArmer(false); concFermer(); compVider(); finDesarmer();

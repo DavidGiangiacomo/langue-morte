@@ -130,7 +130,8 @@ class Rejeu:
                  relev=0, vides=0, sans_tb=0, formuler=0,
                  recs=[], comps=[], concs=[], navs=[], revs=[], achats=[], etats=[],
                  couts_t=[], main_t=[], contr=None, contr_levee=None,
-                 finjeu=None, fin=None, gis_fichier=None, eleve={}, toi=None, questions=[])
+                 finjeu=None, fin=None, gis_fichier=None, eleve={}, toi=None, questions=[],
+                 fins=[], interrompu=None)
         prev_t = self.ev[0][0]
         for t, genre, det in self.ev:
             s['o_auto'] += self.obrut() * max(0.0, t - prev_t)
@@ -242,6 +243,13 @@ class Rejeu:
                 s['finjeu'] = t
             elif genre == 'fin':
                 s['fin'] = t
+            # Les deux fins (FIN-1, FIN-2) : chaque ouverture de la fenêtre, et le signe laissé
+            # quand on interrompt. Achever n'a pas de ligne à lui — c'est l'achat du dernier
+            # signe, suivi de « finjeu ».
+            elif genre == 'finsOuvrir':
+                s['fins'].append(t)
+            elif genre == 'interrompre':
+                s['interrompu'] = (t, det)
 
             elif genre == 'etat':
                 m = RE_ETAT.search(det)
@@ -288,7 +296,7 @@ def mmss(t):
 # touche ni les occurrences ni les multiplicateurs, il ne change que le rapport entre ces
 # secondes-là et celles de la montre. Le contrôle ci-dessous le trouverait donc parfaitement
 # cohérent — d'où l'avertissement en tête de rapport, qui ne se déduit d'aucun chiffre.
-INERTES = ('etat', 'tablette', 'concChoisir', 'fin', 'finjeu', 'vitesse')
+INERTES = ('etat', 'tablette', 'concChoisir', 'fin', 'finjeu', 'vitesse', 'finsOuvrir', 'interrompre')
 
 
 def controle(ev):
@@ -513,14 +521,24 @@ def rapport(ev, nom):
               % (len(s['questions']), 's' if len(s['questions']) > 1 else '',
                  n_rep, 's' if n_rep > 1 else '', n_sil, 's' if n_sil > 1 else ''))
 
-    if s['finjeu'] or s['fin']:
-        titre('la fin (FIN-1, règle 16)')
-        print('  arrêt de la partie %s · carte de fin %s'
-              % (mmss(s['finjeu']) if s['finjeu'] else '—', mmss(s['fin']) if s['fin'] else 'jamais vue'))
-        if s['finjeu'] and s['fin']:
-            print('  %.0f s entre les deux : le temps mis à rouvrir une tablette que le dernier'
-                  % (s['fin'] - s['finjeu']))
-            print('  signe venait de rendre lisible')
+    if s['finjeu'] or s['fin'] or s['fins']:
+        titre('la fin (FIN-1, FIN-2, règle 16)')
+        # La fenêtre des deux fins : combien de fois on l'a ouverte, et combien de temps entre la
+        # première et le choix. « Aucune n'est présentée comme la bonne » ne se mesure que là.
+        if s['fins']:
+            choix = s['finjeu'] or (s['interrompu'][0] if s['interrompu'] else None)
+            print('  fenêtre des deux fins ouverte %d fois, la première à %s%s'
+                  % (len(s['fins']), mmss(s['fins'][0]),
+                     ' · %.0f s avant de choisir' % (choix - s['fins'][0]) if choix else ' · rien de choisi'))
+        if s['interrompu']:
+            print('  INTERROMPUE à %s : %s' % (mmss(s['interrompu'][0]), s['interrompu'][1]))
+        else:
+            print('  arrêt de la partie %s · effacement %s'
+                  % (mmss(s['finjeu']) if s['finjeu'] else '—', mmss(s['fin']) if s['fin'] else 'jamais commencé'))
+            if s['finjeu'] and s['fin']:
+                print('  %.0f s entre les deux : le temps mis à rouvrir une tablette que le dernier'
+                      % (s['fin'] - s['finjeu']))
+                print('  signe venait de rendre lisible')
 
     titre('contrôle du modèle')
     ec = controle(ev)

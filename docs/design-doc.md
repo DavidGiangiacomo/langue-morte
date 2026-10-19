@@ -223,6 +223,8 @@ Un dernier signe reste à l'écran. Deux boutons :
 
 Aucune n'est présentée comme la bonne. Le jeu n'attribue pas de score.
 
+**Ce qui est posé** (19/10/2026, FIN-1 et FIN-2). Les deux boutons s'ouvrent sur le dernier signe de l'arbre qui manque, quel qu'il soit, au lexique comme à la grille, et seulement quand on peut le payer : interrompre est un refus, pas le repli de qui ne peut pas achever. Même habit, ordre tiré au sort, et la fenêtre dit que la partie s'arrête dans les deux cas. Après l'une ou l'autre il ne reste qu'un bouton, « recommencer » — plus de carte de statistiques, qui était un score. Le texte interrompu reste à l'écran ; le texte achevé s'efface. Et « entièrement en français » ne vaut que pour ce que le joueur a lu : les noms propres ne se déchiffrent jamais, et un composé secret jamais trouvé reste en signes — c'est à la relecture de tout rendre.
+
 **Relecture (NG+)** — après *Achever*, une option « relire » : le corpus est intégralement lisible dès le départ, et le jeu **surligne toutes les erreurs de traduction de la première partie**, y compris celles jamais détectées. Vingt minutes, sans mécanique. Ce n'est pas un prestige, c'est un épilogue. Coût de production quasi nul, valeur émotionnelle importante.
 
 ---

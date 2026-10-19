@@ -13,11 +13,15 @@ if(S_.gl.length){ paintCorpus(null); pushLog(logDe(S_.gl[S_.gl.length-1])); }
    Dit au retour, une seule fois, et seulement s'il s'est passé quelque chose. */
 const nuitPassee = veillee();
 if(nuitPassee > 0) pushLog('La nuit a passé. '+big(Math.round(nuitPassee))+' occurrences relevées sans moi.');
-if(S_.done) showEnd();
+/* Une partie terminée se rouvre terminée : le corpus figé, ou la page vide (FIN-1, FIN-2). */
+if(S_.fin) finPoser();
 
 /* Le relevé n'existe plus que là : dans le texte, sur un signe précis. Le bouton « Relever
    un signe » a disparu — il rapportait 0,6 % des occurrences de PT5 en 414 clics. */
 elCorpus.addEventListener('click', e=>{
+  /* La partie finie, le corpus se lit et ne se travaille plus : la production est arrêtée,
+     et un relevé n'aurait plus rien à rapporter. */
+  if(S_.done) return;
   const el = e.target.closest('.tok');
   if(!el || el.classList.contains('sep')) return;
   const tb = +el.closest('.tablet').dataset.tb, j = +el.dataset.j;
@@ -28,6 +32,8 @@ elCorpus.addEventListener('click', e=>{
   peindreGisement();          // la tablette vient peut-être de perdre sa marque d'intacte
 });
 elCorpus.addEventListener('mousemove', e=>{
+  /* L'infobulle est de l'interface : elle s'en va avec le reste. */
+  if(document.body.classList.contains('fin')){ tipCacher(); return; }
   const el = e.target.closest('.tok');
   if(!el || el.classList.contains('sep')){ tipCacher(); return; }
   const cle = (el.dataset.w!==undefined ? 'w'+el.dataset.w : 'n'+el.dataset.n) + ':' + el.__v;
@@ -43,10 +49,6 @@ elCorpus.addEventListener('scroll', tipCacher, {passive:true});
 $('rail').addEventListener('click', e=>{ const b=e.target.closest('[data-go]'); if(b) versTablette(+b.dataset.go); });
 $('rail').addEventListener('pointerover', e=>{ const b=e.target.closest('[data-go]');
   if(b) b.title = titreCell(+b.dataset.go); });
-/* La fin du prototype ne doit pas être un cul-de-sac : `tick` ne tourne plus une fois
-   `S_.done`, donc le corpus derrière est figé sur la partie terminée et se relit tel quel.
-   Recharger la page ramène la fenêtre. */
-const fermerFin = () => { $('end').hidden = true; };
 window.addEventListener('keydown', e=>{
   if(e.metaKey||e.ctrlKey||e.altKey) return;
   const k=e.key.toLowerCase();
@@ -54,9 +56,9 @@ window.addEventListener('keydown', e=>{
   else if(k==='k'){ e.preventDefault(); saut(-1); }
   /* La concordance a sa touche : c'est le geste qu'on refait le plus souvent une fois le
      corpus rangé, et il n'a pas à passer par la souris. */
-  else if(k==='c'){ e.preventDefault(); if(S_.b.con>0){ if(concSel||concArme||concToi) concFermer(); else concArmer(true); } }
+  else if(k==='c'){ e.preventDefault(); if(S_.b.con>0 && !S_.done){ if(concSel||concArme||concToi) concFermer(); else concArmer(true); } }
   else if(k==='escape'){ if(!$('amb').hidden) ambFermer();
-    else if(!$('end').hidden) fermerFin();
+    else if(!$('fins').hidden) finsFermer();
     else if(recArme) recArmer(false);
     else if(concArme || concSel || concToi) concFermer();
     else if(compSel[0] || compSel[1]) compVider();
@@ -69,6 +71,8 @@ $('instr').addEventListener('click', e=>{ const b=e.target.closest('[data-ins]')
 $('lex').addEventListener('click', e=>{ const b=e.target.closest('[data-gl]');
   if(!b||b.disabled) return;
   const id=b.dataset.gl;
+  /* Le dernier signe de l'arbre ne s'achète pas d'un clic : il ouvre les deux fins. */
+  if(estDernier(id)){ finsOuvrir(id); return; }
   /* ... sauf quand un Élève l'a lu avant : le clic paie, et la lecture est la sienne. */
   if(!AMB[id]) acheterGl(id);
   else if(elvTranche()) acheterGl(id, elvLecture(), true);
@@ -88,7 +92,13 @@ $('comp-choix').addEventListener('click', e=>{
 $('pcomp').addEventListener('click', e=>{
   const b=e.target.closest('[data-slot]'); if(b) compSel[+b.dataset.slot]=null; });
 $('a-comp').addEventListener('click', ()=>{
-  if(composer(compSel[0], compSel[1]) !== 'refus') compVider(); });
+  const a = compSel[0], b = compSel[1], r = composer(a, b);
+  if(r === 'fin') finsOuvrir(recetteDe(a, b), [a, b]);
+  if(r !== 'refus') compVider(); });
+$('fins-choix').addEventListener('click', e=>{
+  const b=e.target.closest('[data-fin]'); if(b) finsChoisir(b.dataset.fin); });
+$('fins-annuler').addEventListener('click', finsFermer);
+$('fins').addEventListener('click', e=>{ if(e.target===$('fins')) finsFermer(); });
 /* Les Questions (VOIX-3). Même gestes que la grille : poser, retirer, demander. Une réponse
    s'allume dans le corpus aussitôt ; une réponse déjà obtenue se rallume d'un clic. */
 $('q-choix').addEventListener('click', e=>{
@@ -128,11 +138,9 @@ document.querySelectorAll('[data-spd]').forEach(b=>b.addEventListener('click',()
 }));
 const bReset=$('reset');
 if(bReset) bReset.addEventListener('click', recommencer);
-/* « recommencer » appelle la fonction et non le bouton : la carte de fin existe dans tous
-   les builds, le bouton de la barre non. */
+/* « recommencer » appelle la fonction et non le bouton : il reste seul à l'écran après les
+   deux fins, dans tous les builds, et le bouton de la barre non. */
 $('again').addEventListener('click', recommencer);
-$('fermer').addEventListener('click', fermerFin);
-$('end').addEventListener('click', e=>{ if(e.target===$('end')) fermerFin(); });
 
 /* `ts` est l'heure de la dernière sauvegarde : c'est elle, et rien d'autre, qui mesure
    la nuit au retour. Écrite à chaque enregistrement, y compris à la fermeture.

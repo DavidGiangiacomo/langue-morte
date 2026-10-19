@@ -142,6 +142,90 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## Les deux fins — achever, interrompre
+
+*19/10/2026, FIN-1 + FIN-2, sur la branche empilée sur `eleve`.*
+
+Jusqu'ici une partie finissait sur une carte : « Fin du prototype », une citation, et cinq
+chiffres — temps de lecture, signes relevés, recoupements, lignes lues, signes déchiffrés. Le
+design doc §11 prévoit autre chose depuis le premier jour : « un dernier signe reste à l'écran.
+Deux boutons », aucun n'est présenté comme le bon, et « le jeu n'attribue pas de score ». Les
+cinq actes ont leurs signes depuis GRAINE-1 : la fin pouvait enfin être la leur.
+
+Trois questions à l'auteur, trois réponses, celles que je recommandais.
+
+**Où se décide la fin.** À l'achat du dernier signe, et seulement quand on peut le payer. C'est
+la réponse qui tient « aucune n'est la bonne » : un second geste sur la carte du lexique, qui
+marche sans les 9 999 C, aurait fait d'interrompre l'option bon marché, celle de qui ne peut pas
+encore achever. Ici les deux demandent le même état, et interrompre est un refus. Le reste en
+découle : même habit pour les deux boutons, ordre tiré au sort à chaque ouverture comme celui
+des deux lectures — la place de gauche se lit comme le choix par défaut —, et la fenêtre écrit
+sa règle, « lu ou non, la partie s'arrête là ». Sans cette phrase, « le laisser non lu » se lit
+« pas maintenant », et le joueur qui interrompt croit remettre à plus tard.
+
+**Ce qui reste.** Rien qu'un bouton, « recommencer ». La carte de statistiques est retirée :
+« signes déchiffrés 87 % » est un score, quelle que soit la façon de le présenter. Le journal
+d'actions garde tous ces chiffres pour l'auteur. Achever vide l'interface pièce à pièce —
+compteurs, instruments, panneaux, lexique, cadre du corpus, titre —, puis le texte glisse au
+milieu de la page, reste seul quarante secondes et s'efface. Interrompre vide l'interface de la
+même façon, et laisse le corpus figé, qui ne s'efface pas : le texte interrompu reste, le texte
+achevé s'en va. L'asymétrie n'était pas demandée ; elle tombe de la lettre du §11, et elle dit
+quelque chose.
+
+**Sur quel signe.** Le dernier qui manque, quel qu'il soit, au lexique comme à la grille. Qui a
+composé ⟨devenir-lecture⟩ tôt finit sur un autre mot : il a grillé la révélation, comme la règle
+25 le voulait déjà. L'autre réponse — tenir ⟨devenir-lecture⟩ jusqu'au bout — revenait sur une
+décision prise le matin même.
+
+### Ce que le lot a trouvé en chemin
+
+**La première migration de sauvegarde.** LIV-3 l'annonçait : une partie interrompue a un signe de
+moins que l'arbre par définition, et la règle qui rouvre une partie que l'arbre a dépassée l'aurait
+fait reprendre. La règle lit désormais `S_.fin` — une partie interrompue ne rouvre jamais, une
+partie achevée rouvre si l'arbre a grandi sous elle. Mais `fin` vaut `null` dans `fresh()`, ce qui
+veut dire « elle court », et c'est faux pour toute partie finie avant ce lot. Un champ ajouté dont
+la valeur neuve ment sur les parties d'avant n'est pas un ajout : c'est la frontière que la
+règle 22 traçait sans exemple, et la migration 1 → 2 la franchit. Une partie `done` d'avant est
+achevée, il n'y avait pas d'autre façon de finir, et son effacement a eu lieu — elle avait vu sa
+carte. La taille de l'arbre au moment de l'arrêt, que LIV-3 croyait devoir écrire, n'est pas
+nécessaire : ce qui distingue une partie interrompue d'une partie dépassée, c'est son choix, pas
+sa taille.
+
+**Le texte ne restait pas au milieu.** Une fois l'interface partie, le corpus restait dans sa
+colonne de gauche, devant un écran vide : on aurait dit un panneau oublié. Il glisse donc au
+milieu, sur trois secondes, au lieu de changer de mise en page — un texte ne doit pas sauter
+sous les yeux de qui le lit.
+
+**Une partie interrompue doit le rester pendant qu'elle s'efface.** L'interface met quatorze
+secondes à partir, et pendant ce temps la carte du signe laissé et la grille restent sous la
+main : un clic de plus, et la partie interrompue devenait achevée. La garde est sur le seul
+chemin qui paie, `acheterGl`, et non dans les boutons, et un test essaie les trois portes.
+
+**La barre hors jeu reste.** C'est à la fin qu'on exporte le journal d'actions : PT5 avait déjà
+trouvé la carte posée par-dessus le bouton « copier ». Un test vérifie qu'il reste cliquable
+pendant et après l'effacement.
+
+**Les durées ne sont pas des mesures.** Quatorze secondes pour vider l'interface, quarante de
+texte seul, vingt-quatre pour l'effacer (`FIN_EFF`, `rendu.js`). Ce sont des choix de mise en
+scène, le jeu est arrêté et aucune économie n'en dépend. Le journal d'actions date le début de
+l'effacement ; c'est au playtest de dire si quarante secondes sont lues.
+
+### Ce qui n'est pas fait
+
+**« Juste le texte, entièrement en français » ne vaut que pour ce que le joueur a lu.** Les noms
+propres ne se déchiffrent jamais, et un composé secret jamais trouvé — ⟨grenier⟩, le zéro —
+reste en signes. L'effacement montre le corpus tel qu'il a été lu, avec ses lectures fausses ; le
+corriger serait le travail de la relecture, FIN-3, qui s'ouvre sur demande et qui seule peut
+avouer ce qu'on a raté. Le bouton « relire » viendra s'asseoir à côté de « recommencer ».
+
+Mesuré : économie inchangée (`sim.py` 133,5–136,9 min, rien n'y touche) ; `outils/verifier.py`
+passe de 376 à **395 assertions**, dont la fenêtre au lexique et à la grille, l'attente de
+lecture, ce qui reste à l'écran — « recommencer » et pas un chiffre —, la partie interrompue qui
+ne reprend pas au chargement, et la migration. Pour le playtest : **achève-t-on ou
+interrompt-on, combien de fois ouvre-t-on la fenêtre avant de choisir** — `depouiller.py` le
+compte, avec le temps entre la première ouverture et le choix —, **et lit-on les quarante
+secondes de texte seul ?**
+
 ## La Fin — lire la fin dans leur langue
 
 *19/10/2026, GRAINE-1, avec la moitié d'AMB-4 et de COMP-4 qui l'attendaient. Sur la branche de

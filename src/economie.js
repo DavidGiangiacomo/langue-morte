@@ -18,7 +18,7 @@ const KEY='langue-morte-partie';
 const CLES_ANCIENNES = ['langue-morte-actes-i-iii'];
 const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram:0,elv:0},gl:[],t:0,done:false,
   rel:{}, prix:{}, carnet:[], comp:0, lect:{}, dte:{}, conc:{}, recs:{}, rev:0, contr:0,
-  qn:0, qf:0, qa:[]});
+  qn:0, qf:0, qa:[], fin:null, efface:false});
 /* rel : jetons relevés par tablette · prix : tarif du gisement, verrouillé
    carnet : les paires déjà tentées et fausses · comp : le nombre de tentatives, toutes issues
    confondues — c'est lui que PT10 doit lire, pas la seule liste des échecs.
@@ -32,6 +32,9 @@ const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram
    accumulé vers la suivante · qa : les conditions déjà posées, dans l'ordre (VOIX-3). Les
    questions en main ne se stockent pas : elles se déduisent des deux premiers
    (`questionsEnMain()`).
+   fin : comment la partie s'est terminée, 'achevee' ou 'interrompue' (FIN-1, FIN-2) — null
+   tant qu'elle court · efface : l'effacement d'une partie achevée est allé à son terme, et
+   il n'y a plus que la page vide à rouvrir.
    Une partie d'avant la composition, ou d'avant l'ambiguïté, les reçoit vides au chargement
    (`fusionner()`) : un champ ajouté ne demande ni nouvelle clé ni migration. */
 let S_ = fresh(), speed = 1;
@@ -54,12 +57,21 @@ function vitesse(n){ speed = n; }
 
    **Un champ AJOUTÉ n'en demande pas**, et c'est le cas de chaque lot depuis l'acte III :
    `fresh()` le donne à toute partie qui ne l'a pas. En demandent une : un champ qui change de
-   sens, de nom ou de forme, et un signe qui quitte le lexique ou change d'identifiant. La
-   première qu'on voit venir est celle de FIN-2 (voir `S_.done`, plus bas).
+   sens, de nom ou de forme, et un signe qui quitte le lexique ou change d'identifiant.
 
-   Version 1 : tout ce qui s'écrit depuis l'acte III. Les sauvegardes d'avant ce lot n'ont pas
-   de numéro ; elles sont en version 1, il ne leur manque que le chiffre. */
-const MIGRATIONS = [];
+   Version 1 : tout ce qui s'écrit depuis l'acte III. Les sauvegardes d'avant LIV-3 n'ont pas
+   de numéro ; elles sont en version 1, il ne leur manque que le chiffre.
+   Version 2 : les deux fins (FIN-1, FIN-2). */
+const MIGRATIONS = [
+  /* 1 → 2. `fin` est un champ ajouté, mais sa valeur neuve est fausse pour une partie déjà
+     finie : `fresh()` dirait « elle court encore », et c'est pour ça qu'il faut une migration
+     et non un défaut. Avant ce lot il n'y avait qu'une façon de finir — le dernier signe de
+     l'arbre, puis la carte de statistiques —, donc une partie `done` est une partie ACHEVÉE,
+     et ce qui en tenait lieu d'effacement a eu lieu. Sans ce champ, la règle qui rouvre une
+     partie que l'arbre a dépassée (`S_.done`, plus bas) rouvrirait aussi une partie
+     interrompue, qui a un signe de moins par définition. */
+  p => { if(p.done){ p.fin = 'achevee'; p.efface = true; } },
+];
 const versionSauvegarde = () => MIGRATIONS.length + 1;
 /* Vrai quand la clé porte une sauvegarde que ce jeu ne sait pas lire : il ne la charge pas,
    et rien ici ne l'écrit ni ne l'efface (`sauver`, `recommencer`). On joue alors une partie
@@ -126,17 +138,18 @@ const has = id => S_.gl.indexOf(id)>=0;
    Ce que le joueur COMPREND se mesure ailleurs, dans le corpus : `mesures()`, qui compte bien
    le grenier parce que c'est justement ce qu'il a gagné. */
 const nArbre = () => { let n=0; for(const id of S_.gl){ const g=byId[id]; if(!g||!g.sec) n++; } return n; };
-/* Une partie finie quand l'arbre comptait moins de signes n'est plus finie : l'arbre a
-   grandi sous elle. Sans ça elle rouvrirait sur l'écran de fin, `tick` arrêté, sans moyen
-   de continuer — le cas exact qui a déjà coûté un changement de `KEY` et toutes les
-   parties en cours. Chaque lot de glyphes le reproduirait.
+/* Une partie ACHEVÉE quand l'arbre comptait moins de signes n'est plus finie : l'arbre a
+   grandi sous elle. Sans ça elle rouvrirait sur la page vide, `tick` arrêté, sans moyen de
+   continuer — le cas exact qui a déjà coûté un changement de `KEY` et toutes les parties en
+   cours. Chaque lot de glyphes le reproduirait.
    Ce n'est pas une migration : l'arbre grandit sans que le format bouge, donc ceci passe à
-   chaque chargement, quelle que soit la version. Mais **FIN-2 devra le reprendre** : une
-   partie interrompue laisse un signe non lu, `nArbre()` y est inférieur à `NGL` par
-   définition, et elle ne doit pas reprendre (design doc §11). Il faudra savoir à quelle
-   taille d'arbre la partie s'est arrêtée, donc l'écrire — et l'écrire, pour les parties
-   déjà finies, sera une migration. */
-if(S_.done && nArbre() < NGL) S_.done = false;
+   chaque chargement, quelle que soit la version.
+   Une partie INTERROMPUE ne rouvre jamais (design doc §11 : le jeu « ne propose pas de
+   reprendre »). Elle a un signe non lu par définition, et c'est ce qui la distingue d'une
+   partie dont l'arbre a grandi — non sa taille, que la règle n'a donc pas besoin de
+   connaître : c'est `fin` qui le dit, et la migration 1 → 2 qui l'écrit pour les parties
+   finies avant les deux fins. */
+if(S_.done && S_.fin !== 'interrompue' && nArbre() < NGL){ S_.done = false; S_.fin = null; S_.efface = false; }
 
 /* ======================== la lecture retenue ========================
    `S_.lect` retient, pour chacun des signes ambigus acquis, laquelle des deux lectures le
@@ -664,13 +677,17 @@ const compOuvre = () => has('nur');   // même porte que la Grammaire : l'acte I
 const auCarnet  = (a,b) => S_.carnet.indexOf(a+'+'+b) >= 0;
 
 /* Rend ce qui s'est passé — 'acquis', 'rate', ou 'refus' quand rien n'a bougé. Le corpus,
-   le journal et la peinture sont l'affaire d'`acheterGl`, qui les fait déjà tous. */
-function composer(a, b){
+   le journal et la peinture sont l'affaire d'`acheterGl`, qui les fait déjà tous.
+   'fin' quand la paire est juste, payable, et donne le dernier signe de l'arbre : rien ne
+   bouge encore, c'est la fenêtre des deux fins qui décide, et `achever` rappelle ici pour
+   payer. Ça ne renseigne pas plus qu'une réussite, qui l'aurait dit aussi (règle 14). */
+function composer(a, b, achever){
   if(!compOuvre() || !has(a) || !has(b) || auCarnet(a, b)) return 'refus';
   const cible = recetteDe(a, b);
   if(cible && has(cible)) return 'refus';        // déjà lu : il n'y a plus rien à trouver
   const c = compCost();
   if(S_.H < c) return 'refus';                   // pas de quoi engager la tentative
+  if(cible && !achever && estDernier(cible) && S_.C >= byId[cible].cost) return 'fin';
   S_.comp++;
   if(cible && S_.C >= byId[cible].cost){
     acheterGl(cible);                            // le coût est en Certitude, et lui seul
@@ -797,6 +814,11 @@ function ouvertsParReponse(){
      la partie (règle 16), et c'est ⟨devenir-lecture⟩ (GRAINE-1). */
 const offert = g => (!g.rep || ouvertsParReponse().has(g.id))
                  && (!g.dernier || nArbre() === NGL - 1);
+/* Ce signe est-il le dernier de l'arbre qui reste à lire ? Celui-là ne s'achète pas d'un clic,
+   ni ne se pose d'un geste : il ouvre les deux fins (FIN-1, FIN-2), au lexique comme à la
+   grille. Le dernier, quel qu'il soit — qui a composé ⟨devenir-lecture⟩ tôt finit sur un autre
+   mot, il a grillé la révélation (règle 25). */
+const estDernier = id => !!byId[id] && !byId[id].sec && !has(id) && nArbre() === NGL - 1;
 
 /* `signes` : les signes posés après ⟨si⟩, dans l'ordre. Rend 'reponse', 'silence', ou
    'refus' quand rien n'a bougé. Une condition déjà posée ne se repose pas : sa réponse est
@@ -825,7 +847,10 @@ const franchit = id => {
    aucun choix et ne doit surtout pas en offrir un — et de tout appel d'avant ce lot.
    `eleve` dit que la lecture vient d'un Élève et non du joueur (ELV-2). */
 function acheterGl(id, lect, eleve){
-  const g=byId[id]; if(has(id)||S_.C<g.cost) return;
+  /* Une partie interrompue ne se reprend pas (FIN-2) — et c'est ici que ça se tient, sur le
+     seul chemin qui paie, parce que l'interface met quatorze secondes à s'en aller et que la
+     carte du signe laissé, ou la grille, restent sous la main pendant ce temps. */
+  const g=byId[id]; if(has(id)||S_.C<g.cost||S_.fin==='interrompue') return;
   const avant = CORPUS.map(pctTablette);
   S_.C-=g.cost; S_.gl.push(id);
   /* La dette est posée ici et nulle part ailleurs, à l'instant du choix, et personne ne la
@@ -856,65 +881,56 @@ function acheterGl(id, lect, eleve){
   if(id === 'ta') adresser();
   lastPct=-1;
   if(id==='an'||id==='kal'){ const b=$('bloom'); b.classList.remove('on'); void b.offsetWidth; b.classList.add('on'); }
-  if(nArbre()===NGL){ S_.done=true; finArmer(); }
+  /* Le dernier signe de l'arbre est lu : c'est « achever » (FIN-1). La fenêtre des deux fins
+     est devant, au lexique et à la grille ; `acheterGl` reste le seul chemin qui paie. */
+  if(nArbre()===NGL){ S_.done=true; S_.fin='achevee'; finArmer(); }
+}
+/* « Interrompre » (FIN-2) : laisser le dernier signe non lu. La partie s'arrête là, sur le
+   corpus tel qu'il est, et ne se reprend pas — ni maintenant, ni au chargement. Aucune des
+   deux fins n'est la bonne : celle-ci ne coûte rien, mais elle ne s'offre qu'à qui pourrait
+   payer l'autre, sans quoi elle serait le repli de celui qui ne peut pas. `id` est le signe
+   laissé, que le journal d'actions retient. */
+function interrompre(id){
+  if(S_.done || !estDernier(id) || S_.C < byId[id].cost) return;
+  S_.done = true; S_.fin = 'interrompue';
+  finDesarmer(); finFiger(false);
 }
 
-/* ---- la carte de fin attend qu'on ait lu ----
-   Le dernier achat de l'arbre est aussi celui qui rend lisible ce que l'acte avait à dire :
-   `les-lecteurs` n'ouvre rien d'autre que la tablette 18. Poser la carte de fin par-dessus à
-   la seconde du clic, c'est couvrir cette tablette-là d'un écran de statistiques avant qu'on
-   l'ait regardée — et la question de playtest que la carte porte s'y répondrait toute seule.
-   Elle attend donc qu'on soit allé voir. Rien de neuf pour ça : `touchees` sait déjà quelles
-   tablettes le dernier signe a changées, `tabletteVisible()` sait laquelle on a sous les
-   yeux, et la carte vient quand les deux se rencontrent.
-   Les deux bornes sont des garde-fous, pas des réglages. Six secondes au plus tôt, sinon
-   elle tomberait sur le joueur déjà posé sur la bonne tablette, à l'instant où les mots
-   changent sous ses yeux ; quatre-vingt-dix au plus tard, sinon celui qui ne va pas voir
-   n'aurait pas de fin du tout.
+/* ---- l'effacement attend qu'on ait lu ----
+   Le dernier achat de l'arbre est aussi celui qui rend lisible ce que la partie avait à dire :
+   ⟨devenir-lecture⟩ n'a qu'une attestation, sur la tablette 27. Commencer à effacer l'écran à
+   la seconde du clic, c'est retirer cette tablette-là avant qu'on l'ait regardée. C'était
+   déjà vrai de la carte de statistiques qui tenait lieu de fin jusqu'aux deux fins ; ce l'est
+   davantage d'un effacement qui emporte le texte. Il attend donc qu'on soit allé voir. Rien
+   de neuf pour ça : `touchees` sait déjà quelles tablettes le dernier signe a changées,
+   `tabletteVisible()` sait laquelle on a sous les yeux, et l'effacement commence quand les
+   deux se rencontrent.
+   Les deux bornes sont des garde-fous, pas des réglages. Six secondes au plus tôt, sinon il
+   tomberait sur le joueur déjà posé sur la bonne tablette, à l'instant où les mots changent
+   sous ses yeux ; quatre-vingt-dix au plus tard, sinon celui qui ne va pas voir n'aurait pas
+   de fin du tout.
    `S_.done` est posé tout de suite, lui : la production s'arrête net pendant qu'on lit la
-   dernière tablette. Ce n'est pas un défaut d'ordre, c'est FIN-1 en avance — à la fin, il ne
-   doit rester que le texte (design doc §11). */
+   dernière tablette. À la fin, il ne reste que le texte (design doc §11). */
 const FIN_MIN = 6, FIN_MAX = 90;   // secondes d'horloge, et non de jeu : le jeu est arrêté
 let finArmee = 0, finLire = null;
-/* Les tablettes sont retenues à l'armement, et non relues à l'affichage : rien n'interdit de
-   composer un signe une fois l'arbre fini, et `touchees` désignerait alors les tablettes de
-   ce composé-là, pas celles du dernier signe de l'acte. */
+/* Les tablettes sont retenues à l'armement, et non relues au moment d'effacer : rien
+   n'interdit de composer un signe une fois l'arbre fini, et `touchees` désignerait alors les
+   tablettes de ce composé-là, pas celles du dernier signe de l'arbre. */
 const finArmer = () => { finArmee = performance.now(); finLire = new Set(touchees); };
-/* « réinitialiser » ne recharge pas la page : une carte armée sur la partie d'avant viendrait
-   s'ouvrir sur la partie neuve, deux secondes après le clic. C'est le défaut qu'avait déjà
+/* « recommencer » ne recharge pas la page : un effacement armé sur la partie d'avant
+   viendrait vider la partie neuve, deux secondes après le clic. C'est le défaut qu'avait déjà
    `majSignes()` — 229 nombres encore lisibles sur une partie censée vierge. */
 const finDesarmer = () => { finArmee = 0; };
 function finRegarder(now){
-  if(!finArmee || !$('end').hidden) return;
+  if(!finArmee) return;
   const dt = (now - finArmee)/1000;
   if(dt < FIN_MIN) return;
-  /* Un dernier signe qui ne rendrait rien lisible n'aurait rien à faire lire : la carte ne
-     se ferait pas attendre pour rien. Vrai d'aucun signe aujourd'hui ; vrai du jour où
+  /* Un dernier signe qui ne rendrait rien lisible n'aurait rien à faire lire : l'effacement
+     ne se ferait pas attendre pour rien. Vrai d'aucun signe aujourd'hui ; vrai du jour où
      l'ordre de l'arbre changera. */
   const vue = tabletteVisible();
   if(finLire.size && dt < FIN_MAX && !(vue && finLire.has(+vue.dataset.tb))) return;
-  finArmee = 0; showEnd();
-}
-
-function showEnd(){
-  const m=Math.floor(S_.t/60), s=Math.floor(S_.t%60);
-  /* La citation de la carte est la ligne de journal du dernier signe de la branche Temps.
-     Elle suit donc la lecture retenue : afficher « la dernière année » à qui a lu ⟨année⟩
-     « soleil », c'est le jeu qui se dédit sur son propre écran de fin. */
-  if(has('nurhal')) $('endquote').textContent = logDe('nurhal');
-  const lignes=[
-    ['temps de lecture', m+' min '+String(s).padStart(2,'0')],
-    ['signes relevés à la main', nf.format(S_.clicks)],
-    ['recoupements', nf.format(S_.rec)],
-    ['lignes entièrement lues', mesures().lig+' %'],
-    ['signes déchiffrés', mesures().sig+' %']
-  ];
-  /* Les compositions ne se comptent que si on en a tenté. Un joueur qui n'a jamais ouvert la
-     grille ne doit pas apprendre à l'écran de fin qu'il y avait quelque chose à y trouver :
-     c'est le journal d'actions qui le dira à l'auteur, pas la carte au joueur. */
-  if(S_.comp > 0) lignes.push(['signes posés l’un sur l’autre', nf.format(S_.comp)]);
-  $('endstats').innerHTML=lignes.map(([k,v])=>'<div>'+k+' <b>'+v+'</b></div>').join('');
-  $('end').hidden=false;
+  finArmee = 0; finEffacer();
 }
 
 /* ============================ boucle ============================ */

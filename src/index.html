@@ -160,24 +160,25 @@
     <button class="ghost" id="amb-annuler" title="échap — le signe reste à acheter">revenir au corpus</button>
   </div>
 </div>
-<!-- La carte de fin ne nomme rien de ce qu'il y avait à voir. Elle a porté jusqu'en PT10
-     « la seule question qui compte », celle de PT8 et PT9, et annonçait pour les actes IV
-     et V le doute et les contradictions : un joueur de PT11 aurait lu la réponse avant
-     l'entretien dont la question 5 est faite pour la laisser remonter sans la nommer, et
-     l'annonce démentait ce qu'il venait de jouer. Les questions sont au protocole, pas à
-     l'écran ; et rien ici n'annonce ce que les actes suivants révèlent. -->
-<div class="end" id="end" hidden>
-  <div class="endcard">
-    <h2>Fin du prototype</h2>
-    <div class="k">actes I à V · <span class="ngl"></span> glyphes sur 45</div>
-    <p class="quote" id="endquote">La dernière année. Elle n'a pas de nombre : après elle, personne n'a plus compté.</p>
-    <p>Le prototype s'arrête ici.</p>
-    <div class="endstats" id="endstats"></div>
-    <div class="endacts">
-      <button class="go" id="again">recommencer</button>
-      <button class="ghost" id="fermer" title="échap — le corpus reste figé sur la partie terminée">revenir au corpus</button>
+<!-- Les deux fins (FIN-1, FIN-2). La fenêtre s'ouvre sur le dernier signe de l'arbre, quand
+     on peut le payer : le lire, ou le laisser non lu. Même habit pour les deux, ordre tiré au
+     sort — aucune n'est la bonne (design doc §11). Elle dit sa règle, et rien d'autre. -->
+<div class="amb" id="fins" hidden>
+  <div class="ambcard">
+    <div class="ambtete"><span class="ambsig" id="fins-sig"></span><span class="ambk">le dernier signe</span></div>
+    <div class="ambchoix finschoix" id="fins-choix">
+      <button data-fin="achever"><b>achever</b><span>le lire</span></button>
+      <button data-fin="interrompre"><b>interrompre</b><span>le laisser non lu</span></button>
     </div>
+    <div class="ambpied"><span>lu ou non, la partie s’arrête là</span><span id="fins-cost"></span></div>
+    <button class="ghost" id="fins-annuler" title="échap — le signe reste à lire">revenir au corpus</button>
   </div>
+</div>
+<!-- Ce qui reste après les deux fins : un bouton. Ni carte, ni statistiques, ni score — et
+     rien qui annonce ce que les actes suivants révèlent : un écran de fin est lu avant
+     l'entretien de playtest, il fait partie du protocole. -->
+<div class="apres" id="apres" hidden>
+  <button class="ghost" id="again">recommencer</button>
 </div>
 
 <script src="signes.js"></script>

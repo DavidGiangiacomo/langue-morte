@@ -2,8 +2,8 @@
    Scripts classiques, portée globale partagée, chargés dans l'ordre de index.html.
    Aucune dépendance externe hors les polices Google.
 
-   Instrumentation de playtest. Les cinq nombres de la carte de fin disent ce qu'une
-   partie a produit, jamais *quand* elle s'est grippée : on ne voit ni les rafales de
+   Instrumentation de playtest. Les cinq nombres de l'ancienne carte de fin disaient ce
+   qu'une partie avait produit, jamais *quand* elle s'était grippée : on ne voit ni les rafales de
    recoupement, ni les minutes passées sans rien acheter, ni si les tablettes marquées
    en ocre sont relues. Ce module relève chaque action avec son instant depuis le
    début, plus un état toutes les 30 s pour pouvoir retracer les courbes.
@@ -50,12 +50,13 @@ function tracer(k, d, pos){
   const e = [Math.round(tJeu()*10)/10, k, d === undefined ? '' : String(d)];
   if(pos === undefined) TR.push(e); else TR.splice(pos, 0, e);
   /* La partie s'arrête au dernier signe de l'arbre (règle 16), mais la ligne `fin` ne vient
-     qu'avec la CARTE, jusqu'à quatre-vingt-dix secondes plus tard — et PT10 a exporté dans
-     l'intervalle : son journal n'a aucune ligne de fin, pour une partie terminée. Les deux
-     instants sont distincts et tous les deux intéressants, l'écart entre eux étant le temps
-     que met le joueur à retourner sur une tablette que le dernier signe vient de rendre
-     lisible — c'est-à-dire la mesure même de FIN-1. Posée ici et pas dans une enveloppe :
-     `finArmer` est un `const`, il n'y a rien à envelopper. */
+     qu'avec l'EFFACEMENT, jusqu'à quatre-vingt-dix secondes plus tard — et PT10 a exporté
+     dans l'intervalle : son journal n'avait aucune ligne de fin, pour une partie terminée.
+     Les deux instants sont distincts et tous les deux intéressants, l'écart entre eux étant
+     le temps que met le joueur à retourner sur une tablette que le dernier signe vient de
+     rendre lisible — c'est-à-dire la mesure même de FIN-1. Posée ici et pas dans une
+     enveloppe : `finArmer` est un `const`, il n'y a rien à envelopper. Une partie
+     interrompue a la sienne aussi, juste après la ligne `interrompre`. */
   if(S_.done && k !== 'finjeu' && !dejaTracee('finjeu')) tracer('finjeu', mmss(S_.t));
   majBoutonTraces();
 }
@@ -184,10 +185,10 @@ reviser = function(id, lect){
   return r;
 };
 
-/* Pas de témoin possible pour la fin : `S_.done` est déjà posé quand showEnd() est
-   appelée. On remonte donc le relevé jusqu'au dernier « reset » — jeu.js rappelle
-   showEnd() à chaque rechargement d'une partie terminée, et on ne veut pas d'une
-   ligne « fin » par visite. */
+/* Pas de témoin possible pour l'effacement : `S_.done` est déjà posé quand finEffacer() est
+   appelée. On remonte donc le relevé jusqu'au dernier « reset » — jeu.js la rappelle au
+   rechargement d'une partie achevée dont l'effacement n'avait pas fini, et on ne veut pas
+   d'une ligne « fin » par visite. */
 const dejaTracee = genre => {
   for(let i = TR.length-1; i >= 0; i--){
     if(TR[i][1] === 'reset') return false;
@@ -195,12 +196,19 @@ const dejaTracee = genre => {
   }
   return false;
 };
-const _showEnd = showEnd;
-showEnd = function(){
-  const r = _showEnd();
+const _finEffacer = finEffacer;
+finEffacer = function(){
+  const r = _finEffacer();
   if(!dejaTracee('fin')) tracer('fin', mmss(S_.t));
   return r;
 };
+/* Les deux fins (FIN-1, FIN-2). La fenêtre s'ouvre, se referme parfois, puis l'une ou l'autre
+   est choisie : chaque ouverture est une ligne, et le temps entre la dernière et le choix est
+   l'hésitation — « aucune n'est présentée comme la bonne » ne se mesure que par là. Achever
+   est la ligne `acheterGl` du dernier signe, suivie de `finjeu` ; interrompre a la sienne,
+   avec le signe laissé. */
+enrober('finsOuvrir',  () => finsId, a => a[0] + (Array.isArray(a[1]) ? ' · grille' : ''));
+enrober('interrompre', () => S_.fin, a => a[0] + ' (' + motDe(a[0]) + ') laissé non lu');
 
 /* La navigation dit si la barre de tablettes sert. On ignore les sauts qui n'aboutissent
    pas ailleurs, sinon maintenir `j` en fin de corpus remplirait le relevé. */
@@ -244,7 +252,7 @@ function tracesTSV(){
     '# build : ' + BUILD + ' · ' + NGL + ' glyphes d\'arbre',
     '# t = secondes de JEU depuis le début (le sélecteur ×3/×10 les accélère)',
     '# une ligne « reset » marque le début d\'une nouvelle partie : le temps y repart de zéro',
-    '# « finjeu » = dernier signe de l\'arbre, la production s\'arrête ; « fin » = la carte s\'ouvre',
+    '# « finjeu » = la partie s\'arrête, dernier signe lu ou laissé ; « fin » = l\'effacement commence (achever)',
     '#   entre les deux le chrono de jeu est gelé : t y compte des secondes d\'horloge',
     ['temps','t_s','genre','détail'].join('\t'),
     ...TR.map(([t,k,d]) => [mmss(t), t.toFixed(1), k, d].join('\t'))
@@ -281,8 +289,8 @@ $('tr-cp').addEventListener('click', e => {
 /* La partie repart, le relevé non : on garde tout et on marque la coupure. Une soirée
    de playtest tient dans un seul fichier, et rien n'est perdu par un reset distrait.
    Sur la fonction et non sur le bouton « réinitialiser », qui ne sort plus dans tous les
-   builds — alors que « recommencer » de la carte de fin, qui appelle la même fonction, y
-   est partout. La ligne s'écrit AVANT la remise à zéro : c'est la fin de la partie
+   builds — alors que « recommencer », seul à l'écran après les deux fins, qui appelle la
+   même fonction, y est partout. La ligne s'écrit AVANT la remise à zéro : c'est la fin de la partie
    précédente qu'elle date, pas le début de la suivante. */
 const _recommencer = recommencer;
 recommencer = function(){

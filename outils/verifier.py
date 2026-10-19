@@ -10,8 +10,10 @@ Contrôle :
   3. l'échelle de la numération : chaque glyphe de nombre ouvre exactement ce qu'il doit
   4. les infobulles répondent dans les quatre cas prévus
   5. le temps de rendu initial reste sous le seuil
-  6. la fenêtre de fin attend qu'on ait lu la tablette du dernier signe, se ferme,
-     et ne couvre pas les outils hors jeu
+  6. les deux fins : le dernier signe ouvre « achever » et « interrompre » au lexique comme à
+     la grille, l'effacement attend qu'on ait lu sa tablette, ne laisse que « recommencer »
+     et pas un chiffre, une partie interrompue ne reprend pas, et rien ne couvre les outils
+     hors jeu
   7. le relevé se fait dans le corpus ; le gisement s'épuise et se tarife à la 1re visite
   8. le recoupement se fait dans le corpus : deux passages d'un même signe
   9. la datation : une tablette se date quand on sait lire sa date, et pas avant
@@ -738,10 +740,10 @@ def main() -> None:
         r = page.evaluate("""() => { const av = [M.cop(), M.ate(), M.tabl(), M.con(), M.gram(), M.click()];
             acheterGl('shenu');
             const ap = [M.cop(), M.ate(), M.tabl(), M.con(), M.gram(), M.click()];
-            return [av.every((v, i) => v === ap[i]), S_.done, $('end').hidden, [...touchees]]; }""")
+            return [av.every((v, i) => v === ap[i]), S_.done, [...touchees]]; }""")
         page.wait_for_timeout(400)
         verifier(r[0] is True, "il ne multiplie rien : aucun instrument ne bouge à l'achat")
-        verifier(r[1] is False and r[3] == [18],
+        verifier(r[1] is False and r[2] == [18],
                  f"il ne ferme plus l'arbre, et la seule tablette qu'il touche est la 18 : {r[1:]}")
         verifier(page.text_content("#lexr").strip() == f"{ngl - 13} / {ngl}",
                  f"le lexique affiche « {ngl - 13} / {ngl} » : la Personne et la Fin restent à lire")
@@ -770,7 +772,7 @@ def main() -> None:
         # tout le corpus, puis la seule colonne de l'eau
         # ⟨toi⟩ est dans l'arbre depuis VOIX-1, et son achat replie le corpus sur ce qui
         # s'adresse au lecteur (VOIX-2) : on le referme pour partir du corpus entier.
-        page.evaluate("() => { S_.C = 9e6; GL.forEach(g => acheterGl(g.id)); $('end').hidden = true;"
+        page.evaluate("() => { S_.C = 9e6; GL.forEach(g => acheterGl(g.id)); finDesarmer();"
                       "        concFermer(); }")
         page.wait_for_timeout(300)
         lignes = lambda: page.eval_on_selector_all(
@@ -825,72 +827,216 @@ def main() -> None:
         # la section suivante achète pour vérifier le journal d'actions
         page.evaluate("() => { S_.b.cop = 0; }")
 
-        print("\nfenêtre de fin")
+        print("\nles deux fins : la fenêtre")
         page.evaluate("() => $('reset').click()")
         page.wait_for_timeout(200)
-        page.evaluate("() => { S_.C = 9e6; GL.forEach(g => acheterGl(g.id)); }")
-        page.wait_for_timeout(400)
-        # Elle ne s'ouvre plus au clic : le dernier signe de l'arbre est celui qui rend
-        # lisible la dernière ligne du corpus — ⟨nous-fûmes⟩, tablette 30, depuis VOIX-1 — et
-        # un écran de statistiques posé par-dessus la couvrirait avant qu'on l'ait lue. Elle
-        # attend d'être allé voir (finRegarder(), economie.js).
-        verifier(page.get_attribute("#end", "hidden") is not None,
-                 "elle ne couvre pas la tablette que le dernier signe vient d'ouvrir")
+        # Les durées de l'effacement sont des secondes d'horloge et des choix de mise en scène
+        # (FIN_EFF, rendu.js) : on les raccourcit pour le test, le fondu de 2,4 s reste.
+        presque = """() => { FIN_EFF.interface = 0.6; FIN_EFF.lecture = 0.6; FIN_EFF.texte = 0.6;
+            S_.C = 9e6; S_.H = 9e6;
+            GL.filter(g => !g.sec && g.id !== 'shenke').forEach(g => acheterGl(g.id, 'j'));
+            concFermer(); S_.C = 9e6; }"""
+        fin = lambda: page.evaluate("() => document.body.classList.contains('fin')")
+        page.evaluate(presque)
+        page.wait_for_timeout(300)
+        page.evaluate("() => $('lex').querySelector('[data-gl=shenke]').click()")
+        page.wait_for_timeout(150)
+        r = page.evaluate("() => [$('fins').hidden, has('shenke'), S_.done]")
+        verifier(r == [False, False, False],
+                 f"le dernier signe ne s'achète pas d'un clic : il ouvre les deux fins ({r})")
+        # Aucune n'est la bonne (design doc §11) : même habit, et la fenêtre dit sa règle —
+        # sans elle, « le laisser non lu » se lirait « pas maintenant ».
+        r = page.evaluate("""() => [[...$('fins-choix').children].map(b => b.className),
+                                    $('fins').innerText.toLowerCase()]""")
+        verifier(len(set(r[0])) == 1 and "partie s’arrête" in r[1],
+                 f"même habit pour les deux, et la partie s'arrête dans les deux cas : {r[0]}")
+        ordres = page.evaluate("""() => { const o = new Set();
+            for (let i = 0; i < 30; i++) { finsFermer(); finsOuvrir('shenke');
+              o.add($('fins-choix').firstElementChild.dataset.fin); }
+            return [...o].sort(); }""")
+        verifier(ordres == ["achever", "interrompre"],
+                 f"la place de gauche n'est à aucune des deux : l'ordre se tire au sort ({ordres})")
+        for fermeture, action in (("« revenir au corpus »", lambda: page.click("#fins-annuler")),
+                                  ("échap", lambda: page.keyboard.press("Escape"))):
+            action()
+            page.wait_for_timeout(120)
+            verifier(page.evaluate("() => [$('fins').hidden, has('shenke'), S_.done]") == [True, False, False],
+                     f"{fermeture} la referme sans rien décider")
+            page.evaluate("() => finsOuvrir('shenke')")
+        # Interrompre n'est pas le repli de qui ne peut pas payer : sans les moyens d'achever,
+        # ni fenêtre ni interruption.
+        r = page.evaluate("""() => { finsFermer(); const c = S_.C; S_.C = 9000;
+            finsOuvrir('shenke'); interrompre('shenke'); const r = [$('fins').hidden, S_.done];
+            S_.C = c; return r; }""")
+        verifier(r == [True, False], f"sans les 9 999 C, ni fenêtre ni interruption : {r}")
+
+        print("\nles deux fins : achever")
+        # Trois secondes de texte seul, pour avoir le temps de voir l'interface partie et le
+        # texte encore là.
+        page.evaluate("() => { FIN_EFF.lecture = 3; finsOuvrir('shenke'); $('fins-choix').querySelector('[data-fin=achever]').click(); }")
+        page.wait_for_timeout(300)
+        r = page.evaluate("() => [has('shenke'), S_.done, S_.fin, [...finLire]]")
+        verifier(r == [True, True, "achevee", [27]], f"achever le lit, et la partie s'arrête : {r}")
+        # L'effacement attend qu'on ait lu la tablette que le dernier signe vient d'ouvrir
+        # (règle 16) : ⟨devenir-lecture⟩ n'a qu'une attestation, sur la 27.
+        verifier(not fin(), "l'interface ne s'efface pas sur la tablette qu'il vient d'ouvrir")
+        clics = page.evaluate("""() => { const c = S_.clicks;
+            elCorpus.querySelector('.tablet:not([hidden]) .tok:not(.sep)').click(); return [c, S_.clicks]; }""")
+        verifier(clics[0] == clics[1], "le corpus se lit et ne se travaille plus : un clic ne relève rien")
         page.evaluate("() => { finArmee -= 7000; versTablette(1); }")
         page.wait_for_timeout(900)
-        verifier(page.get_attribute("#end", "hidden") is not None,
-                 "ni ne vient sur une tablette qui n'a rien à voir")
-        page.evaluate("() => versTablette(30)")
+        verifier(not fin(), "ni sur une tablette qui n'a rien à voir")
+        page.evaluate("() => versTablette(27)")
         page.wait_for_timeout(900)
-        verifier(page.get_attribute("#end", "hidden") is None,
-                 "elle vient une fois la tablette 30 sous les yeux")
-        # Le garde-fou : un joueur qui n'y va pas doit quand même avoir une fin. Le corpus
-        # est rangé dans l'ordre du temps à ce stade — remonter de la 18 à la 1 est un long
-        # défilement, et `tabletteVisible()` ne change qu'une fois qu'il a abouti.
-        page.evaluate("() => { $('end').hidden = true; finLire = new Set([18]);"
-                      "        versTablette(1); }")
-        page.wait_for_timeout(1600)
-        page.evaluate("() => { finArmee = performance.now() - 7000; }")
-        page.wait_for_timeout(500)
-        verifier(page.get_attribute("#end", "hidden") is not None, "sinon elle patiente")
-        page.evaluate("() => { finArmee = performance.now() - 95000; }")
-        page.wait_for_timeout(400)
-        verifier(page.get_attribute("#end", "hidden") is None,
-                 "mais elle finit par venir, lecture ou pas")
-        # `showEnd()` désarme : sans ça la carte reviendrait sur celui qui la ferme.
-        verifier(page.evaluate("() => finArmee") == 0, "et elle se désarme en s'ouvrant")
-        # Jusqu'en PT10 elle posait la question de PT8 au joueur qu'on interroge ensuite sans
-        # la nommer, et annonçait pour les actes IV et V le doute qu'il venait de jouer.
-        r = page.evaluate("() => $('end').innerText.toLowerCase()")
-        verifier(not any(m in r for m in ('crue', 'question', 'doute', 'contradiction',
-                                          'deuxième personne')),
-                 "la carte ne souffle rien, ni ce qu'il y avait à voir, ni ce qui vient après")
-        # relevé en PT5 : la partie finie, l'overlay couvrait le journal d'actions —
+        verifier(fin(), "il commence une fois la tablette 27 sous les yeux")
+        verifier(page.evaluate("() => finArmee") == 0, "et se désarme en commençant")
+        page.wait_for_timeout(3500)
+        # « plus de compteurs, plus d'instruments, juste le texte » (design doc §11)
+        r = page.evaluate("""() => [[...document.querySelectorAll('.panel, .masthead h1, .masthead .sub')]
+              .filter(e => e !== elCorpus.parentElement && getComputedStyle(e).visibility !== 'hidden')
+              .map(e => e.id || e.className),
+            getComputedStyle(elCorpus).visibility, getComputedStyle(elCorpus.parentElement).backgroundColor]""")
+        verifier(r == [[], "visible", "rgba(0, 0, 0, 0)"],
+                 f"l'interface est partie, cadre compris, et le texte reste : {r}")
+        # relevé en PT5 : la partie finie, l'écran couvrait le journal d'actions —
         # inatteignable au moment précis où il faut l'exporter
         verifier(page.evaluate("""() => {
                      const r = document.querySelector('#tr-cp').getBoundingClientRect();
                      const e = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2);
                      return !!e && e.id === 'tr-cp'; }"""),
-                 "le bouton « copier » reste cliquable par-dessus")
-        for fermeture, action in (("« revenir au corpus »", lambda: page.click("#fermer")),
-                                  ("échap", lambda: page.keyboard.press("Escape")),
-                                  ("un clic sur le fond", lambda: page.mouse.click(12, 500))):
-            page.evaluate("() => { $('end').hidden = false; }")
-            page.wait_for_timeout(120)
-            action()
-            page.wait_for_timeout(120)
-            verifier(page.get_attribute("#end", "hidden") is not None, f"{fermeture} la ferme")
-        # le corpus derrière est figé sur la partie terminée, pas remis à zéro
-        verifier(page.evaluate("() => mesures().sig") > 50, "le corpus reste déchiffré derrière")
-        # En dernier, parce qu'il vide la partie : « réinitialiser » ne recharge pas la page,
-        # et une carte armée survivrait à la remise à zéro pour s'ouvrir sur la partie neuve —
-        # le défaut qu'avait `SU` avant PT4, avec ses 229 nombres encore lisibles.
-        page.evaluate("() => { finArmee = performance.now() - 95000; finLire = new Set();"
-                      "        $('reset').click(); }")
+                 "le bouton « copier » reste là, et cliquable")
+        page.wait_for_timeout(6000)
+        r = page.evaluate("""() => [getComputedStyle(elCorpus).visibility, $('apres').hidden,
+                                    $('apres').textContent.trim(), S_.efface]""")
+        verifier(r == ["hidden", False, "recommencer", True],
+                 f"puis le texte s'efface aussi, et il ne reste que « recommencer » : {r}")
+        # Plus de carte de statistiques : « signes déchiffrés 87 % » était un score. Et rien
+        # n'annonce ce que les actes suivants révèlent — l'écran de fin est lu avant
+        # l'entretien de playtest.
+        r = page.evaluate("""() => [...document.querySelectorAll('body *')]
+            .filter(e => !e.closest('.devbar') && e.children.length === 0 && e.offsetParent !== null
+                         && getComputedStyle(e).visibility !== 'hidden' && e.textContent.trim())
+            .map(e => e.textContent.trim())""")
+        verifier(r == ["recommencer"], f"ni chiffre ni phrase : {r}")
+        # Une partie achevée se rouvre achevée, sur la page vide.
+        sauve = page.evaluate("() => { sauver(); return localStorage.getItem(KEY); }")
+        ctx = nav.new_context()
+        ctx.add_init_script("localStorage.setItem('langue-morte-partie', %r)" % sauve)
+        autre = ctx.new_page()
+        casses = []
+        autre.on("pageerror", lambda e: casses.append(str(e)))
+        autre.goto(PAGE.resolve().as_uri())
+        autre.wait_for_timeout(600)
+        r = autre.evaluate("""() => [S_.done, S_.fin, document.body.className.split(' ').sort().join(' '),
+                                     $('apres').hidden, getComputedStyle(elCorpus).visibility]""")
+        verifier(not casses and r == [True, "achevee", "fin fin-sec fin-texte", False, "hidden"],
+                 f"rechargée, elle rouvre sur la page vide, sans refaire l'effacement : {r} {casses[:1]}")
+        ctx.close()
+        page.evaluate("() => $('again').click()")
+        page.wait_for_timeout(200)
+        r = page.evaluate("""() => [S_.gl.length, S_.fin, document.body.className, $('apres').hidden,
+            getComputedStyle($('lex').closest('.panel')).visibility, elCorpus.parentElement.style.transform]""")
+        verifier(r == [0, None, "", True, "visible", ""],
+                 f"« recommencer » défait tout : interface, texte, glissement : {r}")
+
+        print("\nles deux fins : interrompre")
+        page.evaluate(presque)
+        page.wait_for_timeout(300)
+        r = page.evaluate("""() => { TR.length = 0;
+            $('lex').querySelector('[data-gl=shenke]').click();
+            $('fins-choix').querySelector('[data-fin=interrompre]').click();
+            return [has('shenke'), S_.done, S_.fin, nArbre() === NGL - 1, finArmee,
+                    TR.map(e => e[1]).filter(k => k !== 'etat')]; }""")
+        verifier(r[:5] == [False, True, "interrompue", True, 0],
+                 f"interrompre laisse le signe non lu, et la partie s'arrête là : {r[:5]}")
+        verifier(r[5] == ["finsOuvrir", "interrompre", "finjeu"],
+                 f"le journal d'actions dit la fenêtre, le choix, et l'arrêt : {r[5]}")
+        # L'interface met quatorze secondes à s'en aller : la carte du signe laissé et la grille
+        # restent sous la main pendant ce temps, et aucune ne doit le rendre.
+        r = page.evaluate("""() => { $('lex').querySelector('[data-gl=shenke]').click();
+            const f = $('fins').hidden; acheterGl('shenke'); const c = composer('shen', 'ke');
+            return [f, c, has('shenke'), S_.fin]; }""")
+        verifier(r[0] is True and r[2:] == [False, "interrompue"],
+                 f"ni le lexique, ni la grille, ni un achat direct ne rendent le signe laissé : {r}")
+        t0 = page.evaluate("() => S_.t")
+        page.wait_for_timeout(3600)
+        r = page.evaluate("""() => [S_.t, getComputedStyle($('lex').closest('.panel')).visibility,
+            getComputedStyle(elCorpus).visibility, document.body.classList.contains('fin-texte'),
+            $('apres').hidden]""")
+        verifier(r == [t0, "hidden", "visible", False, False],
+                 f"l'interface s'en va, le corpus reste figé, et le texte ne s'efface pas : {r}")
+        # « Le jeu se ferme sur le corpus figé, et ne propose pas de reprendre » : rechargée,
+        # elle reste interrompue, alors que l'arbre a un signe de plus qu'elle — c'est ce que
+        # la règle de réouverture ne doit pas confondre avec un arbre qui a grandi.
+        sauve = page.evaluate("() => { sauver(); return localStorage.getItem(KEY); }")
+        ctx = nav.new_context()
+        ctx.add_init_script("localStorage.setItem('langue-morte-partie', %r)" % sauve)
+        autre = ctx.new_page()
+        casses = []
+        autre.on("pageerror", lambda e: casses.append(str(e)))
+        autre.goto(PAGE.resolve().as_uri())
+        autre.wait_for_timeout(600)
+        r = autre.evaluate("""() => [S_.done, S_.fin, nArbre() === NGL - 1, document.body.classList.contains('fin'),
+                                     getComputedStyle(elCorpus).visibility, $('apres').hidden]""")
+        verifier(not casses and r == [True, "interrompue", True, True, "visible", False],
+                 f"rechargée, elle reste interrompue : pas de reprise : {r} {casses[:1]}")
+        ctx.close()
+
+        print("\nles deux fins : par la grille, sur un autre signe, et sans aller voir")
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+        page.evaluate(presque)
+        page.wait_for_timeout(300)
+        # La grille ne passe pas par le lexique, et ⟨devenir-lecture⟩ est ⟨lire⟩ sur ⟨devenir⟩ :
+        # posé là quand il est le dernier, il ouvre les deux fins aussi.
+        # Le bouton ne s'active qu'à la frame suivante, comme sous la main du joueur.
+        page.evaluate("() => { compSel[0] = 'shen'; compSel[1] = 'ke'; }")
+        page.wait_for_timeout(150)
+        r = page.evaluate("""() => { const c = S_.comp, h = S_.H; $('a-comp').click();
+            return [$('fins').hidden, has('shenke'), S_.comp - c, S_.H - h, compSel.join('')]; }""")
+        verifier(r == [False, False, 0, 0, ""],
+                 f"poser le dernier signe à la grille ouvre les deux fins, sans rien compter ni coûter : {r}")
+        r = page.evaluate("""() => { const c = S_.comp;
+            $('fins-choix').querySelector('[data-fin=achever]').click();
+            return [has('shenke'), S_.done, S_.fin, S_.comp - c]; }""")
+        verifier(r == [True, True, "achevee", 1], f"et achever le pose, tentative comptée : {r}")
+        # Le garde-fou : un joueur qui ne va pas voir doit quand même avoir une fin. Le corpus
+        # est rangé dans l'ordre du temps à ce stade — remonter à la 1 est un long défilement,
+        # et `tabletteVisible()` ne change qu'une fois qu'il a abouti.
+        page.evaluate("() => versTablette(1)")
+        page.wait_for_timeout(1600)
+        page.evaluate("() => { finArmee = performance.now() - 7000; }")
         page.wait_for_timeout(500)
-        verifier(page.get_attribute("#end", "hidden") is not None
-                 and page.evaluate("() => finArmee") == 0,
-                 "« réinitialiser » la désarme : une partie neuve ne s'ouvre pas sur la fin")
+        verifier(not fin(), "sinon l'effacement patiente")
+        page.evaluate("() => { finArmee = performance.now() - 95000; }")
+        page.wait_for_timeout(400)
+        verifier(fin(), "mais il finit par venir, lecture ou pas")
+        # « recommencer » ne recharge pas la page : un effacement armé ou en cours sur la partie
+        # d'avant viendrait vider la partie neuve — le défaut qu'avait `SU` avant PT4.
+        page.evaluate("() => { $('reset').click(); }")
+        page.evaluate("() => { finArmee = performance.now() - 95000; finLire = new Set(); $('reset').click(); }")
+        page.wait_for_timeout(4500)
+        r = page.evaluate("() => [document.body.className, finArmee, $('apres').hidden, getComputedStyle(elCorpus).visibility]")
+        verifier(r == ["", 0, True, "visible"],
+                 f"« réinitialiser » désarme et défait : une partie neuve ne s'ouvre pas sur la fin : {r}")
+        # Un dernier signe ambigu : les deux fins d'abord, puis les deux lectures. Qui a
+        # composé ⟨devenir-lecture⟩ tôt finit sur un autre mot (règle 25).
+        page.evaluate("""() => { FIN_EFF.interface = 0.6; FIN_EFF.lecture = 0.6; FIN_EFF.texte = 0.6;
+            S_.C = 9e6; S_.H = 9e6;
+            GL.filter(g => !g.sec && g.id !== 'tem').forEach(g => acheterGl(g.id, 'j'));
+            concFermer(); S_.C = 9e6; }""")
+        page.wait_for_timeout(300)
+        r = page.evaluate("""() => { $('lex').querySelector('[data-gl=tem]').click();
+            const f = $('fins').hidden;
+            $('fins-choix').querySelector('[data-fin=achever]').click();
+            return [f, $('amb').hidden, has('tem'), S_.done]; }""")
+        verifier(r == [False, False, False, False],
+                 f"⟨grain⟩ laissé pour la fin : les deux fins, puis ses deux lectures : {r}")
+        r = page.evaluate("""() => { $('amb-choix').querySelector('[data-amb]').click();
+            return [has('tem'), S_.done, S_.fin, ['j', 'f'].includes(S_.lect.tem)]; }""")
+        verifier(r == [True, True, "achevee", True], f"et la lecture tranchée l'achève : {r}")
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
 
         print("\njournal d'actions (hors jeu)")
         page.evaluate("() => { TR.length = 0; prochainEtat = 0; S_.t = 0; }")
@@ -968,14 +1114,14 @@ def main() -> None:
                          "ur + tem ✓ urtem"],
                  f"trois issues de composition distinctes : {com}")
 
-        # la fin : datée au dernier signe de l'arbre, sans attendre la carte (FIN-1)
+        # la fin : datée au dernier signe de l'arbre, sans attendre l'effacement (FIN-1)
         neuf()
         page.evaluate("() => { S_.C = 9e6; GL.filter(g => !g.sec).forEach(g => acheterGl(g.id)); }")
         j = journal()
         verifier([g for g, _ in j].count("finjeu") == 1 and j[-1][0] == "finjeu",
                  "« finjeu » suit le dernier signe de l'arbre, et une seule fois")
         verifier(not any(g == "fin" for g, _ in j),
-                 "la carte n'est pas encore venue : c'est bien deux instants séparés")
+                 "l'effacement n'a pas commencé : c'est bien deux instants séparés")
         # et le chrono continue pendant la fenêtre de lecture, que `tick` n'alimente plus
         t0 = page.evaluate("() => TR[TR.length - 1][0]")
         page.wait_for_timeout(1300)
@@ -1479,12 +1625,30 @@ def main() -> None:
         vieille.goto(PAGE.resolve().as_uri())
         vieille.wait_for_timeout(700)
         verifier(not casses, f"aucune erreur au chargement : {casses[:1] or '—'}")
-        etat = vieille.evaluate("() => [S_.done, $('end').hidden, S_.gl.length]")
-        verifier(etat == [False, True, 20], f"pas d'écran de fin, la partie continue : {etat}")
+        etat = vieille.evaluate("() => [S_.done, S_.fin, document.body.classList.contains('fin'), S_.gl.length]")
+        verifier(etat == [False, None, False, 20], f"pas de fin, la partie continue : {etat}")
         verifier(vieille.text_content("#lexr").strip() == f"20 / {ngl}", f"le lexique affiche « 20 / {ngl} »")
         verifier("locked" not in vieille.evaluate(
                      "() => $('lex').querySelector('[data-gl=shen]').className"),
                  "et « lire » attend d'être acheté")
+        ctx.close()
+        # La même, finie sur l'arbre entier d'aujourd'hui avant les deux fins : il n'y avait
+        # qu'une façon de finir, donc elle est achevée (migration 1 → 2, FIN-2), et elle rouvre
+        # sur la page vide — pas sur une partie qui court, ni sur un corpus figé.
+        arbre = page.evaluate("() => GL.filter(g => !g.sec).map(g => g.id)")
+        finie = ('{"O":1e9,"H":5e4,"C":40,"rec":30,"clicks":900,"b":{"cop":60},'
+                 '"gl":%s,"t":9000,"done":true}' % json.dumps(arbre))
+        ctx = nav.new_context()
+        ctx.add_init_script("localStorage.setItem('langue-morte-partie', %r)" % finie)
+        vieille = ctx.new_page()
+        casses = []
+        vieille.on("pageerror", lambda e: casses.append(str(e)))
+        vieille.goto(PAGE.resolve().as_uri())
+        vieille.wait_for_timeout(700)
+        etat = vieille.evaluate("""() => [S_.done, S_.fin, S_.efface, document.body.classList.contains('fin-texte'),
+                                          $('apres').hidden]""")
+        verifier(not casses and etat == [True, "achevee", True, True, False],
+                 f"finie sur l'arbre entier avant les deux fins : achevée, sur la page vide : {etat} {casses[:1]}")
         ctx.close()
 
         # ---- l'Élève (ELV-1, ELV-2) ----
@@ -1602,15 +1766,20 @@ def main() -> None:
                                        INS.filter(i => !Number.isFinite(insCost(i))).map(i => i.k)]""")
         verifier(r == [[], []], f"chaque instrument qu'elle ne connaissait pas arrive à zéro, aucun prix à NaN : {r}")
 
-        # La chaîne elle-même. Aucune migration n'est écrite aujourd'hui — tout ce que les lots
-        # ont changé depuis l'acte III était un ajout —, donc on en pose une, le temps du test :
-        # la version se compte sur la liste, une sauvegarde sans numéro part de la version 1,
-        # et une sauvegarde déjà à jour ne repasse par rien.
-        r = vieille.evaluate("""() => { MIGRATIONS.push(p => { p.essai = (p.essai || 0) + 1; });
-            const r = [versionSauvegarde(), migrer({b:{}}).v, migrer({b:{}}).essai || 0,
-                       migrer({v:2, b:{}}).essai || 0];
+        # La chaîne elle-même. On pose une migration de plus, le temps du test : la version se
+        # compte sur la liste, une sauvegarde sans numéro part de la version 1 et les traverse
+        # toutes, et une sauvegarde déjà à jour ne repasse par rien.
+        r = vieille.evaluate("""() => { const v = versionSauvegarde();
+            MIGRATIONS.push(p => { p.essai = (p.essai || 0) + 1; });
+            const r = [versionSauvegarde() - v, migrer({b:{}}).v - v, migrer({b:{}}).essai || 0,
+                       migrer({v: v, b:{}}).essai || 0, migrer({v: v + 1, b:{}}).essai || 0];
             MIGRATIONS.pop(); return r; }""")
-        verifier(r == [2, 2, 1, 0], f"une migration ajoutée fait la version, et ne passe qu'une fois : {r}")
+        verifier(r == [1, 1, 1, 1, 0], f"une migration ajoutée fait la version, et ne passe qu'une fois : {r}")
+        # La première écrite pour de bon (FIN-2) : une partie finie avant les deux fins
+        # l'avait été par le dernier signe de l'arbre, il n'y avait pas d'autre façon.
+        r = vieille.evaluate("() => [versionSauvegarde(), migrer({b:{}, done:true}), migrer({b:{}, done:false}).fin]")
+        verifier(r[0] == 2 and r[1]["fin"] == "achevee" and r[1]["efface"] is True and r[2] is None,
+                 f"version 2 : une partie finie avant les deux fins est achevée, une partie en cours n'est rien : {r}")
         # Une migration qui casse est un défaut du jeu, pas de la partie : la sauvegarde reste
         # telle quelle pour le jeu corrigé, et rien ne s'écrit par-dessus en attendant.
         r = vieille.evaluate("""() => { sauver(); const avant = localStorage.getItem(KEY);
