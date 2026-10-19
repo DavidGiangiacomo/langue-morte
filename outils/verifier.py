@@ -60,6 +60,10 @@ Contrôle :
      ⟨nous-fûmes⟩ non, ⟨moi-absent⟩ n'a aucune attestation,
      le dernier mot du corpus ferme la partie et met le récit au passé — sauf ce qui s'adresse
      à ⟨toi⟩ —, et la contradiction se solde de nouveau en entrant dans l'acte IV
+ 29. les Questions : la Certitude s'arrête à 9 999, ce qui déborde fait des questions à partir
+     de ⟨toi⟩ et jamais la nuit, chaque réponse finit une ligne gravée et s'écrit avec les
+     lectures du joueur, le silence ne coûte rien, rien ne se pose sans question en main, et
+     le doute n'en sait rien
 
 Prérequis : pip install playwright && playwright install chromium
 """
@@ -1742,6 +1746,109 @@ def main() -> None:
               .forEach(g => acheterGl(g.id, 'f'));
             acheterGl('nash'); return [dette() > 5, S_.contr]; }""")
         verifier(r == [True, 0], f"sans le doute ouvert, entrer dans l'acte IV ne solde rien : {r}")
+
+        # ---- les Questions (VOIX-3) ----
+        # La Certitude s'arrête à 9 999 et, à partir de ⟨toi⟩, ce qui déborde remplit des
+        # questions. Une question est une condition — ⟨si⟩ et des signes qu'on sait lire — et
+        # la réponse est ce que le corpus a gravé après, jamais un mot écrit pour l'occasion.
+        # Les instruments sont remis à zéro entre deux contrôles : sans production, rien ne
+        # déborde par surprise entre deux lectures de l'état.
+        print("\nles Questions : demander au texte")
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+        page.evaluate("""() => { S_.C = 9e6; S_.H = 9e6;
+            GL.filter(g => !g.sec && g.br !== 'personne').forEach(g => acheterGl(g.id, 'j'));
+            S_.C = 9990; S_.H = 9e6; S_.b.con = 400; S_.b.gram = 40; }""")
+        page.wait_for_timeout(600)
+        r = page.evaluate("() => [S_.C, S_.qf, S_.qn, $('pquest').hidden]")
+        verifier(r == [9999, 0, 0, True],
+                 f"la Certitude s'arrête à 9 999, et avant ⟨toi⟩ le surplus se perd, panneau fermé : {r}")
+        page.evaluate("() => { S_.C = 9e6; acheterGl('nash'); acheterGl('mu'); acheterGl('ta'); concFermer(); S_.C = 9999; S_.qf = 0; S_.qn = 0; }")
+        page.wait_for_timeout(500)
+        r = page.evaluate("() => [S_.C, S_.qf > 0, S_.qn, $('pquest').hidden]")
+        verifier(r == [9999, True, 0, False], f"à partir de ⟨toi⟩, ce qui déborde remplit une question : {r}")
+        page.evaluate("() => { S_.qf = Q_COUT - 10; }")
+        page.wait_for_timeout(500)
+        r = page.evaluate("() => { const r = [S_.C, S_.qn, questionsEnMain(), S_.qf < Q_COUT]; S_.b.con = 0; S_.b.gram = 0; return r; }")
+        verifier(r == [9999, 1, 1, True], f"4 000 de surplus font une question, et la Certitude ne bouge plus : {r}")
+        r = page.evaluate("""() => { S_.C = 5000; S_.b.con = 400; S_.b.gram = 40; S_.qf = 100;
+            S_.ts = Date.now() - 2*3600*1000; veillee();
+            const r = [S_.C, S_.qn, S_.qf]; S_.b.con = 0; S_.b.gram = 0; S_.C = 9999; return r; }""")
+        verifier(r == [9999, 1, 100], f"la nuit remplit la Certitude jusqu'au plafond, jamais une question : {r}")
+        # R8 : la table des réponses est lue dans le corpus. Chaque réponse finit une ligne
+        # gravée, et chaque ligne porte ⟨si⟩ suivi de la condition.
+        r = page.evaluate("""() => { let ok = true, n = 0;
+            for(const [cle, rep] of Object.entries(QUESTIONS)) for(const e of rep) for(const [t, l] of e.lignes){
+              const ln = CORPUS.find(x => x.t === t).l[l]; n++;
+              const sansNb = ln.split(' ').filter(x => x.charCodeAt(0) !== 37).join(' ');
+              ok = ok && (e.suite ? ln.endsWith(e.suite) : sansNb.endsWith('en ' + cle))
+                      && sansNb.includes('en ' + cle);
+            }
+            return [Object.keys(QUESTIONS).length, ok, n, QUESTIONS['ta shen'][0].suite, QUESTIONS['ta shen'][0].lignes]; }""")
+        verifier(r[0] == 15 and r[1] and r[3] == "nash la hal" and r[4] == [[24, 3]],
+                 f"quinze conditions, et chaque réponse est la fin d'une ligne gravée — « si toi lire · nous ne-pas finir » : {r[:2] + r[3:]}")
+        r = page.evaluate("""() => [document.querySelectorAll('#q-choix .pion:not([hidden])').length, S_.gl.length]""")
+        verifier(r[0] == r[1], f"la palette ne montre que les signes acquis (règle 14) : {r}")
+        dte0 = page.evaluate("() => JSON.stringify([S_.conc, S_.recs, S_.dte])")
+        page.evaluate("() => { qPoser('ta'); qPoser('shen'); }")
+        page.wait_for_timeout(150)
+        page.click("#a-quest")
+        page.wait_for_timeout(250)
+        r = page.evaluate("""() => { const l = [...document.querySelectorAll('.ln.repondu')];
+            const s = document.querySelector('.qrep.vu .qsuite');
+            return [S_.qa, questionsEnMain(), l.length, l.map(x => x.closest('.tablet').dataset.tb),
+                    !!s && s.textContent.includes('nous') && s.textContent.includes('ne-pas'),
+                    !!s && !!s.querySelector('svg'), qSel.length]; }""")
+        verifier(r == [["ta shen"], 0, 1, ["24"], True, True, 0],
+                 f"« si toi lire » : la réponse coûte une question, s'écrit avec mes mots, ⟨finir⟩ en signe, et sa ligne s'allume : {r}")
+        verifier(page.evaluate("() => JSON.stringify([S_.conc, S_.recs, S_.dte])") == dte0,
+                 "poser une question ne touche pas au degré de doute (règle 18)")
+        r = page.evaluate("() => [questionner(['kal']), questionner(['mu', 'nash']), S_.qa.length, LOGS.includes('Le texte ne dit rien.')]")
+        verifier(r == ["refus", "refus", 1, False],
+                 f"sans question en main, rien ne se pose — gravé ou non, pour ne pas dire lesquelles le sont : {r}")
+        page.evaluate("() => { S_.qn += 2; }")
+        r = page.evaluate("""() => [questionner(['mu', 'nash']), questionsEnMain(), LOGS[LOGS.length-1],
+            questionner(['mu', 'nash'])]""")
+        page.wait_for_timeout(150)
+        verifier(r == ["silence", 2, "Le texte ne dit rien.", "refus"],
+                 f"une condition gravée nulle part : « Le texte ne dit rien. », rien de dépensé, et elle ne se repose pas : {r}")
+        r = page.evaluate("""() => { const r = questionner(['shen']); const rep = QUESTIONS['shen'];
+            return [r, rep.map(e => [e.suite, e.lignes.length])]; }""")
+        page.wait_for_timeout(150)
+        rendu = page.evaluate("""() => [...document.querySelectorAll('.qrep')].find(b => b.dataset.q === 'shen')
+            .querySelector('.qsuites').textContent""")
+        verifier(r == ["reponse", [["", 58], ["ke", 1]]] and rendu.endswith("rien après ×58"),
+                 f"« si lire » : « devenir » une fois, et cinquante-huit fois rien — ce qui est gravé d'abord : {r} · « {rendu} »")
+        r = page.evaluate("""() => { const o = ouvertsParReponse();
+            return [o.has('hal'), o.has('ke'), GL.some(g => g.rep)]; }""")
+        verifier(r == [True, True, False],
+                 f"les réponses portent ⟨finir⟩ et ⟨devenir⟩, qu'aucun signe de l'arbre n'attend encore (GRAINE-1) : {r}")
+        page.evaluate("() => { S_.lect.la = 'f'; }")
+        page.wait_for_timeout(150)
+        r = page.evaluate("""() => { const b = [...document.querySelectorAll('.qrep')].find(x => x.dataset.q === 'ta shen');
+            const t = b.querySelector('.qsuite').textContent; S_.lect.la = 'j'; return [t.includes('fin'), t.includes('ne-pas'), QUESTIONS['ta shen'][0].suite]; }""")
+        verifier(r == [True, False, "nash la hal"],
+                 f"la réponse suit la lecture du joueur, jamais la vérité — ⟨ne-pas⟩ lu « fin » s'y lit « fin » : {r}")
+        page.keyboard.press("Escape")
+        page.wait_for_timeout(100)
+        verifier(page.evaluate("() => [qVue, document.querySelectorAll('.ln.repondu').length]") == [None, 0],
+                 "échap éteint les lignes de la réponse")
+        page.evaluate("() => { S_.qn = Q_MAX - 1; S_.qf = Q_COUT - 1; S_.C = 9999; S_.b.con = 400; S_.b.gram = 40; }")
+        page.wait_for_timeout(500)
+        page.evaluate("() => { S_.b.con = 0; S_.b.gram = 0; }")
+        r = page.evaluate("() => [S_.qn, S_.qf, $('q-regle').textContent, $('q-jauge-w').hidden]")
+        verifier(r == [12, 0, "Douze questions : il n’en viendra plus.", True],
+                 f"douze questions sur la partie, et le panneau le dit : {r}")
+        r = page.evaluate("""() => [GL.filter(g => !g.sec && (ACTE[g.br]||0) < 5).length === NGL,
+            gramMul() === Math.pow(GRAM_R, nArbre())]""")
+        verifier(r == [True, True], f"la Grammaire gèle aux mots de la fin, et rien ne bouge tant qu'ils ne sont pas au lexique : {r}")
+        r = page.evaluate("() => TR.filter(x => x[1] === 'questionner').map(x => x[2])")
+        verifier(r == ["ta shen (toi lire) → 1 suite", "mu nash (je nous) · silence", "shen (lire) → 2 suites"],
+                 f"le journal d'actions date chaque question, ce qu'elle demandait et si le texte a répondu : {r}")
+        page.evaluate("() => { qMontrer('shen'); qPoser('kal'); $('reset').click(); }")
+        page.wait_for_timeout(200)
+        r = page.evaluate("() => [document.querySelectorAll('.ln.repondu').length, qSel.length, S_.qa.length, $('pquest').hidden]")
+        verifier(r == [0, 0, 0, True], f"recommencer efface les questions et éteint leurs lignes : {r}")
 
         # ---- les trois builds (LIV-2) ----
         # `python build.py` sort trois pages du même `src/`. Ce qui se vérifie ici n'est pas

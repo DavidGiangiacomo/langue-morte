@@ -386,12 +386,14 @@ Suivi : [#24](https://github.com/DavidGiangiacomo/langue-morte/issues/24) — le
   (règle 18), et le journal d'actions date l'ouverture et la sortie : la durée de la relecture
   est la question du playtest. Voir `docs/journal.md`, « VOIX-2 ».
 
-**VOIX-3 — Les Questions** · T:XL · [#36](https://github.com/DavidGiangiacomo/langue-morte/issues/36)
+**VOIX-3 — Les Questions** · T:XL · **fait en partie** (19/10/2026, même branche) · [#36](https://github.com/DavidGiangiacomo/langue-morte/issues/36)
 > En tant que joueur, je veux interroger le texte et qu'il réponde, dans les limites de ce qui a été gravé il y a quatre mille ans.
 
 - Fini quand : la ressource Q existe (0 à 12 sur toute la partie, design doc §4) ; poser une question consomme un Q ; **chaque réponse est une ligne du corpus, jamais un texte écrit pour l'occasion**.
 - Le plus gros risque de conception du lot : c'est le seul système où le jeu peut se mettre à *parler* au lieu de laisser lire.
-- *Note de conception, 19/10/2026* : `docs/note-questions.md` — trois options mesurées, **en attente de décision**. La forme proposée : une question est une condition « si … », la réponse est ce qui est gravé après. Trouvé en la mesurant : une nuit hors ligne porte déjà la Certitude au-delà de 9 999 (§5 de la note).
+- *Note de conception, 19/10/2026* : `docs/note-questions.md` — trois options mesurées. **Tranché le même jour : l'option 3, avec le gel.**
+- *Fait* : une question est une condition — ⟨si⟩ et des signes qu'on sait lire — et la réponse est ce que le corpus a gravé après, quinze conditions, rien d'écrit pour l'occasion. La Certitude s'arrête à 9 999 ; à partir de ⟨toi⟩ le surplus fait des questions, 4 000 chacune, douze sur la partie, jamais la nuit. La Grammaire gèle aux mots de la fin. Voir la règle 24 de `CLAUDE.md` et `docs/journal.md`, « Les Questions ».
+- **Reste** : les mots qu'elles ouvrent — ⟨finir⟩, ⟨devenir⟩, ⟨germer⟩, marqués `rep` — arrivent avec GRAINE-1, et le prix des questions se remesure quand ECO-2 aura porté l'acte V dans `sim.py`.
 
 **VOIX-4 — Le Corpus jumeau** *(instrument 8)* · T:M · [#37](https://github.com/DavidGiangiacomo/langue-morte/issues/37)
 > En tant que joueur, je veux qu'une deuxième inscription soit trouvée.
@@ -464,7 +466,7 @@ Suivi : [#27](https://github.com/DavidGiangiacomo/langue-morte/issues/27) — le
 > En tant qu'auteur, je veux vérifier le rythme de trois heures sans jouer trois heures.
 
 - Fini quand : le simulateur modélise l'Élève, les Questions, la dette et la contradiction ; il sort les tranches d'I6 sur toute la partie ; `balayage.py` peut balayer les nouvelles constantes.
-- *Fait de ce récit* : la dette et la contradiction (CONTR-1), et **l'Élève** (12/10/2026) — `elv_b`, `elv_r`, `elv_p`, `elv_e` sont dans `P`, donc balayables. **La Personne** (14/10/2026) et le franchissement d'acte de la règle 19. Restent les Questions et l'acte V.
+- *Fait de ce récit* : la dette et la contradiction (CONTR-1), et **l'Élève** (12/10/2026) — `elv_b`, `elv_r`, `elv_p`, `elv_e` sont dans `P`, donc balayables. **La Personne** (14/10/2026) et le franchissement d'acte de la règle 19. **Le plafond de 9 999, les questions nées du surplus et le gel de la Grammaire** (19/10/2026, VOIX-3) — `c_max`, `q_cout`, `q_max` sont dans `P`. Reste l'acte V, et les questions sur son chemin, mesurées jusqu'ici sur une copie hors du dépôt (`docs/note-questions.md`, §8).
 - **Bloquant pour tout réglage des actes IV–V** (règle 7).
 
 **ECO-3 — Tenir I1 et I4 sur 45 glyphes** · T:L · [#47](https://github.com/DavidGiangiacomo/langue-morte/issues/47)
@@ -472,6 +474,7 @@ Suivi : [#27](https://github.com/DavidGiangiacomo/langue-morte/issues/27) — le
 
 - La Certitude ne dépasse jamais 4 chiffres à l'écran (I1) alors que les Occurrences vont à ~10¹⁰. **La divergence est le propos ; la tenir sur 25 glyphes de plus est le vrai travail d'équilibrage restant.**
 - **Depuis la Personne (14/10/2026), le prix ne suffit plus.** Il a fallu monter ⟨nous-fûmes⟩ à 9 500 C pour que l'acte IV tienne quatre à six minutes par signe sans Élève ; au-delà, I1 interdit. L'acte V n'a donc plus un cran de prix pour régler son rythme, alors que la Grammaire croît encore de 16 % par signe. Les leviers restants sont des taux — l'exposant de la Grammaire, ou un puits de Certitude (les Questions ?) — et c'est à mesurer, pas à estimer (règle 7).
+- **Les deux leviers sont posés depuis VOIX-3** (19/10/2026) : la Certitude s'arrête à 9 999 et ce qui déborde fait des questions, dont le prix n'est jamais détenu d'un coup et peut donc croître ; et la Grammaire gèle aux mots de la fin. Mesuré sur un acte V provisoire, trois questions à 4 000 et le gel tiennent I4 avec et sans Élèves (28,2 et 40,3 min d'acte V) ; aucun des deux seul ne le fait. À remesurer dans `sim.py` avec l'acte V réel, le Corpus jumeau et le Lecteur.
 - Depuis le 14/09/2026, la **courbe de dégagement** (`REV_R`) est un paramètre balayé et non plus une constante implicite. C'est le seul bouton connu qui tire à la fois la part manuelle des occurrences et la pire tranche d'I6 — et dans le même sens : le ralentir améliore les deux. À rebalayer quand `sim.py` couvrira les actes IV et V (ECO-2), parce que tout ce qu'on sait de son comportement au-delà de 28 signes vient d'un arbre tronqué.
 
 **ECO-4 — PT10 et suivants** · T:M *(récurrent)* · [#48](https://github.com/DavidGiangiacomo/langue-morte/issues/48)

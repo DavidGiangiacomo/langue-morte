@@ -130,7 +130,7 @@ class Rejeu:
                  relev=0, vides=0, sans_tb=0, formuler=0,
                  recs=[], comps=[], concs=[], navs=[], revs=[], achats=[], etats=[],
                  couts_t=[], main_t=[], contr=None, contr_levee=None,
-                 finjeu=None, fin=None, gis_fichier=None, eleve={}, toi=None)
+                 finjeu=None, fin=None, gis_fichier=None, eleve={}, toi=None, questions=[])
         prev_t = self.ev[0][0]
         for t, genre, det in self.ev:
             s['o_auto'] += self.obrut() * max(0.0, t - prev_t)
@@ -218,6 +218,11 @@ class Rejeu:
             elif genre == 'concFermer':
                 if det == '@toi' and s['toi'] and s['toi'][1] is None:
                     s['toi'][1] = t
+
+            # Les Questions (VOIX-3) : la condition posée, et si le texte a répondu. Ce qui se
+            # demande et à quelle minute dit si le joueur lit les « si » du corpus ou tâtonne.
+            elif genre == 'questionner':
+                s['questions'].append((t, det))
 
             elif genre == 'tablette':
                 s['navs'].append((t, det))
@@ -495,6 +500,18 @@ def rapport(ev, nom):
               % (len(s['comps']), n_j, len(s['comps']) - n_j))
         if recon:
             print('  ⚠ issues reconstituées depuis les recettes : journal d\'avant le 15/09/2026')
+
+    titre('les Questions (VOIX-3)')
+    if not s['questions']:
+        print('  aucune question posée')
+    else:
+        for t, det in s['questions']:
+            print('    %s  %s' % (mmss(t), det))
+        n_rep = sum(1 for _, d in s['questions'] if '→' in d)
+        n_sil = len(s['questions']) - n_rep
+        print('  %d posée%s · %d réponse%s · %d silence%s'
+              % (len(s['questions']), 's' if len(s['questions']) > 1 else '',
+                 n_rep, 's' if n_rep > 1 else '', n_sil, 's' if n_sil > 1 else ''))
 
     if s['finjeu'] or s['fin']:
         titre('la fin (FIN-1, règle 16)')

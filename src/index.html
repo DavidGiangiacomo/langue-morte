@@ -109,6 +109,31 @@
           <div class="carnet" id="carnet" hidden></div>
         </div>
       </section>
+
+      <!-- Les Questions (VOIX-3). Elles n'apparaissent qu'avec ⟨toi⟩ : on n'interroge pas un
+           texte avant de savoir qu'il s'adresse à quelqu'un. Une question est une condition —
+           ⟨si⟩ et des signes qu'on sait lire — et la réponse est ce que le corpus a gravé
+           après, jamais un mot écrit pour l'occasion. Le panneau dit sa propre règle (d'où
+           viennent les questions) et rien d'autre : ce qu'il y a à demander est au corpus. -->
+      <section class="panel" id="pquest" hidden>
+        <div class="phead"><span>Questions</span><span class="r" id="q-n"></span></div>
+        <div class="comp">
+          <div class="qregle" id="q-regle"></div>
+          <div class="qjauge" id="q-jauge-w"><i id="q-jauge"></i></div>
+          <div class="pose">
+            <span class="qsi" id="q-si"></span>
+            <button class="slot" data-qslot="0"></button>
+            <button class="slot" data-qslot="1"></button>
+            <button class="slot" data-qslot="2"></button>
+          </div>
+          <div class="palette">
+            <div class="ch">Ce que je sais lire</div>
+            <div class="choix" id="q-choix" aria-label="Ce que je sais lire. Cliquez pour l’ajouter à la question."></div>
+          </div>
+          <button class="act" id="a-quest"><span class="an">Demander au texte</span><span class="ac" id="ac-quest"></span></button>
+          <div class="qreps" id="q-reps" hidden></div>
+        </div>
+      </section>
     </div>
 
     <section class="panel">

@@ -141,6 +141,19 @@ enrober('composer', () => S_.comp, a => {
                      : ' ✓ ' + cible + ' · impayable (' + byId[cible].cost + ' C)');
 });
 
+/* Les Questions (VOIX-3). Le témoin est la liste des conditions posées : un silence y entre
+   aussi, et c'est lui que le playtest doit voir — un joueur qui pose des conditions au hasard
+   ne se distingue de celui qui les a lues dans le corpus que par ce qu'il demande, et à quelle
+   minute. Le détail porte les signes ET les mots retenus : une condition posée avec une
+   lecture fausse en tête n'est pas la même question.
+     `ta shen (toi lire) → 1 suite`     le texte a répondu
+     `mu nash (je nous) · silence`       gravé nulle part, rien dépensé */
+enrober('questionner', () => S_.qa.length, a => {
+  const s = a[0] || [], rep = QUESTIONS[s.join(' ')];
+  return s.join(' ') + ' (' + s.map(motDe).join(' ') + ')'
+       + (rep ? ' → ' + rep.length + ' suite' + (rep.length > 1 ? 's' : '') : ' · silence');
+});
+
 /* Le sélecteur de vitesse. Hors jeu, mais c'est la seule commande capable de fausser tout
    le reste du fichier : les instants sont en secondes de JEU, qu'un ×3 fabrique trois fois
    plus vite. Rien ne le trahissait — pas même le contrôle de `outils/depouiller.py`, qui

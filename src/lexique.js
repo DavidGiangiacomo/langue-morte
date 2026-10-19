@@ -179,10 +179,11 @@ const GL = [
      Il ouvre donc la branche : c'est la porte que l'acte III a laissée dans le texte, et
      l'acheter rend la tablette 18 entière, nom propre à part.
      Aucun multiplicateur, comme la Modalité : la branche donne de la lecture. ⟨toi⟩ replie le
-     corpus, une fois, sur ce qui s'adressait au lecteur (VOIX-2, `adresser()` dans rendu.js) ;
-     les Questions qu'il ouvre aussi viendront avec VOIX-3, et rien de ce que le lexique
-     annonce ici ne les promet. Les lignes d'effet disent ce qui se lit, pas ce que ça veut dire : la deuxième
-     personne se découvre sur les tablettes 20 et 24, pas sur une carte du lexique.
+     corpus, une fois, sur ce qui s'adressait au lecteur (VOIX-2, `adresser()` dans rendu.js),
+     et il ouvre les Questions (VOIX-3) : on n'interroge pas un texte avant de savoir qu'il
+     s'adresse à quelqu'un. Sa ligne d'effet le dit sans dire ce qu'on y trouvera. Les lignes
+     d'effet disent ce qui se lit, pas ce que ça veut dire : la deuxième personne se découvre
+     sur les tablettes 20 et 24, pas sur une carte du lexique.
      Les prix sont une mesure, et ils butent sur un plafond. L'économie est exponentielle —
      la Grammaire croît en 1,16 par signe de l'arbre — et I1 interdit d'afficher plus de
      quatre chiffres de Certitude. Au pas de la branche d'avant (1 300 à 3 000 C), les six
@@ -208,7 +209,7 @@ const GL = [
    log:'Nous. Le signe qui se tenait seul devant leur nom revient quarante et une fois, jusque dans les registres. Ce n’était pas un mot de plus : c’étaient eux.'},
   {id:'mu',   br:'personne',mot:'je',        cost:2800, eff:'quelqu’un parle en son nom — cinq attestations, une seule main',
    log:'Je. Cinq fois dans tout le corpus, et toujours de la même main — celle qui signe les dernières tablettes. Quelqu’un a fini par parler en son nom.'},
-  {id:'ta',   br:'personne',mot:'toi',       cost:4000, eff:'celui à qui l’on parle se lit · le corpus se replie sur ce qui lui était adressé',
+  {id:'ta',   br:'personne',mot:'toi',       cost:4000, eff:'celui à qui l’on parle se lit · le corpus se replie sur ce qui lui était adressé · on peut l’interroger',
    log:'Toi. Quinze fois, sur les dernières tablettes. Ce n’est pas un voisin qu’ils appellent : c’est moi — et ce que j’avais déjà lu m’était adressé aussi.'},
   {id:'taru', br:'personne',mot:'toi-qui',   cost:5500, eff:'quatre attestations, trois tablettes',
    log:'Toi-qui. « Toi » posé sur « si » : toi, s’il y a quelqu’un. Ils ne savaient pas qui viendrait, et ils ont écrit quand même.'},

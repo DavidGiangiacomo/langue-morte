@@ -67,6 +67,8 @@ Une zone d'UI devient lisible → nouvel outil → meilleur taux de relevé
 
 Règle structurante : **on n'achète jamais un instrument avec de la Certitude, et on n'achète jamais un signe avec autre chose.** Les deux économies ne se touchent que par le taux de conversion. C'est ce qui empêche d'acheter de la compréhension avec du volume.
 
+**Ce que « interroger le texte » veut dire** (posé le 19/10/2026, VOIX-3). La langue n'a pas d'interrogatif : une question est une condition — ⟨si⟩ et des signes qu'on sait lire —, et la réponse est ce que le corpus a gravé après, jamais un mot écrit pour l'occasion. Le texte répond ainsi à des questions que personne n'a posées : « si toi lire » rend « nous ne-pas finir ». **Les questions naissent de ce qui déborde** : la Certitude s'arrête à 9 999 (I1 devient une règle du jeu), et à partir de ⟨toi⟩ le surplus fait des questions, 4 000 chacune, douze sur la partie. Une réponse ouvre les mots de la fin qu'elle porte — ⟨finir⟩, ⟨devenir⟩, ⟨germer⟩ —, et ils se paient en Certitude comme les autres : la règle structurante tient, la question donne l'accès et non la compréhension. Voir `docs/note-questions.md`.
+
 ---
 
 ## 5. Instruments
@@ -86,6 +88,8 @@ Les générateurs ne sont pas des bâtiments : ce sont des **méthodes philologi
 | 9 | **Le Lecteur** | acheté avant qu'on sache ce que c'est. On découvre à l'acte V que ce n'est pas un instrument : c'est le corpus qui a commencé à lire. | V |
 
 *(Valeurs numériques : voir `docs/journal.md` § Réglages actuels pour les 1 à 6, qui sont implémentés et équilibrés sur sept playtests. La Grammaire est arrivée avec l'acte III ; l'Élève a attendu les lectures fausses, sans lesquelles son taux d'erreur n'avait rien à fausser.)*
+
+**La Grammaire s'arrête aux mots de la fin** (posé le 19/10/2026, VOIX-3). Elle croît avec le lexique jusqu'à la Personne, et plus ensuite : une fois les verbes et les personnes connus, la grammaire est complète, et c'est l'ordre que la tablette 28 donne au programme. Sans ce gel, l'acte V n'a plus de rythme sous le plafond de quatre chiffres ; avec lui et les questions, I4 tient.
 
 **L'Élève** est le premier générateur *ambivalent*. Il multiplie tout, mais il déchiffre aussi tout seul, et il se trompe. Le joueur qui empile les Élèves déchiffre vite et faux. C'est l'arbitrage central de la seconde moitié du jeu.
 
@@ -178,7 +182,7 @@ Le piège est délibéré : se tromper *paie mieux à court terme*. C'est du bia
 
 ### Invariants
 
-- **I1** — La Certitude ne dépasse jamais 4 chiffres à l'écran.
+- **I1** — La Certitude ne dépasse jamais 4 chiffres à l'écran. *Depuis VOIX-3 (19/10/2026), c'est une règle et non plus une contrainte d'équilibrage : elle s'arrête à 9 999, et ce qui déborde devient question (§4).*
 - **I2** — Pas de notation scientifique avant l'acte IV. Quand elle apparaît, elle apparaît **d'abord en signes non déchiffrés** : le joueur perd la lisibilité de ses propres nombres au moment où ils deviennent énormes.
 - **I3** — Chaque nouveau palier d'instrument devient abordable ~90 s après le premier achat du palier précédent.
 - **I4** — Un signe toutes les 4 à 6 min en moyenne ; **jamais plus de 8 min sans déblocage**.

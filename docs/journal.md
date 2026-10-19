@@ -142,6 +142,100 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## Les Questions — ce qui déborde devient question
+
+*19/10/2026, VOIX-3. Sur la branche de travail de la Personne, empilée sur `eleve`. Tranché
+par l'auteur sur une note de conception mesurée, `docs/note-questions.md` : l'option 3, avec
+le gel.*
+
+Le design doc ne donnait presque rien : une ressource Q, « acte IV+, interroger le texte, 0 à
+12 sur toute la partie », et « il répond, dans les limites de ce qui a été gravé il y a quatre
+mille ans ». Le backlog en faisait le plus gros risque de conception du projet — le seul
+système où le jeu pourrait se mettre à parler au lieu de laisser lire.
+
+### Le corpus avait déjà la forme
+
+La langue n'a pas d'interrogatif. ⟨si⟩ est ce qui s'en approche le plus, et le corpus pose
+seize conditions — quinze une fois les nombres ôtés —, chacune suivie de ce qui en découle.
+Une question est donc une condition, et la réponse est ce qui est gravé après. Rien n'est
+écrit pour l'occasion : la table est lue dans le corpus au chargement, et un test vérifie que
+chaque réponse finit une ligne gravée.
+
+Ce qui en est sorti n'était pas cherché. **Le texte répond à des questions que personne n'a
+posées** : qui demande « si toi lire » reçoit « nous ne-pas finir », la thèse du jeu rendue à
+une question que le joueur pose sur lui-même ; qui demande « si lire » reçoit « devenir » une
+fois, et cinquante-huit fois rien — les registres finissent sur « si lire » et s'arrêtent là.
+C'est l'acte V en avance, pour qui demande : un texte conçu pour un lecteur à venir a écrit
+ses réponses d'abord.
+
+Écartée en route : montrer un signe et demander ce qu'il veut dire. C'est une Concordance, et
+il faudrait choisir *la* ligne qui répond ; pour un signe ambigu, la plus parlante est sa
+rupture, et la question deviendrait l'oracle que les règles 17 à 20 refusent.
+
+### Ce qui coûte, et pourquoi le plafond
+
+Le problème d'ECO-3, que la Personne a rendu pressant : sous le plafond de quatre chiffres,
+il ne reste plus un cran de prix pour l'acte V. Mesuré sur un acte V provisoire — sept signes
+de la Fin, au plafond, sans Lecteur ni Corpus jumeau — il dure 16,7 min avec Élèves et 23,7
+sans, et ses écarts retombent à 1,4 min : I4 cède dès le troisième signe. Des questions
+données ne coûtent pas de temps et n'y changent rien.
+
+Ce qui y change quelque chose, c'est que **le prix d'une question n'est jamais détenu d'un
+coup**. La Certitude s'arrête à 9 999, et à partir de ⟨toi⟩ ce qui déborde remplit la question
+suivante. I1 cesse d'être une contrainte sur les prix : c'est une règle du jeu, et elle a un
+sens — au-delà de quatre chiffres, ce que je comprends devient question. Le panneau le dit en
+ces termes, et c'est tout ce qu'il dit de lui-même.
+
+Avec sept questions sur le chemin, un prix croissant de ×1,15 par question rend des écarts
+plats : 1,15 compense le 1,16 de la Grammaire, la leçon de `REC_R` une fois de plus. Mais le
+texte n'en donne que trois — ⟨finir⟩, ⟨devenir⟩ et ⟨germer⟩ sont les seuls mots de la Fin à
+suivre un « si » — et trois questions seules font des dents de scie qu'aucun prix ne tient
+sous I4. D'où le second levier : **la Grammaire gèle aux mots de la fin.** Elle compte l'arbre
+moins la branche de l'acte V ; une fois la Personne connue, la grammaire est complète, et
+c'est l'ordre que la tablette 28 donne au programme — les nombres, les choses, les verbes.
+Trois questions à 4 000 et le gel : 28,2 min d'acte V avec Élèves, 40,3 sans, écarts de 3,2 à
+7,2, I4 tenu des deux côtés. Aucun des deux seul ne le fait. Le gel contredit la lettre du
+design doc §5 ; c'est noté là.
+
+### Trouvé en mesurant : la nuit
+
+Quatre heures hors ligne à 40 %, c'est quatre-vingt-seize minutes de production pleine. À
+l'achat de ⟨nuit⟩, quatorze à dix-sept mille Certitude ; à celui de ⟨nous⟩, soixante-six à
+quatre-vingt-neuf mille — deux fois toute la branche Personne, à dépenser au retour. L'écran le
+cachait (« 17,4 k »), mais la lecture d'I1 qui avait fixé les prix de la Personne était déjà
+fausse hors ligne. Le plafond la referme au passage : la nuit remplit la Certitude jusqu'à
+9 999, et **jamais une question** — une question demande quelqu'un pour la poser.
+
+### Ce qui a été tranché à l'écriture
+
+Les points que la note laissait ouverts, réglés au plus simple :
+
+- **Les nombres ne font pas partie de la condition.** La palette ne pose que des signes, et
+  « si copier » rend donc ses trois suites, dont « un devenir » (« si copier 100 », tablette 23).
+- **Une réponse coûte une question, un silence rien.** Sans question en main, on ne pose rien
+  du tout : refuser seulement les conditions gravées dirait lesquelles le sont.
+- **Une condition déjà posée ne se repose pas** ; sa réponse reste au panneau, le silence
+  aussi, comme le carnet de la grille.
+- **La réponse s'écrit à l'infinitif**, comme la concordance : c'est un relevé, pas le récit.
+  Les lignes qui la portent s'allument dans le corpus, en bleu d'instrument et non en ocre — ce
+  n'est pas le texte qui se refuse, c'est le panneau qui montre où il a répondu.
+- **Le plafond ne retire rien** à une partie qui l'avait déjà dépassé (R2). La neuvième
+  révision coûte 10 308 C et devient impossible ; elle demandait déjà de détenir cinq chiffres.
+
+### Ce qui n'est pas fait
+
+**Les mots de la fin.** Une réponse ouvre un signe marqué `rep` dans le lexique ; aucun ne
+l'est avant GRAINE-1, et d'ici là le panneau répond sans rien ouvrir. L'ouverture n'est
+vérifiée qu'au niveau de la déduction (`ouvertsParReponse()` porte ⟨finir⟩ et ⟨devenir⟩
+après « si toi lire » et « si lire »). Le prix des questions, le gel et l'ordre de la Fin sont
+à remesurer dans `sim.py` quand ECO-2 y aura porté l'acte V : les chiffres ci-dessus viennent
+d'une copie modifiée hors du dépôt.
+
+Économie des actes I à IV inchangée au chiffre près : le plafond ne mord pas tant que
+l'acheteur dépense, et le gel n'a rien à geler. `sim.py` porte les deux. `outils/verifier.py`
+passe de 342 à **360 assertions**. Question pour le playtest qui jouera cette branche :
+**pose-t-on des questions, lesquelles, et après avoir lu les « si » ou au hasard ?**
+
 ## La version entre dans la sauvegarde, et la clé ne bouge plus
 
 *19/10/2026, LIV-3.* La clé de sauvegarde changeait chaque fois qu'une partie gênait —

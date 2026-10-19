@@ -202,6 +202,34 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .cpair{display:inline-flex;opacity:.38;color:var(--dim)}
 .cpair .gl2{width:24px;height:18px}
 
+/* ---------- les Questions ---------- */
+/* La règle du panneau, en mono comme une note d'instrument : elle dit d'où viennent les
+   questions, jamais ce qu'il y a à demander. */
+.qregle{font-family:var(--mono);font-size:9.5px;line-height:1.5;color:var(--dim);letter-spacing:.02em}
+.qjauge{height:2px;background:var(--line);position:relative;overflow:hidden}
+.qjauge i{position:absolute;inset:0 auto 0 0;background:var(--slate);opacity:.8;transition:width .3s}
+.qsi{font-size:16px;color:var(--lamp);min-width:22px;text-align:right}
+.qsi .gl{width:16px;height:21px;color:var(--dim)}
+.qreps{border-top:1px solid var(--line);padding-top:7px;display:flex;flex-direction:column;gap:3px}
+/* Une réponse est du texte ancien : elle s'écrit dans le serif du corpus, pas dans la mono
+   des instruments. */
+.qrep{display:flex;flex-direction:column;gap:1px;width:100%;text-align:left;padding:4px 7px;
+  border:1px solid transparent;border-radius:2px}
+.qrep:hover:not(:disabled){background:#2C2318;border-color:var(--line)}
+.qrep.vu{border-color:var(--line2);background:#252D30}
+.qrep:disabled{cursor:default;opacity:.55}
+.qcond{font-size:13.5px;color:var(--mid)}
+.qsuites{display:flex;flex-direction:column;padding-left:12px}
+.qsuite{font-size:15px;color:var(--lamp)}
+.qrep .gl{width:13px;height:17px;vertical-align:-3px}
+.qrep .gl2{width:22px;height:17px;vertical-align:-3px}
+.qsep{color:var(--faint);padding:0 2px}
+.qrien{font-family:var(--mono);font-size:9.5px;color:var(--faint);letter-spacing:.04em}
+.qfois{font-family:var(--mono);font-size:9.5px;color:var(--slate);opacity:.8}
+/* Les lignes qui portent la réponse qu'on regarde. En bleu d'instrument et non en ocre : ce
+   n'est pas le texte qui se refuse (`.rompu`), c'est le panneau qui montre où il a répondu. */
+.ln.repondu{background:#1F2629;box-shadow:inset 2px 0 0 var(--slate)}
+
 /* ---------- lexique ---------- */
 .lex{padding:10px 11px;display:flex;flex-direction:column;gap:13px}
 .branch .bh{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-bottom:6px}

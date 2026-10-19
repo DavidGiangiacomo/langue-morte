@@ -624,6 +624,118 @@ function paintComp(){
   }).join(''));
 }
 
+/* ==================== les Questions (VOIX-3) ====================
+   Le panneau ressemble à la grille de composition parce qu'il fait le même geste : poser
+   des signes qu'on sait lire. La palette suit la même règle (14) — les signes acquis, aucun
+   autre, même grisé. Ce qui diffère est ce qui revient : la grille ne dit jamais si une
+   paire existe, le texte, lui, répond — mais seulement avec ce qu'il a gravé.
+   La réponse s'écrit avec les mots du lexique, à l'infinitif comme la concordance : c'est un
+   relevé, pas le récit (règle 23). Les lignes qui la portent s'allument dans le corpus, où
+   le récit, lui, garde ses temps. */
+const Q_POSE = 3;       // signes posés après ⟨si⟩, au plus — la plus longue condition en a trois
+let qSel = [], qVue = null;
+
+function qPoser(id){
+  const i = qSel.indexOf(id);
+  if(i >= 0){ qSel.splice(i, 1); return; }        // recliquer retire
+  if(qSel.length < Q_POSE) qSel.push(id);
+}
+function qVider(){ qSel = []; }
+/* Un jeton de réponse : le mot s'il est lu, le signe sinon — comme dans le corpus. */
+function qJeton(tk){
+  if(tk === '·') return '<span class="qsep">·</span>';
+  if(tk.charCodeAt(0) === 37){ const n = +tk.slice(1);
+    return numLisible(n) ? nf.format(n) : numGlyphs(n); }
+  return byId[tk] && has(tk) ? '<span class="qmot">'+motDe(tk)+'</span>' : sv(tk);
+}
+const qCondHTML = cle => (has('en') ? motDe('en') : sv('en')) + ' '
+  + cle.split(' ').map(qJeton).join(' ');
+
+function buildQuest(){
+  setHTML($('q-choix'), GL.map(g =>
+    '<button class="pion" data-qpion="'+g.id+'" hidden>'+sv(g.id)+'</button>').join(''));
+}
+
+/* Les lignes de la réponse qu'on regarde. Repeintes au changement seulement, jamais à la
+   frame : une condition comme « si ne-pas » en porte cent trente. */
+let qPeints = [];
+function peindreQuestion(){
+  for(const ln of qPeints) ln.classList.remove('repondu');
+  qPeints = [];
+  if(!qVue) return;
+  for(const e of QUESTIONS[qVue] || []) for(const [t, l] of e.lignes){
+    const tb = elCorpus.querySelector('.tablet[data-tb="'+t+'"]');
+    const ln = tb && tb.children[l];
+    if(ln){ ln.classList.add('repondu'); qPeints.push(ln); }
+  }
+}
+/* Regarder une réponse : ses lignes s'allument, et le corpus va à la première qu'on a sous
+   les yeux. Une ligne pas encore sortie de terre ne se montre pas — la réponse le dit quand
+   même, elle était gravée. */
+function qMontrer(cle){
+  qVue = qVue === cle ? null : cle;
+  peindreQuestion();
+  if(!qVue) return;
+  for(const e of QUESTIONS[qVue] || []) for(const [t] of e.lignes)
+    if(degagee(t)){ versTablette(t); return; }
+}
+
+function paintQuest(){
+  const ouvert = questionsOuvertes();
+  if($('pquest').hidden !== !ouvert) $('pquest').hidden = !ouvert;
+  if(!ouvert) return;
+  const n = questionsEnMain();
+  setHTML($('q-n'), n ? nf.format(n)+' en main' : 'aucune en main');
+  /* Sa propre règle, à l'écran (règle 14) : d'où viennent les questions, et quand il n'en
+     viendra plus. Rien sur ce qu'il y a à demander. */
+  const fini = S_.qn >= Q_MAX;
+  setHTML($('q-regle'), fini ? 'Douze questions : il n’en viendra plus.'
+    : 'Au-delà de '+nf.format(C_MAX)+', ce que je comprends devient question.');
+  const w = $('q-jauge-w');
+  if(w.hidden !== fini) w.hidden = fini;
+  if(!fini){ $('q-jauge').style.width = Math.min(100, 100*S_.qf/Q_COUT)+'%';
+    const t = nf.format(Math.floor(S_.qf))+' / '+nf.format(Q_COUT);
+    if(w.title !== t) w.title = t; }
+
+  for(const g of GL){
+    const b = $('q-choix').querySelector('[data-qpion="'+g.id+'"]'), vu = has(g.id);
+    if(b.hidden !== !vu) b.hidden = !vu;
+    if(!vu) continue;
+    const m = motDe(g.id);
+    if(b.title !== m) b.title = m;
+    b.classList.toggle('pose', qSel.indexOf(g.id) >= 0);
+  }
+  setHTML($('q-si'), has('en') ? motDe('en') : sv('en'));
+  const slots = $('pquest').querySelectorAll('.slot');
+  for(let i = 0; i < Q_POSE; i++){
+    const id = qSel[i];
+    setHTML(slots[i], id ? sv(id) : '');
+    slots[i].classList.toggle('plein', !!id);
+    const t = id ? 'retirer ce signe' : 'poser un signe';
+    if(slots[i].title !== t) slots[i].title = t;
+  }
+  const cle = qSel.join(' '), deja = !!cle && S_.qa.indexOf(cle) >= 0;
+  $('a-quest').disabled = !cle || deja || n < 1;
+  setHTML($('ac-quest'), deja ? 'déjà demandé' : '1 question');
+
+  /* Ce qui a été demandé, le plus récent en haut. Le silence y reste aussi : c'est la seule
+     mémoire de ce qu'on a déjà essayé, comme le carnet. */
+  const r = $('q-reps');
+  if(r.hidden !== !S_.qa.length) r.hidden = !S_.qa.length;
+  if(S_.qa.length) setHTML(r, '<div class="ch">Déjà demandé</div>' + S_.qa.slice().reverse().map(k => {
+    const rep = QUESTIONS[k];
+    /* Ce qui est gravé d'abord, le silence après : « si lire » répond « devenir » une fois,
+       et cinquante-huit fois rien. */
+    const suites = !rep ? '<span class="qrien">le texte ne dit rien</span>'
+      : rep.slice().sort((a, b) => !a.suite - !b.suite).map(e => '<span class="qsuite">'
+          + (e.suite ? e.suite.split(' ').map(qJeton).join(' ') : '<span class="qrien">rien après</span>')
+          + (e.lignes.length > 1 ? ' <span class="qfois">×'+nf.format(e.lignes.length)+'</span>' : '')
+          + '</span>').join('');
+    return '<button class="qrep'+(k === qVue ? ' vu' : '')+'" data-q="'+k+'"'+(rep ? '' : ' disabled')+'>'
+         + '<span class="qcond">'+qCondHTML(k)+'</span><span class="qsuites">'+suites+'</span></button>';
+  }).join(''));
+}
+
 /* ==================== trancher à l'achat ====================
    Onze signes supportent deux lectures ; le joueur choisit au moment de payer, et paie le
    même prix dans les deux cas (design doc §8). La fenêtre ne porte qu'une chose de plus que
@@ -743,12 +855,14 @@ function buildLex(){
     '</div></div>');
 }
 function paintLex(){
+  /* Un mot que seule une réponse offre (VOIX-3) reste fermé tant qu'aucune ne l'a porté. */
+  const ouverts = GL.some(g => g.rep) ? ouvertsParReponse() : null;
   for(const [k] of BR){
     const list=GL.filter(g=>g.br===k && !g.sec);
     let prevDone=true;
     for(const g of list){
       const b=$('lex').querySelector('[data-gl="'+g.id+'"]');
-      const done=has(g.id), open=prevDone&&!done, can=open&&S_.C>=g.cost;
+      const done=has(g.id), open=prevDone&&!done&&(!g.rep||ouverts.has(g.id)), can=open&&S_.C>=g.cost;
       const cls='gcard'+(done?' done':can?' afford':open?'':' locked');
       if(b.className!==cls) b.className=cls;
       b.disabled=!can;
@@ -961,7 +1075,7 @@ function recommencer(){
   /* Sans ceci la table des signes de numération garde ceux de la partie précédente :
      on repart de zéro glyphe avec 229 nombres encore lisibles à l'écran. */
   majSignes(); touchees=new Set(); recArmer(false); concFermer(); compVider(); finDesarmer();
-  ambFermer();
+  ambFermer(); qVider(); qVue = null; peindreQuestion();
   $('log').innerHTML='<p class="hint">relève un signe : clique dans le corpus</p>';
   /* Recommencer efface la partie qu'on voit — jamais une sauvegarde que ce jeu n'a pas su
      lire, qui n'est pas celle-là et qu'il n'a pas chargée (`charger()`). */

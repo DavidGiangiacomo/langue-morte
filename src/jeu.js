@@ -7,7 +7,7 @@
 /* Le compte de l'arbre, écrit une fois : recopié dans le HTML, il mentait dès le lot suivant. */
 document.querySelectorAll('.ngl').forEach(el => { el.textContent = NGL; });
 majSignes();
-buildRail(); buildCorpus(); buildInstr(); buildComp(); buildDoute(); buildLex();
+buildRail(); buildCorpus(); buildInstr(); buildComp(); buildQuest(); buildDoute(); buildLex();
 if(S_.gl.length){ paintCorpus(null); pushLog(logDe(S_.gl[S_.gl.length-1])); }
 /* `nuit` acquis, le corpus se lit sans le joueur — 40 % du débit, quatre heures au plus.
    Dit au retour, une seule fois, et seulement s'il s'est passé quelque chose. */
@@ -59,7 +59,9 @@ window.addEventListener('keydown', e=>{
     else if(!$('end').hidden) fermerFin();
     else if(recArme) recArmer(false);
     else if(concArme || concSel || concToi) concFermer();
-    else if(compSel[0] || compSel[1]) compVider(); }
+    else if(compSel[0] || compSel[1]) compVider();
+    else if(qVue){ qVue = null; peindreQuestion(); }
+    else if(qSel.length) qVider(); }
 });
 $('instr').addEventListener('click', e=>{ const b=e.target.closest('[data-ins]'); if(b&&!b.disabled) acheterIns(b.dataset.ins); });
 /* Un signe ambigu ne s'achète pas d'un clic : il ouvre les deux lectures, et c'est le
@@ -87,6 +89,18 @@ $('pcomp').addEventListener('click', e=>{
   const b=e.target.closest('[data-slot]'); if(b) compSel[+b.dataset.slot]=null; });
 $('a-comp').addEventListener('click', ()=>{
   if(composer(compSel[0], compSel[1]) !== 'refus') compVider(); });
+/* Les Questions (VOIX-3). Même gestes que la grille : poser, retirer, demander. Une réponse
+   s'allume dans le corpus aussitôt ; une réponse déjà obtenue se rallume d'un clic. */
+$('q-choix').addEventListener('click', e=>{
+  const b=e.target.closest('[data-qpion]'); if(b&&!b.hidden) qPoser(b.dataset.qpion); });
+$('pquest').addEventListener('click', e=>{
+  const s=e.target.closest('[data-qslot]'); if(s){ qSel.splice(+s.dataset.qslot, 1); return; }
+  const r=e.target.closest('[data-q]'); if(r&&!r.disabled) qMontrer(r.dataset.q); });
+$('a-quest').addEventListener('click', ()=>{
+  const sig = qSel.slice(), r = questionner(sig);
+  if(r === 'refus') return;
+  qVider();
+  if(r === 'reponse') qMontrer(sig.join(' ')); });
 
 function repeat(btn, fn){
   let iv=null, to=null;

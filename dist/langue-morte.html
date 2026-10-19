@@ -213,6 +213,34 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .cpair{display:inline-flex;opacity:.38;color:var(--dim)}
 .cpair .gl2{width:24px;height:18px}
 
+/* ---------- les Questions ---------- */
+/* La règle du panneau, en mono comme une note d'instrument : elle dit d'où viennent les
+   questions, jamais ce qu'il y a à demander. */
+.qregle{font-family:var(--mono);font-size:9.5px;line-height:1.5;color:var(--dim);letter-spacing:.02em}
+.qjauge{height:2px;background:var(--line);position:relative;overflow:hidden}
+.qjauge i{position:absolute;inset:0 auto 0 0;background:var(--slate);opacity:.8;transition:width .3s}
+.qsi{font-size:16px;color:var(--lamp);min-width:22px;text-align:right}
+.qsi .gl{width:16px;height:21px;color:var(--dim)}
+.qreps{border-top:1px solid var(--line);padding-top:7px;display:flex;flex-direction:column;gap:3px}
+/* Une réponse est du texte ancien : elle s'écrit dans le serif du corpus, pas dans la mono
+   des instruments. */
+.qrep{display:flex;flex-direction:column;gap:1px;width:100%;text-align:left;padding:4px 7px;
+  border:1px solid transparent;border-radius:2px}
+.qrep:hover:not(:disabled){background:#2C2318;border-color:var(--line)}
+.qrep.vu{border-color:var(--line2);background:#252D30}
+.qrep:disabled{cursor:default;opacity:.55}
+.qcond{font-size:13.5px;color:var(--mid)}
+.qsuites{display:flex;flex-direction:column;padding-left:12px}
+.qsuite{font-size:15px;color:var(--lamp)}
+.qrep .gl{width:13px;height:17px;vertical-align:-3px}
+.qrep .gl2{width:22px;height:17px;vertical-align:-3px}
+.qsep{color:var(--faint);padding:0 2px}
+.qrien{font-family:var(--mono);font-size:9.5px;color:var(--faint);letter-spacing:.04em}
+.qfois{font-family:var(--mono);font-size:9.5px;color:var(--slate);opacity:.8}
+/* Les lignes qui portent la réponse qu'on regarde. En bleu d'instrument et non en ocre : ce
+   n'est pas le texte qui se refuse (`.rompu`), c'est le panneau qui montre où il a répondu. */
+.ln.repondu{background:#1F2629;box-shadow:inset 2px 0 0 var(--slate)}
+
 /* ---------- lexique ---------- */
 .lex{padding:10px 11px;display:flex;flex-direction:column;gap:13px}
 .branch .bh{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-bottom:6px}
@@ -430,6 +458,31 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
           </div>
           <button class="act" id="a-comp"><span class="an">Poser un signe sur l’autre</span><span class="ac" id="ac-comp"></span></button>
           <div class="carnet" id="carnet" hidden></div>
+        </div>
+      </section>
+
+      <!-- Les Questions (VOIX-3). Elles n'apparaissent qu'avec ⟨toi⟩ : on n'interroge pas un
+           texte avant de savoir qu'il s'adresse à quelqu'un. Une question est une condition —
+           ⟨si⟩ et des signes qu'on sait lire — et la réponse est ce que le corpus a gravé
+           après, jamais un mot écrit pour l'occasion. Le panneau dit sa propre règle (d'où
+           viennent les questions) et rien d'autre : ce qu'il y a à demander est au corpus. -->
+      <section class="panel" id="pquest" hidden>
+        <div class="phead"><span>Questions</span><span class="r" id="q-n"></span></div>
+        <div class="comp">
+          <div class="qregle" id="q-regle"></div>
+          <div class="qjauge" id="q-jauge-w"><i id="q-jauge"></i></div>
+          <div class="pose">
+            <span class="qsi" id="q-si"></span>
+            <button class="slot" data-qslot="0"></button>
+            <button class="slot" data-qslot="1"></button>
+            <button class="slot" data-qslot="2"></button>
+          </div>
+          <div class="palette">
+            <div class="ch">Ce que je sais lire</div>
+            <div class="choix" id="q-choix" aria-label="Ce que je sais lire. Cliquez pour l’ajouter à la question."></div>
+          </div>
+          <button class="act" id="a-quest"><span class="an">Demander au texte</span><span class="ac" id="ac-quest"></span></button>
+          <div class="qreps" id="q-reps" hidden></div>
         </div>
       </section>
     </div>
@@ -796,10 +849,11 @@ const GL = [
      Il ouvre donc la branche : c'est la porte que l'acte III a laissée dans le texte, et
      l'acheter rend la tablette 18 entière, nom propre à part.
      Aucun multiplicateur, comme la Modalité : la branche donne de la lecture. ⟨toi⟩ replie le
-     corpus, une fois, sur ce qui s'adressait au lecteur (VOIX-2, `adresser()` dans rendu.js) ;
-     les Questions qu'il ouvre aussi viendront avec VOIX-3, et rien de ce que le lexique
-     annonce ici ne les promet. Les lignes d'effet disent ce qui se lit, pas ce que ça veut dire : la deuxième
-     personne se découvre sur les tablettes 20 et 24, pas sur une carte du lexique.
+     corpus, une fois, sur ce qui s'adressait au lecteur (VOIX-2, `adresser()` dans rendu.js),
+     et il ouvre les Questions (VOIX-3) : on n'interroge pas un texte avant de savoir qu'il
+     s'adresse à quelqu'un. Sa ligne d'effet le dit sans dire ce qu'on y trouvera. Les lignes
+     d'effet disent ce qui se lit, pas ce que ça veut dire : la deuxième personne se découvre
+     sur les tablettes 20 et 24, pas sur une carte du lexique.
      Les prix sont une mesure, et ils butent sur un plafond. L'économie est exponentielle —
      la Grammaire croît en 1,16 par signe de l'arbre — et I1 interdit d'afficher plus de
      quatre chiffres de Certitude. Au pas de la branche d'avant (1 300 à 3 000 C), les six
@@ -825,7 +879,7 @@ const GL = [
    log:'Nous. Le signe qui se tenait seul devant leur nom revient quarante et une fois, jusque dans les registres. Ce n’était pas un mot de plus : c’étaient eux.'},
   {id:'mu',   br:'personne',mot:'je',        cost:2800, eff:'quelqu’un parle en son nom — cinq attestations, une seule main',
    log:'Je. Cinq fois dans tout le corpus, et toujours de la même main — celle qui signe les dernières tablettes. Quelqu’un a fini par parler en son nom.'},
-  {id:'ta',   br:'personne',mot:'toi',       cost:4000, eff:'celui à qui l’on parle se lit · le corpus se replie sur ce qui lui était adressé',
+  {id:'ta',   br:'personne',mot:'toi',       cost:4000, eff:'celui à qui l’on parle se lit · le corpus se replie sur ce qui lui était adressé · on peut l’interroger',
    log:'Toi. Quinze fois, sur les dernières tablettes. Ce n’est pas un voisin qu’ils appellent : c’est moi — et ce que j’avais déjà lu m’était adressé aussi.'},
   {id:'taru', br:'personne',mot:'toi-qui',   cost:5500, eff:'quatre attestations, trois tablettes',
    log:'Toi-qui. « Toi » posé sur « si » : toi, s’il y a quelqu’un. Ils ne savaient pas qui viendrait, et ils ont écrit quand même.'},
@@ -1075,7 +1129,8 @@ const KEY='langue-morte-partie';
    à treize signes, abandonnées le 08/09/2026, et l'économie qui les a produites n'existe plus. */
 const CLES_ANCIENNES = ['langue-morte-actes-i-iii'];
 const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram:0,elv:0},gl:[],t:0,done:false,
-  rel:{}, prix:{}, carnet:[], comp:0, lect:{}, dte:{}, conc:{}, recs:{}, rev:0, contr:0});
+  rel:{}, prix:{}, carnet:[], comp:0, lect:{}, dte:{}, conc:{}, recs:{}, rev:0, contr:0,
+  qn:0, qf:0, qa:[]});
 /* rel : jetons relevés par tablette · prix : tarif du gisement, verrouillé
    carnet : les paires déjà tentées et fausses · comp : le nombre de tentatives, toutes issues
    confondues — c'est lui que PT10 doit lire, pas la seule liste des échecs.
@@ -1085,6 +1140,10 @@ const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram
    nombre de recoupements par signe, qui sont ce sur quoi ce degré se calcule · rev : les
    révisions faites, dont dépend le prix de la suivante (CONTR-3) · contr : la contradiction,
    armée ou non (CONTR-1) — le seul de ces champs que le joueur voie.
+   qn : les questions venues depuis le début, douze au plus · qf : le surplus de Certitude
+   accumulé vers la suivante · qa : les conditions déjà posées, dans l'ordre (VOIX-3). Les
+   questions en main ne se stockent pas : elles se déduisent des deux premiers
+   (`questionsEnMain()`).
    Une partie d'avant la composition, ou d'avant l'ambiguïté, les reçoit vides au chargement
    (`fusionner()`) : un champ ajouté ne demande ni nouvelle clé ni migration. */
 let S_ = fresh(), speed = 1;
@@ -1600,7 +1659,20 @@ const CON_P = 0.0039;   // certitude par seconde et par concordance
 const GRAM_P = 0.0012;  // certitude par seconde et par grammaire, avant l'effet du lexique
 const GRAM_R = 1.16;    // ... qui croît de 16 % par signe déchiffré
 const GRAM_C = 3.0;     // hypothèses par seconde consommées
-const gramMul = () => Math.pow(GRAM_R, nArbre());
+/* La Grammaire cesse de croître avec les mots de la fin (VOIX-3, tranché par l'auteur le
+   19/10/2026). Elle compte ce que l'arbre a rendu (règle 13), mais seulement dans les
+   branches d'avant l'acte V : une fois les mots de la Personne connus, la grammaire est
+   complète, et ⟨finir⟩, ⟨semence⟩ ou ⟨germer⟩ n'en sont pas. C'est l'ordre que la tablette
+   28 donne au programme : les nombres, les choses, les verbes.
+   Sans ce gel, l'acte V n'a plus de rythme : sous le plafond de 9 999, ses signes tombent
+   toutes les 1,4 à 3,7 min, de plus en plus vite. Les questions nées du surplus en portent
+   une partie, et ce gel le reste — mesuré, les deux ensemble tiennent I4 avec et sans
+   Élèves ; aucun des deux seul ne le fait (`docs/note-questions.md`).
+   Dérivé du lexique et non écrit en dur : 36 aujourd'hui, et il le restera quand la branche
+   Fin entrera dans `GL`. Sans effet tant qu'elle n'y est pas. */
+const nGrammaire = () => { let n=0; for(const id of S_.gl){ const g=byId[id];
+  if(g && !g.sec && (ACTE[g.br]||0) < 5) n++; } return n; };
+const gramMul = () => Math.pow(GRAM_R, nGrammaire());
 
 const INS = [
   {k:'cop', nom:'Copiste',              sig:'sar',  base:10,   r:1.12,
@@ -1674,7 +1746,7 @@ function formuler(){ const c=hypCost(); if(S_.O>=c){ S_.O-=c; S_.H+=1; } }
 function recouper(id){
   const c=recCost();
   if(S_.O<c.O||S_.H<c.H) return false;
-  S_.O-=c.O; S_.H-=c.H; S_.C+=recGain(); S_.rec++;
+  S_.O-=c.O; S_.H-=c.H; gagnerC(recGain()); S_.rec++;
   /* Compté par signe depuis MOD-2 : rapprocher deux attestations d'un même signe est l'un
      des deux gestes sur lesquels se calcule son degré de doute. */
   if(id) S_.recs[id] = (S_.recs[id]||0) + 1;
@@ -1738,6 +1810,109 @@ function composer(a, b){
   pushLog('Rien ne vient.');
   return 'rate';
 }
+
+/* ======================== les Questions (VOIX-3) ========================
+   « On peut interroger le texte, il répond, dans les limites de ce qui a été gravé il y a
+   quatre mille ans » (design doc §10). Tranché par l'auteur le 19/10/2026, sur une note
+   mesurée (`docs/note-questions.md`).
+
+   **Une question est une condition.** La langue n'a pas d'interrogatif ; ⟨si⟩ est ce qui
+   s'en approche le plus, et le corpus en pose seize, chacune suivie de ce qui en découle.
+   Le joueur pose ⟨si⟩ et des signes qu'il sait lire ; la réponse est ce qui est gravé
+   après cette condition-là, dans toutes les tablettes. Jamais un mot écrit pour l'occasion
+   (R8) : la table ci-dessous est lue dans le corpus, une fois, au chargement. Le texte
+   répond à des questions que personne n'a posées — « si toi lire · nous ne-pas finir » —
+   parce qu'il a été écrit pour un lecteur à venir. C'est l'acte V en avance, et rien ne le
+   commente.
+
+   **Ce que la réponse ne fait pas.** Elle ne dépend jamais de la justesse des lectures : elle
+   s'écrit avec les mots du joueur, et une lecture fausse peut la rendre absurde — c'est le
+   texte qui parle, comme pour les ruptures (règles 17 et 20). Elle ne compte pas dans le
+   degré de doute : c'est le texte qui montre, pas le joueur qui rassemble (règle 18, même
+   décision que le repli de VOIX-2). Et une condition gravée nulle part ne coûte rien — « Le
+   texte ne dit rien. » — ce qui ne renseigne pas : une Concordance sur ⟨si⟩ montre les
+   mêmes lignes.
+
+   **Ce qu'elle ouvre.** Un signe que l'arbre n'offre pas (`rep` dans `GL`) devient
+   achetable quand une réponse le porte, et se paie en Certitude comme les autres : la
+   question donne l'accès, jamais la compréhension (§4 du design doc). Ce sont les mots de la
+   fin qui ne se trouvent qu'après un « si » — ⟨finir⟩, ⟨devenir⟩, ⟨germer⟩ —, et ils
+   arriveront avec GRAINE-1. Rien ne porte `rep` aujourd'hui.
+
+   **D'où viennent les questions.** De ce qui déborde. La Certitude s'arrête à 9 999, et I1
+   cesse d'être une contrainte sur les prix pour devenir une règle du jeu. À partir de
+   ⟨toi⟩, le surplus remplit la question suivante ; une question qui obtient une réponse en
+   consomme une. C'est le seul levier mesuré qui n'ait pas de plafond : le prix d'une question
+   n'est jamais détenu d'un coup, il peut donc croître — et c'est ce qui manquait à l'acte V
+   pour avoir un rythme (ECO-3).
+   - 4 000 la question, et douze sur la partie : seize conditions, on ne peut pas tout
+     demander. Mesuré avec trois questions sur le chemin de l'acte V et la Grammaire gelée
+     (`nGrammaire()`) : 28,2 min d'acte V avec Élèves, 40,3 sans, I4 tenu dans les deux cas.
+     Chaque question de plus coûte 1,3 à 1,9 min.
+   - avant ⟨toi⟩ le surplus est perdu : il n'y a encore personne à qui la poser. La nuit, de
+     même (`veillee()`).
+   - le plafond ne retire rien : une Certitude déjà au-dessus, d'une partie d'avant ce lot,
+     reste où elle est — elle ne monte plus, c'est tout. On ne perd pas ce qu'on a (R2). */
+const C_MAX  = 9999;    // la Certitude ne dépasse jamais quatre chiffres (I1)
+const Q_COUT = 4000;    // le surplus qui fait une question
+const Q_MAX  = 12;      // les questions de toute la partie (design doc §4)
+const questionsOuvertes = () => has('ta');
+
+/* Toute la Certitude gagnée passe par ici : la concordance, la grammaire, le recoupement. */
+function gagnerC(x, nuit){
+  if(!(x > 0)) return;
+  const pris = Math.min(x, Math.max(0, C_MAX - S_.C));
+  S_.C += pris;
+  const reste = x - pris;
+  if(reste <= 0 || nuit || !questionsOuvertes() || S_.qn >= Q_MAX) return;
+  S_.qf += reste;
+  while(S_.qf >= Q_COUT && S_.qn < Q_MAX){ S_.qf -= Q_COUT; S_.qn++; }
+  if(S_.qn >= Q_MAX) S_.qf = 0;
+}
+
+/* La table des réponses : condition → ce qui la suit, chaque suite distincte une fois, avec
+   les lignes qui la portent. La condition est faite des signes entre ⟨si⟩ et le « · »
+   suivant, nombres exclus — la palette ne pose que des signes, et « si copier 100 · un
+   devenir » répond donc à « si copier », avec ses deux autres suites. Une suite vide est une
+   réponse : cinquante-huit lignes de registre finissent sur « si lire », et rien après. */
+const QUESTIONS = {};
+for(const tb of CORPUS) tb.l.forEach((ln, li) => {
+  const segs = [[]];
+  for(const tk of ln.split(' ')) if(tk === '·') segs.push([]); else segs[segs.length-1].push(tk);
+  segs.forEach((s, i) => {
+    const k = s.indexOf('en'); if(k < 0) return;
+    const cond = s.slice(k+1).filter(x => x.charCodeAt(0) !== 37);
+    if(!cond.length) return;
+    const cle = cond.join(' '), suite = segs.slice(i+1).map(z => z.join(' ')).join(' · ');
+    const rep = QUESTIONS[cle] || (QUESTIONS[cle] = []);
+    let e = rep.find(x => x.suite === suite);
+    if(!e) rep.push(e = {suite, lignes: []});
+    e.lignes.push([tb.t, li]);
+  });
+});
+/* Les questions en main se déduisent : celles qui sont venues, moins celles qui ont obtenu
+   une réponse. Un silence ne coûte rien, il ne se décompte donc pas. */
+const questionsEnMain = () => S_.qn - S_.qa.filter(k => QUESTIONS[k]).length;
+/* Les signes qu'une réponse a ouverts, déduits eux aussi des conditions posées. */
+function ouvertsParReponse(){
+  const s = new Set();
+  for(const k of S_.qa) for(const e of QUESTIONS[k] || [])
+    for(const tk of e.suite.split(' ')) if(tk && tk !== '·' && tk.charCodeAt(0) !== 37) s.add(tk);
+  return s;
+}
+/* `signes` : les signes posés après ⟨si⟩, dans l'ordre. Rend 'reponse', 'silence', ou
+   'refus' quand rien n'a bougé. Une condition déjà posée ne se repose pas : sa réponse est
+   au panneau. Sans question en main on ne pose rien du tout — refuser seulement les
+   conditions gravées dirait lesquelles le sont. */
+function questionner(signes){
+  if(!questionsOuvertes() || !signes || !signes.length) return 'refus';
+  if(!signes.every(has) || questionsEnMain() < 1) return 'refus';
+  const cle = signes.join(' ');
+  if(S_.qa.indexOf(cle) >= 0) return 'refus';
+  S_.qa.push(cle);
+  if(!QUESTIONS[cle]){ pushLog('Le texte ne dit rien.'); return 'silence'; }
+  return 'reponse';
+}
 function acheterIns(k){ const i=INS.find(x=>x.k===k), c=insCost(i);
   if(i.unlock()&&S_.O>=c){ S_.O-=c; S_.b[k]++; } }
 /* Le signe qu'on vient d'acquérir est-il le premier de son acte ? Appelée après l'ajout à
@@ -1753,6 +1928,8 @@ const franchit = id => {
    `eleve` dit que la lecture vient d'un Élève et non du joueur (ELV-2). */
 function acheterGl(id, lect, eleve){
   const g=byId[id]; if(has(id)||S_.C<g.cost) return;
+  /* Un mot que seule une réponse offre (VOIX-3) ne s'achète qu'une fois la réponse obtenue. */
+  if(g.rep && !ouvertsParReponse().has(id)) return;
   const avant = CORPUS.map(pctTablette);
   S_.C-=g.cost; S_.gl.push(id);
   /* La dette est posée ici et nulle part ailleurs, à l'instant du choix, et personne ne la
@@ -1851,7 +2028,9 @@ function tick(dt){
 }
 /* La production, séparée du temps de jeu : la nuit passée hors ligne se rattrape par ici
    sans avancer le chronomètre ni traverser l'horloge instrumentée du journal d'actions. */
-function produire(dt){
+/* `nuit` : la production vient de la veillée. Elle remplit la Certitude jusqu'au plafond,
+   jamais une question (VOIX-3). */
+function produire(dt, nuit){
   S_.O += oBrut()*dt;
   // table de fréquences : consomme des occurrences
   const wantO = S_.b.tab*1.0*dt;
@@ -1860,11 +2039,11 @@ function produire(dt){
   // concordance : consomme des hypothèses
   const wantH = S_.b.con*0.5*dt;
   if(wantH>0){ const canH=Math.min(wantH,S_.H); const fr=canH/wantH;
-    S_.H-=canH; S_.C += S_.b.con*CON_P*M.con()*fr*dt/contrDiv(); }
+    S_.H-=canH; gagnerC(S_.b.con*CON_P*M.con()*fr*dt/contrDiv(), nuit); }
   // grammaire : en consomme beaucoup plus, et rend d'autant plus qu'on a déchiffré
   const wantG = S_.b.gram*GRAM_C*dt;
   if(wantG>0){ const canG=Math.min(wantG,S_.H); const fr=canG/wantG;
-    S_.H-=canG; S_.C += S_.b.gram*GRAM_P*gramMul()*M.gram()*fr*dt/contrDiv(); }
+    S_.H-=canG; gagnerC(S_.b.gram*GRAM_P*gramMul()*M.gram()*fr*dt/contrDiv(), nuit); }
 }
 
 /* ---- la nuit ----
@@ -1872,14 +2051,19 @@ function produire(dt){
    quatre heures au plus (design doc §9). Avant lui il ne se passe rien hors ligne, et c'est
    diégétique — il n'y a personne pour lire. On rattrape en tranches d'une minute plutôt
    qu'en un seul bond : les convertisseurs se coupent quand leur intrant manque, et un
-   unique appel de quatre heures leur ferait ignorer cette coupure. */
+   unique appel de quatre heures leur ferait ignorer cette coupure.
+   Depuis VOIX-3, la nuit remplit la Certitude jusqu'à 9 999 et pas au-delà. Elle rapportait
+   avant ça quatorze à dix-sept mille Certitude dès l'achat de `nuit`, et soixante-six à
+   quatre-vingt-neuf mille à celui de ⟨nous⟩ — deux fois toute la branche Personne, à dépenser
+   au retour (`docs/note-questions.md`, §5). Et elle ne remplit pas de question : une question
+   demande quelqu'un pour la poser. */
 function veillee(){
   if(!has('esh') || S_.done || !S_.ts) return 0;
   const ecoule = Math.min((Date.now() - S_.ts)/1000, 4*3600);
   if(ecoule < 60) return 0;
   const avant = S_.O;
   let reste = ecoule * 0.4;
-  while(reste > 0){ const pas = Math.min(60, reste); produire(pas); reste -= pas; }
+  while(reste > 0){ const pas = Math.min(60, reste); produire(pas, true); reste -= pas; }
   /* La nuit est consommée : sans cela, rouvrir deux fois de suite la même sauvegarde la
      paierait deux fois — la sauvegarde n'horodate que toutes les quatre secondes. */
   S_.ts = Date.now();
@@ -1890,7 +2074,7 @@ function frame(now){
   let dt=(now-last)/1000; last=now;
   if(dt>0.5) dt=0.5;
   if(!S_.done) tick(dt*speed);
-  paintRes(); paintActs(); paintInstr(); paintComp(); paintDoute(); paintLex(); paintMeter();
+  paintRes(); paintActs(); paintInstr(); paintComp(); paintQuest(); paintDoute(); paintLex(); paintMeter();
   finRegarder(now);
   /* Le chrono est hors jeu : la version publique n'en a pas, et une boucle qui le cherche
      quand même s'arrêterait à la première frame. */
@@ -2527,6 +2711,118 @@ function paintComp(){
   }).join(''));
 }
 
+/* ==================== les Questions (VOIX-3) ====================
+   Le panneau ressemble à la grille de composition parce qu'il fait le même geste : poser
+   des signes qu'on sait lire. La palette suit la même règle (14) — les signes acquis, aucun
+   autre, même grisé. Ce qui diffère est ce qui revient : la grille ne dit jamais si une
+   paire existe, le texte, lui, répond — mais seulement avec ce qu'il a gravé.
+   La réponse s'écrit avec les mots du lexique, à l'infinitif comme la concordance : c'est un
+   relevé, pas le récit (règle 23). Les lignes qui la portent s'allument dans le corpus, où
+   le récit, lui, garde ses temps. */
+const Q_POSE = 3;       // signes posés après ⟨si⟩, au plus — la plus longue condition en a trois
+let qSel = [], qVue = null;
+
+function qPoser(id){
+  const i = qSel.indexOf(id);
+  if(i >= 0){ qSel.splice(i, 1); return; }        // recliquer retire
+  if(qSel.length < Q_POSE) qSel.push(id);
+}
+function qVider(){ qSel = []; }
+/* Un jeton de réponse : le mot s'il est lu, le signe sinon — comme dans le corpus. */
+function qJeton(tk){
+  if(tk === '·') return '<span class="qsep">·</span>';
+  if(tk.charCodeAt(0) === 37){ const n = +tk.slice(1);
+    return numLisible(n) ? nf.format(n) : numGlyphs(n); }
+  return byId[tk] && has(tk) ? '<span class="qmot">'+motDe(tk)+'</span>' : sv(tk);
+}
+const qCondHTML = cle => (has('en') ? motDe('en') : sv('en')) + ' '
+  + cle.split(' ').map(qJeton).join(' ');
+
+function buildQuest(){
+  setHTML($('q-choix'), GL.map(g =>
+    '<button class="pion" data-qpion="'+g.id+'" hidden>'+sv(g.id)+'</button>').join(''));
+}
+
+/* Les lignes de la réponse qu'on regarde. Repeintes au changement seulement, jamais à la
+   frame : une condition comme « si ne-pas » en porte cent trente. */
+let qPeints = [];
+function peindreQuestion(){
+  for(const ln of qPeints) ln.classList.remove('repondu');
+  qPeints = [];
+  if(!qVue) return;
+  for(const e of QUESTIONS[qVue] || []) for(const [t, l] of e.lignes){
+    const tb = elCorpus.querySelector('.tablet[data-tb="'+t+'"]');
+    const ln = tb && tb.children[l];
+    if(ln){ ln.classList.add('repondu'); qPeints.push(ln); }
+  }
+}
+/* Regarder une réponse : ses lignes s'allument, et le corpus va à la première qu'on a sous
+   les yeux. Une ligne pas encore sortie de terre ne se montre pas — la réponse le dit quand
+   même, elle était gravée. */
+function qMontrer(cle){
+  qVue = qVue === cle ? null : cle;
+  peindreQuestion();
+  if(!qVue) return;
+  for(const e of QUESTIONS[qVue] || []) for(const [t] of e.lignes)
+    if(degagee(t)){ versTablette(t); return; }
+}
+
+function paintQuest(){
+  const ouvert = questionsOuvertes();
+  if($('pquest').hidden !== !ouvert) $('pquest').hidden = !ouvert;
+  if(!ouvert) return;
+  const n = questionsEnMain();
+  setHTML($('q-n'), n ? nf.format(n)+' en main' : 'aucune en main');
+  /* Sa propre règle, à l'écran (règle 14) : d'où viennent les questions, et quand il n'en
+     viendra plus. Rien sur ce qu'il y a à demander. */
+  const fini = S_.qn >= Q_MAX;
+  setHTML($('q-regle'), fini ? 'Douze questions : il n’en viendra plus.'
+    : 'Au-delà de '+nf.format(C_MAX)+', ce que je comprends devient question.');
+  const w = $('q-jauge-w');
+  if(w.hidden !== fini) w.hidden = fini;
+  if(!fini){ $('q-jauge').style.width = Math.min(100, 100*S_.qf/Q_COUT)+'%';
+    const t = nf.format(Math.floor(S_.qf))+' / '+nf.format(Q_COUT);
+    if(w.title !== t) w.title = t; }
+
+  for(const g of GL){
+    const b = $('q-choix').querySelector('[data-qpion="'+g.id+'"]'), vu = has(g.id);
+    if(b.hidden !== !vu) b.hidden = !vu;
+    if(!vu) continue;
+    const m = motDe(g.id);
+    if(b.title !== m) b.title = m;
+    b.classList.toggle('pose', qSel.indexOf(g.id) >= 0);
+  }
+  setHTML($('q-si'), has('en') ? motDe('en') : sv('en'));
+  const slots = $('pquest').querySelectorAll('.slot');
+  for(let i = 0; i < Q_POSE; i++){
+    const id = qSel[i];
+    setHTML(slots[i], id ? sv(id) : '');
+    slots[i].classList.toggle('plein', !!id);
+    const t = id ? 'retirer ce signe' : 'poser un signe';
+    if(slots[i].title !== t) slots[i].title = t;
+  }
+  const cle = qSel.join(' '), deja = !!cle && S_.qa.indexOf(cle) >= 0;
+  $('a-quest').disabled = !cle || deja || n < 1;
+  setHTML($('ac-quest'), deja ? 'déjà demandé' : '1 question');
+
+  /* Ce qui a été demandé, le plus récent en haut. Le silence y reste aussi : c'est la seule
+     mémoire de ce qu'on a déjà essayé, comme le carnet. */
+  const r = $('q-reps');
+  if(r.hidden !== !S_.qa.length) r.hidden = !S_.qa.length;
+  if(S_.qa.length) setHTML(r, '<div class="ch">Déjà demandé</div>' + S_.qa.slice().reverse().map(k => {
+    const rep = QUESTIONS[k];
+    /* Ce qui est gravé d'abord, le silence après : « si lire » répond « devenir » une fois,
+       et cinquante-huit fois rien. */
+    const suites = !rep ? '<span class="qrien">le texte ne dit rien</span>'
+      : rep.slice().sort((a, b) => !a.suite - !b.suite).map(e => '<span class="qsuite">'
+          + (e.suite ? e.suite.split(' ').map(qJeton).join(' ') : '<span class="qrien">rien après</span>')
+          + (e.lignes.length > 1 ? ' <span class="qfois">×'+nf.format(e.lignes.length)+'</span>' : '')
+          + '</span>').join('');
+    return '<button class="qrep'+(k === qVue ? ' vu' : '')+'" data-q="'+k+'"'+(rep ? '' : ' disabled')+'>'
+         + '<span class="qcond">'+qCondHTML(k)+'</span><span class="qsuites">'+suites+'</span></button>';
+  }).join(''));
+}
+
 /* ==================== trancher à l'achat ====================
    Onze signes supportent deux lectures ; le joueur choisit au moment de payer, et paie le
    même prix dans les deux cas (design doc §8). La fenêtre ne porte qu'une chose de plus que
@@ -2646,12 +2942,14 @@ function buildLex(){
     '</div></div>');
 }
 function paintLex(){
+  /* Un mot que seule une réponse offre (VOIX-3) reste fermé tant qu'aucune ne l'a porté. */
+  const ouverts = GL.some(g => g.rep) ? ouvertsParReponse() : null;
   for(const [k] of BR){
     const list=GL.filter(g=>g.br===k && !g.sec);
     let prevDone=true;
     for(const g of list){
       const b=$('lex').querySelector('[data-gl="'+g.id+'"]');
-      const done=has(g.id), open=prevDone&&!done, can=open&&S_.C>=g.cost;
+      const done=has(g.id), open=prevDone&&!done&&(!g.rep||ouverts.has(g.id)), can=open&&S_.C>=g.cost;
       const cls='gcard'+(done?' done':can?' afford':open?'':' locked');
       if(b.className!==cls) b.className=cls;
       b.disabled=!can;
@@ -2864,7 +3162,7 @@ function recommencer(){
   /* Sans ceci la table des signes de numération garde ceux de la partie précédente :
      on repart de zéro glyphe avec 229 nombres encore lisibles à l'écran. */
   majSignes(); touchees=new Set(); recArmer(false); concFermer(); compVider(); finDesarmer();
-  ambFermer();
+  ambFermer(); qVider(); qVue = null; peindreQuestion();
   $('log').innerHTML='<p class="hint">relève un signe : clique dans le corpus</p>';
   /* Recommencer efface la partie qu'on voit — jamais une sauvegarde que ce jeu n'a pas su
      lire, qui n'est pas celle-là et qu'il n'a pas chargée (`charger()`). */
@@ -3013,6 +3311,19 @@ enrober('composer', () => S_.comp, a => {
        + (!cible     ? ' ✗ carnet'
         : has(cible) ? ' ✓ ' + cible
                      : ' ✓ ' + cible + ' · impayable (' + byId[cible].cost + ' C)');
+});
+
+/* Les Questions (VOIX-3). Le témoin est la liste des conditions posées : un silence y entre
+   aussi, et c'est lui que le playtest doit voir — un joueur qui pose des conditions au hasard
+   ne se distingue de celui qui les a lues dans le corpus que par ce qu'il demande, et à quelle
+   minute. Le détail porte les signes ET les mots retenus : une condition posée avec une
+   lecture fausse en tête n'est pas la même question.
+     `ta shen (toi lire) → 1 suite`     le texte a répondu
+     `mu nash (je nous) · silence`       gravé nulle part, rien dépensé */
+enrober('questionner', () => S_.qa.length, a => {
+  const s = a[0] || [], rep = QUESTIONS[s.join(' ')];
+  return s.join(' ') + ' (' + s.map(motDe).join(' ') + ')'
+       + (rep ? ' → ' + rep.length + ' suite' + (rep.length > 1 ? 's' : '') : ' · silence');
 });
 
 /* Le sélecteur de vitesse. Hors jeu, mais c'est la seule commande capable de fausser tout
@@ -3164,7 +3475,7 @@ window.addEventListener('pagehide', sauverTraces);
 /* Le compte de l'arbre, écrit une fois : recopié dans le HTML, il mentait dès le lot suivant. */
 document.querySelectorAll('.ngl').forEach(el => { el.textContent = NGL; });
 majSignes();
-buildRail(); buildCorpus(); buildInstr(); buildComp(); buildDoute(); buildLex();
+buildRail(); buildCorpus(); buildInstr(); buildComp(); buildQuest(); buildDoute(); buildLex();
 if(S_.gl.length){ paintCorpus(null); pushLog(logDe(S_.gl[S_.gl.length-1])); }
 /* `nuit` acquis, le corpus se lit sans le joueur — 40 % du débit, quatre heures au plus.
    Dit au retour, une seule fois, et seulement s'il s'est passé quelque chose. */
@@ -3216,7 +3527,9 @@ window.addEventListener('keydown', e=>{
     else if(!$('end').hidden) fermerFin();
     else if(recArme) recArmer(false);
     else if(concArme || concSel || concToi) concFermer();
-    else if(compSel[0] || compSel[1]) compVider(); }
+    else if(compSel[0] || compSel[1]) compVider();
+    else if(qVue){ qVue = null; peindreQuestion(); }
+    else if(qSel.length) qVider(); }
 });
 $('instr').addEventListener('click', e=>{ const b=e.target.closest('[data-ins]'); if(b&&!b.disabled) acheterIns(b.dataset.ins); });
 /* Un signe ambigu ne s'achète pas d'un clic : il ouvre les deux lectures, et c'est le
@@ -3244,6 +3557,18 @@ $('pcomp').addEventListener('click', e=>{
   const b=e.target.closest('[data-slot]'); if(b) compSel[+b.dataset.slot]=null; });
 $('a-comp').addEventListener('click', ()=>{
   if(composer(compSel[0], compSel[1]) !== 'refus') compVider(); });
+/* Les Questions (VOIX-3). Même gestes que la grille : poser, retirer, demander. Une réponse
+   s'allume dans le corpus aussitôt ; une réponse déjà obtenue se rallume d'un clic. */
+$('q-choix').addEventListener('click', e=>{
+  const b=e.target.closest('[data-qpion]'); if(b&&!b.hidden) qPoser(b.dataset.qpion); });
+$('pquest').addEventListener('click', e=>{
+  const s=e.target.closest('[data-qslot]'); if(s){ qSel.splice(+s.dataset.qslot, 1); return; }
+  const r=e.target.closest('[data-q]'); if(r&&!r.disabled) qMontrer(r.dataset.q); });
+$('a-quest').addEventListener('click', ()=>{
+  const sig = qSel.slice(), r = questionner(sig);
+  if(r === 'refus') return;
+  qVider();
+  if(r === 'reponse') qMontrer(sig.join(' ')); });
 
 function repeat(btn, fn){
   let iv=null, to=null;

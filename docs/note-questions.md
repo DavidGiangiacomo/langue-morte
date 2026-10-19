@@ -1,8 +1,15 @@
 # Les Questions — note de conception (VOIX-3)
 
-*19/10/2026. Une proposition, pas une décision : trois options mesurées, une recommandation, et
-ce qui reste à trancher par l'auteur. Aucune ligne de code n'a bougé. Issue
+*19/10/2026. Trois options mesurées et une recommandation. Issue
 [#36](https://github.com/DavidGiangiacomo/langue-morte/issues/36).*
+
+> **Tranché le même jour par l'auteur : l'option 3, avec le gel** — la recommandation du §6.
+> Elle est codée depuis : règle 24 de `CLAUDE.md`, et `docs/journal.md`, « Les Questions ». Les
+> points du §7 ont été réglés à l'écriture : les nombres ne font pas partie de la condition,
+> la nuit ne remplit aucune question, la réponse s'écrit à l'infinitif et ses lignes
+> s'allument dans le corpus, sans question en main rien ne se pose. Restent ⟨nous-fûmes⟩,
+> ⟨devenir-lecture⟩ et les deux instruments à venir, qui sont de GRAINE-1 et de VOIX-4.
+> La suite de ce document est la note telle qu'elle a été soumise.
 
 ---
 

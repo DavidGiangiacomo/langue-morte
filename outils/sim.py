@@ -125,11 +125,18 @@ P = dict(
     # que quatre points — sous le seuil de la contradiction, donc se tromper PAIE.
     # elv_r : seul levier sur leur nombre, comme toujours (la leçon de `REC_R`).
     elv_b=20000, elv_r=1.8, elv_p=0.05, elv_e=0.15,
+    # Les Questions (VOIX-3) : la Certitude s'arrête à 9 999 (I1), et à partir de ⟨toi⟩ ce
+    # qui déborde remplit une question — 4 000 chacune, douze sur la partie. Suit `C_MAX`,
+    # `Q_COUT` et `Q_MAX` dans economie.js. Sans effet sur le rythme des actes I à IV,
+    # l'acheteur dépensant avant d'atteindre le plafond ; c'est l'acte V qu'il réglera, quand
+    # ECO-2 l'aura porté ici (docs/note-questions.md).
+    c_max=9999, q_cout=4000, q_max=12,
 )
 
 BR = {}
 for g in ARBRE:
     BR.setdefault(g[1], []).append(g)
+BRANCHE = {g[0]: g[1] for g in GL}
 
 # ---- les recettes, lues à la source elles aussi ---------------------------
 # `compose` ne peut poser un signe que si le joueur en connaît les deux parties. Le
@@ -224,6 +231,16 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=(), eleves=None, ele
     gl, rec, t, dt = set(), 0, 0.0, 0.1
     marks, c_rec, c_con = [], 0.0, 0.0
     hyp_gl, comp_faits = {}, 0     # stock d'hypothèses à chaque jalon · compositions faites
+    q = dict(n=0, f=0.0)           # questions venues, surplus vers la suivante (VOIX-3)
+
+    def gagner(c, x):
+        """La Certitude gagnée, plafonnée ; le surplus remplit les questions dès ⟨toi⟩."""
+        pris = min(x, max(0.0, P['c_max'] - c))
+        if x > pris and 'ta' in gl and q['n'] < P['q_max']:
+            q['f'] += x - pris
+            while q['f'] >= P['q_cout'] and q['n'] < P['q_max']:
+                q['f'] -= P['q_cout']; q['n'] += 1
+        return c + pris
     # I6 par tranche de dix minutes : PT7 s'est posé à 31,2 % sur la partie entière en
     # cachant un 83 % au premier quart d'heure et un 103 % aux cinq dernières minutes.
     # La moyenne d'une partie ne dit rien de la partie ; les tranches, si.
@@ -255,7 +272,10 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=(), eleves=None, ele
     premier = {}
     _m = multis(has, mf, lambda: eleve(P, b['elv']))
     mcop, mate, mtab, mcon, mgram = _m['cop'], _m['ate'], _m['tab'], _m['con'], _m['gram']
-    gramp  = lambda: P['gram_p'] * (P['gram_g'] ** narbre()) * mgram()
+    # La Grammaire cesse de croître avec les mots de la fin (VOIX-3) : elle compte l'arbre,
+    # moins les branches de l'acte V. Suit `nGrammaire()` dans economie.js.
+    ngram  = lambda: sum(1 for x in gl - SECRETS if ACTE.get(BRANCHE.get(x), 0) < 5)
+    gramp  = lambda: P['gram_p'] * (P['gram_g'] ** ngram()) * mgram()
     mclick = _m['click']
     obrut  = lambda: b['cop'] * P['cop_p'] * mcop() + b['ate'] * P['ate_p'] * mate()
     # Un relevé ne vaut plein tarif que sur du terrain neuf. Le gisement épuisé rend le
@@ -310,12 +330,12 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=(), eleves=None, ele
         if w > 0:
             c = min(w, H); fr = c / w; H -= c
             g = b['con'] * P['con_p'] * mcon() * fr * dt / etrangle()
-            C += g; c_con += g; tr_ins[min(11, int(t // 600))] += g
+            C = gagner(C, g); c_con += g; tr_ins[min(11, int(t // 600))] += g
         w = b['gram'] * P['gram_c'] * dt
         if w > 0:
             c = min(w, H); fr = c / w; H -= c
             g = b['gram'] * gramp() * fr * dt / etrangle()
-            C += g; c_con += g; tr_ins[min(11, int(t // 600))] += g
+            C = gagner(C, g); c_con += g; tr_ins[min(11, int(t // 600))] += g
 
         # achats d'instruments : garder la chaîne alimentée avant de l'allonger
         for _ in range(60):
@@ -358,7 +378,7 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=(), eleves=None, ele
         rc = reccost()
         while O >= rc[0] * 4 and H >= rc[1] * 4 and rc[0] < O * 0.25:
             O -= rc[0]; H -= rc[1]
-            C += recgain(); c_rec += recgain(); rec += 1
+            C = gagner(C, recgain()); c_rec += recgain(); rec += 1
             tr_rec[min(11, int(t // 600))] += recgain()
             rc = reccost()
 
@@ -403,7 +423,7 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=(), eleves=None, ele
                                   obrut=obrut(), cs=b['con'] * P['con_p'] * mcon(),
                                   o_main=o_main, o_pass=o_pass, gis_use=gis_use,
                                   tr_rec=tr_rec, tr_ins=tr_ins, premier=premier,
-                                  hyp_gl=hyp_gl, comp=comp_faits, elv_lus=elv_lus,
+                                  hyp_gl=hyp_gl, comp=comp_faits, elv_lus=elv_lus, questions=q['n'],
                                   gis_tot=sum(-(-n // P['gis_div']) for n in TOKENS))
 
 

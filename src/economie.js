@@ -17,7 +17,8 @@ const KEY='langue-morte-partie';
    à treize signes, abandonnées le 08/09/2026, et l'économie qui les a produites n'existe plus. */
 const CLES_ANCIENNES = ['langue-morte-actes-i-iii'];
 const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram:0,elv:0},gl:[],t:0,done:false,
-  rel:{}, prix:{}, carnet:[], comp:0, lect:{}, dte:{}, conc:{}, recs:{}, rev:0, contr:0});
+  rel:{}, prix:{}, carnet:[], comp:0, lect:{}, dte:{}, conc:{}, recs:{}, rev:0, contr:0,
+  qn:0, qf:0, qa:[]});
 /* rel : jetons relevés par tablette · prix : tarif du gisement, verrouillé
    carnet : les paires déjà tentées et fausses · comp : le nombre de tentatives, toutes issues
    confondues — c'est lui que PT10 doit lire, pas la seule liste des échecs.
@@ -27,6 +28,10 @@ const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram
    nombre de recoupements par signe, qui sont ce sur quoi ce degré se calcule · rev : les
    révisions faites, dont dépend le prix de la suivante (CONTR-3) · contr : la contradiction,
    armée ou non (CONTR-1) — le seul de ces champs que le joueur voie.
+   qn : les questions venues depuis le début, douze au plus · qf : le surplus de Certitude
+   accumulé vers la suivante · qa : les conditions déjà posées, dans l'ordre (VOIX-3). Les
+   questions en main ne se stockent pas : elles se déduisent des deux premiers
+   (`questionsEnMain()`).
    Une partie d'avant la composition, ou d'avant l'ambiguïté, les reçoit vides au chargement
    (`fusionner()`) : un champ ajouté ne demande ni nouvelle clé ni migration. */
 let S_ = fresh(), speed = 1;
@@ -542,7 +547,20 @@ const CON_P = 0.0039;   // certitude par seconde et par concordance
 const GRAM_P = 0.0012;  // certitude par seconde et par grammaire, avant l'effet du lexique
 const GRAM_R = 1.16;    // ... qui croît de 16 % par signe déchiffré
 const GRAM_C = 3.0;     // hypothèses par seconde consommées
-const gramMul = () => Math.pow(GRAM_R, nArbre());
+/* La Grammaire cesse de croître avec les mots de la fin (VOIX-3, tranché par l'auteur le
+   19/10/2026). Elle compte ce que l'arbre a rendu (règle 13), mais seulement dans les
+   branches d'avant l'acte V : une fois les mots de la Personne connus, la grammaire est
+   complète, et ⟨finir⟩, ⟨semence⟩ ou ⟨germer⟩ n'en sont pas. C'est l'ordre que la tablette
+   28 donne au programme : les nombres, les choses, les verbes.
+   Sans ce gel, l'acte V n'a plus de rythme : sous le plafond de 9 999, ses signes tombent
+   toutes les 1,4 à 3,7 min, de plus en plus vite. Les questions nées du surplus en portent
+   une partie, et ce gel le reste — mesuré, les deux ensemble tiennent I4 avec et sans
+   Élèves ; aucun des deux seul ne le fait (`docs/note-questions.md`).
+   Dérivé du lexique et non écrit en dur : 36 aujourd'hui, et il le restera quand la branche
+   Fin entrera dans `GL`. Sans effet tant qu'elle n'y est pas. */
+const nGrammaire = () => { let n=0; for(const id of S_.gl){ const g=byId[id];
+  if(g && !g.sec && (ACTE[g.br]||0) < 5) n++; } return n; };
+const gramMul = () => Math.pow(GRAM_R, nGrammaire());
 
 const INS = [
   {k:'cop', nom:'Copiste',              sig:'sar',  base:10,   r:1.12,
@@ -616,7 +634,7 @@ function formuler(){ const c=hypCost(); if(S_.O>=c){ S_.O-=c; S_.H+=1; } }
 function recouper(id){
   const c=recCost();
   if(S_.O<c.O||S_.H<c.H) return false;
-  S_.O-=c.O; S_.H-=c.H; S_.C+=recGain(); S_.rec++;
+  S_.O-=c.O; S_.H-=c.H; gagnerC(recGain()); S_.rec++;
   /* Compté par signe depuis MOD-2 : rapprocher deux attestations d'un même signe est l'un
      des deux gestes sur lesquels se calcule son degré de doute. */
   if(id) S_.recs[id] = (S_.recs[id]||0) + 1;
@@ -680,6 +698,109 @@ function composer(a, b){
   pushLog('Rien ne vient.');
   return 'rate';
 }
+
+/* ======================== les Questions (VOIX-3) ========================
+   « On peut interroger le texte, il répond, dans les limites de ce qui a été gravé il y a
+   quatre mille ans » (design doc §10). Tranché par l'auteur le 19/10/2026, sur une note
+   mesurée (`docs/note-questions.md`).
+
+   **Une question est une condition.** La langue n'a pas d'interrogatif ; ⟨si⟩ est ce qui
+   s'en approche le plus, et le corpus en pose seize, chacune suivie de ce qui en découle.
+   Le joueur pose ⟨si⟩ et des signes qu'il sait lire ; la réponse est ce qui est gravé
+   après cette condition-là, dans toutes les tablettes. Jamais un mot écrit pour l'occasion
+   (R8) : la table ci-dessous est lue dans le corpus, une fois, au chargement. Le texte
+   répond à des questions que personne n'a posées — « si toi lire · nous ne-pas finir » —
+   parce qu'il a été écrit pour un lecteur à venir. C'est l'acte V en avance, et rien ne le
+   commente.
+
+   **Ce que la réponse ne fait pas.** Elle ne dépend jamais de la justesse des lectures : elle
+   s'écrit avec les mots du joueur, et une lecture fausse peut la rendre absurde — c'est le
+   texte qui parle, comme pour les ruptures (règles 17 et 20). Elle ne compte pas dans le
+   degré de doute : c'est le texte qui montre, pas le joueur qui rassemble (règle 18, même
+   décision que le repli de VOIX-2). Et une condition gravée nulle part ne coûte rien — « Le
+   texte ne dit rien. » — ce qui ne renseigne pas : une Concordance sur ⟨si⟩ montre les
+   mêmes lignes.
+
+   **Ce qu'elle ouvre.** Un signe que l'arbre n'offre pas (`rep` dans `GL`) devient
+   achetable quand une réponse le porte, et se paie en Certitude comme les autres : la
+   question donne l'accès, jamais la compréhension (§4 du design doc). Ce sont les mots de la
+   fin qui ne se trouvent qu'après un « si » — ⟨finir⟩, ⟨devenir⟩, ⟨germer⟩ —, et ils
+   arriveront avec GRAINE-1. Rien ne porte `rep` aujourd'hui.
+
+   **D'où viennent les questions.** De ce qui déborde. La Certitude s'arrête à 9 999, et I1
+   cesse d'être une contrainte sur les prix pour devenir une règle du jeu. À partir de
+   ⟨toi⟩, le surplus remplit la question suivante ; une question qui obtient une réponse en
+   consomme une. C'est le seul levier mesuré qui n'ait pas de plafond : le prix d'une question
+   n'est jamais détenu d'un coup, il peut donc croître — et c'est ce qui manquait à l'acte V
+   pour avoir un rythme (ECO-3).
+   - 4 000 la question, et douze sur la partie : seize conditions, on ne peut pas tout
+     demander. Mesuré avec trois questions sur le chemin de l'acte V et la Grammaire gelée
+     (`nGrammaire()`) : 28,2 min d'acte V avec Élèves, 40,3 sans, I4 tenu dans les deux cas.
+     Chaque question de plus coûte 1,3 à 1,9 min.
+   - avant ⟨toi⟩ le surplus est perdu : il n'y a encore personne à qui la poser. La nuit, de
+     même (`veillee()`).
+   - le plafond ne retire rien : une Certitude déjà au-dessus, d'une partie d'avant ce lot,
+     reste où elle est — elle ne monte plus, c'est tout. On ne perd pas ce qu'on a (R2). */
+const C_MAX  = 9999;    // la Certitude ne dépasse jamais quatre chiffres (I1)
+const Q_COUT = 4000;    // le surplus qui fait une question
+const Q_MAX  = 12;      // les questions de toute la partie (design doc §4)
+const questionsOuvertes = () => has('ta');
+
+/* Toute la Certitude gagnée passe par ici : la concordance, la grammaire, le recoupement. */
+function gagnerC(x, nuit){
+  if(!(x > 0)) return;
+  const pris = Math.min(x, Math.max(0, C_MAX - S_.C));
+  S_.C += pris;
+  const reste = x - pris;
+  if(reste <= 0 || nuit || !questionsOuvertes() || S_.qn >= Q_MAX) return;
+  S_.qf += reste;
+  while(S_.qf >= Q_COUT && S_.qn < Q_MAX){ S_.qf -= Q_COUT; S_.qn++; }
+  if(S_.qn >= Q_MAX) S_.qf = 0;
+}
+
+/* La table des réponses : condition → ce qui la suit, chaque suite distincte une fois, avec
+   les lignes qui la portent. La condition est faite des signes entre ⟨si⟩ et le « · »
+   suivant, nombres exclus — la palette ne pose que des signes, et « si copier 100 · un
+   devenir » répond donc à « si copier », avec ses deux autres suites. Une suite vide est une
+   réponse : cinquante-huit lignes de registre finissent sur « si lire », et rien après. */
+const QUESTIONS = {};
+for(const tb of CORPUS) tb.l.forEach((ln, li) => {
+  const segs = [[]];
+  for(const tk of ln.split(' ')) if(tk === '·') segs.push([]); else segs[segs.length-1].push(tk);
+  segs.forEach((s, i) => {
+    const k = s.indexOf('en'); if(k < 0) return;
+    const cond = s.slice(k+1).filter(x => x.charCodeAt(0) !== 37);
+    if(!cond.length) return;
+    const cle = cond.join(' '), suite = segs.slice(i+1).map(z => z.join(' ')).join(' · ');
+    const rep = QUESTIONS[cle] || (QUESTIONS[cle] = []);
+    let e = rep.find(x => x.suite === suite);
+    if(!e) rep.push(e = {suite, lignes: []});
+    e.lignes.push([tb.t, li]);
+  });
+});
+/* Les questions en main se déduisent : celles qui sont venues, moins celles qui ont obtenu
+   une réponse. Un silence ne coûte rien, il ne se décompte donc pas. */
+const questionsEnMain = () => S_.qn - S_.qa.filter(k => QUESTIONS[k]).length;
+/* Les signes qu'une réponse a ouverts, déduits eux aussi des conditions posées. */
+function ouvertsParReponse(){
+  const s = new Set();
+  for(const k of S_.qa) for(const e of QUESTIONS[k] || [])
+    for(const tk of e.suite.split(' ')) if(tk && tk !== '·' && tk.charCodeAt(0) !== 37) s.add(tk);
+  return s;
+}
+/* `signes` : les signes posés après ⟨si⟩, dans l'ordre. Rend 'reponse', 'silence', ou
+   'refus' quand rien n'a bougé. Une condition déjà posée ne se repose pas : sa réponse est
+   au panneau. Sans question en main on ne pose rien du tout — refuser seulement les
+   conditions gravées dirait lesquelles le sont. */
+function questionner(signes){
+  if(!questionsOuvertes() || !signes || !signes.length) return 'refus';
+  if(!signes.every(has) || questionsEnMain() < 1) return 'refus';
+  const cle = signes.join(' ');
+  if(S_.qa.indexOf(cle) >= 0) return 'refus';
+  S_.qa.push(cle);
+  if(!QUESTIONS[cle]){ pushLog('Le texte ne dit rien.'); return 'silence'; }
+  return 'reponse';
+}
 function acheterIns(k){ const i=INS.find(x=>x.k===k), c=insCost(i);
   if(i.unlock()&&S_.O>=c){ S_.O-=c; S_.b[k]++; } }
 /* Le signe qu'on vient d'acquérir est-il le premier de son acte ? Appelée après l'ajout à
@@ -695,6 +816,8 @@ const franchit = id => {
    `eleve` dit que la lecture vient d'un Élève et non du joueur (ELV-2). */
 function acheterGl(id, lect, eleve){
   const g=byId[id]; if(has(id)||S_.C<g.cost) return;
+  /* Un mot que seule une réponse offre (VOIX-3) ne s'achète qu'une fois la réponse obtenue. */
+  if(g.rep && !ouvertsParReponse().has(id)) return;
   const avant = CORPUS.map(pctTablette);
   S_.C-=g.cost; S_.gl.push(id);
   /* La dette est posée ici et nulle part ailleurs, à l'instant du choix, et personne ne la
@@ -793,7 +916,9 @@ function tick(dt){
 }
 /* La production, séparée du temps de jeu : la nuit passée hors ligne se rattrape par ici
    sans avancer le chronomètre ni traverser l'horloge instrumentée du journal d'actions. */
-function produire(dt){
+/* `nuit` : la production vient de la veillée. Elle remplit la Certitude jusqu'au plafond,
+   jamais une question (VOIX-3). */
+function produire(dt, nuit){
   S_.O += oBrut()*dt;
   // table de fréquences : consomme des occurrences
   const wantO = S_.b.tab*1.0*dt;
@@ -802,11 +927,11 @@ function produire(dt){
   // concordance : consomme des hypothèses
   const wantH = S_.b.con*0.5*dt;
   if(wantH>0){ const canH=Math.min(wantH,S_.H); const fr=canH/wantH;
-    S_.H-=canH; S_.C += S_.b.con*CON_P*M.con()*fr*dt/contrDiv(); }
+    S_.H-=canH; gagnerC(S_.b.con*CON_P*M.con()*fr*dt/contrDiv(), nuit); }
   // grammaire : en consomme beaucoup plus, et rend d'autant plus qu'on a déchiffré
   const wantG = S_.b.gram*GRAM_C*dt;
   if(wantG>0){ const canG=Math.min(wantG,S_.H); const fr=canG/wantG;
-    S_.H-=canG; S_.C += S_.b.gram*GRAM_P*gramMul()*M.gram()*fr*dt/contrDiv(); }
+    S_.H-=canG; gagnerC(S_.b.gram*GRAM_P*gramMul()*M.gram()*fr*dt/contrDiv(), nuit); }
 }
 
 /* ---- la nuit ----
@@ -814,14 +939,19 @@ function produire(dt){
    quatre heures au plus (design doc §9). Avant lui il ne se passe rien hors ligne, et c'est
    diégétique — il n'y a personne pour lire. On rattrape en tranches d'une minute plutôt
    qu'en un seul bond : les convertisseurs se coupent quand leur intrant manque, et un
-   unique appel de quatre heures leur ferait ignorer cette coupure. */
+   unique appel de quatre heures leur ferait ignorer cette coupure.
+   Depuis VOIX-3, la nuit remplit la Certitude jusqu'à 9 999 et pas au-delà. Elle rapportait
+   avant ça quatorze à dix-sept mille Certitude dès l'achat de `nuit`, et soixante-six à
+   quatre-vingt-neuf mille à celui de ⟨nous⟩ — deux fois toute la branche Personne, à dépenser
+   au retour (`docs/note-questions.md`, §5). Et elle ne remplit pas de question : une question
+   demande quelqu'un pour la poser. */
 function veillee(){
   if(!has('esh') || S_.done || !S_.ts) return 0;
   const ecoule = Math.min((Date.now() - S_.ts)/1000, 4*3600);
   if(ecoule < 60) return 0;
   const avant = S_.O;
   let reste = ecoule * 0.4;
-  while(reste > 0){ const pas = Math.min(60, reste); produire(pas); reste -= pas; }
+  while(reste > 0){ const pas = Math.min(60, reste); produire(pas, true); reste -= pas; }
   /* La nuit est consommée : sans cela, rouvrir deux fois de suite la même sauvegarde la
      paierait deux fois — la sauvegarde n'horodate que toutes les quatre secondes. */
   S_.ts = Date.now();
@@ -832,7 +962,7 @@ function frame(now){
   let dt=(now-last)/1000; last=now;
   if(dt>0.5) dt=0.5;
   if(!S_.done) tick(dt*speed);
-  paintRes(); paintActs(); paintInstr(); paintComp(); paintDoute(); paintLex(); paintMeter();
+  paintRes(); paintActs(); paintInstr(); paintComp(); paintQuest(); paintDoute(); paintLex(); paintMeter();
   finRegarder(now);
   /* Le chrono est hors jeu : la version publique n'en a pas, et une boucle qui le cherche
      quand même s'arrêterait à la première frame. */
