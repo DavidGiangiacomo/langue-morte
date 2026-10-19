@@ -391,6 +391,7 @@ Suivi : [#24](https://github.com/DavidGiangiacomo/langue-morte/issues/24) — le
 
 - Fini quand : la ressource Q existe (0 à 12 sur toute la partie, design doc §4) ; poser une question consomme un Q ; **chaque réponse est une ligne du corpus, jamais un texte écrit pour l'occasion**.
 - Le plus gros risque de conception du lot : c'est le seul système où le jeu peut se mettre à *parler* au lieu de laisser lire.
+- *Note de conception, 19/10/2026* : `docs/note-questions.md` — trois options mesurées, **en attente de décision**. La forme proposée : une question est une condition « si … », la réponse est ce qui est gravé après. Trouvé en la mesurant : une nuit hors ligne porte déjà la Certitude au-delà de 9 999 (§5 de la note).
 
 **VOIX-4 — Le Corpus jumeau** *(instrument 8)* · T:M · [#37](https://github.com/DavidGiangiacomo/langue-morte/issues/37)
 > En tant que joueur, je veux qu'une deuxième inscription soit trouvée.
