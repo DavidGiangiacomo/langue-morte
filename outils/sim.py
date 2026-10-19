@@ -31,6 +31,13 @@ TOKENS = [_jetons[n] for n in _ordre]
 JETONS = dict(_jetons)
 
 # ---- lexique : (id, branche, coût en Certitude) ---------------------------
+# Les prix de la Fin, dans l'ordre de sa chaîne. Tous au plafond, et c'est une mesure : à
+# l'acte V le prix ne porte plus le rythme — les questions nées du surplus et le gel de la
+# Grammaire le portent (VOIX-3). Au plafond, ⟨semence⟩ tombe après ⟨nous-fûmes⟩ et l'acte V
+# vient entier après l'acte IV ; à 6 000, il se glissait entre ⟨toi-qui⟩ et ⟨moi-absent⟩ pour
+# un dixième de minute de moyenne. Rampes de 4 000 ou 7 000 à 9 999 : les signes sans question
+# tombent à 2,2-2,7 min, sous I4 avec Élèves.
+FIN_PRIX = (9999,) * 7
 GL = [('an','nombre',2), ('anna','nombre',5), ('hem','nombre',11), ('sela','nombre',18),
       ('meku','nombre',33), ('mille','nombre',110),
       ('tem','matiere',3), ('ur','matiere',6), ('tab','matiere',14), ('kish','matiere',22),
@@ -70,12 +77,25 @@ GL = [('an','nombre',2), ('anna','nombre',5), ('hem','nombre',11), ('sela','nomb
       # les 2 à 4 min. Ce que ça laisse à l'acte V : rien sous le plafond — c'est ECO-3.
       ('nash','personne',1800), ('mu','personne',2800), ('ta','personne',4000),
       ('taru','personne',5500), ('mula','personne',7300), ('nashal','personne',9500),
+      # La Fin (acte V, GRAINE-1). Sept signes, aucun multiplicateur — la Grammaire gèle à
+      # leur entrée (VOIX-3), et ils donnent de la lecture. Trois ne s'offrent qu'une fois
+      # qu'une réponse les a portés (`REP`), et le dernier ne s'offre qu'en dernier
+      # (`DERNIER`) ; la grille, elle, les donne dès qu'on en a les parties. L'ordre alterne
+      # les mots ouverts par une question et ceux qui ne demandent que leur prix : deux
+      # questions de suite feraient deux longues attentes, deux prix de suite une rafale.
+      ('mesh','fin',FIN_PRIX[0]), ('hal','fin',FIN_PRIX[1]), ('halan','fin',FIN_PRIX[2]),
+      ('ke','fin',FIN_PRIX[3]), ('halnash','fin',FIN_PRIX[4]), ('meshke','fin',FIN_PRIX[5]),
+      ('shenke','fin',FIN_PRIX[6]),
       # Composés secrets : offerts par aucune branche, ils ne s'obtiennent qu'à la grille de
       # composition. Ils comptent dans ce que le joueur SAIT, jamais dans ce que l'arbre a
       # rendu — d'où `ARBRE`, qui est le compte dont dépendent le dégagement des tablettes, la
       # Grammaire et la fin de partie. Confondre les deux ferait avancer le jeu en composant.
       ('urtem','matiere',60), ('lan','nombre',120)]
 SECRETS = {'urtem', 'lan'}
+# Les mots qu'une réponse ouvre (règle 24) et le dernier signe, offert quand tous les autres
+# sont lus. Suivent `rep` et `dernier` dans lexique.js.
+REP = {'hal', 'ke', 'meshke'}
+DERNIER = 'shenke'
 ARBRE = [g for g in GL if g[0] not in SECRETS]
 # L'acte d'une branche, pour ses franchissements. Les branches des actes I à III n'en ont pas
 # besoin : la contradiction ne se solde jamais avant `peut-être`, qui est de l'acte III.
@@ -161,7 +181,7 @@ for cible, a, b in re.findall(r"(\w+):\['(\w+)','(\w+)'\]", re.search(r'const CO
 # grammaire. Les quatre autres ne rendent que de la lecture : mal les lire ne paie rien, et
 # ce simulateur ne mesure donc que la prime des cinq.
 AMB_R = 1.25
-AMBIGUS = ('tem', 'ur', 'kish', 'sar', 'shen', 'nur', 'pat', 'dun', 'la')
+AMBIGUS = ('tem', 'ur', 'kish', 'sar', 'shen', 'nur', 'pat', 'dun', 'la', 'mesh', 'ke')
 
 # ---- la dette et la contradiction (AMB-3, CONTR-1) ------------------------
 # Les poids se déduisent des attestations comme dans le jeu : 315 occurrences pèsent 3,
@@ -291,13 +311,34 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=(), eleves=None, ele
 
     recgain = lambda: min(P['rec_max'], 1 + narbre() // P['rec_div'])
 
+    # Les mots que les réponses ont ouverts, et les questions dépensées pour ça (règle 24).
+    ouverts, q_dep = set(), [0]
+
+    def offert(g):
+        """Le lexique offre-t-il ce signe ? Un mot de `REP` attend sa réponse, le dernier
+        attend tous les autres. La grille ne passe pas par ici."""
+        if g[0] in REP and g[0] not in ouverts: return False
+        if g[0] == DERNIER and narbre() < len(ARBRE) - 1: return False
+        return True
+
     def avail():                       # premier glyphe non acquis de chaque branche
         out = []
         for lst in BR.values():
             for g in lst:
                 if g[0] not in gl:
-                    out.append(g); break
+                    if offert(g): out.append(g)
+                    break
         return out
+
+    def questionner():
+        """L'acheteur pose la question qui ouvre le mot en tête de chaîne dès qu'il en a une
+        en main : il a lu les « si » du corpus. C'est le joueur le plus rapide possible, pas
+        le joueur moyen — combien de temps un vrai joueur met à trouver la question est une
+        affaire de playtest."""
+        for lst in BR.values():
+            g = next((x for x in lst if x[0] not in gl), None)
+            if g and g[0] in REP and g[0] not in ouverts and q['n'] - q_dep[0] >= 1:
+                ouverts.add(g[0]); q_dep[0] += 1
 
     while narbre() < len(ARBRE) and t < 60 * cap_min:
         t += dt
@@ -387,6 +428,7 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=(), eleves=None, ele
         # épargne, l'acheteur n'a jamais 600 C de côté et « composer tôt » ne mesure rien.
         # ... et il ne peut épargner que pour une paire qu'il a les moyens de POSER : épargner
         # pour `sinon` avant d'avoir `si` bloquerait la branche qui le donne.
+        questionner()
         vise = 'nur' in gl and any(cid not in gl and set(RECETTES.get(cid, ())) <= gl
                                    for cid in compose)
         while not vise:
@@ -423,7 +465,7 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=(), eleves=None, ele
                                   obrut=obrut(), cs=b['con'] * P['con_p'] * mcon(),
                                   o_main=o_main, o_pass=o_pass, gis_use=gis_use,
                                   tr_rec=tr_rec, tr_ins=tr_ins, premier=premier,
-                                  hyp_gl=hyp_gl, comp=comp_faits, elv_lus=elv_lus, questions=q['n'],
+                                  hyp_gl=hyp_gl, comp=comp_faits, elv_lus=elv_lus, questions=q_dep[0],
                                   gis_tot=sum(-(-n // P['gis_div']) for n in TOKENS))
 
 

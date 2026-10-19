@@ -721,11 +721,10 @@ function composer(a, b){
    texte ne dit rien. » — ce qui ne renseigne pas : une Concordance sur ⟨si⟩ montre les
    mêmes lignes.
 
-   **Ce qu'elle ouvre.** Un signe que l'arbre n'offre pas (`rep` dans `GL`) devient
-   achetable quand une réponse le porte, et se paie en Certitude comme les autres : la
-   question donne l'accès, jamais la compréhension (§4 du design doc). Ce sont les mots de la
-   fin qui ne se trouvent qu'après un « si » — ⟨finir⟩, ⟨devenir⟩, ⟨germer⟩ —, et ils
-   arriveront avec GRAINE-1. Rien ne porte `rep` aujourd'hui.
+   **Ce qu'elle ouvre.** Un signe que le lexique n'offre pas encore (`rep` dans `GL`) s'y
+   offre quand une réponse le porte, et se paie en Certitude comme les autres : la question
+   donne l'accès, jamais la compréhension (§4 du design doc). Ce sont les trois mots de la Fin
+   qui suivent un « si » — ⟨finir⟩, ⟨devenir⟩, ⟨germer⟩ (GRAINE-1). Voir `offert()`.
 
    **D'où viennent les questions.** De ce qui déborde. La Certitude s'arrête à 9 999, et I1
    cesse d'être une contrainte sur les prix pour devenir une règle du jeu. À partir de
@@ -788,6 +787,17 @@ function ouvertsParReponse(){
     for(const tk of e.suite.split(' ')) if(tk && tk !== '·' && tk.charCodeAt(0) !== 37) s.add(tk);
   return s;
 }
+/* Le lexique offre-t-il ce signe ? C'est lui qui garde les deux portes de la Fin, et lui
+   seul, comme il garde déjà l'ordre des chaînes : `acheterGl` ne vérifie que le prix, et la
+   grille de composition donne un composé dès qu'on en a les parties (règle 15). ⟨germer⟩
+   posé à la grille fait donc l'économie de sa question, et ⟨devenir-lecture⟩ composé tôt
+   « grille la révélation de vitesse » (design doc §6) — c'est voulu.
+   - un mot marqué `rep` attend qu'une réponse l'ait porté (VOIX-3) ;
+   - le signe marqué `dernier` attend que tout le reste de l'arbre soit lu : son achat clôt
+     la partie (règle 16), et c'est ⟨devenir-lecture⟩ (GRAINE-1). */
+const offert = g => (!g.rep || ouvertsParReponse().has(g.id))
+                 && (!g.dernier || nArbre() === NGL - 1);
+
 /* `signes` : les signes posés après ⟨si⟩, dans l'ordre. Rend 'reponse', 'silence', ou
    'refus' quand rien n'a bougé. Une condition déjà posée ne se repose pas : sa réponse est
    au panneau. Sans question en main on ne pose rien du tout — refuser seulement les
@@ -816,8 +826,6 @@ const franchit = id => {
    `eleve` dit que la lecture vient d'un Élève et non du joueur (ELV-2). */
 function acheterGl(id, lect, eleve){
   const g=byId[id]; if(has(id)||S_.C<g.cost) return;
-  /* Un mot que seule une réponse offre (VOIX-3) ne s'achète qu'une fois la réponse obtenue. */
-  if(g.rep && !ouvertsParReponse().has(id)) return;
   const avant = CORPUS.map(pctTablette);
   S_.C-=g.cost; S_.gl.push(id);
   /* La dette est posée ici et nulle part ailleurs, à l'instant du choix, et personne ne la

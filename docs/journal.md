@@ -142,6 +142,104 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## La Fin — lire la fin dans leur langue
+
+*19/10/2026, GRAINE-1, avec la moitié d'AMB-4 et de COMP-4 qui l'attendaient. Sur la branche de
+travail de la Personne, empilée sur `eleve`.*
+
+Sept signes : ⟨semence⟩, ⟨finir⟩, ⟨le-dernier⟩, ⟨devenir⟩, ⟨notre-fin⟩, ⟨germer⟩,
+⟨devenir-lecture⟩. Soixante attestations à eux tous, dont trente-sept pour ⟨semence⟩, qui est
+dans les registres depuis la tablette 5 et monte de soixante à cent pendant que tout le reste
+baisse. Aucune ligne du corpus ne change ; beaucoup de ce lot était écrit d'avance — les deux
+lectures fausses, leurs ruptures, les mots des composés salis, les participes — et attendait
+que ses signes entrent dans `GL`. Ils y sont, et tout s'est mis à servir de soi-même : la
+recette de ⟨dernière-année⟩ et celle de ⟨nous-fûmes⟩ se sont ouvertes sans une ligne (règle 15).
+
+### Le dernier signe
+
+`devenir-lecture` était la question ouverte de l'issue : « le dernier signe et la clé de tout »
+pour le design doc, offert par aucune progression pour COMP-4. **Tranché par l'auteur : il compte
+dans l'arbre, et le lexique l'offre en dernier.** La grille seule bloquait la partie à 42 sur 43
+pour qui n'y pense pas ; hors de l'arbre, comme ⟨grenier⟩, il n'était plus le dernier. Le
+lexique l'offre donc quand les quarante-deux autres sont lus, et la carte de fin attend la
+tablette 27 — « tablette · devenir-lecture », sa seule attestation. La grille, elle, le donne
+dès qu'on a ⟨lire⟩ et ⟨devenir⟩ : composé tôt, il compte et ne ferme rien, et c'est le dernier
+signe acheté, quel qu'il soit, qui clôt la partie. Le design doc l'avait voulu : « griller la
+révélation de vitesse ».
+
+### Les portes sont au lexique
+
+Les Questions avaient posé un garde dans `acheterGl` : un mot `rep` ne s'y achetait pas avant
+sa réponse. En entrant dans le jeu, ⟨germer⟩ l'a fait tomber. Il est ⟨semence⟩ posé sur
+⟨devenir⟩, la grille le donne dès qu'on a les deux, et le garde refusait l'achat en laissant
+`composer()` répondre « acquis ». Le lexique gardait déjà l'ordre des chaînes sans que
+`acheterGl` le vérifie ; il garde désormais aussi les deux portes de la Fin, `offert()`, et
+lui seul. Qui voit ⟨germer⟩ dans le texte fait l'économie d'une question — 1,3 à 1,9 min
+d'acte V —, et c'est au playtest de dire combien le voient.
+
+Une carte en tête de sa chaîne qui attend autre chose que la Certitude dit sa règle : « le
+texte le donnera à qui l'interroge », « il vient quand tout le reste est lu ». C'est le
+lexique qui parle de lui-même (règle 14) ; ce qu'il faut demander, il ne le dit pas.
+
+### Les prix : tous au plafond
+
+Mesuré au simulateur, qui porte enfin l'acte V (ECO-2) : tous les signes à 9 999. ⟨semence⟩
+tombe alors juste après ⟨nous-fûmes⟩, et l'acte V vient entier après l'acte IV ; à 6 000 il se
+glissait entre ⟨toi-qui⟩ et ⟨moi-absent⟩ pour un dixième de minute de moyenne, et les rampes
+de 4 000 ou 7 000 à 9 999 font tomber les signes sans question en 2,2 à 2,7 min. La chaîne
+alterne les mots qui attendent une réponse et ceux qui n'attendent que leur prix.
+
+| | Partie | Acte V | Écarts de l'acte V |
+|---|---|---|---|
+| avec Élèves (l'acheteur en prend dix) | 133,5–136,9 min | 28,2 min | 3,2 à 5,1, moyenne 4,0 |
+| sans Élève | 159,5–162,6 min | 40,3 min | 4,7 à 7,2, moyenne 5,8 |
+| ⟨germer⟩ posé à la grille, sans Élève | 157,6–160,7 min | 38,4 min | moyenne 5,5 |
+
+Les chiffres de la note de conception, retrouvés au dixième : c'était le même modèle, à l'ordre
+de la chaîne près. I4 tient des deux côtés ; la pire tranche d'I6 hors ouverture reste à 25 %,
+à 20–30′.
+
+**Ce qui bouge, et qu'il faut regarder en face.** La main tombe de 22,4 à **16,7 %** des
+occurrences : l'acte V dure vingt-huit à quarante minutes sur un gisement presque épuisé
+(395 relevés sur 399), et les instruments y produisent à plein. Encore au-dessus du plancher
+de `balayage.py`, et la règle 9 dit de ne pas régler contre ce chiffre avant PT11. Et la
+contradiction coûte désormais une heure à qui ne révise jamais : 223,6–226,6 min pour la paire
+réparante, contre 159,5–162,6 en lecture parfaite. Un Élève qui lit faux : 207,9–211,0. La
+question que la Personne posait au playtest — révise-t-on, ou encaisse-t-on ? — est devenue la
+plus chère du jeu.
+
+`balayage.py` re-basé : durée (121, 165), et **écart max à 8**, la borne d'I4, au lieu de 6.
+L'acte V espace par construction ses mots ouverts par une question, de 6,6 à 7,2 min chez le
+joueur sans Élève : c'est le rythme mesuré en choisissant les prix, pas un défaut à cacher.
+
+### AMB-4, la moitié qui attendait
+
+⟨semence⟩ et ⟨devenir⟩ tranchent leurs deux lectures à l'achat, et leurs ruptures, vérifiées
+au corpus depuis TXT-1, s'allument : « si enfant · ne-pas né », tablette 22, et « il-fallait
+tablette · porté lu », tablette 17 — au passé, parce qu'à cette heure-là ⟨nous-fûmes⟩ est lu,
+et la ligne ne se construit pas davantage. La paire réparante ⟨semence⟩ + ⟨devenir⟩ éteint la
+première et pas la seconde, comme le §7.3 l'écrivait. Les onze lectures fausses sont dans
+l'arbre ; la dette va de 0 à 20.
+
+### Deux textes écrits d'avance, relus en entrant
+
+- La ligne fausse de ⟨semence⟩ disait « pendant que les tombes se vidaient » : c'est ⟨maison⟩
+  lu « tombe », dans la ligne d'un autre signe. À qui lisait « maison », le jeu aurait parlé
+  d'une lecture qu'il n'a pas faite (règle 17). Elle dit « pendant que tout le reste baissait ».
+- Celle de ⟨nous-fûmes⟩ disait « posé sur un signe que je ne sais pas encore lire » : vrai tant
+  que ⟨finir⟩ n'existait pas, faux dès qu'une réponse peut l'ouvrir avant. Elle dit « posé sur
+  un autre signe ».
+
+Et « notre-fin · ne-pas » ne se tranche pas : la ligne de journal dit qu'il est suivi d'un seul
+signe, et rien de plus — ni le sens, ni qu'il y en a deux.
+
+### Ce qui n'est pas fait
+
+Le **Lecteur** (GRAINE-2) et la **révélation** (GRAINE-3) ; les **fins** — Achever, Interrompre —
+et la **relecture** (E8). La carte de fin dit « actes I à V » et « Le prototype s'arrête ici. »,
+plus rien sur la suite. Le **Corpus jumeau** (VOIX-4), dernier morceau de l'acte IV.
+`outils/verifier.py` passe de 360 à **376 assertions**.
+
 ## Les Questions — ce qui déborde devient question
 
 *19/10/2026, VOIX-3. Sur la branche de travail de la Personne, empilée sur `eleve`. Tranché

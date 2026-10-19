@@ -58,8 +58,14 @@ GRILLE = dict(rec_r=(1.26, 1.30, 1.35), con_b=(350, 400, 450), cop_b=(10, 15),
 # le joueur sans Élève et tout juste, 97,8-101,6 pour celui qui en empile et lit tout faux.
 # Mêmes marges — trois minutes sous le plancher, deux au-dessus du plafond. 42 combinaisons
 # sur 54 passent, dont le réglage en place (97,8-122,2 min, écart 5,8, main 18 %, 25 %).
-DUREE = (95.0, 124.0)
-ECART_MAX = 6.0
+# Re-basée le 19/10/2026 avec la Fin (GRAINE-1, quarante-trois glyphes) : 159,5-162,6 min pour
+# le joueur sans Élève et tout juste, 124,1-127,5 pour celui qui en empile et lit tout faux.
+# Mêmes marges. L'écart max, lui, passe de 6 à 8 — la borne d'I4, et non plus une marge en
+# dessous : l'acte V espace par construction les mots qu'une question ouvre, de 6,6 à 7,2 min
+# chez le joueur sans Élève, contre 3,2 à 5,2 avec. C'est le rythme voulu, mesuré en
+# choisissant les prix (docs/note-questions.md), pas un défaut qu'un garde-fou devrait cacher.
+DUREE = (121.0, 165.0)
+ECART_MAX = 8.0
 I6_MAX = 30.0
 # La part manuelle des OCCURRENCES, entrée dans le tri le 14/09/2026 en même temps que
 # `rev_r`. Aucune combinaison de la grille actuelle ne s'en approche (22 à 24 %), et c'est

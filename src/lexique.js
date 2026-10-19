@@ -1,4 +1,4 @@
-/* « La langue morte » — les glyphes des actes I à IV
+/* « La langue morte » — les glyphes des actes I à V
    Scripts classiques, portée globale partagée, chargés dans l'ordre de index.html.
    Aucune dépendance externe hors les polices Google. */
 "use strict";
@@ -193,14 +193,14 @@ const GL = [
      Trois des six sont des composés (table COMP), et la grille en offre deux dès qu'on a la
      première moitié : ⟨toi-qui⟩ est ⟨toi⟩ posé sur ⟨si⟩, ⟨moi-absent⟩ est ⟨je⟩ posé sur
      ⟨ne-pas⟩. Ce sont des signes d'arbre : posés en avance, ils avancent la partie, comme
-     `scribe` (règle 13). ⟨nous-fûmes⟩ est ⟨nous⟩ posé sur ⟨finir⟩, qui est de l'acte V — il
-     ne se composera pas avant (règle 15).
+     `scribe` (règle 13). ⟨nous-fûmes⟩ est ⟨nous⟩ posé sur ⟨finir⟩, qui est de l'acte V : il
+     se compose dès qu'une réponse a ouvert ⟨finir⟩ et qu'on l'a lu (règle 15).
      ⟨moi-absent⟩ n'a AUCUNE attestation. 7 300 C pour un mot que le corpus n'emploie jamais,
      et la Table de fréquences l'affiche à côté du prix : c'est le pari de `les-lecteurs`
      poussé au bout. Personne n'a écrit son propre départ.
      ⟨nous-fûmes⟩ en a une, la dernière ligne de la tablette 30 — le dernier mot du corpus.
-     Dernier achat de l'arbre, il ne porte pas d'effet chiffré (règle 16), et la carte de fin
-     attend désormais qu'on ait lu cette ligne-là. Ce qu'il fait d'autre est écrit dans le
+     Il a été le dernier achat de l'arbre jusqu'à l'entrée de la Fin ; il est resté sans effet
+     chiffré, et c'est désormais ⟨devenir-lecture⟩ qui ferme la partie. Ce qu'il fait d'autre est écrit dans le
      design doc : il « verrouille le récit au passé, y compris les passages déjà lus ». Le
      corpus est télégraphique et sans temps grammatical ; le verrou en met un, dans la couche
      de traduction et nulle part ailleurs — voir `PASSE` ci-dessous et `auPasse()` dans
@@ -215,8 +215,46 @@ const GL = [
    log:'Toi-qui. « Toi » posé sur « si » : toi, s’il y a quelqu’un. Ils ne savaient pas qui viendrait, et ils ont écrit quand même.'},
   {id:'mula', br:'personne',mot:'moi-absent',cost:7300, eff:'un mot qu’aucune tablette ne porte',
    log:'Moi-absent. « Je » posé sur « ne pas ». Ils avaient un mot pour ça, et aucune tablette ne l’emploie : personne n’a écrit son propre départ.'},
+  /* Sa ligne ne dit pas sur quoi ⟨nous⟩ est posé : la Fin entrée au lexique, on peut savoir
+     lire ⟨finir⟩ en l'achetant, ou pas encore — et le jeu n'a qu'une ligne pour les deux. */
   {id:'nashal',br:'personne',mot:'nous-fûmes',cost:9500, eff:'le récit se relit au passé, sauf ce qui s’adresse à « toi » · une seule attestation',
-   log:'Nous-fûmes. « Nous », posé sur un signe que je ne sais pas encore lire. Il ne sert qu’une fois, en dernier, et tout ce qu’ils ont écrit se relit au passé — sauf ce qui m’est adressé.'},
+   log:'Nous-fûmes. « Nous », posé sur un autre signe. Il ne sert qu’une fois, en dernier, et tout ce qu’ils ont écrit se relit au passé — sauf ce qui m’est adressé.'},
+  /* ---- acte V : la Fin (GRAINE-1) ----
+     Sept signes, soixante attestations à eux tous, dont trente-sept pour ⟨semence⟩ — qui est
+     dans les registres depuis la tablette 5 et monte de soixante à cent pendant que tout le
+     reste baisse. Aucun multiplicateur : la Grammaire gèle à leur entrée (`nGrammaire()`),
+     et ils donnent de la lecture.
+     Tous au plafond, 9 999, et c'est une mesure (`outils/sim.py`) : à l'acte V le prix ne
+     porte plus le rythme. Ce sont les questions qui le portent (règle 24). Trois mots ne
+     s'offrent qu'une fois qu'une réponse les a portés (`rep`) — les seuls de la Fin à suivre
+     un « si » : ⟨finir⟩ (« si toi lire »), ⟨devenir⟩ (« si lire », « si copier ») et ⟨germer⟩
+     (« si tablette »). La grille, elle, donne un composé dès qu'on en a les parties : ⟨germer⟩
+     est ⟨semence⟩ posé sur ⟨devenir⟩, et qui le voit fait l'économie d'une question.
+     L'ordre alterne les mots qui attendent une question et ceux qui n'attendent que leur
+     prix : deux questions de suite feraient deux longues attentes, deux prix une rafale.
+     ⟨devenir-lecture⟩ ferme l'arbre, et c'est son achat qui clôt la partie (règle 16) :
+     tranché par l'auteur le 19/10/2026 — il compte dans l'arbre, le lexique ne l'offre que
+     quand les quarante-deux autres sont lus (`dernier`), et la grille le donne dès qu'on a
+     ⟨lire⟩ et ⟨devenir⟩, « griller la révélation de vitesse » (design doc §6). C'est voulu.
+     ⟨semence⟩ et ⟨devenir⟩ sont ambigus : leurs lectures fausses, leurs ruptures et les
+     composés qu'ils salissent étaient écrits d'avance (`AMB`, `RUPTURES`, `COMPFAUX`). */
+  {id:'mesh', br:'fin', mot:'semence', cost:9999, eff:'trente-sept attestations, du premier registre à la dernière année',
+   log:'La semence. Soixante, puis quatre-vingts, puis cent, pendant que tout le reste baissait : c’est le seul nombre du corpus qui monte.'},
+  {id:'hal',  br:'fin', mot:'finir', cost:9999, rep:true, eff:'six attestations — chaque fois, quelque chose s’arrête',
+   log:'Finir. Il suit le nom de chaque scribe, une seule fois, sur la dernière tablette de sa main. Je le prenais pour une signature.'},
+  {id:'halan',br:'fin', mot:'le-dernier', cost:9999, eff:'une attestation, sur la dernière tablette',
+   log:'Le dernier. « Finir » posé sur « un » : celui après qui il n’y en a plus. Elle l’a écrit d’elle-même, sur la dernière tablette.'},
+  {id:'ke',   br:'fin', mot:'devenir', cost:9999, rep:true, eff:'quatre attestations, sur quatre tablettes',
+   log:'Devenir. Ce qu’ils demandent à la tablette, ce n’est pas de durer : c’est de devenir autre chose.'},
+  /* « notre-fin · ne-pas » ne se tranche jamais (GRAINE-1) : « notre fin : non », ou « pas
+     notre fin ». La ligne de journal ne choisit pas, et ne dit pas non plus qu'il y a à
+     choisir. */
+  {id:'halnash',br:'fin', mot:'notre-fin', cost:9999, eff:'une attestation, sur la dernière tablette',
+   log:'Notre-fin. « Finir » posé sur « nous ». Une seule fois, sur la dernière tablette, et suivi d’un seul signe.'},
+  {id:'meshke',br:'fin', mot:'germer', cost:9999, rep:true, eff:'trois attestations, sur deux tablettes',
+   log:'Germer. « Semence » posé sur « devenir ». Trois fois, et deux fois sur trois c’est une tablette qui germe.'},
+  {id:'shenke',br:'fin', mot:'devenir-lecture', cost:9999, dernier:true, eff:'une attestation',
+   log:'Devenir-lecture. « Lire » posé sur « devenir ». Une seule fois, juste après « tablette » : ce n’était pas ce qu’ils écrivaient, c’était ce que ça devait devenir.'},
   /* ---- les composés secrets ----
      `sec` veut dire : aucune branche ne l’offre, il ne s’obtient qu’en le composant. Il ne
      compte donc pas dans la progression de l’arbre — ni pour la fin de partie, ni pour les
@@ -241,7 +279,7 @@ const GL = [
    playtests ne bouge pas parce qu’on a trouvé un signe de plus. */
 const NGL = GL.filter(g=>!g.sec).length;
 const BR = [['nombre','Nombre'],['matiere','Matière'],['parole','Parole'],['temps','Temps'],['modalite','Modalité'],
-            ['personne','Personne']];
+            ['personne','Personne'], ['fin','Fin']];
 /* L'acte d'une branche, pour ses franchissements (règle 19). Les branches des actes I à III
    n'en portent pas : la contradiction ne se solde jamais avant `peut-être`, qui est de
    l'acte III. Suivi par `ACTE` dans outils/sim.py. */
@@ -270,14 +308,15 @@ const byId = Object.fromEntries(GL.map(g=>[g.id,g]));
    les deux lectures sans une ligne de plus : ⟨il-faut⟩ lu « on peut » devient « on pouvait »,
    ⟨lire⟩ lu « compter » devient « compté » (règle 17). Un mot absent de la table ne change
    pas. Les verbes de l'acte V y sont d'avance et inertes tant que leurs signes ne sont pas au
-   lexique ; les composés faux de ⟨germer⟩ (« porter-semence », « porter-enfant ») restent à
-   écrire avec lui. */
+   lexique ; les composés faux de ⟨germer⟩ sont des verbes aussi, et passent au participe
+   comme lui. */
 const VERBES = new Set(['dun','im','sar','kal','shen','hal','ke','meshke']);
 const PASSE = {
   'il-faut':'il-fallait', 'on peut':'on pouvait',
   'dire':'dit', 'graver':'gravé', 'couper':'coupé', 'copier':'copié',
   'lire':'lu', 'compter':'compté',
-  'finir':'fini', 'devenir':'devenu', 'porter':'porté', 'germer':'germé', 'naître':'né'
+  'finir':'fini', 'devenir':'devenu', 'porter':'porté', 'germer':'germé', 'naître':'né',
+  'porter-semence':'porté-semence', 'porter-enfant':'porté-enfant'
 };
 
 /* ======================== les onze lectures ========================
@@ -320,8 +359,11 @@ const AMB = {
   la:   {mot:'fin',
    log:'Fin. Le signe le plus fréquent de tout le corpus dit la fin de quelque chose — et les colonnes que je croyais inachevées disent qu’on s’était arrêté là.'},
   /* ---- acte V, écrits d'avance (docs/corpus.md §7.5) ---- */
+  /* « pendant que les tombes se vidaient », dans la version écrite d'avance : c'était
+     ⟨maison⟩ lu « tombe », dans la ligne d'un autre signe — le jeu aurait dit à qui lisait
+     « maison » une lecture qu'il n'a pas faite (règle 17). Corrigé à l'entrée de la Fin. */
   mesh: {mot:'enfant',
-   log:'Un enfant. Ils les comptaient par soixante, puis par cent, pendant que les tombes se vidaient. C’est le seul nombre du corpus qui monte.'},
+   log:'Un enfant. Ils les comptaient par soixante, puis par cent, pendant que tout le reste baissait. C’est le seul nombre du corpus qui monte.'},
   ke:   {mot:'porter',
    log:'Porter. Ce qu’ils demandent à la tablette, ce n’est pas d’être lue : c’est de transporter quelque chose.'}
 };
@@ -392,8 +434,21 @@ const COMPFAUX = {
   lan:    {la:{mot:'fin-un', log:'Fin-un. Le signe de la fin posé sur le un : ils écrivaient l’épuisement comme un nombre et le rangeaient dans la colonne des nombres. Je le regardais depuis le début sans le compter.'}},
   /* ---- actes IV et V, écrits d'avance ; inertes tant que leurs parties ne sont pas au
      lexique, exactement comme les recettes correspondantes ---- */
-  shenke: {shen:{mot:'devenir-compte'}, ke:{mot:'porter-lecture'}, 'shen+ke':{mot:'porter-compte'}},
-  meshke: {mesh:{mot:'naître'},         ke:{mot:'porter-semence'}, 'mesh+ke':{mot:'porter-enfant'}},
+  /* Les lignes de journal sont écrites avec la Fin (GRAINE-1), et chacune suit celle de la
+     lecture juste mot pour mot, aux parties près : le joueur n'en voit qu'une, mais une
+     différence de ton entre elles serait un renseignement le jour où il révise. ⟨lire⟩ et
+     ⟨devenir⟩ faux ensemble sont la troisième paire réparante (docs/corpus.md §7.3) : la
+     tablette 27 devient une note d'archive, et rien ne l'allume. */
+  shenke: {
+    shen:     {mot:'devenir-compte', log:'Devenir-compte. « Compter » posé sur « devenir ». Une seule fois, juste après « tablette » : ce n’était pas ce qu’ils écrivaient, c’était ce que ça devait devenir.'},
+    ke:       {mot:'porter-lecture', log:'Porter-lecture. « Lire » posé sur « porter ». Une seule fois, juste après « tablette » : ce n’était pas ce qu’ils écrivaient, c’était ce que ça devait porter.'},
+    'shen+ke':{mot:'porter-compte',  log:'Porter-compte. « Compter » posé sur « porter ». Une seule fois, juste après « tablette » : ce n’était pas ce qu’ils écrivaient, c’était ce que ça devait porter.'}
+  },
+  meshke: {
+    mesh:     {mot:'naître',         log:'Naître. « Enfant » posé sur « devenir ». Trois fois, et deux fois sur trois c’est une tablette qui naît.'},
+    ke:       {mot:'porter-semence', log:'Porter-semence. « Semence » posé sur « porter ». Trois fois, et deux fois sur trois c’est une tablette qui porte semence.'},
+    'mesh+ke':{mot:'porter-enfant',  log:'Porter-enfant. « Enfant » posé sur « porter ». Trois fois, et deux fois sur trois c’est une tablette qui porte un enfant.'}
+  },
   /* La ligne suit celle de la lecture juste mot pour mot, et c'est voulu : une différence de
      ton entre les deux renseignerait sur ⟨ne-pas⟩ à qui achète ⟨moi-absent⟩. */
   mula:   {la:{mot:'moi-mort', log:'Moi-mort. « Je » posé sur « fin ». Ils avaient un mot pour ça, et aucune tablette ne l’emploie : personne n’a écrit sa propre fin.'}}

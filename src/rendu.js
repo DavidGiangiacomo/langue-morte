@@ -855,15 +855,17 @@ function buildLex(){
     '</div></div>');
 }
 function paintLex(){
-  /* Un mot que seule une réponse offre (VOIX-3) reste fermé tant qu'aucune ne l'a porté. */
-  const ouverts = GL.some(g => g.rep) ? ouvertsParReponse() : null;
   for(const [k] of BR){
     const list=GL.filter(g=>g.br===k && !g.sec);
     let prevDone=true;
     for(const g of list){
       const b=$('lex').querySelector('[data-gl="'+g.id+'"]');
-      const done=has(g.id), open=prevDone&&!done&&(!g.rep||ouverts.has(g.id)), can=open&&S_.C>=g.cost;
-      const cls='gcard'+(done?' done':can?' afford':open?'':' locked');
+      /* En tête de sa chaîne mais pas encore offert (`offert()`, economie.js) : la carte le
+         dit, parce que c'est une règle du lexique et non un indice — il ne se tait pas sur
+         lui-même (règle 14). Ce qu'il faut demander, c'est au corpus de le dire. */
+      const tete=prevDone&&!has(g.id), attend=tete&&!offert(g);
+      const done=has(g.id), open=tete&&!attend, can=open&&S_.C>=g.cost;
+      const cls='gcard'+(done?' done':can?' afford':open?'':attend?' attend':' locked');
       if(b.className!==cls) b.className=cls;
       b.disabled=!can;
       /* Le comptage d'occurrences sur les signes encore à acheter. En infobulle il n'était
@@ -876,7 +878,9 @@ function paintLex(){
       setHTML(b.querySelector('.ttl'), done ? motDe(g.id)
         : montreFreq ? '<span class="frq">'+nf.format(freqGlyphe(g.id))+' occ.</span>' : '');
       setHTML(b.querySelector('.cost'), done? '✓' : open? (readC()? String(g.cost) : numGlyphs(g.cost)) : '');
-      setHTML(b.querySelector('.eff'), (done || (open && has('im'))) ? g.eff : '');
+      setHTML(b.querySelector('.eff'), (done || (open && has('im'))) ? g.eff
+        : attend && has('im') ? (g.rep ? 'le texte le donnera à qui l’interroge'
+                                       : 'il vient quand tout le reste est lu') : '');
       if(!done) prevDone=false;
     }
   }

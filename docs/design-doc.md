@@ -119,7 +119,7 @@ Le détail des 45 signes est dans `docs/corpus.md` §2. Effets notables :
 - **Temps** — `nuit` débloque la progression hors-ligne (le corpus « se lit la nuit ») ; `avant`/`après` permettent de dater les tablettes, donc de les **ordonner** — le corpus se réorganise chronologiquement à l'écran et des passages jusque-là absurdes prennent sens.
 - **Modalité** — ouvre le système de confiance. Avant `peut-être`, le jeu ne dit jamais qu'une lecture est incertaine : le joueur croit tout ce qu'il achète. `faux` allume rétroactivement les passages où la lecture ne se construit pas — **il ne nomme aucun signe**, sans quoi le §11 ne pourrait pas promettre des erreurs « jamais détectées » à la relecture de fin. Le pic de malaise du jeu. *(Précisé le 15/09/2026, MOD-3.)*
 - **Personne** — `toi` révèle que tout le corpus est à la deuxième personne. Débloque les **Questions**. `nous-fûmes` verrouille le récit au passé, y compris les passages déjà lus.
-- **Fin** — `devenir-lecture` est le dernier signe et la clé de tout. Un joueur qui a `lire` et `devenir` peut le **composer lui-même** avant que le récit ne l'y amène, et griller la révélation de vitesse. C'est voulu.
+- **Fin** — `devenir-lecture` est le dernier signe et la clé de tout. Un joueur qui a `lire` et `devenir` peut le **composer lui-même** avant que le récit ne l'y amène, et griller la révélation de vitesse. C'est voulu. *(Posé le 19/10/2026, GRAINE-1 : il compte dans l'arbre, et le lexique ne l'offre que quand tout le reste est lu. ⟨finir⟩, ⟨devenir⟩ et ⟨germer⟩ ne s'y offrent qu'une fois qu'une question les a fait répondre au texte ; tous les signes de la Fin sont au plafond de quatre chiffres, et ce sont les questions qui espacent l'acte.)*
 
 ---
 

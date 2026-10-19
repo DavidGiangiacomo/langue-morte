@@ -250,6 +250,9 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .gcard.afford .sig{color:var(--ochre)} .gcard.afford .cost{color:var(--ochre)} .gcard.afford .ttl{color:var(--lamp)}
 .gcard.afford:hover{background:#3B2C1B;border-color:var(--ochre)}
 .gcard.locked{opacity:.28;cursor:default}
+/* En tête de sa chaîne, mais le lexique attend autre chose que la Certitude : une réponse,
+   ou que tout le reste soit lu. Plus lisible qu'une carte lointaine, puisqu'elle dit sa règle. */
+.gcard.attend{opacity:.55;cursor:default}
 .gcard.done{border-color:transparent;background:transparent;cursor:default}
 .gcard.done .sig{color:var(--lamp)} .gcard.done .ttl{color:var(--lamp)}
 .gcard.done .cost{color:var(--faint)}
