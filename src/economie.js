@@ -16,9 +16,9 @@ const KEY='langue-morte-partie';
    `langue-morte-mvp-v2` n'y est pas, et c'est un choix : ses parties sont celles du prototype
    à treize signes, abandonnées le 08/09/2026, et l'économie qui les a produites n'existe plus. */
 const CLES_ANCIENNES = ['langue-morte-actes-i-iii'];
-const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram:0,elv:0},gl:[],t:0,done:false,
+const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram:0,elv:0,lec:0},gl:[],t:0,done:false,
   rel:{}, prix:{}, carnet:[], comp:0, lect:{}, dte:{}, conc:{}, recs:{}, rev:0, contr:0,
-  qn:0, qf:0, qa:[], fin:null, efface:false, fautes:{}, lusEleve:{}});
+  qn:0, qf:0, qa:[], fin:null, efface:false, fautes:{}, lusEleve:{}, tete:0});
 /* rel : jetons relevés par tablette · prix : tarif du gisement, verrouillé
    carnet : les paires déjà tentées et fausses · comp : le nombre de tentatives, toutes issues
    confondues — c'est lui que PT10 doit lire, pas la seule liste des échecs.
@@ -41,6 +41,8 @@ const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram
    avouera (FIN-3). Ce n'est pas un solde à part pour l'Élève (règle 21) : la dette, la
    prime et la contradiction ne lisent que `lect`. Une partie d'avant ce lot les reçoit vides,
    et sa relecture ne montre que les erreurs encore en place, toutes attribuées au joueur.
+   tete : où en est le Lecteur dans le corpus, en tablettes, fraction comprise — de 0 à 30
+   (GRAINE-2).
    Une partie d'avant la composition, ou d'avant l'ambiguïté, les reçoit vides au chargement
    (`fusionner()`) : un champ ajouté ne demande ni nouvelle clé ni migration. */
 let S_ = fresh(), speed = 1;
@@ -608,8 +610,18 @@ const INS = [
      dix. Sa ligne dit les deux moitiés de ce qu'il fait, et ne chiffre que la première. */
   {k:'elv', nom:'Élève',                sig:'shen', base:20000,r:1.80,
    ds:()=>'+'+f(ELV_P*100,0)+' % aux autres · déchiffre seul',
-   unlock:()=>S_.b.gram>0}
+   unlock:()=>S_.b.gram>0},
+  /* Le Lecteur (GRAINE-2). « Acheté avant qu'on sache ce que c'est » : pas de ligne d'effet, et
+     son nom est un signe du corpus, ⟨devenir-lecture⟩ (`nomLecteur()`), qu'on ne lit qu'au
+     dernier achat — sur la tablette 27, « tablette · devenir-lecture ». Ouvert par ⟨semence⟩,
+     payé en occurrences comme les huit autres, et 2 de croissance : il en vient trois. */
+  {k:'lec', nom:null,                   sig:'tab',  base:500000,r:2.0,
+   ds:()=>'',
+   unlock:()=>has('mesh')}
 ];
+/* Le nom du Lecteur : le signe tant qu'on ne le sait pas, le mot ensuite — et le mot qu'on
+   lit, faux compris (règle 17). Qui compose ⟨devenir-lecture⟩ tôt le lit tôt (règle 25). */
+const nomLecteur = () => has('shenke') ? motDe('shenke') : sv('shenke');
 const insCost = i => Math.ceil(i.base*Math.pow(i.r,S_.b[i.k]));
 const recCost = () => { const m=Math.pow(REC_R,S_.rec)*(has('gan')?0.75:1);
   return {O:Math.ceil(12*m), H:Math.ceil(3*m)}; };
@@ -782,9 +794,13 @@ function gagnerC(x, nuit){
   if(!(x > 0)) return;
   const pris = Math.min(x, Math.max(0, C_MAX - S_.C));
   S_.C += pris;
-  const reste = x - pris;
-  if(reste <= 0 || nuit || !questionsOuvertes() || S_.qn >= Q_MAX) return;
-  S_.qf += reste;
+  if(!nuit) nourrirQuestion(x - pris);
+}
+/* Ce qui remplit la question suivante : le surplus de Certitude, et le Lecteur (GRAINE-2).
+   Rien avant ⟨toi⟩, rien au-delà de la douzième. */
+function nourrirQuestion(x){
+  if(!(x > 0) || !questionsOuvertes() || S_.qn >= Q_MAX) return;
+  S_.qf += x;
   while(S_.qf >= Q_COUT && S_.qn < Q_MAX){ S_.qf -= Q_COUT; S_.qn++; }
   if(S_.qn >= Q_MAX) S_.qf = 0;
 }
@@ -955,6 +971,28 @@ function finRegarder(now){
 function tick(dt){
   S_.t += dt;
   produire(dt);
+  lireCorpus(dt);
+}
+/* ---- le Lecteur (GRAINE-2) ----
+   « Ce n'est pas un instrument : c'est le corpus qui a commencé à lire » (design doc §5). Il ne
+   produit rien. Il lit le corpus tout seul, une tablette par minute et par Lecteur, dans
+   l'ordre des numéros — l'ordre du temps, une fois le corpus rangé —, et chaque tablette lue
+   remplit un peu la question suivante : trente tablettes, 9 000 au plus. Rien ne le dit ; on
+   le voit faire, dans la barre et dans le texte (`peindreLecteur()`), comme on avait vu le
+   compteur monter à l'acte I.
+   Il lit les tablettes encore sous terre aussi : le corpus lit ce que le joueur n'a pas
+   encore dégagé. Il ne lit pas la nuit — `tick` ne tourne pas hors ligne —, et la nuit ne
+   remplit jamais une question (règle 24).
+   Mesuré (`outils/sim.py`) : l'acte V passe de 28,2 à 25,6 min avec Élèves et de 40,3 à
+   36,3 sans, et le pire trou sans Élève de 7,2 à 5,8 min. Ce sont les attentes de question
+   qu'il comble. */
+const LEC_V = 1/60;     // tablettes lues par seconde et par Lecteur
+const LEC_Q = 300;      // ce qu'une tablette lue verse à la question suivante
+function lireCorpus(dt){
+  if(!S_.b.lec || S_.tete >= CORPUS.length) return;
+  const avant = Math.floor(S_.tete);
+  S_.tete = Math.min(CORPUS.length, S_.tete + S_.b.lec * LEC_V * dt);
+  for(let k = avant; k < Math.floor(S_.tete); k++) nourrirQuestion(LEC_Q);
 }
 /* La production, séparée du temps de jeu : la nuit passée hors ligne se rattrape par ici
    sans avancer le chronomètre ni traverser l'horloge instrumentée du journal d'actions. */
@@ -1005,6 +1043,7 @@ function frame(now){
   if(dt>0.5) dt=0.5;
   if(!S_.done) tick(dt*speed);
   paintRes(); paintActs(); paintInstr(); paintComp(); paintQuest(); paintDoute(); paintLex(); paintMeter();
+  peindreLecteur();
   finRegarder(now);
   /* Le chrono est hors jeu : la version publique n'en a pas, et une boucle qui le cherche
      quand même s'arrêterait à la première frame. */

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Simulateur d'économie — « La langue morte », actes I à IV.
+Simulateur d'économie — « La langue morte », actes I à V.
 Rejoue la boucle du prototype avec un acheteur heuristique et une cadence
 de clic paramétrable, pour vérifier le rythme sans avoir à jouer 40 minutes.
 
@@ -151,6 +151,14 @@ P = dict(
     # l'acheteur dépensant avant d'atteindre le plafond ; c'est l'acte V qu'il réglera, quand
     # ECO-2 l'aura porté ici (docs/note-questions.md).
     c_max=9999, q_cout=4000, q_max=12,
+    # Le Lecteur (GRAINE-2) : il ne produit rien. Une fois acheté, il lit le corpus tout seul,
+    # une tablette par minute et par Lecteur, et chaque tablette lue remplit `lec_q` de la
+    # question suivante — trente tablettes, 9 000 au plus, deux questions et quart. Ouvert par
+    # ⟨semence⟩, payé en occurrences, et acheté en dernier : l'acheteur n'épargne jamais pour
+    # lui. Suit `LEC_V`, `LEC_Q` et l'entrée `lec` d'`INS` dans economie.js. Mesuré le
+    # 19/10/2026 : il raccourcit l'acte V de 2,6 min avec Élèves et de 4,0 sans, et le pire
+    # trou sans Élève passe de 7,2 à 5,8 min — ce sont les attentes de question qu'il comble.
+    lec_b=500000, lec_r=2.0, lec_v=1 / 60, lec_q=300,
 )
 
 BR = {}
@@ -247,19 +255,24 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=(), eleves=None, ele
     dé, et la part de chaque extrême se lit dans `elv_lus`. `eleve_apres` = le signe que le
     joueur tient à lire lui-même avant d'engager son premier Élève. Retourne (durée, jalons, ...)."""
     O = H = C = 0.0
-    b = {'cop': 0, 'tab': 0, 'con': 0, 'ate': 0, 'gram': 0, 'elv': 0}
+    b = {'cop': 0, 'tab': 0, 'con': 0, 'ate': 0, 'gram': 0, 'elv': 0, 'lec': 0}
     gl, rec, t, dt = set(), 0, 0.0, 0.1
     marks, c_rec, c_con = [], 0.0, 0.0
     hyp_gl, comp_faits = {}, 0     # stock d'hypothèses à chaque jalon · compositions faites
     q = dict(n=0, f=0.0)           # questions venues, surplus vers la suivante (VOIX-3)
+    tete = [0.0]                   # tablettes lues par le Lecteur, fraction comprise (GRAINE-2)
+
+    def nourrir(x):
+        """Remplit la question suivante, dès ⟨toi⟩ et jusqu'à la douzième."""
+        if x > 0 and 'ta' in gl and q['n'] < P['q_max']:
+            q['f'] += x
+            while q['f'] >= P['q_cout'] and q['n'] < P['q_max']:
+                q['f'] -= P['q_cout']; q['n'] += 1
 
     def gagner(c, x):
         """La Certitude gagnée, plafonnée ; le surplus remplit les questions dès ⟨toi⟩."""
         pris = min(x, max(0.0, P['c_max'] - c))
-        if x > pris and 'ta' in gl and q['n'] < P['q_max']:
-            q['f'] += x - pris
-            while q['f'] >= P['q_cout'] and q['n'] < P['q_max']:
-                q['f'] -= P['q_cout']; q['n'] += 1
+        nourrir(x - pris)
         return c + pris
     # I6 par tranche de dix minutes : PT7 s'est posé à 31,2 % sur la partie entière en
     # cachant un 83 % au premier quart d'heure et un 103 % aux cinq dernières minutes.
@@ -415,6 +428,16 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=(), eleves=None, ele
             O -= cost(k); b[k] += 1
             premier.setdefault(k, t / 60)
 
+        # Le Lecteur : acheté après tout le reste, quand il reste de quoi ; puis il lit.
+        if 'mesh' in gl and O >= cost('lec'):
+            O -= cost('lec'); b['lec'] += 1
+            premier.setdefault('lec', t / 60)
+        if b['lec'] and tete[0] < len(TOKENS):
+            avant = int(tete[0])
+            tete[0] = min(len(TOKENS), tete[0] + b['lec'] * P['lec_v'] * dt)
+            for _ in range(int(tete[0]) - avant):
+                nourrir(P['lec_q'])
+
         # recoupement manuel tant qu'il reste franchement rentable
         rc = reccost()
         while O >= rc[0] * 4 and H >= rc[1] * 4 and rc[0] < O * 0.25:
@@ -466,6 +489,7 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=(), eleves=None, ele
                                   o_main=o_main, o_pass=o_pass, gis_use=gis_use,
                                   tr_rec=tr_rec, tr_ins=tr_ins, premier=premier,
                                   hyp_gl=hyp_gl, comp=comp_faits, elv_lus=elv_lus, questions=q_dep[0],
+                                  lues=int(tete[0]),
                                   gis_tot=sum(-(-n // P['gis_div']) for n in TOKENS))
 
 

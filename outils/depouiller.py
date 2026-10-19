@@ -115,7 +115,7 @@ class Rejeu:
     def __init__(self, ev):
         self.ev = ev
         self.gl = {}                 # id -> 'j' | 'f'
-        self.b = dict(cop=0, tab=0, con=0, ate=0, gram=0, elv=0)
+        self.b = dict(cop=0, tab=0, con=0, ate=0, gram=0, elv=0, lec=0)
         self.prix, self.rel = {}, {}
         has = lambda i: i in self.gl
         mf = lambda i, x: ((1 + (x - 1) * sim.AMB_R) if self.gl.get(i) == 'f' else x) if has(i) else 1
@@ -299,7 +299,7 @@ def mmss(t):
 # secondes-là et celles de la montre. Le contrôle ci-dessous le trouverait donc parfaitement
 # cohérent — d'où l'avertissement en tête de rapport, qui ne se déduit d'aucun chiffre.
 INERTES = ('etat', 'tablette', 'concChoisir', 'fin', 'finjeu', 'vitesse', 'finsOuvrir', 'interrompre',
-           'relire')
+           'relire', 'lireCorpus')
 
 
 def controle(ev):

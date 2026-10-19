@@ -159,6 +159,26 @@ function peindreRuptures(){
   }
 }
 
+/* ==================== ce que le Lecteur a lu (GRAINE-2) ====================
+   Rien ne le décrit, et c'est ici qu'on le voit faire : une tablette lue porte un trait dans
+   la barre et au bord du texte, et dans la tablette en cours une ligne s'éclaire, puis la
+   suivante, au rythme d'une tablette par minute et par Lecteur. Le jeu ne dit pas ce que
+   c'est ; le joueur regarde, et la tablette 27 le lui dira (« tablette · devenir-lecture »). */
+let lecVue = '';
+function peindreLecteur(){
+  const n = Math.floor(S_.tete), t = n + 1;
+  const tb = S_.b.lec && n < CORPUS.length ? TBN[t] : null;
+  const ligne = tb ? Math.floor((S_.tete - n) * tb.l.length) : -1;
+  const cle = n + ':' + ligne;
+  if(cle === lecVue) return;
+  lecVue = cle;
+  for(const c of $('rail').children) c.classList.toggle('lue', +c.dataset.go <= n);
+  for(const el of elCorpus.querySelectorAll('.tablet')) el.classList.toggle('lue', +el.dataset.tb <= n);
+  const v = elCorpus.querySelector('.ln.lecteur'); if(v) v.classList.remove('lecteur');
+  const el = tb && elCorpus.querySelector('.tablet[data-tb="'+t+'"]');
+  if(el && el.children[ligne]) el.children[ligne].classList.add('lecteur');
+}
+
 /* ============================ la datation ============================ */
 /* Le jeu n'ajoute aucune date au corpus : chaque tablette porte la sienne dans sa
    première ligne — « tablette 12 · année 103 » — depuis la première seconde de la partie.
@@ -543,7 +563,10 @@ function paintInstr(){
     b.disabled=!can;
     setHTML(b.querySelector('.sg'), sv(i.sig));
     const muet={cop:'kal',tab:'im',con:'shen',ate:'mesh',gram:'en',elv:'zur'}[i.k];
-    setHTML(b.querySelector('.nn'), (open&&has('ur')) ? i.nom
+    /* Le Lecteur n'a pas de nom français : il porte un signe du corpus, qu'on lit quand on le
+       sait (GRAINE-2). */
+    setHTML(b.querySelector('.nn'), i.k === 'lec' ? nomLecteur()
+      : (open&&has('ur')) ? i.nom
       : '<span style="color:var(--dim)">'+sv('dun')+sv(muet)+sv('la')+'</span>');
     setHTML(b.querySelector('.lv'), open? nf.format(S_.b[i.k]) : '');
     setHTML(b.querySelector('.ds'), open&&has('im') ? i.ds() : '');

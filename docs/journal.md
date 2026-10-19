@@ -142,6 +142,78 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## Le Lecteur — le corpus a commencé à lire
+
+*19/10/2026, GRAINE-2, sur la branche empilée sur `eleve`.*
+
+Le design doc ne lui donnait qu'une ligne : « acheté avant qu'on sache ce que c'est. On
+découvre à l'acte V que ce n'est pas un instrument : c'est le corpus qui a commencé à lire. »
+Et le backlog un critère : achetable sans description, la révélation par le texte. Tout le
+reste était à trancher, et ce qu'il fait touchait le rythme de l'acte V : mesuré d'abord,
+soumis à l'auteur ensuite, deux questions, deux réponses — celles que je recommandais.
+
+### Ce que la mesure a montré avant tout choix
+
+À l'acte V, le rythme tient à deux choses : la Grammaire gelée, qui rend 44 à 50 Certitude par
+seconde avec Élèves et 32 à 35 sans, et le prix de 9 999. Avec Élèves, l'acte V tient déjà
+4,0 min par signe, la borne basse d'I4 : **tout ce qui accélère la Certitude casse I4 par le
+bas.** Ce qui reste libre, ce sont les attentes de question — les trois mots qu'une réponse
+ouvre attendent que le surplus remplisse 4 000 —, et ce sont elles qui faisaient les trous de
+7,2 min sans Élève. Un Lecteur qui ne nourrit que la question suivante ne raccourcit que là.
+
+### Ce qui est tranché
+
+**Il lit seul.** Une fois acheté, il parcourt le corpus de lui-même, une tablette par minute et
+par Lecteur, dans l'ordre des numéros, et chaque tablette lue verse 300 à la question suivante :
+trente tablettes, 9 000 au plus. Il lit aussi ce qui n'est pas encore sorti de terre — le
+corpus lit ce que le joueur n'a pas dégagé. Les deux autres réponses tenaient : qu'il fasse lire
+le joueur (chaque tablette ramenée sous les yeux comptant une fois) aurait rendu à l'acte V un
+geste dans le corpus, le défaut de PT10, mais rien ne l'aurait dit ; qu'il ne fasse rien, pris
+au mot, se serait lu comme une panne.
+
+**Son nom est ⟨devenir-lecture⟩.** Le panneau des instruments écrit son nom en signe, le seul
+des neuf sans nom français, et sans ligne d'effet, même ⟨dire⟩ acquis. On reconnaît ⟨lire⟩ dans
+le tracé (règle 4) ; on ne le lit qu'au dernier achat, et c'est la ligne même que l'effacement
+attend sur la tablette 27 : « tablette · devenir-lecture ». Ce qu'on avait acheté pendant tout
+l'acte V, c'était la tablette qui devient lecture.
+
+### Ce que le lot a trouvé en chemin
+
+**Le voir faire, faute de le dire.** Un instrument sans description ne se comprend qu'à
+l'observation, comme le compteur de l'acte I. Il fallait donc qu'il se voie : un trait sur
+chaque tablette lue, dans la barre et au bord du texte, et dans la tablette en cours la ligne
+qu'il lit, qui s'éclaire puis passe à la suivante. Et la jauge de la question qui avance d'un
+cran à chaque tablette. Rien d'autre ne l'explique.
+
+**La nuit ne lit pas.** Le Lecteur avance dans `tick`, que la veillée ne traverse pas ; la règle
+24 (« la nuit ne remplit jamais une question ») tient sans une ligne de plus. Et ce qu'il verse
+passe par le même chemin que le surplus, `nourrirQuestion()`, sorti de `gagnerC()` pour
+l'occasion : il n'a pas de compte à lui.
+
+**Le simulateur le porte**, comme ECO-2 le demande de chaque instrument : `lec_b`, `lec_r`,
+`lec_v`, `lec_q` dans `P`, acheté en dernier, sans épargne. Le prix double à chaque Lecteur, et
+en laisse trois à l'acheteur.
+
+### Mesuré
+
+**130,9–134,3 min** au réglage en place (133,5–136,9 sans Lecteur) ; **155,5–158,6** sans Élève
+(159,5–162,6). L'acte V passe de 28,2 à **25,6 min** avec Élèves et de 40,3 à **36,3** sans ; le
+pire trou sans Élève de 7,2 à **5,8 min**. La contradiction chez qui ne révise jamais coûte un
+peu moins (paire réparante 216,7–219,7 au lieu de 223,6–226,6), et I4 y cède toujours, à 11,3
+min au lieu de 12,9. `balayage.py` : sa fenêtre de durée re-basée à (118, 161), mêmes marges — à
+(121, 165), quinze combinaisons tombaient sur le plancher de quelques dixièmes —, et **42
+combinaisons sur 54** passent, comme avant le Lecteur, dont le réglage en place (121,7–158,6
+min, écart 5,8).
+
+**Réserve.** Avec Élèves, l'acte V tombe à 3,7 min par signe : sous les quatre d'I4, où il était
+tout juste. La borne basse n'est pas un garde-fou de `balayage.py`, et l'acheteur du simulateur
+prend trois Lecteurs dès ⟨semence⟩, ce qu'un joueur qui ne sait pas ce qu'il achète ne fera
+peut-être pas. Non réglé, à observer : le journal d'actions date chaque Lecteur et chaque
+tablette qu'il finit. Pour le playtest : **voit-on le Lecteur lire, et à quelle minute va-t-on
+voir une tablette qu'il a marquée ?**
+
+`outils/verifier.py` passe de 412 à **421 assertions**.
+
 ## La relecture — ce que le livre avoue une fois fermé
 
 *19/10/2026, FIN-3, sur la branche empilée sur `eleve`.*

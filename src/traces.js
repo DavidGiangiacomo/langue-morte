@@ -78,7 +78,7 @@ function enrober(nom, temoin, detail){
   };
 }
 
-const niveaux = () => S_.b.cop + S_.b.tab + S_.b.con + S_.b.ate + S_.b.gram + S_.b.elv;
+const niveaux = () => S_.b.cop + S_.b.tab + S_.b.con + S_.b.ate + S_.b.gram + S_.b.elv + S_.b.lec;
 
 /* `relever` reçoit désormais sa tablette : c'est la seule façon de distinguer un joueur qui
    parcourt le corpus d'un joueur qui s'installe sur une tablette et martèle. La question
@@ -209,6 +209,14 @@ finEffacer = function(){
    avec le signe laissé. */
 enrober('finsOuvrir',  () => finsId, a => a[0] + (Array.isArray(a[1]) ? ' · grille' : ''));
 enrober('interrompre', () => S_.fin, a => a[0] + ' (' + motDe(a[0]) + ') laissé non lu');
+/* Le Lecteur (GRAINE-2) : chaque tablette qu'il finit de lire, et à quelle minute. Trente
+   lignes au plus. C'est ce qui dira si le joueur l'a vu faire — l'écart entre ces lignes et
+   ses propres navigations vers les tablettes marquées. */
+enrober('lireCorpus', () => Math.floor(S_.tete), (a, avant) => {
+  const n = Math.floor(S_.tete), t = [];
+  for(let k = avant + 1; k <= n; k++) t.push(k);
+  return 'tablette ' + t.join(', ') + ' · ' + S_.b.lec + ' Lecteur' + (S_.b.lec > 1 ? 's' : '');
+});
 /* La relecture (FIN-3) : si on l'ouvre, et quand — sa durée est celle qui sépare cette ligne
    de la suivante, « reset » ou l'export. Le détail dit ce qu'elle avoue, en signes : le
    journal est hors jeu, il peut compter ce que l'écran ne compte pas. */
@@ -242,7 +250,7 @@ tick = function(dt){
     tracer('etat', 'O=' + Math.round(S_.O) + ' H=' + Math.round(S_.H) + ' C=' + Math.round(S_.C)
                  + ' signes=' + S_.gl.length + ' sig%=' + m.sig + ' lig%=' + m.lig
                  + ' gis=' + Object.keys(S_.rel).reduce((n,t)=>n+S_.rel[t].length,0) + '/' + GIS_TOTAL
-                 + ' instr=' + [S_.b.cop, S_.b.tab, S_.b.con, S_.b.ate, S_.b.gram, S_.b.elv].join('/'));
+                 + ' instr=' + [S_.b.cop, S_.b.tab, S_.b.con, S_.b.ate, S_.b.gram, S_.b.elv, S_.b.lec].join('/'));
   }
 };
 

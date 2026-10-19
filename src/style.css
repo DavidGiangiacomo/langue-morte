@@ -339,6 +339,14 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
   font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
 .ambcard .ghost:hover{color:var(--lamp);border-color:var(--line2)}
 
+/* Le Lecteur (GRAINE-2) : ce qu'il a lu, et la ligne qu'il lit. Pas de légende : on le voit
+   faire. */
+.rail [data-go].lue{box-shadow:inset 0 2px 0 rgba(157,184,199,.55)}
+.tablet.lue{box-shadow:inset 2px 0 0 rgba(157,184,199,.28)}
+.ln.lecteur{background:rgba(157,184,199,.09);transition:background .8s ease}
+body.fin .tablet.lue{box-shadow:none}
+body.fin .ln.lecteur{background:none}
+
 /* Les deux fins : même habit, et le geste écrit sous le verbe. */
 .finschoix button b{display:block;font-weight:500}
 .finschoix button span{display:block;margin-top:5px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--dim)}

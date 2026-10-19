@@ -64,7 +64,12 @@ GRILLE = dict(rec_r=(1.26, 1.30, 1.35), con_b=(350, 400, 450), cop_b=(10, 15),
 # dessous : l'acte V espace par construction les mots qu'une question ouvre, de 6,6 à 7,2 min
 # chez le joueur sans Élève, contre 3,2 à 5,2 avec. C'est le rythme voulu, mesuré en
 # choisissant les prix (docs/note-questions.md), pas un défaut qu'un garde-fou devrait cacher.
-DUREE = (121.0, 165.0)
+# Re-basée le 19/10/2026 avec le Lecteur (GRAINE-2), qui comble les attentes de question de
+# l'acte V : 155,5-158,6 min sans Élève et tout juste, 121,7-125,1 toutes fausses avec Élèves.
+# Mêmes marges. À (121, 165), quinze combinaisons tombaient sur le plancher, de quelques
+# dixièmes : c'était la durée qui avait bougé, pas le réglage qui avait cassé. 42 sur 54 à
+# (118, 161), comme avant lui, dont le réglage en place (121,7-158,6 min, écart 5,8).
+DUREE = (118.0, 161.0)
 ECART_MAX = 8.0
 I6_MAX = 30.0
 # La part manuelle des OCCURRENCES, entrée dans le tri le 14/09/2026 en même temps que

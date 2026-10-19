@@ -15,6 +15,10 @@ Contrôle :
      « recommencer » et pas un chiffre, une partie interrompue ne reprend pas, et rien ne
      couvre les outils hors jeu ; la relecture rend le texte entier et marque chaque faute
      sur son jeton — restée, corrigée, d'un Élève —, et ce qui n'a jamais été trouvé
+ 31. le Lecteur : ouvert par ⟨semence⟩, un signe pour nom et aucune ligne d'effet, il lit le
+     corpus seul — une tablette par minute et par Lecteur, marquée dans la barre et dans le
+     texte —, verse à la question suivante, ne lit pas la nuit, s'arrête à trente, et son nom
+     se lit avec ⟨devenir-lecture⟩
   7. le relevé se fait dans le corpus ; le gisement s'épuise et se tarife à la 1re visite
   8. le recoupement se fait dans le corpus : deux passages d'un même signe
   9. la datation : une tablette se date quand on sait lire sa date, et pas avant
@@ -1756,9 +1760,10 @@ def main() -> None:
         print("\nl'Élève : il multiplie tout")
         page.evaluate("() => $('reset').click()")
         page.wait_for_timeout(200)
-        # Six boutons pour sept instruments : l'Œil est le relevé, et il se fait dans le corpus.
-        verifier(page.eval_on_selector_all("#instr .ins", "e => e.dataset ? 0 : e.map(b => b.dataset.ins)")[-1] == "elv"
-                 and page.eval_on_selector_all("#instr .ins", "e => e.length") == 6,
+        # Sept boutons pour huit instruments : l'Œil est le relevé, et il se fait dans le corpus.
+        # Le Lecteur (GRAINE-2) vient après l'Élève.
+        verifier(page.eval_on_selector_all("#instr .ins", "e => e.map(b => b.dataset.ins)")[-2:] == ["elv", "lec"]
+                 and page.eval_on_selector_all("#instr .ins", "e => e.length") == 7,
                  "l'Élève est au panneau, après la Grammaire")
         elv = lambda: page.evaluate("() => INS.find(i => i.k === 'elv').unlock()")
         page.evaluate("() => { S_.C = 9e6; acheterGl('nur', 'j'); }")
@@ -2241,6 +2246,72 @@ def main() -> None:
         page.wait_for_timeout(200)
         verifier(r == [[5, 0], 6, 1],
                  f"⟨semence⟩ mal lu en entrant dans l'acte V fait passer la dette à six, et la contradiction s'arme : {r}")
+
+        # ---- le Lecteur (GRAINE-2) ----
+        # « Acheté avant qu'on sache ce que c'est. On découvre à l'acte V que ce n'est pas un
+        # instrument : c'est le corpus qui a commencé à lire » (design doc §5). Ce qui se
+        # vérifie surtout, c'est ce qu'il ne dit pas : ni nom français, ni ligne d'effet.
+        print("\nle Lecteur : le corpus a commencé à lire")
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+        page.evaluate("""() => { S_.C = 9e6; S_.H = 9e6;
+            GL.filter(g => !g.sec && g.br !== 'fin').forEach(g => acheterGl(g.id, 'j')); concFermer(); }""")
+        page.wait_for_timeout(200)
+        lecteur = lambda: page.evaluate("""() => { const b = $('instr').querySelector('[data-ins=lec]');
+            return [b.className, b.disabled, b.querySelector('.nn').textContent, b.querySelector('.ds').textContent,
+                    !!b.querySelector('.nn svg')]; }""")
+        r = lecteur()
+        verifier(r[0] == "ins locked" and r[1] is True, f"fermé jusqu'à ⟨semence⟩, l'acte IV entier lu : {r[:2]}")
+        page.evaluate("() => { acheterGl('mesh', 'j'); S_.O = 2e6; S_.C = 9999; S_.qf = 0; S_.qn = 0; }")
+        page.wait_for_timeout(200)
+        r = lecteur()
+        verifier(r == ["ins afford", False, "", "", True],
+                 f"⟨semence⟩ l'ouvre : un signe pour nom, pas un mot, et aucune ligne d'effet — ⟨dire⟩ est pourtant lu : {r}")
+        page.evaluate("() => $('instr').querySelector('[data-ins=lec]').click()")
+        page.wait_for_timeout(150)
+        r = page.evaluate("() => [S_.b.lec, S_.O, insCost(INS.find(i => i.k === 'lec'))]")
+        verifier(r == [1, 1500000, 1000000], f"il se paie en occurrences, comme les huit autres : {r}")
+        # Il lit seul : une tablette par minute et par Lecteur, et chaque tablette lue verse
+        # 300 à la question suivante. Pas de nuit : `tick` ne tourne pas hors ligne.
+        r = page.evaluate("""() => { const q0 = S_.qf; tick(90);
+            return [S_.tete, S_.qf - q0, [...$('rail').querySelectorAll('.lue')].map(c => c.dataset.go),
+                    [...elCorpus.querySelectorAll('.tablet.lue')].map(e => e.dataset.tb)]; }""")
+        page.wait_for_timeout(200)
+        verifier(abs(r[0] - 1.5) < 0.05 and r[1] == 300,
+                 f"une tablette par minute, et chacune verse à la question suivante : {r[:2]}")
+        r = page.evaluate("""() => [[...$('rail').querySelectorAll('.lue')].map(c => c.dataset.go),
+            [...elCorpus.querySelectorAll('.tablet.lue')].map(e => e.dataset.tb),
+            (() => { const l = elCorpus.querySelector('.ln.lecteur'); return l && [l.closest('.tablet').dataset.tb,
+               [...l.parentElement.children].indexOf(l)]; })()]""")
+        verifier(r[0] == ["1"] and r[1] == ["1"] and r[2] is not None and r[2][0] == "2",
+                 f"on le voit faire : la tablette 1 marquée, une ligne de la 2 qui s'éclaire : {r}")
+        r = page.evaluate("""() => { S_.b.lec = 3; const t0 = S_.tete; tick(60); const v = S_.tete - t0;
+            const n = S_.qn, f = S_.qf; S_.ts = Date.now() - 3600e3; veillee();
+            return [v, S_.tete === t0 + v, n, f]; }""")
+        verifier(abs(r[0] - 3) < 1e-6 and r[1] is True,
+                 f"trois Lecteurs lisent trois fois plus vite, et la nuit ne lit rien : {r[:2]}")
+        # Sans aucun instrument qui produise : ce qui remplit la question, c'est lui seul.
+        r = page.evaluate("""() => { S_.qn = 0; S_.qf = 0; const k = Math.floor(S_.tete); tick(3600);
+            const a = [S_.tete, S_.qn * Q_COUT + S_.qf, (30 - k) * LEC_Q]; tick(600);
+            return [...a, S_.tete, S_.qn * Q_COUT + S_.qf]; }""")
+        verifier(r[0] == 30 and r[1] == r[2] and r[3] == 30 and r[4] == r[1],
+                 f"trente tablettes, chacune versée une fois, et il s'arrête : {r}")
+        verifier(page.evaluate("() => TR.filter(e => e[1] === 'lireCorpus').length") >= 3,
+                 "le journal d'actions date chaque tablette qu'il finit")
+        # La révélation par le texte : son nom est ⟨devenir-lecture⟩, qu'on lit quand on le sait,
+        # avec le mot qu'on lit (règle 17) — et c'est la ligne de la tablette 27 que l'effacement
+        # attend, « tablette · devenir-lecture ».
+        nom = lambda: page.evaluate("() => $('instr').querySelector('[data-ins=lec] .nn').textContent")
+        page.evaluate("() => { S_.lect.shen = 'f'; acheterGl('shenke'); }")
+        page.wait_for_timeout(150)
+        r = [nom(), page.evaluate("() => motDe('shenke')")]
+        page.evaluate("() => { S_.lect.shen = 'j'; }")
+        page.wait_for_timeout(150)
+        r.append(nom())
+        verifier(r[2] == "devenir-lecture" and r[0] == r[1] and r[0] != r[2],
+                 f"son nom se lit avec le dernier signe — et avec la lecture qu'on en a : {r}")
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
 
         # ---- les trois builds (LIV-2) ----
         # `python build.py` sort trois pages du même `src/`. Ce qui se vérifie ici n'est pas

@@ -23,7 +23,7 @@
 | | Fait | Reste pour 1.0 |
 |---|---|---|
 | Glyphes | **30 / 45** *(+ `grenier` et `zéro`, composés, hors arbre)* — **43** avec la Personne et la Fin, sur une branche de travail pas encore fusionnée | **15** *(9)* |
-| Instruments | **7 / 9** (Œil, Copiste, Table, Concordance, Atelier, Grammaire, **Élève** *— branche `eleve`, pas encore fusionnée*) | 2 (Corpus jumeau, Le Lecteur) |
+| Instruments | **8 / 9** (Œil, Copiste, Table, Concordance, Atelier, Grammaire, **Élève** *— branche `eleve`, pas encore fusionnée*, **Le Lecteur** *— branche empilée dessus*) | 1 (Corpus jumeau) |
 | Actes | **I, II, III — entiers** | IV, V |
 | Corpus | **30 tablettes, 705 lignes, 3 838 signes — intégral**, ⟨N1⟩/⟨N2⟩ semés, **les 11 lectures fausses écrites** | — |
 | Mécaniques centrales | relevé, recoupement, datation, rangement, concordance, hors-ligne, **composition**, **ambiguïté**, **doute, révision, contradiction** | Questions |
@@ -417,10 +417,11 @@ Suivi : [#25](https://github.com/DavidGiangiacomo/langue-morte/issues/25) — le
 - *Fait* (19/10/2026, branche de travail empilée sur `eleve`) : sept signes à 9 999, aucun multiplicateur. ⟨finir⟩, ⟨devenir⟩ et ⟨germer⟩ ne s'offrent qu'une fois qu'une réponse les a portés (VOIX-3) ; ⟨devenir-lecture⟩ **compte dans l'arbre et le lexique l'offre en dernier** — tranché par l'auteur ce jour-là, la question ouverte de l'issue —, la grille le donnant avant à qui a ⟨lire⟩ et ⟨devenir⟩. Les portes sont au lexique (`offert()`), pas dans `acheterGl` : ⟨germer⟩ posé à la grille fait l'économie de sa question. Mesuré : 133,5–136,9 min avec Élèves, 159,5–162,6 sans, acte V de 28,2 et 40,3 min, I4 tenu. Voir la règle 25 de `CLAUDE.md` et `docs/journal.md`, « La Fin ».
 - `notre-fin · ne-pas` ne se tranche jamais : « notre fin : non » ou « pas notre fin ». **Le jeu ne dira pas laquelle.**
 
-**GRAINE-2 — Le Lecteur** *(instrument 9)* · T:M · [#40](https://github.com/DavidGiangiacomo/langue-morte/issues/40)
+**GRAINE-2 — Le Lecteur** *(instrument 9)* · ~~T:M~~ **fait** (19/10/2026, branche de travail empilée sur `eleve`) · [#40](https://github.com/DavidGiangiacomo/langue-morte/issues/40)
 > En tant que joueur, je veux acheter un instrument avant de savoir ce que c'est, et découvrir que ce n'en est pas un.
 
 - Fini quand : l'instrument est achetable sans description ; la révélation (« c'est le corpus qui a commencé à lire ») arrive par le texte, pas par une infobulle.
+- *Fait* : ouvert par ⟨semence⟩, payé en occurrences, sans nom français ni ligne d'effet — son nom est le signe ⟨devenir-lecture⟩, qu'on lit au dernier achat. Il ne produit rien : il lit le corpus tout seul, une tablette par minute et par Lecteur, et chaque tablette lue verse 300 à la question suivante. On le voit faire, dans la barre et dans le texte ; la tablette 27 dit ce qu'il était. Mesuré : acte V 25,6 min avec Élèves, 36,3 sans, pire trou sans Élève 5,8 min au lieu de 7,2. Voir la règle 28 de `CLAUDE.md` et `docs/journal.md`, « Le Lecteur ».
 
 **GRAINE-3 — La révélation** · T:M · [#41](https://github.com/DavidGiangiacomo/langue-morte/issues/41)
 > En tant que joueur, je veux comprendre que la langue a été conçue pour être cassée par un inconnu.
@@ -474,7 +475,7 @@ Suivi : [#27](https://github.com/DavidGiangiacomo/langue-morte/issues/27) — le
 > En tant qu'auteur, je veux vérifier le rythme de trois heures sans jouer trois heures.
 
 - Fini quand : le simulateur modélise l'Élève, les Questions, la dette et la contradiction ; il sort les tranches d'I6 sur toute la partie ; `balayage.py` peut balayer les nouvelles constantes.
-- *Fait de ce récit* : la dette et la contradiction (CONTR-1), et **l'Élève** (12/10/2026) — `elv_b`, `elv_r`, `elv_p`, `elv_e` sont dans `P`, donc balayables. **La Personne** (14/10/2026) et le franchissement d'acte de la règle 19. **Le plafond de 9 999, les questions nées du surplus et le gel de la Grammaire** (19/10/2026, VOIX-3) — `c_max`, `q_cout`, `q_max` sont dans `P`. **L'acte V** (19/10/2026, GRAINE-1) : les sept signes de la Fin, les mots ouverts par une réponse (`REP`), le dernier signe (`DERNIER`), et un acheteur qui pose la question dès qu'il en a une en main. Restent le Lecteur et le Corpus jumeau, qui n'existent pas encore.
+- *Fait de ce récit* : la dette et la contradiction (CONTR-1), et **l'Élève** (12/10/2026) — `elv_b`, `elv_r`, `elv_p`, `elv_e` sont dans `P`, donc balayables. **La Personne** (14/10/2026) et le franchissement d'acte de la règle 19. **Le plafond de 9 999, les questions nées du surplus et le gel de la Grammaire** (19/10/2026, VOIX-3) — `c_max`, `q_cout`, `q_max` sont dans `P`. **L'acte V** (19/10/2026, GRAINE-1) : les sept signes de la Fin, les mots ouverts par une réponse (`REP`), le dernier signe (`DERNIER`), et un acheteur qui pose la question dès qu'il en a une en main. **Le Lecteur** (19/10/2026, GRAINE-2) — `lec_b`, `lec_r`, `lec_v`, `lec_q` sont dans `P`. Reste le Corpus jumeau, qui n'existe pas encore.
 - **Bloquant pour tout réglage des actes IV–V** (règle 7).
 
 **ECO-3 — Tenir I1 et I4 sur 45 glyphes** · T:L · [#47](https://github.com/DavidGiangiacomo/langue-morte/issues/47)
