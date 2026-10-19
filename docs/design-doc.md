@@ -91,6 +91,8 @@ Les générateurs ne sont pas des bâtiments : ce sont des **méthodes philologi
 
 **La Grammaire s'arrête aux mots de la fin** (posé le 19/10/2026, VOIX-3). Elle croît avec le lexique jusqu'à la Personne, et plus ensuite : une fois les verbes et les personnes connus, la grammaire est complète, et c'est l'ordre que la tablette 28 donne au programme. Sans ce gel, l'acte V n'a plus de rythme sous le plafond de quatre chiffres ; avec lui et les questions, I4 tient.
 
+**Ce qu'est le Corpus jumeau** (posé le 19/10/2026, VOIX-4). Une copie, pas un bilingue — la fiction n'en a pas : l'exemplaire que la tablette 23 annonçait, « si copier 100 · un devenir ». Le même texte, signe pour signe, donc rien de neuf à lire et tout à relever de nouveau : chaque tablette rouvre la moitié de son gisement, tarifée au débit du moment où l'on y revient. Un seul exemplaire. C'est lui qui ramène la main dans le corpus à l'acte IV.
+
 **Ce que le Lecteur fait** (posé le 19/10/2026, GRAINE-2). Il ne produit rien : il lit le corpus tout seul, une tablette par minute et par Lecteur, et chaque tablette lue remplit un peu la question suivante. Rien ne le décrit — ni nom français, ni ligne d'effet : son nom est le signe ⟨devenir-lecture⟩, qu'on ne lit qu'au dernier achat. On le voit faire, une tablette marquée après l'autre, et la tablette 27 dit ce qu'il était : « tablette · devenir-lecture ». Il comble les attentes de question de l'acte V, ce qui le rend plus régulier.
 
 **L'Élève** est le premier générateur *ambivalent*. Il multiplie tout, mais il déchiffre aussi tout seul, et il se trompe. Le joueur qui empile les Élèves déchiffre vite et faux. C'est l'arbitrage central de la seconde moitié du jeu.

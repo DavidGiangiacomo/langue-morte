@@ -73,17 +73,19 @@ function enrober(nom, temoin, detail){
     const r = orig.apply(this, a);
     /* Insérée à son rang et non à la fin : une action peut en déclencher une autre —
        le dernier signe termine la partie — et la cause doit précéder l'effet. */
-    if(temoin() !== avant) tracer(nom, detail ? detail(a, avant) : '', rang);
+    if(temoin() !== avant) tracer(nom, detail ? detail(a, avant, r) : '', rang);
     return r;
   };
 }
 
-const niveaux = () => S_.b.cop + S_.b.tab + S_.b.con + S_.b.ate + S_.b.gram + S_.b.elv + S_.b.lec;
+const niveaux = () => S_.b.cop + S_.b.tab + S_.b.con + S_.b.ate + S_.b.gram + S_.b.elv + S_.b.lec + S_.b.jum;
 
 /* `relever` reçoit désormais sa tablette : c'est la seule façon de distinguer un joueur qui
    parcourt le corpus d'un joueur qui s'installe sur une tablette et martèle. La question
    décide du sort du gisement, et elle ne se lit nulle part ailleurs que dans ce journal. */
-enrober('relever',   () => S_.clicks,     a => 'tablette ' + a[0]);
+/* « · copie » quand le relevé est allé au Corpus jumeau (VOIX-4) : son tarif est figé à part,
+   et `depouiller.py` ne peut pas le rejouer sans savoir lequel des deux gisements a payé. */
+enrober('relever',   () => S_.clicks,     (a, avant, r) => 'tablette ' + a[0] + (r === 'copie' ? ' · copie' : ''));
 enrober('formuler',  () => S_.H);
 enrober('recouper',  () => S_.rec,        a => '+' + recGain() + ' cert.'
                                                + (a[0] ? ' · ' + a[0] : ''));
@@ -250,7 +252,7 @@ tick = function(dt){
     tracer('etat', 'O=' + Math.round(S_.O) + ' H=' + Math.round(S_.H) + ' C=' + Math.round(S_.C)
                  + ' signes=' + S_.gl.length + ' sig%=' + m.sig + ' lig%=' + m.lig
                  + ' gis=' + Object.keys(S_.rel).reduce((n,t)=>n+S_.rel[t].length,0) + '/' + GIS_TOTAL
-                 + ' instr=' + [S_.b.cop, S_.b.tab, S_.b.con, S_.b.ate, S_.b.gram, S_.b.elv, S_.b.lec].join('/'));
+                 + ' instr=' + [S_.b.cop, S_.b.tab, S_.b.con, S_.b.ate, S_.b.gram, S_.b.elv, S_.b.lec, S_.b.jum].join('/'));
   }
 };
 

@@ -16,9 +16,9 @@ const KEY='langue-morte-partie';
    `langue-morte-mvp-v2` n'y est pas, et c'est un choix : ses parties sont celles du prototype
    à treize signes, abandonnées le 08/09/2026, et l'économie qui les a produites n'existe plus. */
 const CLES_ANCIENNES = ['langue-morte-actes-i-iii'];
-const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram:0,elv:0,lec:0},gl:[],t:0,done:false,
+const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram:0,elv:0,lec:0,jum:0},gl:[],t:0,done:false,
   rel:{}, prix:{}, carnet:[], comp:0, lect:{}, dte:{}, conc:{}, recs:{}, rev:0, contr:0,
-  qn:0, qf:0, qa:[], fin:null, efface:false, fautes:{}, lusEleve:{}, tete:0});
+  qn:0, qf:0, qa:[], fin:null, efface:false, fautes:{}, lusEleve:{}, tete:0, relJ:{}, prixJ:{}});
 /* rel : jetons relevés par tablette · prix : tarif du gisement, verrouillé
    carnet : les paires déjà tentées et fausses · comp : le nombre de tentatives, toutes issues
    confondues — c'est lui que PT10 doit lire, pas la seule liste des échecs.
@@ -43,6 +43,9 @@ const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram
    et sa relecture ne montre que les erreurs encore en place, toutes attribuées au joueur.
    tete : où en est le Lecteur dans le corpus, en tablettes, fraction comprise — de 0 à 30
    (GRAINE-2).
+   relJ, prixJ : les relevés faits sur la copie du Corpus jumeau, et le tarif de chaque
+   tablette de la copie, figé au premier relevé qu'on y fait (VOIX-4) — les jumeaux de `rel`
+   et de `prix`.
    Une partie d'avant la composition, ou d'avant l'ambiguïté, les reçoit vides au chargement
    (`fusionner()`) : un champ ajouté ne demande ni nouvelle clé ni migration. */
 let S_ = fresh(), speed = 1;
@@ -536,11 +539,33 @@ for(const tb of CORPUS) GISEMENT[tb.t] = Math.ceil(
   tb.l.reduce((n,l)=> n + l.split(' ').filter(tk=>tk!=='·').length, 0) / REL_DIV);
 const GIS_TOTAL = Object.values(GISEMENT).reduce((a,b)=>a+b, 0);
 
+/* ---- le Corpus jumeau (VOIX-4) ----
+   « Une deuxième inscription est trouvée » (design doc §5) : pas un bilingue — la fiction n'en
+   a pas —, une copie. La tablette 23 le disait depuis l'acte IV : « si copier 100 · un
+   devenir », copié cent fois pour qu'un exemplaire survive. Le jumeau est cet exemplaire-là,
+   retrouvé : le même texte, signe pour signe, donc rien de neuf à lire, et tout à relever de
+   nouveau. Chaque tablette de la copie a son propre gisement, la MOITIÉ de celui de l'original,
+   et son propre tarif, figé au premier relevé qu'on y fait (règle 9) — c'est-à-dire au débit
+   de l'acte IV, quand on le fait. Le relevé va à l'original tant qu'il en reste, à la copie
+   ensuite.
+   Un seul exemplaire à demi-gisement, et c'est ce qui tient la part de la main sous le plafond
+   de 40 % : elle remonte à 26-33 % des occurrences avec Élèves et 26 % sans (17,3 et 13,7 sans
+   le jumeau) — 26 % à 5 clics par minute, parce qu'un joueur lent ne vide pas la copie avant
+   la fin. Un gisement entier la poussait à 43 % à 15 clics par minute (`outils/sim.py`). */
+const JUM_F = 0.5;      // le gisement d'une tablette de la copie, en part de l'original
+const GIS_COPIE = {};
+for(const t in GISEMENT) GIS_COPIE[t] = Math.ceil(GISEMENT[t] * JUM_F);
+
 const gisFait  = t => (S_.rel[t] || []).length;
-const gisReste = t => GISEMENT[t] - gisFait(t);
+const gisOrig  = t => GISEMENT[t] - gisFait(t);
+const gisCopie = t => S_.b.jum ? GIS_COPIE[t] - (S_.relJ[t] || []).length : 0;
+const gisReste = t => gisOrig(t) + gisCopie(t);
+/* Le tarif du prochain relevé neuf sur cette tablette : celui de l'original tant qu'il en
+   reste, celui de la copie ensuite — `undefined` tant qu'aucun n'est figé. */
+const prixEnCours = t => gisOrig(t) > 0 ? S_.prix[t] : S_.prixJ[t];
 /* tarif d'un relevé neuf, figé au premier relevé fait sur la tablette (cf. relever()) */
 const tarifRel = () => (1 + REL_K*oBrut()) * M.click();
-const releveVal = t => (t !== undefined && gisReste(t) > 0) ? (S_.prix[t] || 1) : M.click();
+const releveVal = t => (t !== undefined && gisReste(t) > 0) ? (prixEnCours(t) || 1) : M.click();
 
 /* Réglage sorti de PT4. Le recoupement manuel fournissait 43 % de la Certitude, pour un
    plafond I6 de 30 %. Plafonner son gain ne change rien — le joueur recoupe simplement
@@ -611,6 +636,11 @@ const INS = [
   {k:'elv', nom:'Élève',                sig:'shen', base:20000,r:1.80,
    ds:()=>'+'+f(ELV_P*100,0)+' % aux autres · déchiffre seul',
    unlock:()=>S_.b.gram>0},
+  /* Le Corpus jumeau (VOIX-4) : une copie du corpus, retrouvée — voir `JUM_F`. Ouvert par
+     ⟨nous⟩, le premier signe de l'acte IV, et en un seul exemplaire (`max`). */
+  {k:'jum', nom:'Corpus jumeau',        sig:'tab',  base:300000,r:1, max:1,
+   ds:()=>'une copie de chaque tablette · moitié du gisement',
+   unlock:()=>has('nash')},
   /* Le Lecteur (GRAINE-2). « Acheté avant qu'on sache ce que c'est » : pas de ligne d'effet, et
      son nom est un signe du corpus, ⟨devenir-lecture⟩ (`nomLecteur()`), qu'on ne lit qu'au
      dernier achat — sur la tablette 27, « tablette · devenir-lecture ». Ouvert par ⟨semence⟩,
@@ -623,6 +653,8 @@ const INS = [
    lit, faux compris (règle 17). Qui compose ⟨devenir-lecture⟩ tôt le lit tôt (règle 25). */
 const nomLecteur = () => has('shenke') ? motDe('shenke') : sv('shenke');
 const insCost = i => Math.ceil(i.base*Math.pow(i.r,S_.b[i.k]));
+/* Un instrument qui ne s'achète qu'une fois : le Corpus jumeau. */
+const insPlein = i => !!i.max && S_.b[i.k] >= i.max;
 const recCost = () => { const m=Math.pow(REC_R,S_.rec)*(has('gan')?0.75:1);
   return {O:Math.ceil(12*m), H:Math.ceil(3*m)}; };
 const recGain = () => Math.min(3, 1 + Math.floor(nArbre()/5));
@@ -648,21 +680,31 @@ function amount(n, lisible){ return lisible ? big(n) : numGlyphs(n); }
 /* ============================ actions ============================ */
 /* t : numéro de tablette, j : rang du jeton dans cette tablette. Un jeton déjà relevé,
    ou une tablette épuisée, ne rend que le plancher : c'est le déplacement qui paie. */
+/* Rend où le relevé est allé : 'neuf' (l'original), 'copie' (le Corpus jumeau) ou
+   'plancher' — le journal d'actions en a besoin, le tarif de la copie ne s'écrivant nulle
+   part ailleurs. */
 function relever(t, j){
   const l = S_.rel[t] || (S_.rel[t] = []);
   const neuf = t !== undefined && l.length < GISEMENT[t] && l.indexOf(j) < 0;
+  const c = t !== undefined && S_.b.jum ? (S_.relJ[t] || (S_.relJ[t] = [])) : null;
+  const copie = !neuf && !!c && c.length < GIS_COPIE[t] && c.indexOf(j) < 0;
   /* Première visite : la tablette prend le tarif du débit courant, une fois pour toutes.
      C'est ce qui fait qu'ouvrir une tablette restée intacte vaut de plus en plus cher —
-     et donc qu'il reste une raison de parcourir le corpus après la quinzième minute. */
-  if(neuf && S_.prix[t] === undefined) S_.prix[t] = tarifRel();
-  S_.O += neuf ? S_.prix[t] : M.click();
+     et donc qu'il reste une raison de parcourir le corpus après la quinzième minute. La
+     copie a la sienne, figée de même au premier relevé qu'on y fait. */
   if(neuf){
-    l.push(j);
-    /* Le dire au moment où ça arrive : la cellule qui s'éteint dans la barre est le seul
-       autre signal, et le joueur regarde le texte, pas la barre. */
-    if(l.length === GISEMENT[t]) pushLog('Tablette '+t+' : plus rien à en tirer.');
-  }
+    if(S_.prix[t] === undefined) S_.prix[t] = tarifRel();
+    S_.O += S_.prix[t]; l.push(j);
+  } else if(copie){
+    if(S_.prixJ[t] === undefined) S_.prixJ[t] = tarifRel();
+    S_.O += S_.prixJ[t]; c.push(j);
+  } else S_.O += M.click();
+  /* Le dire au moment où ça arrive : la cellule qui s'éteint dans la barre est le seul autre
+     signal, et le joueur regarde le texte, pas la barre. Quand il n'en reste vraiment plus —
+     copie comprise —, pas avant. */
+  if((neuf || copie) && gisReste(t) === 0) pushLog('Tablette '+t+' : plus rien à en tirer.');
   S_.clicks++;
+  return neuf ? 'neuf' : copie ? 'copie' : 'plancher';
 }
 function formuler(){ const c=hypCost(); if(S_.O>=c){ S_.O-=c; S_.H+=1; } }
 /* « Recouper deux passages » : le rapprochement de deux attestations d'un même signe,
@@ -865,7 +907,10 @@ function questionner(signes){
   return 'reponse';
 }
 function acheterIns(k){ const i=INS.find(x=>x.k===k), c=insCost(i);
-  if(i.unlock()&&S_.O>=c){ S_.O-=c; S_.b[k]++; } }
+  if(i.unlock()&&!insPlein(i)&&S_.O>=c){ S_.O-=c; S_.b[k]++;
+    /* Le jumeau est un événement, pas un niveau de plus : le dire, comme une tablette qui
+       sort de terre. Il ne nomme aucun signe (règle 17). */
+    if(k === 'jum') pushLog('Une deuxième inscription, gravée ailleurs : le même texte, signe pour signe.'); } }
 /* Le signe qu'on vient d'acquérir est-il le premier de son acte ? Appelée après l'ajout à
    `S_.gl`. Un composé secret ne franchit rien : il n'avance pas l'arbre (règle 13). */
 const franchit = id => {

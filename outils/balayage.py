@@ -69,7 +69,11 @@ GRILLE = dict(rec_r=(1.26, 1.30, 1.35), con_b=(350, 400, 450), cop_b=(10, 15),
 # Mêmes marges. À (121, 165), quinze combinaisons tombaient sur le plancher, de quelques
 # dixièmes : c'était la durée qui avait bougé, pas le réglage qui avait cassé. 42 sur 54 à
 # (118, 161), comme avant lui, dont le réglage en place (121,7-158,6 min, écart 5,8).
-DUREE = (118.0, 161.0)
+# Re-basée le même jour avec le Corpus jumeau (VOIX-4), qui rend la main au corpus à l'acte IV
+# et raccourcit la partie d'une à trois minutes : 119,0-157,7 min au réglage en place, mêmes
+# marges. À (118, 161), 41 sur 54 ; à (116, 160), 42, dont le réglage en place (119,0-157,7 min,
+# écart 6,0, main 26 %).
+DUREE = (116.0, 160.0)
 ECART_MAX = 8.0
 I6_MAX = 30.0
 # La part manuelle des OCCURRENCES, entrée dans le tri le 14/09/2026 en même temps que

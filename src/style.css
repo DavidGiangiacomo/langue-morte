@@ -107,6 +107,8 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 /* Le signe relevé garde une marque : sur une tablette, on voit d'un coup d'œil le terrain
    déjà parcouru. Discret — c'est une note de travail, pas une décoration. */
 .tok.rel{box-shadow:inset 0 -1px 0 var(--ochre-d)}
+/* relevé sur l'original et sur la copie du Corpus jumeau (VOIX-4) */
+.tok.rel2{box-shadow:inset 0 -2px 0 var(--ochre-d)}
 .tok.g.rel{opacity:.62}
 .tok.flash{animation:flash .85s ease}
 @keyframes flash{0%{background:var(--ochre);color:#14100C}55%{background:#5A3A1A;color:var(--lamp)}100%{background:transparent}}
@@ -341,10 +343,10 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 
 /* Le Lecteur (GRAINE-2) : ce qu'il a lu, et la ligne qu'il lit. Pas de légende : on le voit
    faire. */
-.rail [data-go].lue{box-shadow:inset 0 2px 0 rgba(157,184,199,.55)}
-.tablet.lue{box-shadow:inset 2px 0 0 rgba(157,184,199,.28)}
+.rail [data-go].parcourue{box-shadow:inset 0 2px 0 rgba(157,184,199,.55)}
+.tablet.parcourue{box-shadow:inset 2px 0 0 rgba(157,184,199,.28)}
 .ln.lecteur{background:rgba(157,184,199,.09);transition:background .8s ease}
-body.fin .tablet.lue{box-shadow:none}
+body.fin .tablet.parcourue{box-shadow:none}
 body.fin .ln.lecteur{background:none}
 
 /* Les deux fins : même habit, et le geste écrit sous le verbe. */

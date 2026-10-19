@@ -112,6 +112,8 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 /* Le signe relevé garde une marque : sur une tablette, on voit d'un coup d'œil le terrain
    déjà parcouru. Discret — c'est une note de travail, pas une décoration. */
 .tok.rel{box-shadow:inset 0 -1px 0 var(--ochre-d)}
+/* relevé sur l'original et sur la copie du Corpus jumeau (VOIX-4) */
+.tok.rel2{box-shadow:inset 0 -2px 0 var(--ochre-d)}
 .tok.g.rel{opacity:.62}
 .tok.flash{animation:flash .85s ease}
 @keyframes flash{0%{background:var(--ochre);color:#14100C}55%{background:#5A3A1A;color:var(--lamp)}100%{background:transparent}}
@@ -346,10 +348,10 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 
 /* Le Lecteur (GRAINE-2) : ce qu'il a lu, et la ligne qu'il lit. Pas de légende : on le voit
    faire. */
-.rail [data-go].lue{box-shadow:inset 0 2px 0 rgba(157,184,199,.55)}
-.tablet.lue{box-shadow:inset 2px 0 0 rgba(157,184,199,.28)}
+.rail [data-go].parcourue{box-shadow:inset 0 2px 0 rgba(157,184,199,.55)}
+.tablet.parcourue{box-shadow:inset 2px 0 0 rgba(157,184,199,.28)}
 .ln.lecteur{background:rgba(157,184,199,.09);transition:background .8s ease}
-body.fin .tablet.lue{box-shadow:none}
+body.fin .tablet.parcourue{box-shadow:none}
 body.fin .ln.lecteur{background:none}
 
 /* Les deux fins : même habit, et le geste écrit sous le verbe. */
@@ -1210,9 +1212,9 @@ const KEY='langue-morte-partie';
    `langue-morte-mvp-v2` n'y est pas, et c'est un choix : ses parties sont celles du prototype
    à treize signes, abandonnées le 08/09/2026, et l'économie qui les a produites n'existe plus. */
 const CLES_ANCIENNES = ['langue-morte-actes-i-iii'];
-const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram:0,elv:0,lec:0},gl:[],t:0,done:false,
+const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram:0,elv:0,lec:0,jum:0},gl:[],t:0,done:false,
   rel:{}, prix:{}, carnet:[], comp:0, lect:{}, dte:{}, conc:{}, recs:{}, rev:0, contr:0,
-  qn:0, qf:0, qa:[], fin:null, efface:false, fautes:{}, lusEleve:{}, tete:0});
+  qn:0, qf:0, qa:[], fin:null, efface:false, fautes:{}, lusEleve:{}, tete:0, relJ:{}, prixJ:{}});
 /* rel : jetons relevés par tablette · prix : tarif du gisement, verrouillé
    carnet : les paires déjà tentées et fausses · comp : le nombre de tentatives, toutes issues
    confondues — c'est lui que PT10 doit lire, pas la seule liste des échecs.
@@ -1237,6 +1239,9 @@ const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram
    et sa relecture ne montre que les erreurs encore en place, toutes attribuées au joueur.
    tete : où en est le Lecteur dans le corpus, en tablettes, fraction comprise — de 0 à 30
    (GRAINE-2).
+   relJ, prixJ : les relevés faits sur la copie du Corpus jumeau, et le tarif de chaque
+   tablette de la copie, figé au premier relevé qu'on y fait (VOIX-4) — les jumeaux de `rel`
+   et de `prix`.
    Une partie d'avant la composition, ou d'avant l'ambiguïté, les reçoit vides au chargement
    (`fusionner()`) : un champ ajouté ne demande ni nouvelle clé ni migration. */
 let S_ = fresh(), speed = 1;
@@ -1730,11 +1735,33 @@ for(const tb of CORPUS) GISEMENT[tb.t] = Math.ceil(
   tb.l.reduce((n,l)=> n + l.split(' ').filter(tk=>tk!=='·').length, 0) / REL_DIV);
 const GIS_TOTAL = Object.values(GISEMENT).reduce((a,b)=>a+b, 0);
 
+/* ---- le Corpus jumeau (VOIX-4) ----
+   « Une deuxième inscription est trouvée » (design doc §5) : pas un bilingue — la fiction n'en
+   a pas —, une copie. La tablette 23 le disait depuis l'acte IV : « si copier 100 · un
+   devenir », copié cent fois pour qu'un exemplaire survive. Le jumeau est cet exemplaire-là,
+   retrouvé : le même texte, signe pour signe, donc rien de neuf à lire, et tout à relever de
+   nouveau. Chaque tablette de la copie a son propre gisement, la MOITIÉ de celui de l'original,
+   et son propre tarif, figé au premier relevé qu'on y fait (règle 9) — c'est-à-dire au débit
+   de l'acte IV, quand on le fait. Le relevé va à l'original tant qu'il en reste, à la copie
+   ensuite.
+   Un seul exemplaire à demi-gisement, et c'est ce qui tient la part de la main sous le plafond
+   de 40 % : elle remonte à 26-33 % des occurrences avec Élèves et 26 % sans (17,3 et 13,7 sans
+   le jumeau) — 26 % à 5 clics par minute, parce qu'un joueur lent ne vide pas la copie avant
+   la fin. Un gisement entier la poussait à 43 % à 15 clics par minute (`outils/sim.py`). */
+const JUM_F = 0.5;      // le gisement d'une tablette de la copie, en part de l'original
+const GIS_COPIE = {};
+for(const t in GISEMENT) GIS_COPIE[t] = Math.ceil(GISEMENT[t] * JUM_F);
+
 const gisFait  = t => (S_.rel[t] || []).length;
-const gisReste = t => GISEMENT[t] - gisFait(t);
+const gisOrig  = t => GISEMENT[t] - gisFait(t);
+const gisCopie = t => S_.b.jum ? GIS_COPIE[t] - (S_.relJ[t] || []).length : 0;
+const gisReste = t => gisOrig(t) + gisCopie(t);
+/* Le tarif du prochain relevé neuf sur cette tablette : celui de l'original tant qu'il en
+   reste, celui de la copie ensuite — `undefined` tant qu'aucun n'est figé. */
+const prixEnCours = t => gisOrig(t) > 0 ? S_.prix[t] : S_.prixJ[t];
 /* tarif d'un relevé neuf, figé au premier relevé fait sur la tablette (cf. relever()) */
 const tarifRel = () => (1 + REL_K*oBrut()) * M.click();
-const releveVal = t => (t !== undefined && gisReste(t) > 0) ? (S_.prix[t] || 1) : M.click();
+const releveVal = t => (t !== undefined && gisReste(t) > 0) ? (prixEnCours(t) || 1) : M.click();
 
 /* Réglage sorti de PT4. Le recoupement manuel fournissait 43 % de la Certitude, pour un
    plafond I6 de 30 %. Plafonner son gain ne change rien — le joueur recoupe simplement
@@ -1805,6 +1832,11 @@ const INS = [
   {k:'elv', nom:'Élève',                sig:'shen', base:20000,r:1.80,
    ds:()=>'+'+f(ELV_P*100,0)+' % aux autres · déchiffre seul',
    unlock:()=>S_.b.gram>0},
+  /* Le Corpus jumeau (VOIX-4) : une copie du corpus, retrouvée — voir `JUM_F`. Ouvert par
+     ⟨nous⟩, le premier signe de l'acte IV, et en un seul exemplaire (`max`). */
+  {k:'jum', nom:'Corpus jumeau',        sig:'tab',  base:300000,r:1, max:1,
+   ds:()=>'une copie de chaque tablette · moitié du gisement',
+   unlock:()=>has('nash')},
   /* Le Lecteur (GRAINE-2). « Acheté avant qu'on sache ce que c'est » : pas de ligne d'effet, et
      son nom est un signe du corpus, ⟨devenir-lecture⟩ (`nomLecteur()`), qu'on ne lit qu'au
      dernier achat — sur la tablette 27, « tablette · devenir-lecture ». Ouvert par ⟨semence⟩,
@@ -1817,6 +1849,8 @@ const INS = [
    lit, faux compris (règle 17). Qui compose ⟨devenir-lecture⟩ tôt le lit tôt (règle 25). */
 const nomLecteur = () => has('shenke') ? motDe('shenke') : sv('shenke');
 const insCost = i => Math.ceil(i.base*Math.pow(i.r,S_.b[i.k]));
+/* Un instrument qui ne s'achète qu'une fois : le Corpus jumeau. */
+const insPlein = i => !!i.max && S_.b[i.k] >= i.max;
 const recCost = () => { const m=Math.pow(REC_R,S_.rec)*(has('gan')?0.75:1);
   return {O:Math.ceil(12*m), H:Math.ceil(3*m)}; };
 const recGain = () => Math.min(3, 1 + Math.floor(nArbre()/5));
@@ -1842,21 +1876,31 @@ function amount(n, lisible){ return lisible ? big(n) : numGlyphs(n); }
 /* ============================ actions ============================ */
 /* t : numéro de tablette, j : rang du jeton dans cette tablette. Un jeton déjà relevé,
    ou une tablette épuisée, ne rend que le plancher : c'est le déplacement qui paie. */
+/* Rend où le relevé est allé : 'neuf' (l'original), 'copie' (le Corpus jumeau) ou
+   'plancher' — le journal d'actions en a besoin, le tarif de la copie ne s'écrivant nulle
+   part ailleurs. */
 function relever(t, j){
   const l = S_.rel[t] || (S_.rel[t] = []);
   const neuf = t !== undefined && l.length < GISEMENT[t] && l.indexOf(j) < 0;
+  const c = t !== undefined && S_.b.jum ? (S_.relJ[t] || (S_.relJ[t] = [])) : null;
+  const copie = !neuf && !!c && c.length < GIS_COPIE[t] && c.indexOf(j) < 0;
   /* Première visite : la tablette prend le tarif du débit courant, une fois pour toutes.
      C'est ce qui fait qu'ouvrir une tablette restée intacte vaut de plus en plus cher —
-     et donc qu'il reste une raison de parcourir le corpus après la quinzième minute. */
-  if(neuf && S_.prix[t] === undefined) S_.prix[t] = tarifRel();
-  S_.O += neuf ? S_.prix[t] : M.click();
+     et donc qu'il reste une raison de parcourir le corpus après la quinzième minute. La
+     copie a la sienne, figée de même au premier relevé qu'on y fait. */
   if(neuf){
-    l.push(j);
-    /* Le dire au moment où ça arrive : la cellule qui s'éteint dans la barre est le seul
-       autre signal, et le joueur regarde le texte, pas la barre. */
-    if(l.length === GISEMENT[t]) pushLog('Tablette '+t+' : plus rien à en tirer.');
-  }
+    if(S_.prix[t] === undefined) S_.prix[t] = tarifRel();
+    S_.O += S_.prix[t]; l.push(j);
+  } else if(copie){
+    if(S_.prixJ[t] === undefined) S_.prixJ[t] = tarifRel();
+    S_.O += S_.prixJ[t]; c.push(j);
+  } else S_.O += M.click();
+  /* Le dire au moment où ça arrive : la cellule qui s'éteint dans la barre est le seul autre
+     signal, et le joueur regarde le texte, pas la barre. Quand il n'en reste vraiment plus —
+     copie comprise —, pas avant. */
+  if((neuf || copie) && gisReste(t) === 0) pushLog('Tablette '+t+' : plus rien à en tirer.');
   S_.clicks++;
+  return neuf ? 'neuf' : copie ? 'copie' : 'plancher';
 }
 function formuler(){ const c=hypCost(); if(S_.O>=c){ S_.O-=c; S_.H+=1; } }
 /* « Recouper deux passages » : le rapprochement de deux attestations d'un même signe,
@@ -2059,7 +2103,10 @@ function questionner(signes){
   return 'reponse';
 }
 function acheterIns(k){ const i=INS.find(x=>x.k===k), c=insCost(i);
-  if(i.unlock()&&S_.O>=c){ S_.O-=c; S_.b[k]++; } }
+  if(i.unlock()&&!insPlein(i)&&S_.O>=c){ S_.O-=c; S_.b[k]++;
+    /* Le jumeau est un événement, pas un niveau de plus : le dire, comme une tablette qui
+       sort de terre. Il ne nomme aucun signe (règle 17). */
+    if(k === 'jum') pushLog('Une deuxième inscription, gravée ailleurs : le même texte, signe pour signe.'); } }
 /* Le signe qu'on vient d'acquérir est-il le premier de son acte ? Appelée après l'ajout à
    `S_.gl`. Un composé secret ne franchit rien : il n'avance pas l'arbre (règle 13). */
 const franchit = id => {
@@ -2312,9 +2359,9 @@ function buildCorpus(){
 
 /* Un jeton relevé reste marqué : c'est la trace du travail déjà fait, et la seule façon
    de voir d'un coup d'œil ce qu'il reste à parcourir sur une tablette. */
-function releves(){
+function releves(rel){
   const s = new Set();
-  for(const t in S_.rel) for(const j of S_.rel[t]) s.add(t+':'+j);
+  for(const t in rel) for(const j of rel[t]) s.add(t+':'+j);
   return s;
 }
 const cleTok = el => el.closest('.tablet').dataset.tb + ':' + el.dataset.j;
@@ -2351,7 +2398,9 @@ const motTok = el => { const m = motDe(el.dataset.w);
 
 function paintCorpus(flashId){
   if(relecture){ peindreRelecture(); return; }
-  const rel = releves();
+  /* Un jeton relevé sur l'original porte une marque, relevé aussi sur la copie du Corpus
+     jumeau, une marque plus forte : c'est ce qui dit, après la copie, ce qui reste à faire. */
+  const rel = releves(S_.rel), relJ = releves(S_.relJ);
   /* La ligne que la contradiction retient (CONTR-1). Un Set vide quand elle n'est pas armée,
      donc la boucle ci-dessous ne paie rien le reste du temps. */
   const jetons = refusJetons();
@@ -2360,7 +2409,8 @@ function paintCorpus(flashId){
     const id=el.dataset.w;
     const nie = !!refus && refus.has(el);
     const known = !nie && !!byId[id] && has(id);
-    const r = (rel.has(cleTok(el)) ? 'r' : '') + (nie ? 'x' : '');
+    const k = cleTok(el);
+    const r = (rel.has(k) || relJ.has(k) ? 'r' : '') + (rel.has(k) && relJ.has(k) ? 'c' : '') + (nie ? 'x' : '');
     /* Le mot entre dans la signature du cache : une lecture tranchée à l'achat repeint
        les attestations déjà peintes, sans quoi le mot faux n'arriverait que sur les
        tablettes touchées ensuite (AMB-2). */
@@ -2371,17 +2421,18 @@ function paintCorpus(flashId){
     const passe = flashId==='nashal' && known && !!el.dataset.t;
     if(el.__v===want && flashId!==id && !passe) return;
     el.__v=want;
-    el.className='tok '+(known?'w':'g')+(r.indexOf('r')>=0?' rel':'')+(nie?' refus':'')
+    el.className='tok '+(known?'w':'g')+(r.indexOf('r')>=0?' rel':'')+(r.indexOf('c')>=0?' rel2':'')+(nie?' refus':'')
                 +(flashId===id || passe?' flash':'');
     el.innerHTML = known ? mot : sv(id);
   });
   elCorpus.querySelectorAll('[data-n]').forEach(el=>{
     const n=+el.dataset.n, nie = !!refus && refus.has(el), lis = !nie && numLisible(n);
-    const r = (rel.has(cleTok(el)) ? 'r' : '') + (nie ? 'x' : '');
+    const k = cleTok(el);
+    const r = (rel.has(k) || relJ.has(k) ? 'r' : '') + (rel.has(k) && relJ.has(k) ? 'c' : '') + (nie ? 'x' : '');
     const want=(lis?'n':'g')+r;
     if(el.__v===want) return;
     el.__v=want;
-    el.className='tok '+(lis?'num':'g')+(r.indexOf('r')>=0?' rel':'')+(nie?' refus':'');
+    el.className='tok '+(lis?'num':'g')+(r.indexOf('r')>=0?' rel':'')+(r.indexOf('c')>=0?' rel2':'')+(nie?' refus':'');
     el.innerHTML = lis ? nf.format(n) : numGlyphs(n);
   });
   peindreRuptures();
@@ -2422,8 +2473,10 @@ function peindreLecteur(){
   const cle = n + ':' + ligne;
   if(cle === lecVue) return;
   lecVue = cle;
-  for(const c of $('rail').children) c.classList.toggle('lue', +c.dataset.go <= n);
-  for(const el of elCorpus.querySelectorAll('.tablet')) el.classList.toggle('lue', +el.dataset.tb <= n);
+  /* `parcourue`, et non `lue` : la barre porte déjà `lue` pour une tablette dont le tarif est
+     figé (`peindreGisement()`), et les deux se volaient la classe. */
+  for(const c of $('rail').children) c.classList.toggle('parcourue', +c.dataset.go <= n);
+  for(const el of elCorpus.querySelectorAll('.tablet')) el.classList.toggle('parcourue', +el.dataset.tb <= n);
   const v = elCorpus.querySelector('.ln.lecteur'); if(v) v.classList.remove('lecteur');
   const el = tb && elCorpus.querySelector('.tablet[data-tb="'+t+'"]');
   if(el && el.children[ligne]) el.children[ligne].classList.add('lecteur');
@@ -2546,7 +2599,7 @@ function peindreGisement(){
   for(const c of $('rail').children){
     if(c.hidden) continue;
     const t=+c.dataset.go;
-    const sec = gisReste(t) <= 0, lue = !sec && S_.prix[t] !== undefined;
+    const sec = gisReste(t) <= 0, lue = !sec && prixEnCours(t) !== undefined;
     if(c.classList.contains('sec')!==sec) c.classList.toggle('sec',sec);
     if(c.classList.contains('lue')!==lue) c.classList.toggle('lue',lue);
   }
@@ -2562,12 +2615,15 @@ function titreCell(t){
      La répéter en français juste à qui a lu « soleil », c'est le jeu qui le corrige. */
   const d = !datee(t) ? '' : ANNEE[t].fin ? ' · '+motDe('nurhal')
                                           : ' · '+motDe('nur')+' '+ANNEE[t].n;
-  return 'tablette '+t+d+' — gisement '+r+'/'+GISEMENT[t]
+  /* Avec le Corpus jumeau, le gisement compte la copie, et le tarif est celui du gisement
+     en cours : l'original tant qu'il en reste, la copie ensuite (VOIX-4). */
+  const p = prixEnCours(t), copie = gisOrig(t) <= 0 && r > 0;
+  return 'tablette '+t+d+' — gisement '+r+'/'+(GISEMENT[t] + (S_.b.jum ? GIS_COPIE[t] : 0))
     + (r <= 0 ? ' · épuisée'
-      : S_.prix[t] === undefined
-        ? " · intacte : "+nf.format(Math.round(tarifRel()))
+      : p === undefined
+        ? ' · '+(copie ? 'copie intacte' : 'intacte')+' : '+nf.format(Math.round(tarifRel()))
           +" occ. par relevé si tu l'ouvres maintenant"
-        : ' · '+nf.format(Math.round(S_.prix[t]))+' occ. par relevé');
+        : ' · '+nf.format(Math.round(p))+' occ. par relevé');
 }
 /* ---- le recoupement, dans le texte ----
    Armé depuis le bouton, il se joue en deux clics : un premier passage, puis la même
@@ -2807,11 +2863,12 @@ function buildInstr(){
 function paintInstr(){
   for(const i of INS){
     const b=$('instr').querySelector('[data-ins="'+i.k+'"]');
-    const open=i.unlock(), c=insCost(i), can=open&&S_.O>=c;
+    const open=i.unlock(), c=insCost(i), plein=insPlein(i), can=open&&!plein&&S_.O>=c;
     b.classList.toggle('locked',!open);
     b.classList.toggle('afford',can);
     b.disabled=!can;
-    setHTML(b.querySelector('.sg'), sv(i.sig));
+    /* Deux tablettes pour le Corpus jumeau : c'est ce qu'il est. */
+    setHTML(b.querySelector('.sg'), i.k === 'jum' ? sv(i.sig)+sv(i.sig) : sv(i.sig));
     const muet={cop:'kal',tab:'im',con:'shen',ate:'mesh',gram:'en',elv:'zur'}[i.k];
     /* Le Lecteur n'a pas de nom français : il porte un signe du corpus, qu'on lit quand on le
        sait (GRAINE-2). */
@@ -2820,7 +2877,7 @@ function paintInstr(){
       : '<span style="color:var(--dim)">'+sv('dun')+sv(muet)+sv('la')+'</span>');
     setHTML(b.querySelector('.lv'), open? nf.format(S_.b[i.k]) : '');
     setHTML(b.querySelector('.ds'), open&&has('im') ? i.ds() : '');
-    setHTML(b.querySelector('.cs'), open ? (readC()? big(c) : numGlyphs(c)) : '');
+    setHTML(b.querySelector('.cs'), open && !plein ? (readC()? big(c) : numGlyphs(c)) : '');
   }
 }
 
@@ -3640,17 +3697,19 @@ function enrober(nom, temoin, detail){
     const r = orig.apply(this, a);
     /* Insérée à son rang et non à la fin : une action peut en déclencher une autre —
        le dernier signe termine la partie — et la cause doit précéder l'effet. */
-    if(temoin() !== avant) tracer(nom, detail ? detail(a, avant) : '', rang);
+    if(temoin() !== avant) tracer(nom, detail ? detail(a, avant, r) : '', rang);
     return r;
   };
 }
 
-const niveaux = () => S_.b.cop + S_.b.tab + S_.b.con + S_.b.ate + S_.b.gram + S_.b.elv + S_.b.lec;
+const niveaux = () => S_.b.cop + S_.b.tab + S_.b.con + S_.b.ate + S_.b.gram + S_.b.elv + S_.b.lec + S_.b.jum;
 
 /* `relever` reçoit désormais sa tablette : c'est la seule façon de distinguer un joueur qui
    parcourt le corpus d'un joueur qui s'installe sur une tablette et martèle. La question
    décide du sort du gisement, et elle ne se lit nulle part ailleurs que dans ce journal. */
-enrober('relever',   () => S_.clicks,     a => 'tablette ' + a[0]);
+/* « · copie » quand le relevé est allé au Corpus jumeau (VOIX-4) : son tarif est figé à part,
+   et `depouiller.py` ne peut pas le rejouer sans savoir lequel des deux gisements a payé. */
+enrober('relever',   () => S_.clicks,     (a, avant, r) => 'tablette ' + a[0] + (r === 'copie' ? ' · copie' : ''));
 enrober('formuler',  () => S_.H);
 enrober('recouper',  () => S_.rec,        a => '+' + recGain() + ' cert.'
                                                + (a[0] ? ' · ' + a[0] : ''));
@@ -3817,7 +3876,7 @@ tick = function(dt){
     tracer('etat', 'O=' + Math.round(S_.O) + ' H=' + Math.round(S_.H) + ' C=' + Math.round(S_.C)
                  + ' signes=' + S_.gl.length + ' sig%=' + m.sig + ' lig%=' + m.lig
                  + ' gis=' + Object.keys(S_.rel).reduce((n,t)=>n+S_.rel[t].length,0) + '/' + GIS_TOTAL
-                 + ' instr=' + [S_.b.cop, S_.b.tab, S_.b.con, S_.b.ate, S_.b.gram, S_.b.elv, S_.b.lec].join('/'));
+                 + ' instr=' + [S_.b.cop, S_.b.tab, S_.b.con, S_.b.ate, S_.b.gram, S_.b.elv, S_.b.lec, S_.b.jum].join('/'));
   }
 };
 
@@ -3913,8 +3972,12 @@ elCorpus.addEventListener('click', e=>{
   const tb = +el.closest('.tablet').dataset.tb, j = +el.dataset.j;
   if(concArme){ concChoisir(el.dataset.w); return; }
   if(recArme){ recChoisir(tb, j, el.dataset.w); return; }
-  relever(tb, j);
-  el.classList.add('rel'); el.__v += 'r';
+  const ou = relever(tb, j);
+  el.classList.add('rel');
+  /* Relevé une seconde fois, sur la copie du Corpus jumeau : la marque se renforce (VOIX-4).
+     La signature du cache est alors recalculée à la prochaine peinture. */
+  if(ou === 'copie' && (S_.rel[tb] || []).indexOf(j) >= 0){ el.classList.add('rel2'); el.__v = null; }
+  else el.__v += 'r';
   peindreGisement();          // la tablette vient peut-être de perdre sa marque d'intacte
 });
 elCorpus.addEventListener('mousemove', e=>{

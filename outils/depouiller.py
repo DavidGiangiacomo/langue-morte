@@ -115,8 +115,9 @@ class Rejeu:
     def __init__(self, ev):
         self.ev = ev
         self.gl = {}                 # id -> 'j' | 'f'
-        self.b = dict(cop=0, tab=0, con=0, ate=0, gram=0, elv=0, lec=0)
+        self.b = dict(cop=0, tab=0, con=0, ate=0, gram=0, elv=0, lec=0, jum=0)
         self.prix, self.rel = {}, {}
+        self.prixJ = {}              # le tarif de chaque tablette de la copie (VOIX-4)
         has = lambda i: i in self.gl
         mf = lambda i, x: ((1 + (x - 1) * sim.AMB_R) if self.gl.get(i) == 'f' else x) if has(i) else 1
         self.m = sim.multis(has, mf, lambda: sim.eleve(P, self.b['elv']))
@@ -127,7 +128,7 @@ class Rejeu:
 
     def jouer(self):
         s = dict(o_auto=0.0, o_main=0.0, o_nuit=0.0, cert_main=0.0, cert_couts=0.0,
-                 relev=0, vides=0, sans_tb=0, formuler=0,
+                 relev=0, vides=0, sans_tb=0, formuler=0, copie=0,
                  recs=[], comps=[], concs=[], navs=[], revs=[], achats=[], etats=[],
                  couts_t=[], main_t=[], contr=None, contr_levee=None,
                  finjeu=None, fin=None, gis_fichier=None, eleve={}, toi=None, questions=[],
@@ -145,7 +146,14 @@ class Rejeu:
                     s['sans_tb'] += 1
                     continue
                 tb = int(m.group(1))
-                if self.rel.get(tb, 0) < GIS.get(tb, 0):
+                # La copie du Corpus jumeau a son propre tarif, figé à son premier relevé : le
+                # journal dit lequel des deux gisements a payé, sans quoi rien ne le rejoue.
+                if det.endswith('· copie'):
+                    if tb not in self.prixJ:
+                        self.prixJ[tb] = (1 + P['click_share'] * self.obrut()) * self.m['click']()
+                    s['o_main'] += self.prixJ[tb]
+                    s['relev'] += 1; s['copie'] += 1
+                elif self.rel.get(tb, 0) < GIS.get(tb, 0):
                     if tb not in self.prix:
                         self.prix[tb] = (1 + P['click_share'] * self.obrut()) * self.m['click']()
                     s['o_main'] += self.prix[tb]
@@ -377,7 +385,10 @@ def rapport(ev, nom):
     tot_rel = s['relev'] + s['vides']
     print('  relevés %d — %d utiles, %d à vide (%.0f %%) · gisement %d / %d'
           % (tot_rel, s['relev'], s['vides'], 100 * s['vides'] / max(1, tot_rel),
-             s['relev'], GIS_TOTAL))
+             s['relev'] - s['copie'], GIS_TOTAL))
+    if s['copie']:
+        print('  dont %d sur la copie du Corpus jumeau (VOIX-4), chacune tarifée à son premier relevé'
+              % s['copie'])
     if s['sans_tb']:
         print('  ⚠ %d relevés sans numéro de tablette (journal d\'avant PT9) : non tarifés'
               % s['sans_tb'])

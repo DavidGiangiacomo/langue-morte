@@ -23,7 +23,7 @@
 | | Fait | Reste pour 1.0 |
 |---|---|---|
 | Glyphes | **30 / 45** *(+ `grenier` et `zéro`, composés, hors arbre)* — **43** avec la Personne et la Fin, sur une branche de travail pas encore fusionnée | **15** *(9)* |
-| Instruments | **8 / 9** (Œil, Copiste, Table, Concordance, Atelier, Grammaire, **Élève** *— branche `eleve`, pas encore fusionnée*, **Le Lecteur** *— branche empilée dessus*) | 1 (Corpus jumeau) |
+| Instruments | **9 / 9** (Œil, Copiste, Table, Concordance, Atelier, Grammaire, **Élève** *— branche `eleve`, pas encore fusionnée*, **Corpus jumeau** et **Le Lecteur** *— branche empilée dessus*) | 0 |
 | Actes | **I, II, III — entiers** | IV, V |
 | Corpus | **30 tablettes, 705 lignes, 3 838 signes — intégral**, ⟨N1⟩/⟨N2⟩ semés, **les 11 lectures fausses écrites** | — |
 | Mécaniques centrales | relevé, recoupement, datation, rangement, concordance, hors-ligne, **composition**, **ambiguïté**, **doute, révision, contradiction** | Questions |
@@ -396,8 +396,10 @@ Suivi : [#24](https://github.com/DavidGiangiacomo/langue-morte/issues/24) — le
 - *Fait* : une question est une condition — ⟨si⟩ et des signes qu'on sait lire — et la réponse est ce que le corpus a gravé après, quinze conditions, rien d'écrit pour l'occasion. La Certitude s'arrête à 9 999 ; à partir de ⟨toi⟩ le surplus fait des questions, 4 000 chacune, douze sur la partie, jamais la nuit. La Grammaire gèle aux mots de la fin. Voir la règle 24 de `CLAUDE.md` et `docs/journal.md`, « Les Questions ».
 - **Reste** : les mots qu'elles ouvrent — ⟨finir⟩, ⟨devenir⟩, ⟨germer⟩, marqués `rep` — arrivent avec GRAINE-1, et le prix des questions se remesure quand ECO-2 aura porté l'acte V dans `sim.py`.
 
-**VOIX-4 — Le Corpus jumeau** *(instrument 8)* · T:M · [#37](https://github.com/DavidGiangiacomo/langue-morte/issues/37)
+**VOIX-4 — Le Corpus jumeau** *(instrument 8)* · ~~T:M~~ **fait** (19/10/2026, branche de travail empilée sur `eleve`) · [#37](https://github.com/DavidGiangiacomo/langue-morte/issues/37)
 > En tant que joueur, je veux qu'une deuxième inscription soit trouvée.
+
+- *Fait* : une copie du corpus — « si copier 100 · un devenir » —, ouverte par ⟨nous⟩, en un seul exemplaire. Chaque tablette rouvre la moitié de son gisement, tarifée au premier relevé sur la copie (règle 9) ; l'original passe d'abord. La main passe à 26–33 % des occurrences avec Élèves et 26 % sans, sous le plafond de 40. Voir la règle 29 de `CLAUDE.md` et `docs/journal.md`, « Le Corpus jumeau ».
 
 **VOIX-5 — I2 : perdre la lisibilité de ses propres nombres** · T:M · [#38](https://github.com/DavidGiangiacomo/langue-morte/issues/38)
 > En tant que joueur, je veux que la notation scientifique arrive **en signes non déchiffrés**, au moment précis où mes nombres deviennent énormes.
@@ -475,7 +477,7 @@ Suivi : [#27](https://github.com/DavidGiangiacomo/langue-morte/issues/27) — le
 > En tant qu'auteur, je veux vérifier le rythme de trois heures sans jouer trois heures.
 
 - Fini quand : le simulateur modélise l'Élève, les Questions, la dette et la contradiction ; il sort les tranches d'I6 sur toute la partie ; `balayage.py` peut balayer les nouvelles constantes.
-- *Fait de ce récit* : la dette et la contradiction (CONTR-1), et **l'Élève** (12/10/2026) — `elv_b`, `elv_r`, `elv_p`, `elv_e` sont dans `P`, donc balayables. **La Personne** (14/10/2026) et le franchissement d'acte de la règle 19. **Le plafond de 9 999, les questions nées du surplus et le gel de la Grammaire** (19/10/2026, VOIX-3) — `c_max`, `q_cout`, `q_max` sont dans `P`. **L'acte V** (19/10/2026, GRAINE-1) : les sept signes de la Fin, les mots ouverts par une réponse (`REP`), le dernier signe (`DERNIER`), et un acheteur qui pose la question dès qu'il en a une en main. **Le Lecteur** (19/10/2026, GRAINE-2) — `lec_b`, `lec_r`, `lec_v`, `lec_q` sont dans `P`. Reste le Corpus jumeau, qui n'existe pas encore.
+- *Fait de ce récit* : la dette et la contradiction (CONTR-1), et **l'Élève** (12/10/2026) — `elv_b`, `elv_r`, `elv_p`, `elv_e` sont dans `P`, donc balayables. **La Personne** (14/10/2026) et le franchissement d'acte de la règle 19. **Le plafond de 9 999, les questions nées du surplus et le gel de la Grammaire** (19/10/2026, VOIX-3) — `c_max`, `q_cout`, `q_max` sont dans `P`. **L'acte V** (19/10/2026, GRAINE-1) : les sept signes de la Fin, les mots ouverts par une réponse (`REP`), le dernier signe (`DERNIER`), et un acheteur qui pose la question dès qu'il en a une en main. **Le Lecteur** (19/10/2026, GRAINE-2) — `lec_b`, `lec_r`, `lec_v`, `lec_q` sont dans `P`. **Le Corpus jumeau** (19/10/2026, VOIX-4) — `jum_b`, `jum_f`, et un second gisement avec son tarif. Les neuf instruments y sont.
 - **Bloquant pour tout réglage des actes IV–V** (règle 7).
 
 **ECO-3 — Tenir I1 et I4 sur 45 glyphes** · T:L · [#47](https://github.com/DavidGiangiacomo/langue-morte/issues/47)

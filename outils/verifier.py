@@ -19,6 +19,10 @@ Contrôle :
      corpus seul — une tablette par minute et par Lecteur, marquée dans la barre et dans le
      texte —, verse à la question suivante, ne lit pas la nuit, s'arrête à trente, et son nom
      se lit avec ⟨devenir-lecture⟩
+ 32. le Corpus jumeau : ouvert par ⟨nous⟩, acheté une seule fois, il rend à chaque tablette la
+     moitié de son gisement, tarifée au premier relevé sur la copie ; l'original passe
+     d'abord, la barre et le texte le montrent, et le journal d'actions dit quel gisement a
+     payé
   7. le relevé se fait dans le corpus ; le gisement s'épuise et se tarife à la 1re visite
   8. le recoupement se fait dans le corpus : deux passages d'un même signe
   9. la datation : une tablette se date quand on sait lire sa date, et pas avant
@@ -1760,10 +1764,10 @@ def main() -> None:
         print("\nl'Élève : il multiplie tout")
         page.evaluate("() => $('reset').click()")
         page.wait_for_timeout(200)
-        # Sept boutons pour huit instruments : l'Œil est le relevé, et il se fait dans le corpus.
-        # Le Lecteur (GRAINE-2) vient après l'Élève.
-        verifier(page.eval_on_selector_all("#instr .ins", "e => e.map(b => b.dataset.ins)")[-2:] == ["elv", "lec"]
-                 and page.eval_on_selector_all("#instr .ins", "e => e.length") == 7,
+        # Huit boutons pour neuf instruments : l'Œil est le relevé, et il se fait dans le corpus.
+        # Le Corpus jumeau (VOIX-4) et le Lecteur (GRAINE-2) viennent après l'Élève.
+        verifier(page.eval_on_selector_all("#instr .ins", "e => e.map(b => b.dataset.ins)")[-3:] == ["elv", "jum", "lec"]
+                 and page.eval_on_selector_all("#instr .ins", "e => e.length") == 8,
                  "l'Élève est au panneau, après la Grammaire")
         elv = lambda: page.evaluate("() => INS.find(i => i.k === 'elv').unlock()")
         page.evaluate("() => { S_.C = 9e6; acheterGl('nur', 'j'); }")
@@ -2274,13 +2278,13 @@ def main() -> None:
         # Il lit seul : une tablette par minute et par Lecteur, et chaque tablette lue verse
         # 300 à la question suivante. Pas de nuit : `tick` ne tourne pas hors ligne.
         r = page.evaluate("""() => { const q0 = S_.qf; tick(90);
-            return [S_.tete, S_.qf - q0, [...$('rail').querySelectorAll('.lue')].map(c => c.dataset.go),
-                    [...elCorpus.querySelectorAll('.tablet.lue')].map(e => e.dataset.tb)]; }""")
+            return [S_.tete, S_.qf - q0, [...$('rail').querySelectorAll('.parcourue')].map(c => c.dataset.go),
+                    [...elCorpus.querySelectorAll('.tablet.parcourue')].map(e => e.dataset.tb)]; }""")
         page.wait_for_timeout(200)
         verifier(abs(r[0] - 1.5) < 0.05 and r[1] == 300,
                  f"une tablette par minute, et chacune verse à la question suivante : {r[:2]}")
-        r = page.evaluate("""() => [[...$('rail').querySelectorAll('.lue')].map(c => c.dataset.go),
-            [...elCorpus.querySelectorAll('.tablet.lue')].map(e => e.dataset.tb),
+        r = page.evaluate("""() => [[...$('rail').querySelectorAll('.parcourue')].map(c => c.dataset.go),
+            [...elCorpus.querySelectorAll('.tablet.parcourue')].map(e => e.dataset.tb),
             (() => { const l = elCorpus.querySelector('.ln.lecteur'); return l && [l.closest('.tablet').dataset.tb,
                [...l.parentElement.children].indexOf(l)]; })()]""")
         verifier(r[0] == ["1"] and r[1] == ["1"] and r[2] is not None and r[2][0] == "2",
@@ -2310,6 +2314,66 @@ def main() -> None:
         r.append(nom())
         verifier(r[2] == "devenir-lecture" and r[0] == r[1] and r[0] != r[2],
                  f"son nom se lit avec le dernier signe — et avec la lecture qu'on en a : {r}")
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+
+        # ---- le Corpus jumeau (VOIX-4) ----
+        # « Une deuxième inscription est trouvée » : une copie, pas un bilingue. Chaque tablette
+        # regagne la moitié de son gisement, avec son propre tarif, figé au premier relevé sur
+        # la copie (règle 9) ; l'original passe d'abord, et il n'y en a qu'une.
+        print("\nle Corpus jumeau : une deuxième inscription")
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+        page.evaluate("""() => { S_.C = 9e6; S_.H = 9e6;
+            GL.filter(g => !g.sec && !['personne', 'fin'].includes(g.br)).forEach(g => acheterGl(g.id, 'j'));
+            concFermer(); S_.O = 0; S_.b.cop = 100; }""")
+        page.wait_for_timeout(200)
+        jumeau = lambda: page.evaluate("""() => { const b = $('instr').querySelector('[data-ins=jum]');
+            return [b.classList.contains('locked'), b.disabled, b.querySelector('.nn').textContent,
+                    b.querySelector('.ds').textContent, b.querySelector('.cs').textContent.trim(),
+                    b.querySelectorAll('.sg svg').length]; }""")
+        verifier(jumeau()[0] is True, "fermé tant que l'acte IV n'est pas ouvert")
+        page.evaluate("() => { acheterGl('nash'); }")
+        page.wait_for_timeout(200)
+        r = jumeau()
+        verifier(r[0] is False and r[2] == "Corpus jumeau" and "copie" in r[3] and r[5] == 2,
+                 f"⟨nous⟩ l'ouvre : deux tablettes pour signe, et sa ligne dit ce qu'il est : {r}")
+        # Une tablette dont l'original est vidé : le plancher, jusqu'à ce que la copie soit là.
+        r = page.evaluate("""() => { for (let j = 0; j < GISEMENT[1]; j++) relever(1, j);
+            const ou = relever(1, 0); S_.O = 400000; acheterIns('jum'); const o1 = S_.O;
+            acheterIns('jum'); return [ou, S_.b.jum, o1, S_.O, LOGS.some(l => l.startsWith('Une deuxième inscription'))]; }""")
+        verifier(r[0] == "plancher" and r[1] == 1 and r[2] == 100000 and r[3] == 100000 and r[4] is True,
+                 f"l'original vidé rend le plancher ; la copie se paie une fois, en occurrences, et se dit : {r}")
+        page.wait_for_timeout(150)
+        r = jumeau()
+        verifier(r[1] is True and r[4] == "", f"et ne se rachète pas : {r}")
+        r = page.evaluate("""() => { const o = S_.O, tarif = tarifRel(), ou = relever(1, 0), gain = S_.O - o;
+            const o2 = S_.O, ou2 = relever(1, 0);
+            return [ou, Math.abs(gain - tarif) < 1e-6, gain > M.click(), Math.abs(S_.prixJ[1] - gain) < 1e-6, ou2, Math.abs(S_.O - o2 - M.click()) < 1e-6]; }""")
+        verifier(r == ["copie", True, True, True, "plancher", True],
+                 f"le premier relevé sur la copie fige son tarif au débit du moment, un jeton n'y vaut qu'une fois : {r}")
+        r = page.evaluate("""() => { const vus = [];
+            for (let j = 1; j < GIS_COPIE[1]; j++) vus.push(relever(1, j));
+            const fini = LOGS.some(l => l === 'Tablette 1 : plus rien à en tirer.');
+            return [vus.every(v => v === 'copie'), (S_.relJ[1] || []).length === GIS_COPIE[1], fini,
+                    relever(1, GIS_COPIE[1]), gisReste(1), relever(2, 0)]; }""")
+        verifier(r == [True, True, True, "plancher", 0, "neuf"],
+                 f"la moitié du gisement, puis plus rien — et l'original passe toujours d'abord : {r}")
+        # La barre et le texte le disent : une tablette vidée se rallume, un jeton relevé deux
+        # fois porte une marque plus forte.
+        r = page.evaluate("""() => { for (let j = 0; j < GISEMENT[3]; j++) relever(3, j);
+            const t = titreCell(3); paintRail();
+            const c = $('rail').querySelector('[data-go="3"]');
+            return [t.includes('copie intacte'), t.includes('/' + (GISEMENT[3] + GIS_COPIE[3])), c.classList.contains('sec')]; }""")
+        verifier(r == [True, True, False], f"la tablette vidée se rallume, et son infobulle dit la copie : {r}")
+        page.evaluate("() => versTablette(3)")
+        page.wait_for_timeout(600)
+        page.evaluate("() => elCorpus.querySelector('.tablet[data-tb=\"3\"] .tok[data-j=\"0\"]').click()")
+        page.wait_for_timeout(150)
+        r = page.evaluate("""() => [elCorpus.querySelector('.tablet[data-tb="3"] .tok[data-j="0"]').className,
+            TR.filter(e => e[1] === 'relever').slice(-1)[0][2]]""")
+        verifier("rel2" in r[0] and r[1] == "tablette 3 · copie",
+                 f"relevé une seconde fois, le jeton le montre, et le journal d'actions dit lequel a payé : {r}")
         page.evaluate("() => $('reset').click()")
         page.wait_for_timeout(200)
 

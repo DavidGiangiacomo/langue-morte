@@ -142,6 +142,71 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## Le Corpus jumeau — une copie à relever
+
+*19/10/2026, VOIX-4, sur la branche empilée sur `eleve`.*
+
+Une ligne au design doc — « une deuxième inscription est trouvée », acte IV — et rien d'autre.
+Deux choses la bornaient. La fiction exclut un bilingue (« sans bilingue, sans descendant,
+sans contexte »), donc le jumeau ne peut rien traduire. Et la tablette 23 dit, depuis l'acte
+IV, « si copier 100 · un devenir » : ils copiaient tout cent fois pour qu'un exemplaire
+survive. Une deuxième inscription est donc une **copie** : le même texte, signe pour signe.
+
+### Ce que la mesure a montré avant tout choix
+
+Deux familles mesurées. **Un témoin qui renforce** — la copie double ce que rassemblent la
+Concordance et la Grammaire — raccourcissait les actes IV et V de cinq à huit minutes ; mais
+l'acte IV tient déjà 3,2 min par signe avec Élèves, et I4 cassait encore plus bas. **Un second
+gisement** — chaque tablette de la copie se relève à nouveau, tarifée au débit de l'acte IV par
+la règle 9 — ne touchait presque pas la durée, et ramenait la main dans le corpus après la
+quarantième minute, le défaut de PT10. Entier, il la poussait au-delà du plafond de 40 % à
+forte cadence ; un seul exemplaire à demi-gisement la tenait.
+
+### Ce qui est tranché
+
+Deux questions à l'auteur, deux réponses, celles que je recommandais : **une copie à relever,
+une seule, à demi-gisement.** Huitième instrument, ouvert par ⟨nous⟩, payé en occurrences, et le
+seul qui ne s'achète qu'une fois. Chaque tablette de la copie a la moitié du gisement de
+l'original et son propre tarif, figé au premier relevé qu'on y fait ; le relevé va à l'original
+tant qu'il en reste. La barre rallume les tablettes vidées, l'infobulle dit « copie intacte »,
+un jeton relevé sur les deux porte une marque plus forte, et une ligne de journal dit la
+trouvaille sans nommer un signe : « Une deuxième inscription, gravée ailleurs : le même texte,
+signe pour signe. »
+
+### La mesure soumise à l'auteur était fausse
+
+La sonde qui a servi à choisir **remplaçait** le gisement restant de chaque tablette par la
+copie, au lieu de l'y ajouter : elle amputait de moitié les quatre tablettes encore sous terre
+à ⟨nous⟩. Elle annonçait 25 % des occurrences à la main, les mêmes à 5 et à 40 clics par minute.
+Le simulateur définitif, qui garde les deux gisements séparés comme le jeu, donne **26 % à 5
+clics par minute et 33 % à 15 et 40** avec Élèves, 26 % sans. Le plafond de 40 % tient ; ce qui
+ne tient plus, c'est l'indépendance à la cadence — un joueur lent ne vide pas la copie avant la
+fin. Le choix reste bon sur le critère qui comptait, et c'est écrit ici parce que l'auteur a
+choisi sur un chiffre qui n'était pas le bon.
+
+### Ce que le lot a trouvé en chemin
+
+**Le Lecteur se disputait une classe avec la barre.** Il marquait les tablettes lues avec `lue`
+— le nom que `peindreGisement()` donnait déjà à une tablette au tarif figé. Les deux se volaient
+la classe à chaque frame, et les tests du Lecteur passaient par coïncidence. Il marque désormais
+avec `parcourue`.
+
+**Le journal d'actions dit lequel des deux gisements a payé.** Le tarif de la copie ne s'écrit
+nulle part ailleurs, et `depouiller.py` rejoue la part de la main à partir des relevés : un
+relevé sur la copie porte donc « · copie », et `relever()` rend désormais où il est allé.
+
+### Mesuré
+
+**128,2–133,6 min** au réglage en place (130,9–134,3 sans le jumeau) ; **153,2–157,7** sans Élève
+(155,5–158,6) ; écart max 5,2 avec Élèves, 6,0 sans. Main : **26–33 %** des occurrences avec
+Élèves (17,3), **26 %** sans (13,7). Le jumeau s'achète à la 89ᵉ minute avec Élèves, à la 96ᵉ
+sans. `balayage.py` : fenêtre de durée re-basée à (116, 160), mêmes marges, et **42 combinaisons
+sur 54** passent, dont le réglage en place (119,0–157,7 min, écart 6,0, main 26 %). Ce n'est pas un réglage contre la mesure de PT10 (règle 9) : `REL_K` ne
+bouge pas, et la branche n'est pas celle que PT11 jouera. Pour le playtest : **revient-on
+relever après ⟨nous⟩, et sur quelles tablettes ?**
+
+`outils/verifier.py` passe de 421 à **429 assertions**.
+
 ## Le Lecteur — le corpus a commencé à lire
 
 *19/10/2026, GRAINE-2, sur la branche empilée sur `eleve`.*

@@ -62,9 +62,9 @@ function buildCorpus(){
 
 /* Un jeton relevé reste marqué : c'est la trace du travail déjà fait, et la seule façon
    de voir d'un coup d'œil ce qu'il reste à parcourir sur une tablette. */
-function releves(){
+function releves(rel){
   const s = new Set();
-  for(const t in S_.rel) for(const j of S_.rel[t]) s.add(t+':'+j);
+  for(const t in rel) for(const j of rel[t]) s.add(t+':'+j);
   return s;
 }
 const cleTok = el => el.closest('.tablet').dataset.tb + ':' + el.dataset.j;
@@ -101,7 +101,9 @@ const motTok = el => { const m = motDe(el.dataset.w);
 
 function paintCorpus(flashId){
   if(relecture){ peindreRelecture(); return; }
-  const rel = releves();
+  /* Un jeton relevé sur l'original porte une marque, relevé aussi sur la copie du Corpus
+     jumeau, une marque plus forte : c'est ce qui dit, après la copie, ce qui reste à faire. */
+  const rel = releves(S_.rel), relJ = releves(S_.relJ);
   /* La ligne que la contradiction retient (CONTR-1). Un Set vide quand elle n'est pas armée,
      donc la boucle ci-dessous ne paie rien le reste du temps. */
   const jetons = refusJetons();
@@ -110,7 +112,8 @@ function paintCorpus(flashId){
     const id=el.dataset.w;
     const nie = !!refus && refus.has(el);
     const known = !nie && !!byId[id] && has(id);
-    const r = (rel.has(cleTok(el)) ? 'r' : '') + (nie ? 'x' : '');
+    const k = cleTok(el);
+    const r = (rel.has(k) || relJ.has(k) ? 'r' : '') + (rel.has(k) && relJ.has(k) ? 'c' : '') + (nie ? 'x' : '');
     /* Le mot entre dans la signature du cache : une lecture tranchée à l'achat repeint
        les attestations déjà peintes, sans quoi le mot faux n'arriverait que sur les
        tablettes touchées ensuite (AMB-2). */
@@ -121,17 +124,18 @@ function paintCorpus(flashId){
     const passe = flashId==='nashal' && known && !!el.dataset.t;
     if(el.__v===want && flashId!==id && !passe) return;
     el.__v=want;
-    el.className='tok '+(known?'w':'g')+(r.indexOf('r')>=0?' rel':'')+(nie?' refus':'')
+    el.className='tok '+(known?'w':'g')+(r.indexOf('r')>=0?' rel':'')+(r.indexOf('c')>=0?' rel2':'')+(nie?' refus':'')
                 +(flashId===id || passe?' flash':'');
     el.innerHTML = known ? mot : sv(id);
   });
   elCorpus.querySelectorAll('[data-n]').forEach(el=>{
     const n=+el.dataset.n, nie = !!refus && refus.has(el), lis = !nie && numLisible(n);
-    const r = (rel.has(cleTok(el)) ? 'r' : '') + (nie ? 'x' : '');
+    const k = cleTok(el);
+    const r = (rel.has(k) || relJ.has(k) ? 'r' : '') + (rel.has(k) && relJ.has(k) ? 'c' : '') + (nie ? 'x' : '');
     const want=(lis?'n':'g')+r;
     if(el.__v===want) return;
     el.__v=want;
-    el.className='tok '+(lis?'num':'g')+(r.indexOf('r')>=0?' rel':'')+(nie?' refus':'');
+    el.className='tok '+(lis?'num':'g')+(r.indexOf('r')>=0?' rel':'')+(r.indexOf('c')>=0?' rel2':'')+(nie?' refus':'');
     el.innerHTML = lis ? nf.format(n) : numGlyphs(n);
   });
   peindreRuptures();
@@ -172,8 +176,10 @@ function peindreLecteur(){
   const cle = n + ':' + ligne;
   if(cle === lecVue) return;
   lecVue = cle;
-  for(const c of $('rail').children) c.classList.toggle('lue', +c.dataset.go <= n);
-  for(const el of elCorpus.querySelectorAll('.tablet')) el.classList.toggle('lue', +el.dataset.tb <= n);
+  /* `parcourue`, et non `lue` : la barre porte déjà `lue` pour une tablette dont le tarif est
+     figé (`peindreGisement()`), et les deux se volaient la classe. */
+  for(const c of $('rail').children) c.classList.toggle('parcourue', +c.dataset.go <= n);
+  for(const el of elCorpus.querySelectorAll('.tablet')) el.classList.toggle('parcourue', +el.dataset.tb <= n);
   const v = elCorpus.querySelector('.ln.lecteur'); if(v) v.classList.remove('lecteur');
   const el = tb && elCorpus.querySelector('.tablet[data-tb="'+t+'"]');
   if(el && el.children[ligne]) el.children[ligne].classList.add('lecteur');
@@ -296,7 +302,7 @@ function peindreGisement(){
   for(const c of $('rail').children){
     if(c.hidden) continue;
     const t=+c.dataset.go;
-    const sec = gisReste(t) <= 0, lue = !sec && S_.prix[t] !== undefined;
+    const sec = gisReste(t) <= 0, lue = !sec && prixEnCours(t) !== undefined;
     if(c.classList.contains('sec')!==sec) c.classList.toggle('sec',sec);
     if(c.classList.contains('lue')!==lue) c.classList.toggle('lue',lue);
   }
@@ -312,12 +318,15 @@ function titreCell(t){
      La répéter en français juste à qui a lu « soleil », c'est le jeu qui le corrige. */
   const d = !datee(t) ? '' : ANNEE[t].fin ? ' · '+motDe('nurhal')
                                           : ' · '+motDe('nur')+' '+ANNEE[t].n;
-  return 'tablette '+t+d+' — gisement '+r+'/'+GISEMENT[t]
+  /* Avec le Corpus jumeau, le gisement compte la copie, et le tarif est celui du gisement
+     en cours : l'original tant qu'il en reste, la copie ensuite (VOIX-4). */
+  const p = prixEnCours(t), copie = gisOrig(t) <= 0 && r > 0;
+  return 'tablette '+t+d+' — gisement '+r+'/'+(GISEMENT[t] + (S_.b.jum ? GIS_COPIE[t] : 0))
     + (r <= 0 ? ' · épuisée'
-      : S_.prix[t] === undefined
-        ? " · intacte : "+nf.format(Math.round(tarifRel()))
+      : p === undefined
+        ? ' · '+(copie ? 'copie intacte' : 'intacte')+' : '+nf.format(Math.round(tarifRel()))
           +" occ. par relevé si tu l'ouvres maintenant"
-        : ' · '+nf.format(Math.round(S_.prix[t]))+' occ. par relevé');
+        : ' · '+nf.format(Math.round(p))+' occ. par relevé');
 }
 /* ---- le recoupement, dans le texte ----
    Armé depuis le bouton, il se joue en deux clics : un premier passage, puis la même
@@ -557,11 +566,12 @@ function buildInstr(){
 function paintInstr(){
   for(const i of INS){
     const b=$('instr').querySelector('[data-ins="'+i.k+'"]');
-    const open=i.unlock(), c=insCost(i), can=open&&S_.O>=c;
+    const open=i.unlock(), c=insCost(i), plein=insPlein(i), can=open&&!plein&&S_.O>=c;
     b.classList.toggle('locked',!open);
     b.classList.toggle('afford',can);
     b.disabled=!can;
-    setHTML(b.querySelector('.sg'), sv(i.sig));
+    /* Deux tablettes pour le Corpus jumeau : c'est ce qu'il est. */
+    setHTML(b.querySelector('.sg'), i.k === 'jum' ? sv(i.sig)+sv(i.sig) : sv(i.sig));
     const muet={cop:'kal',tab:'im',con:'shen',ate:'mesh',gram:'en',elv:'zur'}[i.k];
     /* Le Lecteur n'a pas de nom français : il porte un signe du corpus, qu'on lit quand on le
        sait (GRAINE-2). */
@@ -570,7 +580,7 @@ function paintInstr(){
       : '<span style="color:var(--dim)">'+sv('dun')+sv(muet)+sv('la')+'</span>');
     setHTML(b.querySelector('.lv'), open? nf.format(S_.b[i.k]) : '');
     setHTML(b.querySelector('.ds'), open&&has('im') ? i.ds() : '');
-    setHTML(b.querySelector('.cs'), open ? (readC()? big(c) : numGlyphs(c)) : '');
+    setHTML(b.querySelector('.cs'), open && !plein ? (readC()? big(c) : numGlyphs(c)) : '');
   }
 }
 

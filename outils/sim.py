@@ -159,6 +159,14 @@ P = dict(
     # 19/10/2026 : il raccourcit l'acte V de 2,6 min avec Élèves et de 4,0 sans, et le pire
     # trou sans Élève passe de 7,2 à 5,8 min — ce sont les attentes de question qu'il comble.
     lec_b=500000, lec_r=2.0, lec_v=1 / 60, lec_q=300,
+    # Le Corpus jumeau (VOIX-4) : une copie du corpus retrouvée, un seul exemplaire, ouvert par
+    # ⟨nous⟩ et payé en occurrences. Chaque tablette de la copie a la moitié du gisement de
+    # l'original, et son propre tarif, figé au premier relevé qu'on y fait ; le relevé va à
+    # l'original tant qu'il en reste. Suit `JUM_F` et l'entrée `jum` d'`INS` dans economie.js.
+    # Mesuré le 19/10/2026 : la part de la main remonte à 26-33 % des occurrences avec Élèves
+    # (26 à 5 clics par minute, 33 à 15 et 40) et à 26 % sans, sous le plafond de 40. Un
+    # gisement entier (jum_f = 1) la poussait à 43 % à 15 clics par minute.
+    jum_b=300000, jum_f=0.5,
 )
 
 BR = {}
@@ -255,7 +263,7 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=(), eleves=None, ele
     dé, et la part de chaque extrême se lit dans `elv_lus`. `eleve_apres` = le signe que le
     joueur tient à lire lui-même avant d'engager son premier Élève. Retourne (durée, jalons, ...)."""
     O = H = C = 0.0
-    b = {'cop': 0, 'tab': 0, 'con': 0, 'ate': 0, 'gram': 0, 'elv': 0, 'lec': 0}
+    b = {'cop': 0, 'tab': 0, 'con': 0, 'ate': 0, 'gram': 0, 'elv': 0, 'lec': 0, 'jum': 0}
     gl, rec, t, dt = set(), 0, 0.0, 0.1
     marks, c_rec, c_con = [], 0.0, 0.0
     hyp_gl, comp_faits = {}, 0     # stock d'hypothèses à chaque jalon · compositions faites
@@ -294,6 +302,8 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=(), eleves=None, ele
     GIS = [-(-n // P['gis_div']) for n in TOKENS]   # gisement : jetons / gis_div
     reste = list(GIS)                               # ce qu'il reste à relever, par tablette
     prix = [None] * len(GIS)                        # tarif figé au premier relevé
+    resteJ = [0] * len(GIS)                         # la copie du Corpus jumeau, vide avant lui
+    prixJ = [None] * len(GIS)                       # ... et son tarif, figé à part
     # tablettes dégagées : 4 au départ, les 30 au dernier glyphe (cf. revCount() dans rendu.js)
     narbre = lambda: len(gl - SECRETS)      # ce que l'arbre a rendu, pas ce que le joueur sait
     nrev = lambda: min(len(GIS), P['rev_base'] + round(
@@ -365,14 +375,17 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=(), eleves=None, ele
         gain = 0.0
         while nc > 1e-12:
             # d'abord ce qui est déjà tarifé ; une tablette neuve ne s'ouvre qu'ensuite —
-            # et le thésauriseur s'en abstient jusqu'à `garde`, pour les tarifer au maximum
-            i = next((k for k in range(ouvert) if reste[k] > 0 and prix[k] is not None), None)
-            if i is None and neuves_ok:
-                i = next((k for k in range(ouvert) if reste[k] > 0), None)
-                if i is not None: prix[i] = tarif()  # première visite : on tarife
+            # et le thésauriseur s'en abstient jusqu'à `garde`, pour les tarifer au maximum.
+            # L'original d'abord, la copie du Corpus jumeau ensuite, chacune avec son tarif.
+            for rs, px in ((reste, prix), (resteJ, prixJ)):
+                i = next((k for k in range(ouvert) if rs[k] > 0 and px[k] is not None), None)
+                if i is None and neuves_ok:
+                    i = next((k for k in range(ouvert) if rs[k] > 0), None)
+                    if i is not None: px[i] = tarif()  # première visite : on tarife
+                if i is not None: break
             if i is None: break
-            n = min(nc, reste[i])
-            reste[i] -= n; gis_use += n; gain += prix[i] * n; nc -= n
+            n = min(nc, rs[i])
+            rs[i] -= n; gis_use += n; gain += px[i] * n; nc -= n
         gain += plancher() * nc                     # gisement épuisé : le plancher, jamais zéro
         o_main += gain
         O += obrut() * dt + gain
@@ -427,6 +440,11 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=(), eleves=None, ele
             if k is None: break
             O -= cost(k); b[k] += 1
             premier.setdefault(k, t / 60)
+
+        # Le Corpus jumeau : un seul, dès ⟨nous⟩, quand il reste de quoi le payer.
+        if 'nash' in gl and not b['jum'] and O >= P['jum_b']:
+            O -= P['jum_b']; b['jum'] = 1; premier.setdefault('jum', t / 60)
+            resteJ[:] = [-(-g * P['jum_f'] // 1) for g in GIS]
 
         # Le Lecteur : acheté après tout le reste, quand il reste de quoi ; puis il lit.
         if 'mesh' in gl and O >= cost('lec'):

@@ -27,8 +27,12 @@ elCorpus.addEventListener('click', e=>{
   const tb = +el.closest('.tablet').dataset.tb, j = +el.dataset.j;
   if(concArme){ concChoisir(el.dataset.w); return; }
   if(recArme){ recChoisir(tb, j, el.dataset.w); return; }
-  relever(tb, j);
-  el.classList.add('rel'); el.__v += 'r';
+  const ou = relever(tb, j);
+  el.classList.add('rel');
+  /* Relevé une seconde fois, sur la copie du Corpus jumeau : la marque se renforce (VOIX-4).
+     La signature du cache est alors recalculée à la prochaine peinture. */
+  if(ou === 'copie' && (S_.rel[tb] || []).indexOf(j) >= 0){ el.classList.add('rel2'); el.__v = null; }
+  else el.__v += 'r';
   peindreGisement();          // la tablette vient peut-être de perdre sa marque d'intacte
 });
 elCorpus.addEventListener('mousemove', e=>{
