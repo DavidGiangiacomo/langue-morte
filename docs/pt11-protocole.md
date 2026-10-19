@@ -194,8 +194,9 @@ précédent après les avoir posées.*
 ## 5. Pendant PT11 : rien ne va sur `develop`
 
 Le workflow Pages déploie **à chaque poussée sur `develop`**. Une partie en cours change donc
-de jeu au rechargement suivant, et LIV-3 n'est pas traité — la sauvegarde ne porte pas de
-version et ne se migre pas.
+de jeu au rechargement suivant. LIV-3 (19/10/2026) n'y change rien : la sauvegarde porte
+désormais sa version et se migre, mais une version protège le format d'une partie, pas son
+économie.
 
 La parade est un usage, et un usage n'est gardé par rien : travailler sur branche, ne pas
 merger avant le retour du TSV. C'est aussi pourquoi **E5 (l'Élève) n'est pas le prochain

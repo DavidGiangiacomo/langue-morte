@@ -142,6 +142,96 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## La version entre dans la sauvegarde, et la clé ne bouge plus
+
+*19/10/2026, LIV-3.* La clé de sauvegarde changeait chaque fois qu'une partie gênait —
+`langue-morte-mvp-v2`, puis `langue-morte-actes-i-iii` à l'ouverture de l'acte III — et
+chaque fois toutes les parties en cours partaient avec. Le backlog le disait : ça se
+reproduirait à chaque acte livré. Elle s'appelle désormais `langue-morte-partie` et ne
+changera plus : **la version est écrite dans la sauvegarde**, et c'est elle qui migre. Une
+partie trouvée sous l'ancienne clé y déménage au premier chargement. Rien de l'économie ne
+bouge — `sim.py` redonne 91,1–94,3 min, `balayage.py` 34 combinaisons sur 54 — et rien de
+l'écran non plus. `outils/verifier.py` passe de 297 à **307 assertions**.
+
+### Aucune migration n'est écrite, et c'est la mesure
+
+Tout ce que les lots ont changé à la sauvegarde depuis l'acte III — le carnet, les lectures
+tranchées, le doute, les révisions, la contradiction — était un **ajout**, et un ajout se
+migre tout seul : `fresh()` donne le champ à toute partie qui ne l'a pas. Le lot livre donc
+une chaîne de migrations vide, et c'est exact : aucun champ n'a encore changé de sens. Ce
+qui en demandera une est écrit en tête de `MIGRATIONS` — un champ qui change de sens, de nom
+ou de forme, un signe qui quitte le lexique ou change d'identifiant.
+
+La version **se compte** sur cette liste au lieu de se régler à côté : `versionSauvegarde()`
+vaut le nombre de migrations plus un. On ne peut ni oublier de l'incrémenter, ni l'incrémenter
+sans dire comment on passe d'une version à l'autre — un état dérivable ne se stocke pas, même
+dans le code. Les sauvegardes d'avant ce lot n'ont pas de numéro ; elles sont en version 1, il
+ne leur manque que le chiffre. Et ce chiffre est posé par `sauver()`, pas par `fresh()` : il
+dit ce qu'est le fichier, pas ce qu'était la partie.
+
+La chaîne vide se teste quand même : une migration posée le temps du test fait la version 2,
+passe une fois sur une sauvegarde sans numéro, et ne repasse pas sur une sauvegarde déjà à
+jour.
+
+### La première qu'on voit venir : FIN-2
+
+Une partie `done` quand l'arbre était plus petit redevient une partie en cours. C'est
+`nArbre() < NGL`, posé avec la Parole III, et c'est juste tant que finir veut dire acheter le
+dernier signe. **FIN-2 casse cette équivalence** : interrompre, c'est laisser un signe non lu
+(design doc §11), donc `nArbre() < NGL` par définition — et une partie interrompue « ne
+propose pas de reprendre ». Telle quelle, la règle la rouvrirait au chargement suivant. Il
+faudra écrire à quelle taille d'arbre une partie s'est arrêtée, et l'écrire pour les parties
+déjà finies sera la première migration. C'est noté dans le code, au-dessus de la règle.
+
+### Ce qui se migrait déjà, à deux endroits
+
+Le chargement faisait déjà la moitié du travail sans le dire : `Object.assign(fresh(), p)`
+donnait les champs de premier niveau. Mais pas ceux de `b`, que l'assignation remplace en
+bloc — d'où une seconde ligne, qui recopiait **la liste des instruments à la main**. Tout
+instrument neuf s'écrivait donc à deux endroits, et l'Élève
+([#56](https://github.com/DavidGiangiacomo/langue-morte/pull/56)) a dû l'écrire aux deux.
+Oublié au second, il serait arrivé à `undefined` dans toute partie d'avant lui : `insCost()`
+rendait NaN, et rien ne le disait. `fusionner()` descend désormais d'un niveau : un instrument
+s'écrit dans `fresh()` et nulle part ailleurs. Le test ne nomme aucun instrument — il pose une
+partie qui ne connaît que le Copiste et vérifie que tous les autres arrivent à zéro, ceux des
+actes IV et V compris. La PR de l'Élève se fusionnera donc avec une ligne de moins : sa
+retouche du chargement devient inutile, et le conflit se résout en gardant `fusionner()`.
+
+### Une sauvegarde qu'on ne sait pas lire ne s'écrase pas
+
+Un numéro de version peut être **plus grand** que celui du jeu qui le lit : un déploiement
+défait, un vieux fichier rouvert dans le navigateur où l'on joue le neuf. Et une migration
+peut casser — c'est un défaut du jeu, pas de la partie. Dans les deux cas, la seule réponse
+qui ne perde rien est de n'y pas toucher : on joue une partie neuve, qui ne se garde pas, et
+ni la sauvegarde des quatre secondes ni « recommencer » n'écrivent par-dessus. Jouer quand
+même — la charger telle quelle, ou repartir de zéro en laissant la sauvegarde automatique
+faire le reste —, c'était remplacer la partie par ce qu'un jeu qui ne la comprenait pas en
+aurait fait, quatre secondes plus tard.
+
+### Le déménagement ne mange pas la nuit
+
+Une partie trouvée sous l'ancienne clé est écrite sous la nouvelle, puis effacée de
+l'ancienne — dans cet ordre, pour qu'une écriture ratée ne perde rien —, et elle part **telle
+quelle**. Le piège était dans le geste le plus simple, qui serait de l'enregistrer comme
+n'importe quelle partie : enregistrer, c'est dater de maintenant (`sauver()` pose `ts`), et
+`ts` est ce qui mesure la nuit (`veillee()`). Le joueur qui revient après deux heures
+retrouverait une nuit d'une seconde. Le test pose sous l'ancienne clé une partie quittée
+depuis deux heures et vérifie que la nuit est rattrapée. Deux mutants vérifiés à la main —
+un déménagement qui re-date la partie, une sauvegarde plus récente chargée quand même — font
+chacun échouer leur assertion.
+
+### Ce que LIV-3 ne fait pas
+
+- **Il ne lève pas la règle « rien sur `develop` pendant un playtest ».** Une version protège
+  le format d'une partie, pas son économie : un déploiement qui touche un réglage change le
+  jeu sous les pieds du joueur sans changer une virgule de sa sauvegarde, et rien dans le
+  journal d'actions ne date ce changement. Ce que disait LIV-2 reste vrai.
+- **`langue-morte-mvp-v2` n'est pas repris**, et c'est un choix : ses parties sont celles du
+  prototype à treize signes, abandonnées le 08/09/2026, et l'économie qui les a produites
+  n'existe plus. Une ligne dans `CLES_ANCIENNES` suffirait à les rouvrir.
+- **Le journal d'actions garde sa clé** (`langue-morte-traces-v1`) : hors jeu, il se décrit
+  lui-même par l'en-tête du TSV.
+
 ## Le compteur n'est pas le corpus — trois portes, et une qui s'ouvre à 2 C
 
 *14/10/2026.* Trouvé en jouant : **dès ⟨un⟩, les trois compteurs passent en chiffres arabes

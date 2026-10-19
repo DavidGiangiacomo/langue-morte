@@ -117,8 +117,12 @@ $('fermer').addEventListener('click', fermerFin);
 $('end').addEventListener('click', e=>{ if(e.target===$('end')) fermerFin(); });
 
 /* `ts` est l'heure de la dernière sauvegarde : c'est elle, et rien d'autre, qui mesure
-   la nuit au retour. Écrite à chaque enregistrement, y compris à la fermeture. */
-const sauver = () => { try{ S_.ts = Date.now(); localStorage.setItem(KEY, JSON.stringify(S_)); }catch(e){} };
+   la nuit au retour. Écrite à chaque enregistrement, y compris à la fermeture.
+   `v` est la version dans laquelle ce jeu écrit (LIV-3). Posée ici et non dans `fresh()` :
+   elle dit ce qu'est le fichier, pas ce qu'était la partie. Rien ne s'écrit par-dessus une
+   sauvegarde que ce jeu n'a pas su lire (`charger()`). */
+const sauver = () => { if(sauvegardeIntouchable) return;
+  try{ S_.v = versionSauvegarde(); S_.ts = Date.now(); localStorage.setItem(KEY, JSON.stringify(S_)); }catch(e){} };
 setInterval(sauver, 4000);
 window.addEventListener('pagehide', sauver);
 

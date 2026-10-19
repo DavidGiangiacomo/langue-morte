@@ -35,7 +35,8 @@ src/
                 les onze lectures fausses (`AMB`, `COMPFAUX`) et leurs points de rupture
                 (`RUPTURES`)
   corpus.js     GÉNÉRÉ — ne jamais éditer à la main
-  economie.js   état, ressources, instruments, actions, boucle de simulation
+  economie.js   état et son chargement versionné, ressources, instruments, actions,
+                boucle de simulation
   rendu.js      corpus, barre de tablettes, panneaux, infobulle, journal
   traces.js     HORS JEU — journal d'actions horodaté pour les playtests
   jeu.js        liaisons, entrées clavier, sauvegarde
@@ -169,6 +170,8 @@ quel build il sort.
 
     Une seule ligne par signe, la plus précoce : ⟨ne-pas⟩ casse sur `sinon` cent trente et une fois, en allumer cent trente et une noierait le signal, et AMB-4 demande « un endroit précis du corpus ».
 
+21. **La clé de sauvegarde ne change plus ; ce qui change de sens se migre.** `KEY` vaut `langue-morte-partie` depuis LIV-3 (19/10/2026) et la version est écrite dans la sauvegarde (`v`). Elle avait déjà changé une fois, et toutes les parties en cours avaient été perdues. Un champ **ajouté** ne demande rien : `fresh()` le donne à toute partie qui ne l'a pas, un niveau plus bas compris (`fusionner()`) — **un instrument neuf s'écrit dans `fresh()` et nulle part ailleurs**. Un champ qui change de **sens**, de nom ou de forme, un signe qui quitte le lexique ou change d'identifiant, demande une migration ajoutée à la fin de `MIGRATIONS`, jamais retirée ; la version se compte sur cette liste (`versionSauvegarde()`), elle ne se règle pas. Une sauvegarde que le jeu ne sait pas lire — plus récente que lui, ou dont la migration casse — ne se charge pas et **ne s'écrase pas**, ni par la sauvegarde automatique ni par « recommencer ». La première migration attendue est celle de **FIN-2** : une partie interrompue a `nArbre() < NGL` par définition, et la règle qui rouvre une partie que l'arbre a dépassée la ferait reprendre (`economie.js`, au-dessus de `S_.done`). `verifier.py`, section 26.
+
 ---
 
 ## Ce qui a été tranché
@@ -189,7 +192,7 @@ quel build il sort.
 
 ## État actuel et suite
 
-**Fait** : **actes I à III entiers**, **30 signes d'arbre sur 45**, plus deux composés secrets, corpus complet des 30 tablettes (705 lignes, 3 838 signes), économie réglée sur neuf playtests, numération signe par signe de `zéro` à `mille`, barre de navigation entre tablettes, infobulles, comptage d'occurrences dans le lexique, journal d'actions horodaté, relevé et recoupement dans le corpus avec gisement par tablette, **datation et réordonnancement chronologique**, instrument **Grammaire**, progression **hors ligne**, **grille de composition** avec carnet des tentatives, **ambiguïté : deux lectures tranchées à l'achat** sur neuf signes, **degré de doute, révision, contradiction, et les passages qui ne se construisent pas**.
+**Fait** : **actes I à III entiers**, **30 signes d'arbre sur 45**, plus deux composés secrets, corpus complet des 30 tablettes (705 lignes, 3 838 signes), économie réglée sur neuf playtests, numération signe par signe de `zéro` à `mille`, barre de navigation entre tablettes, infobulles, comptage d'occurrences dans le lexique, journal d'actions horodaté, relevé et recoupement dans le corpus avec gisement par tablette, **datation et réordonnancement chronologique**, instrument **Grammaire**, progression **hors ligne**, **grille de composition** avec carnet des tentatives, **ambiguïté : deux lectures tranchées à l'achat** sur neuf signes, **degré de doute, révision, contradiction, et les passages qui ne se construisent pas**, **sauvegarde versionnée** qui se migre au lieu d'être abandonnée.
 
 **PT7 fait** (07/09/2026) : 44 min 50. R9 est tranché — le tarif figé à la première visite ramène la main de 0,1 % à **17,9 % des occurrences**, sur 22 tablettes au lieu de 3, jusqu'à la quarantième minute au lieu de la quinzième. I6 global à 31,2 %, mais découpé par tranches il montre deux défauts opposés : 83 % au premier quart d'heure (le mur d'ouverture, connu, non réglé) et 103 % aux cinq dernières minutes (5 232 hypothèses que les Concordances ne buvaient pas). D'où la mesure d'I6 par tranches, et la Grammaire.
 
@@ -392,6 +395,22 @@ reste « Le prototype s'arrête ici. La suite appartient aux actes IV et V. » *
 est lu avant l'entretien : il fait partie du protocole.** Économie inchangée ;
 `outils/verifier.py` passe de 296 à **297 assertions**. Voir `docs/journal.md`, « La carte de
 fin soufflait la réponse ».
+
+**La sauvegarde survit aux actes** (19/10/2026, LIV-3) : la clé s'appelle `langue-morte-partie`
+et **ne change plus** (règle 21) ; la version est écrite dans la sauvegarde, et une partie
+trouvée sous `langue-morte-actes-i-iii` y déménage au premier chargement — **nuit comprise** :
+la déplacer en l'enregistrant l'aurait datée de maintenant, et `ts` est ce qui mesure la nuit.
+La version **se compte** sur la liste des migrations, et **aucune n'est écrite** : chaque lot
+depuis l'acte III n'a fait qu'ajouter des champs, ce que `fresh()` couvre déjà. La première
+qu'on voit venir est celle de FIN-2. Trouvé en chemin : la liste des instruments était
+recopiée à la main dans le chargement, donc chaque instrument neuf s'écrivait deux fois —
+`fusionner()` descend désormais d'un niveau, et la PR de l'Élève
+([#56](https://github.com/DavidGiangiacomo/langue-morte/pull/56)) s'en trouve allégée d'une
+ligne. Une sauvegarde que le jeu ne sait pas lire, plus récente ou dont la migration casse,
+**ne s'écrase pas**. Ce que LIV-3 ne fait pas : lever « rien sur `develop` pendant un
+playtest » — une version protège le format d'une partie, pas son économie. Économie
+inchangée (`sim.py` 91,1–94,3 min, `balayage.py` 34 sur 54) ; `outils/verifier.py` passe de
+297 à **307 assertions**. Voir `docs/journal.md`, « La version entre dans la sauvegarde ».
 
 **Prochaine étape — PT11 avec un autre joueur, puis l'Élève (E5).** Même question qu'en PT8 et PT9, posée à quelqu'un qui ne sait pas ce qu'il cherche — plus celle que PT10 a ouverte : **revient-on dans le corpus après la quarantième minute ?** Dans le même TSV : la part manuelle des occurrences (au-delà de 40 %, plafonner `REL_K`) le stock d'hypothèses entre `année` et la dixième Grammaire (27 090 en PT9), **le nombre de recoupements** — sous une vingtaine sur la partie, le réglage du 09/09 a vidé un des deux gestes manuels et il faut revenir en arrière — et **les tentatives de composition** : le journal d'actions les compte avec leur paire et leur minute. La question neuve est celle-là : un joueur qui ignore qu'il y a quelque chose à chercher reconnaît-il ⟨maison⟩ et ⟨grain⟩ dans ⟨grenier⟩, ou ⟨ne-pas⟩ et ⟨un⟩ dans le zéro qu'il regarde depuis la première seconde ? Aucun simulateur ne répond à ça. S'y ajoutent deux questions depuis `les-lecteurs` : **achète-t-on un signe à 1 200 C qui annonce trois attestations** — le TSV date le moment où il devient payable — et, à poser de vive voix, **a-t-on vu ⟨nous⟩ dans le nom** ? Et une mesure de plus, parce que `REV_R` la déplace sans qu'aucun playtest soit derrière : **le nombre de recoupements et la part manuelle des occurrences**. Si la main descend au lieu de monter, c'est `REV_R` qu'il faut défaire en premier, avant les prix.
 

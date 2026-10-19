@@ -895,5 +895,7 @@ function recommencer(){
   majSignes(); touchees=new Set(); recArmer(false); concFermer(); compVider(); finDesarmer();
   ambFermer();
   $('log').innerHTML='<p class="hint">relève un signe : clique dans le corpus</p>';
-  paintCorpus(null); try{localStorage.removeItem(KEY);}catch(e){}
+  /* Recommencer efface la partie qu'on voit — jamais une sauvegarde que ce jeu n'a pas su
+     lire, qui n'est pas celle-là et qu'il n'a pas chargée (`charger()`). */
+  paintCorpus(null); if(!sauvegardeIntouchable) try{localStorage.removeItem(KEY);}catch(e){}
 }
