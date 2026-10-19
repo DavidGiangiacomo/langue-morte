@@ -18,7 +18,7 @@ const KEY='langue-morte-partie';
 const CLES_ANCIENNES = ['langue-morte-actes-i-iii'];
 const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram:0,elv:0},gl:[],t:0,done:false,
   rel:{}, prix:{}, carnet:[], comp:0, lect:{}, dte:{}, conc:{}, recs:{}, rev:0, contr:0,
-  qn:0, qf:0, qa:[], fin:null, efface:false});
+  qn:0, qf:0, qa:[], fin:null, efface:false, fautes:{}, lusEleve:{}});
 /* rel : jetons relevés par tablette · prix : tarif du gisement, verrouillé
    carnet : les paires déjà tentées et fausses · comp : le nombre de tentatives, toutes issues
    confondues — c'est lui que PT10 doit lire, pas la seule liste des échecs.
@@ -35,6 +35,12 @@ const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram
    fin : comment la partie s'est terminée, 'achevee' ou 'interrompue' (FIN-1, FIN-2) — null
    tant qu'elle court · efface : l'effacement d'une partie achevée est allé à son terme, et
    il n'y a plus que la page vide à rouvrir.
+   fautes : chaque signe lu faux un jour, et par qui — 'moi' ou 'eleve' —, même si une
+   révision l'a corrigé depuis · lusEleve : les signes dont la lecture en place vient d'un
+   Élève. Ni l'un ni l'autre ne se lit pendant la partie ; ils sont ce que la relecture
+   avouera (FIN-3). Ce n'est pas un solde à part pour l'Élève (règle 21) : la dette, la
+   prime et la contradiction ne lisent que `lect`. Une partie d'avant ce lot les reçoit vides,
+   et sa relecture ne montre que les erreurs encore en place, toutes attribuées au joueur.
    Une partie d'avant la composition, ou d'avant l'ambiguïté, les reçoit vides au chargement
    (`fusionner()`) : un champ ajouté ne demande ni nouvelle clé ni migration. */
 let S_ = fresh(), speed = 1;
@@ -161,10 +167,10 @@ const faux = id => S_.lect[id] === 'f';
 /* Les parties mal lues d'un composé, dans l'ordre de sa recette et sans doublon : c'est la
    clé de `COMPFAUX`. ⟨année⟩⟨année⟩ n'a qu'une partie à salir, et sa clé est donc `nur` et
    non `nur+nur`. */
-function partsFausses(id){
+function partsFausses(id, lect){
   const pr = PARTIES[id]; if(!pr) return '';
-  const out = [];
-  for(const k of pr) if(faux(k) && out.indexOf(k) < 0) out.push(k);
+  const L = lect || S_.lect, out = [];
+  for(const k of pr) if(L[k] === 'f' && out.indexOf(k) < 0) out.push(k);
   return out.join('+');
 }
 /* Le mot qu'affiche le jeu — corpus, infobulle, lexique, grille, carnet, concordance. Rien
@@ -172,11 +178,16 @@ function partsFausses(id){
    la promesse d'AMB-2 (le mot faux partout, y compris dans les blocs générés et dans les
    tablettes déjà lues). Le corpus se repeint entièrement à chaque achat, il n'y a donc
    aucune reprise à faire. */
-function motDe(id){
+function motDe(id){ return motSous(id, S_.lect); }
+/* Le même mot, sous d'autres lectures : `{}` donne le mot juste, et la relecture (FIN-3) s'en
+   sert pour retrouver ce que le joueur lisait avant une révision. Une fonction à part, et non
+   un second argument de `motDe` : `motDe` se passe telle quelle à `map`, qui lui donnerait
+   l'indice pour lectures. */
+function motSous(id, lect){
   const g = byId[id]; if(!g) return null;
   const v = COMPFAUX[id];
-  if(v){ const k = partsFausses(id); if(k && v[k]) return v[k].mot; }
-  return faux(id) ? AMB[id].mot : g.mot;
+  if(v){ const k = partsFausses(id, lect); if(k && v[k]) return v[k].mot; }
+  return lect[id] === 'f' ? AMB[id].mot : g.mot;
 }
 /* La ligne de journal suit la même règle, et pour la même raison : annoncer « le grenier —
    la maison du grain » à un joueur dont le corpus dit « caveau », c'est le jeu qui se
@@ -395,6 +406,10 @@ function reviser(id, lect){
      joueur n'en voit rien dans un cas comme dans l'autre (AMB-3). */
   S_.lect[id] = lect === 'f' ? 'f' : 'j';
   S_.dte[id] = douteCalc(id);
+  /* La révision est toujours au joueur, même sur un signe qu'un Élève avait lu ; et une faute
+     corrigée reste une faute pour la relecture, qui la montre à part (FIN-3). */
+  delete S_.lusEleve[id];
+  if(S_.lect[id] === 'f') S_.fautes[id] = 'moi';
   numCache.length = 0;
   pushLog(logDe(id));
   /* Le « bonus rétroactif » du design doc §8, enfin payé — en dette effacée, donc sans rien
@@ -862,6 +877,9 @@ function acheterGl(id, lect, eleve){
        le rouvrira qu'une révision : regarder après coup ne rend pas la décision moins
        aveugle (MOD-2). La dette, elle, n'a rien à poser — elle se déduit (`dette()`). */
     S_.dte[id] = eleve ? 100 : douteCalc(id);
+    /* Ce que la relecture avouera (FIN-3) : qui a tranché ce signe, et s'il a été lu faux. */
+    if(eleve) S_.lusEleve[id] = true; else delete S_.lusEleve[id];
+    if(S_.lect[id] === 'f') S_.fautes[id] = eleve ? 'eleve' : 'moi';
     /* Dit avant la ligne du signe, et sans rien dire de la lecture : le joueur qui avait
        vu la fenêtre des deux mots lirait son absence comme une panne. */
     if(eleve) pushLog('Un élève l’avait déjà recopié au propre.');

@@ -142,6 +142,72 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## La relecture — ce que le livre avoue une fois fermé
+
+*19/10/2026, FIN-3, sur la branche empilée sur `eleve`.*
+
+Depuis le 14/09/2026, ce n'était plus une préférence : les paires réparantes passent sans rien
+trahir (`docs/corpus.md` §7.3), donc la relecture est **le seul endroit où le jeu admet jamais
+qu'on a lu autre chose**. Le design doc §11 en donne la lettre : le corpus intégralement
+lisible, toutes les erreurs de la partie surlignées, y compris celles jamais détectées, vingt
+minutes, sans mécanique. Quatre questions à l'auteur, quatre réponses, celles que je
+recommandais.
+
+**Quelles erreurs.** Toutes : celles encore en place à la fin, détectées ou non, et celles
+qu'une révision avait corrigées, marquées à part. La seconde moitié ne se déduisait de rien —
+une révision écrase la lecture —, d'où `S_.fautes`, qui garde chaque signe lu faux un jour et
+par qui. C'est le premier état du jeu qui soit une **mémoire** et non une conséquence : la
+règle 18 interdit de stocker ce qui se dérive, et ceci ne se dérive pas.
+
+**Comment.** Le texte juste, et la faute surlignée **sur le jeton**. Pendant la partie, la
+règle 20 l'interdisait : désigner le signe fautif aurait été l'oracle. Le livre est fermé, il
+n'y a plus rien à protéger, et c'est exactement ce qui fait de la relecture un aveu et non un
+corrigé — elle vient trop tard pour servir. Le mot qu'on avait lu se lit au survol. Basculer
+entre les deux livres aurait été le plus fort pour la paire réparante, qui en donne un second
+cohérent ; mais c'était une mécanique, et le §11 n'en veut pas.
+
+**Qui.** « j'avais lu … » ou « un élève avait lu … ». La règle 21 refuse un solde à part pour
+l'Élève, et ce n'en est pas un : la dette, la prime et la contradiction ne lisent que `lect`,
+et `S_.lusEleve` ne se lit que dans la relecture.
+
+**Ce qu'on a raté.** ⟨grenier⟩ et le zéro, jamais posés, passent en français avec leur propre
+marque. La règle 14 protégeait l'existence des signes hors de l'arbre ; elle protégeait une
+partie, et il n'y en a plus.
+
+### Ce que le lot a trouvé en chemin
+
+**`motDe` ne pouvait pas prendre de second argument.** La relecture a besoin du mot sous
+d'autres lectures — les justes, ou celles d'avant une révision. Le plus simple était un
+paramètre ; mais `traces.js` passe `motDe` telle quelle à `map`, qui lui aurait donné l'indice
+du tableau en guise de lectures, et le journal d'actions aurait écrit le mot juste là où le
+joueur lisait le faux, sans erreur et sans que rien ne le dise. D'où `motSous(id, lect)`, et
+`motDe` qui l'appelle.
+
+**Un composé sali par sa partie est une faute aussi.** ⟨sinon⟩ se lit « à la fin » chez qui a
+lu ⟨ne-pas⟩ de travers ; la relecture le surligne, et le survol dit « j'avais lu « à la fin » ».
+Le critère est le mot affiché, pas le signe tranché : un jeton est fautif quand la lecture du
+joueur ne donnait pas son mot, ce qui couvre d'un coup les signes, leurs composés et le verrou
+du passé.
+
+**Le texte juste se construit partout.** Le passage que la contradiction retient et les lignes
+que `faux` allume s'éteignent à la relecture : ils disaient que la lecture du joueur ne tenait
+pas, et ce n'est plus sa lecture qu'on lit.
+
+**Aucun chiffre à l'écran, tous au journal.** La légende nomme les trois marques et ne compte
+rien. Le journal d'actions, hors jeu, compte ce que la relecture avoue — mille cent douze
+jetons mal lus pour la partie d'essai des tests, qui s'est trompée sur quatre signes, paire
+réparante comprise.
+
+### Pour le playtest
+
+**L'entretien se fait avant « relire ».** La relecture répond à trois de ses questions — combien
+de lectures fausses, a-t-on remarqué qu'on choisissait, à qui attribue-t-on un mot faux —, et
+un joueur qui relit avant d'être interrogé les entend répondues. Ensuite : l'ouvre-t-on, et
+combien de temps y reste-t-on ? `depouiller.py` date son ouverture.
+
+Mesuré : économie inchangée (`sim.py` 133,5–136,9 min, rien n'y touche) ; `outils/verifier.py`
+passe de 395 à **412 assertions**.
+
 ## Les deux fins — achever, interrompre
 
 *19/10/2026, FIN-1 + FIN-2, sur la branche empilée sur `eleve`.*

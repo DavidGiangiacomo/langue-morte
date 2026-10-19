@@ -227,6 +227,8 @@ Aucune n'est présentée comme la bonne. Le jeu n'attribue pas de score.
 
 **Relecture (NG+)** — après *Achever*, une option « relire » : le corpus est intégralement lisible dès le départ, et le jeu **surligne toutes les erreurs de traduction de la première partie**, y compris celles jamais détectées. Vingt minutes, sans mécanique. Ce n'est pas un prestige, c'est un épilogue. Coût de production quasi nul, valeur émotionnelle importante.
 
+**Ce qui est posé** (19/10/2026, FIN-3). Le texte s'écrit juste, et la faute se marque sur le jeton — ce que la partie interdisait, parce que c'eût été l'oracle, et que le livre fermé permet. Trois marques : mal lu (resté faux à la fin), mal lu puis corrigé (une révision l'avait rendu), jamais trouvé (un composé secret que personne n'a posé). Le survol dit le mot lu et qui l'avait lu, le joueur ou un Élève ; une légende nomme les marques et ne compte rien. C'est là, et là seulement, que la paire réparante est avouée.
+
 ---
 
 ## 12. Interface

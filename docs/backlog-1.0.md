@@ -447,13 +447,15 @@ Suivi : [#26](https://github.com/DavidGiangiacomo/langue-morte/issues/26) — le
 - Fini quand : le jeu se ferme sur le corpus figé et **ne propose pas de reprendre** ; aucune des deux fins n'est présentée comme la bonne ; aucun score.
 - *Fait* : l'interface s'en va, le corpus reste figé et ne s'efface pas, et la partie ne se reprend jamais, pas même au chargement. Les deux boutons portent le même habit, dans un ordre tiré au sort, et interrompre ne s'offre qu'à qui pourrait achever — sans quoi il serait un repli. **La première migration de sauvegarde** est écrite pour lui (version 2).
 
-**FIN-3 — La relecture** · T:M · [#46](https://github.com/DavidGiangiacomo/langue-morte/issues/46)
+**FIN-3 — La relecture** · ~~T:M~~ **fait** (19/10/2026, branche de travail empilée sur `eleve`) · [#46](https://github.com/DavidGiangiacomo/langue-morte/issues/46)
 > En tant que joueur qui a achevé, je veux relire le corpus en sachant tout, y compris ce que j'ai raté.
 
 - Fini quand : le corpus est intégralement lisible dès le départ ; **toutes** les erreurs de traduction de la partie sont surlignées, y compris celles jamais détectées ; environ vingt minutes, aucune mécanique.
 - Dépend de : AMB-1 (le journal des choix), FIN-1.
 - « Ce n'est pas un prestige, c'est un épilogue. » Coût de production faible, valeur émotionnelle haute — **ne pas le sacrifier au planning.**
 - Depuis le 14/09/2026 ce n'est plus une préférence d'auteur : les paires réparantes étant laissées passer (§7.3), **la relecture est le seul endroit où le jeu admet jamais qu'on a lu autre chose.**
+- *Fait* : « relire » s'offre après avoir achevé ; le corpus revient entier, écrit juste, et chaque jeton porte sa marque — **mal lu** (resté faux à la fin, composés salis compris), **mal lu, puis corrigé** (une révision l'avait rendu), **jamais trouvé** (⟨grenier⟩, le zéro). Le survol dit le mot lu et qui l'avait lu, le joueur ou un Élève. Une légende nomme, rien ne compte. Deux champs de sauvegarde, `fautes` et `lusEleve`, sans migration. Voir la règle 27 de `CLAUDE.md` et `docs/journal.md`, « La relecture ».
+- **L'entretien de playtest se fait avant « relire »**, qui répond à trois de ses questions.
 
 ---
 
@@ -623,7 +625,9 @@ Suivi : [#29](https://github.com/DavidGiangiacomo/langue-morte/issues/29) — le
   *19/10/2026* : la section 6 est réécrite pour les deux fins (FIN-1, FIN-2) — la fenêtre au
   lexique et à la grille, l'attente de lecture, ce qui reste à l'écran (« recommencer » et pas un
   chiffre), la partie interrompue qui ne reprend pas au chargement — et la section 27 vérifie la
-  première migration écrite : 395 assertions.
+  première migration écrite : 395 assertions. Puis la relecture (FIN-3) : le texte entier,
+  les trois marques sur les jetons, l'Élève nommé, la légende qui ne compte rien, et la
+  relecture qui survit au rechargement : 412.
   *19/10/2026* : dix de plus sur la sauvegarde (LIV-3) — une partie de l'ancienne clé
   déménage numérotée et **sans perdre sa nuit**, chaque instrument qu'elle ne connaissait pas
   arrive à zéro **sans que le test les nomme**, la version se compte sur une migration posée

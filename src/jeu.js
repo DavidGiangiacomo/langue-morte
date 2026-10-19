@@ -32,8 +32,9 @@ elCorpus.addEventListener('click', e=>{
   peindreGisement();          // la tablette vient peut-être de perdre sa marque d'intacte
 });
 elCorpus.addEventListener('mousemove', e=>{
-  /* L'infobulle est de l'interface : elle s'en va avec le reste. */
-  if(document.body.classList.contains('fin')){ tipCacher(); return; }
+  /* L'infobulle est de l'interface : elle s'en va avec le reste — sauf à la relecture, où elle
+     ne dit plus que ce qu'on avait lu (FIN-3). */
+  if(document.body.classList.contains('fin')){ if(relecture) tipRelecture(e); else tipCacher(); return; }
   const el = e.target.closest('.tok');
   if(!el || el.classList.contains('sep')){ tipCacher(); return; }
   const cle = (el.dataset.w!==undefined ? 'w'+el.dataset.w : 'n'+el.dataset.n) + ':' + el.__v;
@@ -141,6 +142,7 @@ if(bReset) bReset.addEventListener('click', recommencer);
 /* « recommencer » appelle la fonction et non le bouton : il reste seul à l'écran après les
    deux fins, dans tous les builds, et le bouton de la barre non. */
 $('again').addEventListener('click', recommencer);
+$('relire').addEventListener('click', relire);
 
 /* `ts` est l'heure de la dernière sauvegarde : c'est elle, et rien d'autre, qui mesure
    la nuit au retour. Écrite à chaque enregistrement, y compris à la fermeture.

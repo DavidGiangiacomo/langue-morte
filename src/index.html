@@ -174,10 +174,14 @@
     <button class="ghost" id="fins-annuler" title="échap — le signe reste à lire">revenir au corpus</button>
   </div>
 </div>
-<!-- Ce qui reste après les deux fins : un bouton. Ni carte, ni statistiques, ni score — et
-     rien qui annonce ce que les actes suivants révèlent : un écran de fin est lu avant
-     l'entretien de playtest, il fait partie du protocole. -->
+<!-- Ce qui reste après les deux fins : « recommencer », et « relire » après avoir achevé
+     (FIN-3). Ni carte, ni statistiques, ni score — et rien qui annonce ce que les actes
+     suivants révèlent : un écran de fin est lu avant l'entretien de playtest, il fait partie
+     du protocole. La légende n'apparaît qu'à la relecture : elle nomme ses trois marques, et
+     ne compte rien. -->
 <div class="apres" id="apres" hidden>
+  <span class="legende" id="legende" hidden><span class="malu">mal lu</span><span class="corrige">mal lu, puis corrigé</span><span class="jamais">jamais trouvé</span></span>
+  <button class="ghost" id="relire" hidden>relire</button>
   <button class="ghost" id="again">recommencer</button>
 </div>
 

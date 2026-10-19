@@ -360,5 +360,16 @@ body.fin-sec .fin-x,body.fin-sec .fin-cadre,body.fin-sec #corpus{transition:none
   font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
 .apres .ghost:hover{color:var(--lamp);border-color:var(--line2)}
 @keyframes apres{from{opacity:0}to{opacity:1}}
+.apres{gap:10px;align-items:center}
+/* La relecture (FIN-3) : le texte revient, et trois marques sur les jetons. */
+body.relire #corpus{animation:apres 3s ease;max-height:calc(100vh - 190px)}
+.malu,.corrige,.jamais{border-radius:2px}
+.tok.malu,.legende .malu{background:rgba(214,140,70,.24);color:var(--lamp)}
+.tok.corrige,.legende .corrige{box-shadow:inset 0 -1px 0 var(--ochre)}
+.tok.jamais,.legende .jamais{color:var(--slate);box-shadow:inset 0 -1px 0 rgba(157,184,199,.5)}
+.tok.malu,.tok.corrige,.tok.jamais{cursor:help}
+.legende{display:flex;gap:14px;margin-right:8px;padding:6px 10px;background:var(--ink);
+  font-family:var(--serif);font-size:14px;color:var(--mid)}
+.legende span{padding:1px 4px}
 
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}

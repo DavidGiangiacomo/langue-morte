@@ -131,7 +131,7 @@ class Rejeu:
                  recs=[], comps=[], concs=[], navs=[], revs=[], achats=[], etats=[],
                  couts_t=[], main_t=[], contr=None, contr_levee=None,
                  finjeu=None, fin=None, gis_fichier=None, eleve={}, toi=None, questions=[],
-                 fins=[], interrompu=None)
+                 fins=[], interrompu=None, relu=None)
         prev_t = self.ev[0][0]
         for t, genre, det in self.ev:
             s['o_auto'] += self.obrut() * max(0.0, t - prev_t)
@@ -250,6 +250,8 @@ class Rejeu:
                 s['fins'].append(t)
             elif genre == 'interrompre':
                 s['interrompu'] = (t, det)
+            elif genre == 'relire':
+                s['relu'] = (t, det)
 
             elif genre == 'etat':
                 m = RE_ETAT.search(det)
@@ -296,7 +298,8 @@ def mmss(t):
 # touche ni les occurrences ni les multiplicateurs, il ne change que le rapport entre ces
 # secondes-là et celles de la montre. Le contrôle ci-dessous le trouverait donc parfaitement
 # cohérent — d'où l'avertissement en tête de rapport, qui ne se déduit d'aucun chiffre.
-INERTES = ('etat', 'tablette', 'concChoisir', 'fin', 'finjeu', 'vitesse', 'finsOuvrir', 'interrompre')
+INERTES = ('etat', 'tablette', 'concChoisir', 'fin', 'finjeu', 'vitesse', 'finsOuvrir', 'interrompre',
+           'relire')
 
 
 def controle(ev):
@@ -522,7 +525,7 @@ def rapport(ev, nom):
                  n_rep, 's' if n_rep > 1 else '', n_sil, 's' if n_sil > 1 else ''))
 
     if s['finjeu'] or s['fin'] or s['fins']:
-        titre('la fin (FIN-1, FIN-2, règle 16)')
+        titre('la fin (FIN-1, FIN-2, FIN-3, règle 16)')
         # La fenêtre des deux fins : combien de fois on l'a ouverte, et combien de temps entre la
         # première et le choix. « Aucune n'est présentée comme la bonne » ne se mesure que là.
         if s['fins']:
@@ -539,6 +542,13 @@ def rapport(ev, nom):
                 print('  %.0f s entre les deux : le temps mis à rouvrir une tablette que le dernier'
                       % (s['fin'] - s['finjeu']))
                 print('  signe venait de rendre lisible')
+            # La relecture (FIN-3) : ouverte ou non, et ce qu'elle a avoué — en jetons, que
+            # l'écran ne compte pas. Sa durée court jusqu'à la ligne suivante, ou jusqu'à
+            # l'export : le journal ne sait pas quand on ferme l'onglet.
+            if s['relu']:
+                print('  relecture ouverte à %s : %s' % (mmss(s['relu'][0]), s['relu'][1]))
+            elif s['fin']:
+                print('  relecture jamais ouverte')
 
     titre('contrôle du modèle')
     ec = controle(ev)

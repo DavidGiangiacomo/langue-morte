@@ -100,6 +100,7 @@ const motTok = el => { const m = motDe(el.dataset.w);
   return el.dataset.t && auPasse() ? (PASSE[m] || m) : m; };
 
 function paintCorpus(flashId){
+  if(relecture){ peindreRelecture(); return; }
   const rel = releves();
   /* La ligne que la contradiction retient (CONTR-1). Un Set vide quand elle n'est pas armée,
      donc la boucle ci-dessous ne paie rien le reste du temps. */
@@ -873,29 +874,121 @@ function finEffacer(){
   clearTimeout(finMinuteur);
   finMinuteur = setTimeout(() => {
     document.body.classList.add('fin-texte');
-    finMinuteur = setTimeout(() => { S_.efface = true; $('apres').hidden = false; },
+    finMinuteur = setTimeout(() => { S_.efface = true; apresMontrer(); },
                              (FIN_EFF.texte + FIN_FONDU) * 1000);
   }, (FIN_EFF.interface + FIN_FONDU + FIN_EFF.lecture) * 1000);
+}
+/* « relire » n'existe qu'après avoir achevé (design doc §11) : interrompre laisse un signe non
+   lu, et la relecture est celle d'un livre qu'on a lu jusqu'au bout. */
+function apresMontrer(){
+  $('relire').hidden = S_.fin !== 'achevee' || relecture;
+  $('apres').hidden = false;
 }
 function finFiger(sec){
   finVider(sec);
   clearTimeout(finMinuteur);
-  finMinuteur = setTimeout(() => { $('apres').hidden = false; },
-                           sec ? 0 : (FIN_EFF.interface + FIN_FONDU) * 1000);
+  finMinuteur = setTimeout(apresMontrer, sec ? 0 : (FIN_EFF.interface + FIN_FONDU) * 1000);
 }
 /* Au chargement d'une partie terminée. Une partie achevée dont l'effacement n'est pas allé à
    son terme le reprend du début, sans attendre la tablette : on l'avait déjà lue. */
 function finPoser(){
   if(S_.fin === 'interrompue') finFiger(true);
   else if(S_.fin === 'achevee' && !S_.efface) finEffacer();
-  else if(S_.fin === 'achevee'){ finVider(true); document.body.classList.add('fin-texte'); $('apres').hidden = false; }
+  else if(S_.fin === 'achevee'){ finVider(true); document.body.classList.add('fin-texte'); apresMontrer(); }
 }
 function finDefaire(){
   clearTimeout(finMinuteur); clearTimeout(finCentreMin); finMinuteur = finCentreMin = null;
   elCorpus.parentElement.style.transform = '';
+  if(relecture){ relecture = false; $('legende').hidden = true;
+    elCorpus.querySelectorAll('[data-avant]').forEach(el => { delete el.dataset.avant; }); }
   document.querySelectorAll('.fin-x, .fin-cadre').forEach(el => el.classList.remove('fin-x', 'fin-cadre'));
-  document.body.classList.remove('fin', 'fin-texte', 'fin-sec');
+  document.body.classList.remove('fin', 'fin-texte', 'fin-sec', 'relire');
   $('apres').hidden = true; finsFermer();
+}
+
+/* ==================== la relecture (FIN-3) ====================
+   « Le corpus est intégralement lisible dès le départ, et le jeu surligne toutes les erreurs de
+   traduction de la partie, y compris celles jamais détectées. Vingt minutes, sans mécanique.
+   Ce n'est pas un prestige, c'est un épilogue » (design doc §11). Et depuis que les paires
+   réparantes passent sans rien trahir (docs/corpus.md §7.3), c'est le seul endroit où le jeu
+   admet jamais qu'on a lu autre chose.
+   Le texte s'écrit avec les lectures justes, et ce sont les JETONS qui se marquent : pendant
+   la partie la règle 20 interdisait de désigner le signe fautif, parce que ç'aurait été
+   l'oracle ; le livre est fermé, il n'y a plus rien à protéger. Trois marques, que la légende
+   nomme et qu'aucun chiffre ne compte (aucun score) :
+     mal lu                 la lecture en place à la fin ne donnait pas ce mot ;
+     mal lu, puis corrigé   une révision l'avait rendu, et la relecture s'en souvient ;
+     jamais trouvé          un composé secret que personne n'a posé, ou le zéro qu'il ouvrait.
+   Ce qu'on avait lu, et qui l'avait lu — le joueur ou un Élève —, se lit au survol. Les noms
+   propres restent en signes : ils ne se traduisent pas, ils ne se trompent pas non plus. */
+let relecture = false;
+const motLu = (el, lect) => { const m = motSous(el.dataset.w, lect);
+  return el.dataset.t && auPasse() ? (PASSE[m] || m) : m; };
+/* Les signes mal lus sous `lect` qui écartent ce jeton de son mot : lui, ou ses parties. */
+const fautifs = (id, lect) => [id, ...(PARTIES[id] || [])].filter(k => lect[k] === 'f');
+const quiLu = eleve => eleve ? 'un élève avait lu' : 'j’avais lu';
+function peindreRelecture(){
+  const juste = {}, avant = Object.assign({}, S_.lect);
+  for(const k in S_.fautes) if(!faux(k)) avant[k] = 'f';
+  elCorpus.querySelectorAll('[data-w]').forEach(el => {
+    const id = el.dataset.w, g = byId[id];
+    let cls = 'tok w', dit = '';
+    if(!g){ cls = 'tok g'; el.innerHTML = sv(id); }
+    else {
+      const vrai = motLu(el, juste);
+      if(!has(id)){ cls += ' jamais'; dit = 'jamais trouvé'; }
+      else {
+        const lu = motLu(el, S_.lect);
+        if(lu !== vrai){
+          cls += ' malu';
+          dit = quiLu(fautifs(id, S_.lect).every(k => S_.lusEleve[k])) + ' « ' + lu + ' »';
+        } else {
+          const av = motLu(el, avant);
+          if(av !== vrai){
+            cls += ' corrige';
+            const ks = fautifs(id, avant).filter(k => !faux(k));
+            dit = quiLu(ks.every(k => S_.fautes[k] === 'eleve')) + ' « ' + av + ' », puis corrigé';
+          }
+        }
+      }
+      el.innerHTML = vrai;
+    }
+    el.className = cls; el.__v = 'R';
+    if(dit) el.dataset.avant = dit; else delete el.dataset.avant;
+  });
+  elCorpus.querySelectorAll('[data-n]').forEach(el => {
+    const n = +el.dataset.n, lu = numLisible(n);
+    el.className = 'tok num' + (lu ? '' : ' jamais'); el.__v = 'R';
+    el.innerHTML = nf.format(n);
+    if(lu) delete el.dataset.avant; else el.dataset.avant = 'jamais trouvé';
+  });
+  /* Les lignes que `faux` allumait ne disent plus rien : le texte juste se construit partout. */
+  for(const el of elCorpus.querySelectorAll('.ln.rompu')) el.classList.remove('rompu');
+  ruptVues = '';
+}
+function relire(){
+  if(S_.fin !== 'achevee' || !S_.efface || relecture) return;
+  concFermer();
+  relecture = true;
+  peindreRelecture();
+  document.body.classList.remove('fin-texte');
+  document.body.classList.add('relire');
+  elCorpus.scrollTop = 0;
+  $('relire').hidden = true; $('legende').hidden = false;
+}
+/* L'infobulle de la relecture : ce qu'on avait lu, et qui. Rien sur les autres jetons. */
+function tipRelecture(e){
+  const el = e.target.closest('.tok[data-avant]');
+  if(!el){ tipCacher(); return; }
+  const cle = 'R' + el.dataset.avant;
+  if(cle !== tipCle){
+    tipCle = cle;
+    $('tip').innerHTML = (el.dataset.w !== undefined ? sv(el.dataset.w) : numGlyphs(+el.dataset.n))
+                       + '<span class="lab"></span>';
+    $('tip').querySelector('.lab').textContent = el.dataset.avant;
+    $('tip').hidden = false;
+  }
+  tipPlace(e.clientX, e.clientY);
 }
 
 /* ==================== le panneau du doute ====================

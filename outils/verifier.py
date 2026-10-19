@@ -11,9 +11,10 @@ Contrôle :
   4. les infobulles répondent dans les quatre cas prévus
   5. le temps de rendu initial reste sous le seuil
   6. les deux fins : le dernier signe ouvre « achever » et « interrompre » au lexique comme à
-     la grille, l'effacement attend qu'on ait lu sa tablette, ne laisse que « recommencer »
-     et pas un chiffre, une partie interrompue ne reprend pas, et rien ne couvre les outils
-     hors jeu
+     la grille, l'effacement attend qu'on ait lu sa tablette, ne laisse que « relire » et
+     « recommencer » et pas un chiffre, une partie interrompue ne reprend pas, et rien ne
+     couvre les outils hors jeu ; la relecture rend le texte entier et marque chaque faute
+     sur son jeton — restée, corrigée, d'un Élève —, et ce qui n'a jamais été trouvé
   7. le relevé se fait dans le corpus ; le gisement s'épuise et se tarife à la 1re visite
   8. le recoupement se fait dans le corpus : deux passages d'un même signe
   9. la datation : une tablette se date quand on sait lire sa date, et pas avant
@@ -907,7 +908,7 @@ def main() -> None:
                  "le bouton « copier » reste là, et cliquable")
         page.wait_for_timeout(6000)
         r = page.evaluate("""() => [getComputedStyle(elCorpus).visibility, $('apres').hidden,
-                                    $('apres').textContent.trim(), S_.efface]""")
+                                    $('again').textContent.trim(), S_.efface]""")
         verifier(r == ["hidden", False, "recommencer", True],
                  f"puis le texte s'efface aussi, et il ne reste que « recommencer » : {r}")
         # Plus de carte de statistiques : « signes déchiffrés 87 % » était un score. Et rien
@@ -917,7 +918,7 @@ def main() -> None:
             .filter(e => !e.closest('.devbar') && e.children.length === 0 && e.offsetParent !== null
                          && getComputedStyle(e).visibility !== 'hidden' && e.textContent.trim())
             .map(e => e.textContent.trim())""")
-        verifier(r == ["recommencer"], f"ni chiffre ni phrase : {r}")
+        verifier(r == ["relire", "recommencer"], f"ni chiffre ni phrase — « relire », parce qu'on a achevé : {r}")
         # Une partie achevée se rouvre achevée, sur la page vide.
         sauve = page.evaluate("() => { sauver(); return localStorage.getItem(KEY); }")
         ctx = nav.new_context()
@@ -965,6 +966,8 @@ def main() -> None:
             $('apres').hidden]""")
         verifier(r == [t0, "hidden", "visible", False, False],
                  f"l'interface s'en va, le corpus reste figé, et le texte ne s'efface pas : {r}")
+        r = page.evaluate("() => { relire(); return [$('relire').hidden, relecture]; }")
+        verifier(r == [True, False], f"et pas de relecture : elle est celle d'un livre lu jusqu'au bout : {r}")
         # « Le jeu se ferme sur le corpus figé, et ne propose pas de reprendre » : rechargée,
         # elle reste interrompue, alors que l'arbre a un signe de plus qu'elle — c'est ce que
         # la règle de réouverture ne doit pas confondre avec un arbre qui a grandi.
@@ -1035,8 +1038,102 @@ def main() -> None:
         r = page.evaluate("""() => { $('amb-choix').querySelector('[data-amb]').click();
             return [has('tem'), S_.done, S_.fin, ['j', 'f'].includes(S_.lect.tem)]; }""")
         verifier(r == [True, True, "achevee", True], f"et la lecture tranchée l'achève : {r}")
+
+        # ---- la relecture (FIN-3) ----
+        # Une partie qui s'est trompée de toutes les façons que la relecture distingue : ⟨grain⟩,
+        # ⟨maison⟩ et ⟨ne-pas⟩ mal lus par le joueur et jamais corrigés — ⟨maison⟩ avec
+        # ⟨grain⟩, c'est la paire réparante, que rien n'a jamais trahie —, ⟨avant⟩ mal lu par
+        # un Élève, ⟨eau⟩ mal lu puis révisé, ⟨grenier⟩ et le zéro jamais posés.
+        print("\nla relecture (FIN-3)")
         page.evaluate("() => $('reset').click()")
         page.wait_for_timeout(200)
+        page.evaluate("""() => { TR.length = 0; FIN_EFF.interface = 0.3; FIN_EFF.lecture = 0.3; FIN_EFF.texte = 0.3;
+            S_.C = 9e6; S_.H = 9e6;
+            const lu = {tem: 'f', ur: 'f', kish: 'f', la: 'f'};
+            GL.filter(g => !g.sec && !['shenke', 'pat'].includes(g.id)).forEach(g => acheterGl(g.id, lu[g.id] || 'j'));
+            S_.b.elv = 1; acheterGl('pat', 'f', true); S_.b.elv = 0;
+            reviser('kish', 'j'); concFermer(); S_.C = 9e6;
+            finsOuvrir('shenke'); $('fins-choix').querySelector('[data-fin=achever]').click();
+            finArmee = performance.now() - 95000; }""")
+        page.wait_for_timeout(300)
+        verifier(page.evaluate("() => $('apres').hidden"), "rien à relire tant que l'effacement n'est pas allé au bout")
+        page.wait_for_timeout(6000)
+        r = page.evaluate("() => [$('relire').hidden, S_.fautes, S_.lusEleve, S_.contr]")
+        verifier(r[0] is False and r[1] == {"tem": "moi", "ur": "moi", "kish": "moi", "la": "moi", "pat": "eleve"}
+                 and r[2] == {"pat": True},
+                 f"« relire » s'offre ; la partie a retenu chaque faute et qui l'a faite, révisée comprise : {r}")
+        page.click("#relire")
+        page.wait_for_timeout(400)
+        r = page.evaluate("""() => [relecture, document.body.classList.contains('relire'),
+            document.body.classList.contains('fin-texte'), getComputedStyle(elCorpus).visibility,
+            [...elCorpus.querySelectorAll('.tablet')].filter(e => e.hidden).length,
+            [...elCorpus.querySelectorAll('.tok.g')].filter(e => !/^nm/.test(e.dataset.w)).length,
+            elCorpus.querySelectorAll('[data-n]:not(.num)').length]""")
+        verifier(r == [True, True, False, "visible", 0, 0, 0],
+                 f"le texte revient, entier : trente tablettes, plus un signe illisible hors les noms propres : {r}")
+        marques = lambda w: page.evaluate("""w => [...new Set([...elCorpus.querySelectorAll('[data-w="' + w + '"]')]
+            .map(e => e.className.replace('tok w', '').trim() + ' | ' + e.textContent + ' | ' + (e.dataset.avant || '')))]""", w)
+        mots = page.evaluate("() => ({tem: AMB.tem.mot, ur: AMB.ur.mot, pat: AMB.pat.mot, kish: AMB.kish.mot})")
+        verifier(marques("tem") == [f"malu | grain | j’avais lu « {mots['tem']} »"]
+                 and marques("ur") == [f"malu | maison | j’avais lu « {mots['ur']} »"],
+                 f"la paire réparante est avouée, jeton par jeton, avec le mot juste : {marques('tem') + marques('ur')}")
+        verifier(marques("pat") == [f"malu | avant | un élève avait lu « {mots['pat']} »"],
+                 f"ce qu'un Élève avait lu se dit à lui : {marques('pat')}")
+        verifier(marques("kish") == [f"corrige | eau | j’avais lu « {mots['kish']} », puis corrigé"],
+                 f"la faute corrigée reste à part : {marques('kish')}")
+        r = page.evaluate("""() => { const e = elCorpus.querySelector('[data-w="enla"]');
+            return [e.className, e.textContent, e.dataset.avant, byId.enla.mot, motDe('enla')]; }""")
+        verifier(r[0] == "tok w malu" and r[1] == r[3] and r[2] == f"j’avais lu « {r[4]} »",
+                 f"le composé que sa partie salissait aussi : {r[:3]}")
+        r = page.evaluate("""() => [...new Set([...elCorpus.querySelectorAll('[data-w="urtem"], [data-n="0"]')]
+            .map(e => e.className + ' | ' + e.textContent + ' | ' + e.dataset.avant))]""")
+        verifier(r == ["tok w jamais | grenier | jamais trouvé", "tok num jamais | 0 | jamais trouvé"],
+                 f"⟨grenier⟩ et le zéro, jamais posés, se lisent et le disent : {r}")
+        # ⟨graver⟩ s'écrit aussi « gravé » sous le verrou du passé : deux mots, aucune marque.
+        verifier(all(m.startswith(" | ") and m.endswith(" | ") for m in marques("sar")),
+                 f"une lecture juste ne porte rien : {marques('sar')}")
+        r = page.evaluate("""() => [S_.contr, elCorpus.querySelectorAll('.tok.refus, .ln.rompu').length]""")
+        verifier(r == [1, 0], f"ni le passage qui refuse, ni les lignes de `faux` : le texte juste se construit partout : {r}")
+        # Le survol dit ce qu'on avait lu, et rien sur les autres jetons.
+        el = page.query_selector("#corpus [data-w='tem']")
+        el.scroll_into_view_if_needed()
+        b = el.bounding_box()
+        page.mouse.move(b["x"] + 3, b["y"] + 3)
+        page.wait_for_timeout(150)
+        r = page.evaluate("() => [$('tip').hidden, $('tip').textContent]")
+        verifier(r[0] is False and mots["tem"] in r[1], f"le survol d'une faute dit le mot lu : {r}")
+        el = page.query_selector("#corpus [data-w='sar']")
+        el.scroll_into_view_if_needed()
+        b = el.bounding_box()
+        page.mouse.move(b["x"] + 3, b["y"] + 3)
+        page.wait_for_timeout(150)
+        verifier(page.evaluate("() => $('tip').hidden"), "et rien sur une lecture juste")
+        # Aucun score : la légende nomme ses trois marques, et ne compte rien.
+        r = page.evaluate("""() => [...$('apres').querySelectorAll('*')]
+            .filter(e => e.children.length === 0 && e.offsetParent !== null).map(e => e.textContent.trim())""")
+        verifier(r == ["mal lu", "mal lu, puis corrigé", "jamais trouvé", "recommencer"],
+                 f"la légende nomme, ne compte pas : {r}")
+        r = page.evaluate("() => TR.filter(e => e[1] === 'relire').map(e => e[2])")
+        verifier(len(r) == 1 and "mal lus" in r[0], f"le journal d'actions date la relecture et compte ce qu'elle avoue : {r}")
+        # Rechargée pendant la relecture, la partie rouvre sur la page vide : on rouvre le livre
+        # d'un clic, rien ne se perd.
+        sauve = page.evaluate("() => { sauver(); return localStorage.getItem(KEY); }")
+        ctx = nav.new_context()
+        ctx.add_init_script("localStorage.setItem('langue-morte-partie', %r)" % sauve)
+        autre = ctx.new_page()
+        casses = []
+        autre.on("pageerror", lambda e: casses.append(str(e)))
+        autre.goto(PAGE.resolve().as_uri())
+        autre.wait_for_timeout(600)
+        r = autre.evaluate("() => { const a = [$('relire').hidden, relecture]; relire(); return [...a, relecture, elCorpus.querySelectorAll('.tok.malu').length > 0]; }")
+        verifier(not casses and r == [False, False, True, True], f"rechargée, elle se relit encore : {r} {casses[:1]}")
+        ctx.close()
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(300)
+        r = page.evaluate("""() => [relecture, document.body.className, $('legende').hidden,
+            elCorpus.querySelectorAll('[data-avant], .tok.malu, .tok.jamais').length,
+            elCorpus.querySelectorAll('.tok.w').length]""")
+        verifier(r == [False, "", True, 0, 0], f"« recommencer » referme le livre : plus une marque, plus un mot lu : {r}")
 
         print("\njournal d'actions (hors jeu)")
         page.evaluate("() => { TR.length = 0; prochainEtat = 0; S_.t = 0; }")

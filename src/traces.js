@@ -209,6 +209,13 @@ finEffacer = function(){
    avec le signe laissé. */
 enrober('finsOuvrir',  () => finsId, a => a[0] + (Array.isArray(a[1]) ? ' · grille' : ''));
 enrober('interrompre', () => S_.fin, a => a[0] + ' (' + motDe(a[0]) + ') laissé non lu');
+/* La relecture (FIN-3) : si on l'ouvre, et quand — sa durée est celle qui sépare cette ligne
+   de la suivante, « reset » ou l'export. Le détail dit ce qu'elle avoue, en signes : le
+   journal est hors jeu, il peut compter ce que l'écran ne compte pas. */
+enrober('relire', () => relecture, () => {
+  const n = c => elCorpus.querySelectorAll('.tok.' + c).length;
+  return n('malu') + ' mal lus · ' + n('corrige') + ' corrigés · ' + n('jamais') + ' jamais trouvés';
+});
 
 /* La navigation dit si la barre de tablettes sert. On ignore les sauts qui n'aboutissent
    pas ailleurs, sinon maintenir `j` en fin de corpus remplirait le relevé. */

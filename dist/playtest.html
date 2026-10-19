@@ -371,6 +371,17 @@ body.fin-sec .fin-x,body.fin-sec .fin-cadre,body.fin-sec #corpus{transition:none
   font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
 .apres .ghost:hover{color:var(--lamp);border-color:var(--line2)}
 @keyframes apres{from{opacity:0}to{opacity:1}}
+.apres{gap:10px;align-items:center}
+/* La relecture (FIN-3) : le texte revient, et trois marques sur les jetons. */
+body.relire #corpus{animation:apres 3s ease;max-height:calc(100vh - 190px)}
+.malu,.corrige,.jamais{border-radius:2px}
+.tok.malu,.legende .malu{background:rgba(214,140,70,.24);color:var(--lamp)}
+.tok.corrige,.legende .corrige{box-shadow:inset 0 -1px 0 var(--ochre)}
+.tok.jamais,.legende .jamais{color:var(--slate);box-shadow:inset 0 -1px 0 rgba(157,184,199,.5)}
+.tok.malu,.tok.corrige,.tok.jamais{cursor:help}
+.legende{display:flex;gap:14px;margin-right:8px;padding:6px 10px;background:var(--ink);
+  font-family:var(--serif);font-size:14px;color:var(--mid)}
+.legende span{padding:1px 4px}
 
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
@@ -531,10 +542,14 @@ body.fin-sec .fin-x,body.fin-sec .fin-cadre,body.fin-sec #corpus{transition:none
     <button class="ghost" id="fins-annuler" title="échap — le signe reste à lire">revenir au corpus</button>
   </div>
 </div>
-<!-- Ce qui reste après les deux fins : un bouton. Ni carte, ni statistiques, ni score — et
-     rien qui annonce ce que les actes suivants révèlent : un écran de fin est lu avant
-     l'entretien de playtest, il fait partie du protocole. -->
+<!-- Ce qui reste après les deux fins : « recommencer », et « relire » après avoir achevé
+     (FIN-3). Ni carte, ni statistiques, ni score — et rien qui annonce ce que les actes
+     suivants révèlent : un écran de fin est lu avant l'entretien de playtest, il fait partie
+     du protocole. La légende n'apparaît qu'à la relecture : elle nomme ses trois marques, et
+     ne compte rien. -->
 <div class="apres" id="apres" hidden>
+  <span class="legende" id="legende" hidden><span class="malu">mal lu</span><span class="corrige">mal lu, puis corrigé</span><span class="jamais">jamais trouvé</span></span>
+  <button class="ghost" id="relire" hidden>relire</button>
   <button class="ghost" id="again">recommencer</button>
 </div>
 
@@ -1192,7 +1207,7 @@ const KEY='langue-morte-partie';
 const CLES_ANCIENNES = ['langue-morte-actes-i-iii'];
 const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram:0,elv:0},gl:[],t:0,done:false,
   rel:{}, prix:{}, carnet:[], comp:0, lect:{}, dte:{}, conc:{}, recs:{}, rev:0, contr:0,
-  qn:0, qf:0, qa:[], fin:null, efface:false});
+  qn:0, qf:0, qa:[], fin:null, efface:false, fautes:{}, lusEleve:{}});
 /* rel : jetons relevés par tablette · prix : tarif du gisement, verrouillé
    carnet : les paires déjà tentées et fausses · comp : le nombre de tentatives, toutes issues
    confondues — c'est lui que PT10 doit lire, pas la seule liste des échecs.
@@ -1209,6 +1224,12 @@ const fresh = () => ({O:0,H:0,C:0,rec:0,clicks:0,b:{cop:0,tab:0,con:0,ate:0,gram
    fin : comment la partie s'est terminée, 'achevee' ou 'interrompue' (FIN-1, FIN-2) — null
    tant qu'elle court · efface : l'effacement d'une partie achevée est allé à son terme, et
    il n'y a plus que la page vide à rouvrir.
+   fautes : chaque signe lu faux un jour, et par qui — 'moi' ou 'eleve' —, même si une
+   révision l'a corrigé depuis · lusEleve : les signes dont la lecture en place vient d'un
+   Élève. Ni l'un ni l'autre ne se lit pendant la partie ; ils sont ce que la relecture
+   avouera (FIN-3). Ce n'est pas un solde à part pour l'Élève (règle 21) : la dette, la
+   prime et la contradiction ne lisent que `lect`. Une partie d'avant ce lot les reçoit vides,
+   et sa relecture ne montre que les erreurs encore en place, toutes attribuées au joueur.
    Une partie d'avant la composition, ou d'avant l'ambiguïté, les reçoit vides au chargement
    (`fusionner()`) : un champ ajouté ne demande ni nouvelle clé ni migration. */
 let S_ = fresh(), speed = 1;
@@ -1335,10 +1356,10 @@ const faux = id => S_.lect[id] === 'f';
 /* Les parties mal lues d'un composé, dans l'ordre de sa recette et sans doublon : c'est la
    clé de `COMPFAUX`. ⟨année⟩⟨année⟩ n'a qu'une partie à salir, et sa clé est donc `nur` et
    non `nur+nur`. */
-function partsFausses(id){
+function partsFausses(id, lect){
   const pr = PARTIES[id]; if(!pr) return '';
-  const out = [];
-  for(const k of pr) if(faux(k) && out.indexOf(k) < 0) out.push(k);
+  const L = lect || S_.lect, out = [];
+  for(const k of pr) if(L[k] === 'f' && out.indexOf(k) < 0) out.push(k);
   return out.join('+');
 }
 /* Le mot qu'affiche le jeu — corpus, infobulle, lexique, grille, carnet, concordance. Rien
@@ -1346,11 +1367,16 @@ function partsFausses(id){
    la promesse d'AMB-2 (le mot faux partout, y compris dans les blocs générés et dans les
    tablettes déjà lues). Le corpus se repeint entièrement à chaque achat, il n'y a donc
    aucune reprise à faire. */
-function motDe(id){
+function motDe(id){ return motSous(id, S_.lect); }
+/* Le même mot, sous d'autres lectures : `{}` donne le mot juste, et la relecture (FIN-3) s'en
+   sert pour retrouver ce que le joueur lisait avant une révision. Une fonction à part, et non
+   un second argument de `motDe` : `motDe` se passe telle quelle à `map`, qui lui donnerait
+   l'indice pour lectures. */
+function motSous(id, lect){
   const g = byId[id]; if(!g) return null;
   const v = COMPFAUX[id];
-  if(v){ const k = partsFausses(id); if(k && v[k]) return v[k].mot; }
-  return faux(id) ? AMB[id].mot : g.mot;
+  if(v){ const k = partsFausses(id, lect); if(k && v[k]) return v[k].mot; }
+  return lect[id] === 'f' ? AMB[id].mot : g.mot;
 }
 /* La ligne de journal suit la même règle, et pour la même raison : annoncer « le grenier —
    la maison du grain » à un joueur dont le corpus dit « caveau », c'est le jeu qui se
@@ -1569,6 +1595,10 @@ function reviser(id, lect){
      joueur n'en voit rien dans un cas comme dans l'autre (AMB-3). */
   S_.lect[id] = lect === 'f' ? 'f' : 'j';
   S_.dte[id] = douteCalc(id);
+  /* La révision est toujours au joueur, même sur un signe qu'un Élève avait lu ; et une faute
+     corrigée reste une faute pour la relecture, qui la montre à part (FIN-3). */
+  delete S_.lusEleve[id];
+  if(S_.lect[id] === 'f') S_.fautes[id] = 'moi';
   numCache.length = 0;
   pushLog(logDe(id));
   /* Le « bonus rétroactif » du design doc §8, enfin payé — en dette effacée, donc sans rien
@@ -2036,6 +2066,9 @@ function acheterGl(id, lect, eleve){
        le rouvrira qu'une révision : regarder après coup ne rend pas la décision moins
        aveugle (MOD-2). La dette, elle, n'a rien à poser — elle se déduit (`dette()`). */
     S_.dte[id] = eleve ? 100 : douteCalc(id);
+    /* Ce que la relecture avouera (FIN-3) : qui a tranché ce signe, et s'il a été lu faux. */
+    if(eleve) S_.lusEleve[id] = true; else delete S_.lusEleve[id];
+    if(S_.lect[id] === 'f') S_.fautes[id] = eleve ? 'eleve' : 'moi';
     /* Dit avant la ligne du signe, et sans rien dire de la lecture : le joueur qui avait
        vu la fenêtre des deux mots lirait son absence comme une panne. */
     if(eleve) pushLog('Un élève l’avait déjà recopié au propre.');
@@ -2273,6 +2306,7 @@ const motTok = el => { const m = motDe(el.dataset.w);
   return el.dataset.t && auPasse() ? (PASSE[m] || m) : m; };
 
 function paintCorpus(flashId){
+  if(relecture){ peindreRelecture(); return; }
   const rel = releves();
   /* La ligne que la contradiction retient (CONTR-1). Un Set vide quand elle n'est pas armée,
      donc la boucle ci-dessous ne paie rien le reste du temps. */
@@ -3046,29 +3080,121 @@ function finEffacer(){
   clearTimeout(finMinuteur);
   finMinuteur = setTimeout(() => {
     document.body.classList.add('fin-texte');
-    finMinuteur = setTimeout(() => { S_.efface = true; $('apres').hidden = false; },
+    finMinuteur = setTimeout(() => { S_.efface = true; apresMontrer(); },
                              (FIN_EFF.texte + FIN_FONDU) * 1000);
   }, (FIN_EFF.interface + FIN_FONDU + FIN_EFF.lecture) * 1000);
+}
+/* « relire » n'existe qu'après avoir achevé (design doc §11) : interrompre laisse un signe non
+   lu, et la relecture est celle d'un livre qu'on a lu jusqu'au bout. */
+function apresMontrer(){
+  $('relire').hidden = S_.fin !== 'achevee' || relecture;
+  $('apres').hidden = false;
 }
 function finFiger(sec){
   finVider(sec);
   clearTimeout(finMinuteur);
-  finMinuteur = setTimeout(() => { $('apres').hidden = false; },
-                           sec ? 0 : (FIN_EFF.interface + FIN_FONDU) * 1000);
+  finMinuteur = setTimeout(apresMontrer, sec ? 0 : (FIN_EFF.interface + FIN_FONDU) * 1000);
 }
 /* Au chargement d'une partie terminée. Une partie achevée dont l'effacement n'est pas allé à
    son terme le reprend du début, sans attendre la tablette : on l'avait déjà lue. */
 function finPoser(){
   if(S_.fin === 'interrompue') finFiger(true);
   else if(S_.fin === 'achevee' && !S_.efface) finEffacer();
-  else if(S_.fin === 'achevee'){ finVider(true); document.body.classList.add('fin-texte'); $('apres').hidden = false; }
+  else if(S_.fin === 'achevee'){ finVider(true); document.body.classList.add('fin-texte'); apresMontrer(); }
 }
 function finDefaire(){
   clearTimeout(finMinuteur); clearTimeout(finCentreMin); finMinuteur = finCentreMin = null;
   elCorpus.parentElement.style.transform = '';
+  if(relecture){ relecture = false; $('legende').hidden = true;
+    elCorpus.querySelectorAll('[data-avant]').forEach(el => { delete el.dataset.avant; }); }
   document.querySelectorAll('.fin-x, .fin-cadre').forEach(el => el.classList.remove('fin-x', 'fin-cadre'));
-  document.body.classList.remove('fin', 'fin-texte', 'fin-sec');
+  document.body.classList.remove('fin', 'fin-texte', 'fin-sec', 'relire');
   $('apres').hidden = true; finsFermer();
+}
+
+/* ==================== la relecture (FIN-3) ====================
+   « Le corpus est intégralement lisible dès le départ, et le jeu surligne toutes les erreurs de
+   traduction de la partie, y compris celles jamais détectées. Vingt minutes, sans mécanique.
+   Ce n'est pas un prestige, c'est un épilogue » (design doc §11). Et depuis que les paires
+   réparantes passent sans rien trahir (docs/corpus.md §7.3), c'est le seul endroit où le jeu
+   admet jamais qu'on a lu autre chose.
+   Le texte s'écrit avec les lectures justes, et ce sont les JETONS qui se marquent : pendant
+   la partie la règle 20 interdisait de désigner le signe fautif, parce que ç'aurait été
+   l'oracle ; le livre est fermé, il n'y a plus rien à protéger. Trois marques, que la légende
+   nomme et qu'aucun chiffre ne compte (aucun score) :
+     mal lu                 la lecture en place à la fin ne donnait pas ce mot ;
+     mal lu, puis corrigé   une révision l'avait rendu, et la relecture s'en souvient ;
+     jamais trouvé          un composé secret que personne n'a posé, ou le zéro qu'il ouvrait.
+   Ce qu'on avait lu, et qui l'avait lu — le joueur ou un Élève —, se lit au survol. Les noms
+   propres restent en signes : ils ne se traduisent pas, ils ne se trompent pas non plus. */
+let relecture = false;
+const motLu = (el, lect) => { const m = motSous(el.dataset.w, lect);
+  return el.dataset.t && auPasse() ? (PASSE[m] || m) : m; };
+/* Les signes mal lus sous `lect` qui écartent ce jeton de son mot : lui, ou ses parties. */
+const fautifs = (id, lect) => [id, ...(PARTIES[id] || [])].filter(k => lect[k] === 'f');
+const quiLu = eleve => eleve ? 'un élève avait lu' : 'j’avais lu';
+function peindreRelecture(){
+  const juste = {}, avant = Object.assign({}, S_.lect);
+  for(const k in S_.fautes) if(!faux(k)) avant[k] = 'f';
+  elCorpus.querySelectorAll('[data-w]').forEach(el => {
+    const id = el.dataset.w, g = byId[id];
+    let cls = 'tok w', dit = '';
+    if(!g){ cls = 'tok g'; el.innerHTML = sv(id); }
+    else {
+      const vrai = motLu(el, juste);
+      if(!has(id)){ cls += ' jamais'; dit = 'jamais trouvé'; }
+      else {
+        const lu = motLu(el, S_.lect);
+        if(lu !== vrai){
+          cls += ' malu';
+          dit = quiLu(fautifs(id, S_.lect).every(k => S_.lusEleve[k])) + ' « ' + lu + ' »';
+        } else {
+          const av = motLu(el, avant);
+          if(av !== vrai){
+            cls += ' corrige';
+            const ks = fautifs(id, avant).filter(k => !faux(k));
+            dit = quiLu(ks.every(k => S_.fautes[k] === 'eleve')) + ' « ' + av + ' », puis corrigé';
+          }
+        }
+      }
+      el.innerHTML = vrai;
+    }
+    el.className = cls; el.__v = 'R';
+    if(dit) el.dataset.avant = dit; else delete el.dataset.avant;
+  });
+  elCorpus.querySelectorAll('[data-n]').forEach(el => {
+    const n = +el.dataset.n, lu = numLisible(n);
+    el.className = 'tok num' + (lu ? '' : ' jamais'); el.__v = 'R';
+    el.innerHTML = nf.format(n);
+    if(lu) delete el.dataset.avant; else el.dataset.avant = 'jamais trouvé';
+  });
+  /* Les lignes que `faux` allumait ne disent plus rien : le texte juste se construit partout. */
+  for(const el of elCorpus.querySelectorAll('.ln.rompu')) el.classList.remove('rompu');
+  ruptVues = '';
+}
+function relire(){
+  if(S_.fin !== 'achevee' || !S_.efface || relecture) return;
+  concFermer();
+  relecture = true;
+  peindreRelecture();
+  document.body.classList.remove('fin-texte');
+  document.body.classList.add('relire');
+  elCorpus.scrollTop = 0;
+  $('relire').hidden = true; $('legende').hidden = false;
+}
+/* L'infobulle de la relecture : ce qu'on avait lu, et qui. Rien sur les autres jetons. */
+function tipRelecture(e){
+  const el = e.target.closest('.tok[data-avant]');
+  if(!el){ tipCacher(); return; }
+  const cle = 'R' + el.dataset.avant;
+  if(cle !== tipCle){
+    tipCle = cle;
+    $('tip').innerHTML = (el.dataset.w !== undefined ? sv(el.dataset.w) : numGlyphs(+el.dataset.n))
+                       + '<span class="lab"></span>';
+    $('tip').querySelector('.lab').textContent = el.dataset.avant;
+    $('tip').hidden = false;
+  }
+  tipPlace(e.clientX, e.clientY);
 }
 
 /* ==================== le panneau du doute ====================
@@ -3583,6 +3709,13 @@ finEffacer = function(){
    avec le signe laissé. */
 enrober('finsOuvrir',  () => finsId, a => a[0] + (Array.isArray(a[1]) ? ' · grille' : ''));
 enrober('interrompre', () => S_.fin, a => a[0] + ' (' + motDe(a[0]) + ') laissé non lu');
+/* La relecture (FIN-3) : si on l'ouvre, et quand — sa durée est celle qui sépare cette ligne
+   de la suivante, « reset » ou l'export. Le détail dit ce qu'elle avoue, en signes : le
+   journal est hors jeu, il peut compter ce que l'écran ne compte pas. */
+enrober('relire', () => relecture, () => {
+  const n = c => elCorpus.querySelectorAll('.tok.' + c).length;
+  return n('malu') + ' mal lus · ' + n('corrige') + ' corrigés · ' + n('jamais') + ' jamais trouvés';
+});
 
 /* La navigation dit si la barre de tablettes sert. On ignore les sauts qui n'aboutissent
    pas ailleurs, sinon maintenir `j` en fin de corpus remplirait le relevé. */
@@ -3710,8 +3843,9 @@ elCorpus.addEventListener('click', e=>{
   peindreGisement();          // la tablette vient peut-être de perdre sa marque d'intacte
 });
 elCorpus.addEventListener('mousemove', e=>{
-  /* L'infobulle est de l'interface : elle s'en va avec le reste. */
-  if(document.body.classList.contains('fin')){ tipCacher(); return; }
+  /* L'infobulle est de l'interface : elle s'en va avec le reste — sauf à la relecture, où elle
+     ne dit plus que ce qu'on avait lu (FIN-3). */
+  if(document.body.classList.contains('fin')){ if(relecture) tipRelecture(e); else tipCacher(); return; }
   const el = e.target.closest('.tok');
   if(!el || el.classList.contains('sep')){ tipCacher(); return; }
   const cle = (el.dataset.w!==undefined ? 'w'+el.dataset.w : 'n'+el.dataset.n) + ':' + el.__v;
@@ -3819,6 +3953,7 @@ if(bReset) bReset.addEventListener('click', recommencer);
 /* « recommencer » appelle la fonction et non le bouton : il reste seul à l'écran après les
    deux fins, dans tous les builds, et le bouton de la barre non. */
 $('again').addEventListener('click', recommencer);
+$('relire').addEventListener('click', relire);
 
 /* `ts` est l'heure de la dernière sauvegarde : c'est elle, et rien d'autre, qui mesure
    la nuit au retour. Écrite à chaque enregistrement, y compris à la fermeture.
