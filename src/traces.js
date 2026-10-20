@@ -2,8 +2,8 @@
    Scripts classiques, portée globale partagée, chargés dans l'ordre de index.html.
    Aucune dépendance externe hors les polices Google.
 
-   Instrumentation de playtest. Les cinq nombres de la carte de fin disent ce qu'une
-   partie a produit, jamais *quand* elle s'est grippée : on ne voit ni les rafales de
+   Instrumentation de playtest. Les cinq nombres de l'ancienne carte de fin disaient ce
+   qu'une partie avait produit, jamais *quand* elle s'était grippée : on ne voit ni les rafales de
    recoupement, ni les minutes passées sans rien acheter, ni si les tablettes marquées
    en ocre sont relues. Ce module relève chaque action avec son instant depuis le
    début, plus un état toutes les 30 s pour pouvoir retracer les courbes.
@@ -50,12 +50,13 @@ function tracer(k, d, pos){
   const e = [Math.round(tJeu()*10)/10, k, d === undefined ? '' : String(d)];
   if(pos === undefined) TR.push(e); else TR.splice(pos, 0, e);
   /* La partie s'arrête au dernier signe de l'arbre (règle 16), mais la ligne `fin` ne vient
-     qu'avec la CARTE, jusqu'à quatre-vingt-dix secondes plus tard — et PT10 a exporté dans
-     l'intervalle : son journal n'a aucune ligne de fin, pour une partie terminée. Les deux
-     instants sont distincts et tous les deux intéressants, l'écart entre eux étant le temps
-     que met le joueur à retourner sur une tablette que le dernier signe vient de rendre
-     lisible — c'est-à-dire la mesure même de FIN-1. Posée ici et pas dans une enveloppe :
-     `finArmer` est un `const`, il n'y a rien à envelopper. */
+     qu'avec l'EFFACEMENT, jusqu'à quatre-vingt-dix secondes plus tard — et PT10 a exporté
+     dans l'intervalle : son journal n'avait aucune ligne de fin, pour une partie terminée.
+     Les deux instants sont distincts et tous les deux intéressants, l'écart entre eux étant
+     le temps que met le joueur à retourner sur une tablette que le dernier signe vient de
+     rendre lisible — c'est-à-dire la mesure même de FIN-1. Posée ici et pas dans une
+     enveloppe : `finArmer` est un `const`, il n'y a rien à envelopper. Une partie
+     interrompue a la sienne aussi, juste après la ligne `interrompre`. */
   if(S_.done && k !== 'finjeu' && !dejaTracee('finjeu')) tracer('finjeu', mmss(S_.t));
   majBoutonTraces();
 }
@@ -72,17 +73,19 @@ function enrober(nom, temoin, detail){
     const r = orig.apply(this, a);
     /* Insérée à son rang et non à la fin : une action peut en déclencher une autre —
        le dernier signe termine la partie — et la cause doit précéder l'effet. */
-    if(temoin() !== avant) tracer(nom, detail ? detail(a, avant) : '', rang);
+    if(temoin() !== avant) tracer(nom, detail ? detail(a, avant, r) : '', rang);
     return r;
   };
 }
 
-const niveaux = () => S_.b.cop + S_.b.tab + S_.b.con + S_.b.ate + S_.b.gram + S_.b.elv;
+const niveaux = () => S_.b.cop + S_.b.tab + S_.b.con + S_.b.ate + S_.b.gram + S_.b.elv + S_.b.lec + S_.b.jum;
 
 /* `relever` reçoit désormais sa tablette : c'est la seule façon de distinguer un joueur qui
    parcourt le corpus d'un joueur qui s'installe sur une tablette et martèle. La question
    décide du sort du gisement, et elle ne se lit nulle part ailleurs que dans ce journal. */
-enrober('relever',   () => S_.clicks,     a => 'tablette ' + a[0]);
+/* « · copie » quand le relevé est allé au Corpus jumeau (VOIX-4) : son tarif est figé à part,
+   et `depouiller.py` ne peut pas le rejouer sans savoir lequel des deux gisements a payé. */
+enrober('relever',   () => S_.clicks,     (a, avant, r) => 'tablette ' + a[0] + (r === 'copie' ? ' · copie' : ''));
 enrober('formuler',  () => S_.H);
 enrober('recouper',  () => S_.rec,        a => '+' + recGain() + ' cert.'
                                                + (a[0] ? ' · ' + a[0] : ''));
@@ -111,6 +114,12 @@ enrober('veillee',   () => Math.round(S_.O), () => Math.round(S_.O) + ' occ. hor
    les ressources. C'est pourtant le geste que PT9 doit mesurer — quels signes le joueur
    rassemble, et s'il le fait du tout. */
 enrober('concChoisir', () => concSel, a => a[0] + ' · ' + concN + ' attest.');
+/* Le repli « à toi » (VOIX-2) s'ouvre tout seul à l'achat de ⟨toi⟩, et la question qu'il
+   pose au playtest est celle du temps : combien de temps le joueur reste à relire avant de
+   revenir au corpus. D'où l'ouverture ET la fermeture, et la fermeture de toute
+   concordance avec elle — le journal ne disait jusqu'ici ni quand ni si l'on en sortait. */
+enrober('adresser',    () => concToi, () => concN + ' lignes');
+enrober('concFermer',  () => (concToi ? '@toi' : concSel), (a, avant) => avant || '');
 /* La composition. Le témoin est le compteur de tentatives et non la longueur du carnet : une
    paire juste qu'on n'a pas les moyens de payer n'y entre pas, et son essai passerait à la
    trappe. PT10 doit pouvoir compter les tentatives, voir sur quelles paires, et à quelle
@@ -133,6 +142,19 @@ enrober('composer', () => S_.comp, a => {
        + (!cible     ? ' ✗ carnet'
         : has(cible) ? ' ✓ ' + cible
                      : ' ✓ ' + cible + ' · impayable (' + byId[cible].cost + ' C)');
+});
+
+/* Les Questions (VOIX-3). Le témoin est la liste des conditions posées : un silence y entre
+   aussi, et c'est lui que le playtest doit voir — un joueur qui pose des conditions au hasard
+   ne se distingue de celui qui les a lues dans le corpus que par ce qu'il demande, et à quelle
+   minute. Le détail porte les signes ET les mots retenus : une condition posée avec une
+   lecture fausse en tête n'est pas la même question.
+     `ta shen (toi lire) → 1 suite`     le texte a répondu
+     `mu nash (je nous) · silence`       gravé nulle part, rien dépensé */
+enrober('questionner', () => S_.qa.length, a => {
+  const s = a[0] || [], rep = QUESTIONS[s.join(' ')];
+  return s.join(' ') + ' (' + s.map(motDe).join(' ') + ')'
+       + (rep ? ' → ' + rep.length + ' suite' + (rep.length > 1 ? 's' : '') : ' · silence');
 });
 
 /* Le sélecteur de vitesse. Hors jeu, mais c'est la seule commande capable de fausser tout
@@ -165,10 +187,10 @@ reviser = function(id, lect){
   return r;
 };
 
-/* Pas de témoin possible pour la fin : `S_.done` est déjà posé quand showEnd() est
-   appelée. On remonte donc le relevé jusqu'au dernier « reset » — jeu.js rappelle
-   showEnd() à chaque rechargement d'une partie terminée, et on ne veut pas d'une
-   ligne « fin » par visite. */
+/* Pas de témoin possible pour l'effacement : `S_.done` est déjà posé quand finEffacer() est
+   appelée. On remonte donc le relevé jusqu'au dernier « reset » — jeu.js la rappelle au
+   rechargement d'une partie achevée dont l'effacement n'avait pas fini, et on ne veut pas
+   d'une ligne « fin » par visite. */
 const dejaTracee = genre => {
   for(let i = TR.length-1; i >= 0; i--){
     if(TR[i][1] === 'reset') return false;
@@ -176,11 +198,45 @@ const dejaTracee = genre => {
   }
   return false;
 };
-const _showEnd = showEnd;
-showEnd = function(){
-  const r = _showEnd();
+const _finEffacer = finEffacer;
+finEffacer = function(){
+  const r = _finEffacer();
   if(!dejaTracee('fin')) tracer('fin', mmss(S_.t));
   return r;
+};
+/* Les deux fins (FIN-1, FIN-2). La fenêtre s'ouvre, se referme parfois, puis l'une ou l'autre
+   est choisie : chaque ouverture est une ligne, et le temps entre la dernière et le choix est
+   l'hésitation — « aucune n'est présentée comme la bonne » ne se mesure que par là. Achever
+   est la ligne `acheterGl` du dernier signe, suivie de `finjeu` ; interrompre a la sienne,
+   avec le signe laissé. */
+enrober('finsOuvrir',  () => finsId, a => a[0] + (Array.isArray(a[1]) ? ' · grille' : ''));
+enrober('interrompre', () => S_.fin, a => a[0] + ' (' + motDe(a[0]) + ') laissé non lu');
+/* Le Lecteur (GRAINE-2) : chaque tablette qu'il finit de lire, et à quelle minute. Trente
+   lignes au plus. C'est ce qui dira si le joueur l'a vu faire — l'écart entre ces lignes et
+   ses propres navigations vers les tablettes marquées. */
+enrober('lireCorpus', () => Math.floor(S_.tete), (a, avant) => {
+  const n = Math.floor(S_.tete), t = [];
+  for(let k = avant + 1; k <= n; k++) t.push(k);
+  return 'tablette ' + t.join(', ') + ' · ' + S_.b.lec + ' Lecteur' + (S_.b.lec > 1 ? 's' : '');
+});
+/* La relecture (FIN-3) : si on l'ouvre, et quand — sa durée est celle qui sépare cette ligne
+   de la suivante, « reset » ou l'export. Le détail dit ce qu'elle avoue, en signes : le
+   journal est hors jeu, il peut compter ce que l'écran ne compte pas. */
+enrober('relire', () => relecture, () => {
+  const n = c => elCorpus.querySelectorAll('.tok.' + c).length;
+  return n('malu') + ' mal lus · ' + n('corrige') + ' corrigés · ' + n('jamais') + ' jamais trouvés';
+});
+
+/* I2 (VOIX-5) : la première fois qu'un nombre du joueur s'écrit avec leurs zéros, et lequel.
+   Ce n'est pas une action, c'est ce que l'écran a montré — une ligne par partie. Entre elle et
+   la composition de ⟨zéro⟩ se lit le temps passé sans pouvoir lire ses propres nombres. Un
+   drapeau et non `dejaTracee()` : la fonction tourne à chaque frame, et remonter le journal à
+   chaque appel coûterait plus que tout le reste de la barre. */
+let zerosVus = dejaTracee('zeros');
+const _grandNombre = grandNombre;
+grandNombre = function(n){
+  if(!zerosVus){ zerosVus = true; tracer('zeros', nf.format(n)); }
+  return _grandNombre(n);
 };
 
 /* La navigation dit si la barre de tablettes sert. On ignore les sauts qui n'aboutissent
@@ -208,7 +264,7 @@ tick = function(dt){
     tracer('etat', 'O=' + Math.round(S_.O) + ' H=' + Math.round(S_.H) + ' C=' + Math.round(S_.C)
                  + ' signes=' + S_.gl.length + ' sig%=' + m.sig + ' lig%=' + m.lig
                  + ' gis=' + Object.keys(S_.rel).reduce((n,t)=>n+S_.rel[t].length,0) + '/' + GIS_TOTAL
-                 + ' instr=' + [S_.b.cop, S_.b.tab, S_.b.con, S_.b.ate, S_.b.gram, S_.b.elv].join('/'));
+                 + ' instr=' + [S_.b.cop, S_.b.tab, S_.b.con, S_.b.ate, S_.b.gram, S_.b.elv, S_.b.lec, S_.b.jum].join('/'));
   }
 };
 
@@ -225,7 +281,7 @@ function tracesTSV(){
     '# build : ' + BUILD + ' · ' + NGL + ' glyphes d\'arbre',
     '# t = secondes de JEU depuis le début (le sélecteur ×3/×10 les accélère)',
     '# une ligne « reset » marque le début d\'une nouvelle partie : le temps y repart de zéro',
-    '# « finjeu » = dernier signe de l\'arbre, la production s\'arrête ; « fin » = la carte s\'ouvre',
+    '# « finjeu » = la partie s\'arrête, dernier signe lu ou laissé ; « fin » = l\'effacement commence (achever)',
     '#   entre les deux le chrono de jeu est gelé : t y compte des secondes d\'horloge',
     ['temps','t_s','genre','détail'].join('\t'),
     ...TR.map(([t,k,d]) => [mmss(t), t.toFixed(1), k, d].join('\t'))
@@ -239,6 +295,12 @@ function majBoutonTraces(){
 
 function sauverTraces(){ try{ localStorage.setItem(TKEY, JSON.stringify(TR)); }catch(e){} }
 
+/* La coupure entre deux séances (PT11 se joue en deux fois au plus). Avant ⟨nuit⟩ elle ne
+   laissait aucune trace : la partie attend, et `veillee` ne journalise que ce qu'elle a
+   crédité. Le chrono du journal est du temps de jeu, et deux séances s'y lisaient comme une
+   seule. L'absence se compte à l'horloge, depuis la dernière sauvegarde — avant que
+   `veillee()` ne la remette à l'heure, d'où sa place ici, qui se charge avant jeu.js. */
+if(TR.length && S_.ts) tracer('reprise', Math.round((Date.now() - S_.ts)/60000) + ' min d’absence');
 if(!TR.length) tracer('debut');
 majBoutonTraces();
 
@@ -262,12 +324,12 @@ $('tr-cp').addEventListener('click', e => {
 /* La partie repart, le relevé non : on garde tout et on marque la coupure. Une soirée
    de playtest tient dans un seul fichier, et rien n'est perdu par un reset distrait.
    Sur la fonction et non sur le bouton « réinitialiser », qui ne sort plus dans tous les
-   builds — alors que « recommencer » de la carte de fin, qui appelle la même fonction, y
-   est partout. La ligne s'écrit AVANT la remise à zéro : c'est la fin de la partie
+   builds — alors que « recommencer », seul à l'écran après les deux fins, qui appelle la
+   même fonction, y est partout. La ligne s'écrit AVANT la remise à zéro : c'est la fin de la partie
    précédente qu'elle date, pas le début de la suivante. */
 const _recommencer = recommencer;
 recommencer = function(){
-  tracer('reset'); prochainEtat = 0; derniereTablette = null; doneT0 = 0;
+  tracer('reset'); prochainEtat = 0; derniereTablette = null; doneT0 = 0; zerosVus = false;
   return _recommencer();
 };
 

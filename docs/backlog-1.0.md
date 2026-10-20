@@ -22,8 +22,8 @@
 
 | | Fait | Reste pour 1.0 |
 |---|---|---|
-| Glyphes | **30 / 45** *(+ `grenier` et `zéro`, composés, hors arbre)* | **15** |
-| Instruments | **7 / 9** (Œil, Copiste, Table, Concordance, Atelier, Grammaire, **Élève** *— branche `eleve`, pas encore fusionnée*) | 2 (Corpus jumeau, Le Lecteur) |
+| Glyphes | **30 / 45** *(+ `grenier` et `zéro`, composés, hors arbre)* — **43** avec la Personne et la Fin, sur une branche de travail pas encore fusionnée | **15** *(9)* |
+| Instruments | **9 / 9** (Œil, Copiste, Table, Concordance, Atelier, Grammaire, **Élève**, **Corpus jumeau** et **Le Lecteur** *— fusionnés sur `develop` le 20/10/2026, pour PT11*) | 0 |
 | Actes | **I, II, III — entiers** | IV, V |
 | Corpus | **30 tablettes, 705 lignes, 3 838 signes — intégral**, ⟨N1⟩/⟨N2⟩ semés, **les 11 lectures fausses écrites** | — |
 | Mécaniques centrales | relevé, recoupement, datation, rangement, concordance, hors-ligne, **composition**, **ambiguïté**, **doute, révision, contradiction** | Questions |
@@ -92,8 +92,9 @@ Suivi : [#21](https://github.com/DavidGiangiacomo/langue-morte/issues/21) — le
 - Dépend de : COMP-1, **et de `ne-pas`** (MOD-1) — c'est la première fois qu'une branche de l'acte IV mord sur une branche de l'acte I.
 - Attention : la tablette 29 (registre de zéros) doit rester un seul signe répété jusque-là (`docs/corpus.md` §5, note « heureux accident »).
 - *Fait* : 120 C, hors arbre, sans effet mécanique. **La notation compacte des grands nombres ne lui revient pas** — elle est déjà celle de `cent`, acquise par tout le monde, et la déplacer sur un composé facultatif la retirerait à la plupart des joueurs (voir `docs/journal.md`, « La Modalité, et le zéro »). Onze zéros passent en chiffres, dont les neuf de la tablette 29, qui reste un seul signe répété jusque-là. Coût mesuré pour qui le pose : deux minutes de progression, écart max porté à 6,2 min.
+- *Repris le 20/10/2026 (VOIX-5)* : à l'acte IV, ⟨zéro⟩ rend enfin des nombres — ceux du joueur, dont les zéros s'écrivent en son tracé au million tant qu'il ne l'a pas posé. Ce que le design doc §7 lui promettait, au moment où il y a quelque chose à rendre.
 
-**COMP-4 — `grenier` et `devenir-lecture`** · T:S — *`grenier` fait ; reste `devenir-lecture`, qui attend `lire` et `devenir` (actes IV–V)* · [#30](https://github.com/DavidGiangiacomo/langue-morte/issues/30)
+**COMP-4 — `grenier` et `devenir-lecture`** · T:S — *`grenier` fait ; `devenir-lecture` fait avec GRAINE-1 (19/10/2026, branche de travail)* · [#30](https://github.com/DavidGiangiacomo/langue-morte/issues/30)
 > En tant que joueur, je veux que les deux autres composés secrets soient atteignables en avance sur le récit.
 
 - Fini quand : les deux ne sont offerts par aucune progression ; `devenir-lecture` composé tôt fait recevoir la tablette 17 « en pleine figure » sans que rien ne soit ajouté au texte.
@@ -256,6 +257,7 @@ Suivi : [#22](https://github.com/DavidGiangiacomo/langue-morte/issues/22) — le
   premier lecteur.
 
 **AMB-4 — L'indice est dans le texte, et nulle part ailleurs** · T:M · [#31](https://github.com/DavidGiangiacomo/langue-morte/issues/31)
+- *Fait pour ⟨semence⟩ et ⟨devenir⟩ avec GRAINE-1* (19/10/2026, branche de travail) : « si enfant · ne-pas né », tablette 22, et « il-fallait tablette · porté lu », tablette 17 — au passé, ⟨nous-fûmes⟩ étant lu à cette heure-là. La paire réparante ⟨semence⟩ + ⟨devenir⟩ éteint la première et pas la seconde. Les onze lectures fausses sont dans l'arbre.
 > En tant que joueur qui lit, je veux pouvoir trouver le signe fautif sans que le jeu me le dise.
 
 - Fini quand : chacune des 11 lectures fausses produit une absurdité **repérable à un endroit précis du corpus** (table de `docs/corpus.md` §7.1) ; un test de `verifier.py` vérifie que la phrase absurde est bien rendue.
@@ -319,6 +321,8 @@ Suivi : [#22](https://github.com/DavidGiangiacomo/langue-morte/issues/22) — le
 
 ### E5 — L'Élève *(instrument ambivalent)*
 
+*Fusionné sur `develop` le 20/10/2026 avec les actes IV et V, avant tout playtest : l'auteur a décidé que PT11 jouerait les cinq actes plutôt que `develop` tel qu'il était. On ne saura donc pas ce qu'aurait été la partie sans lui — le simulateur, si (règle 31 de `CLAUDE.md`).*
+
 Suivi : [#23](https://github.com/DavidGiangiacomo/langue-morte/issues/23) — les récits ouverts y sont des sous-issues.
 
 **ELV-1 — L'instrument qui multiplie tout** · ~~T:M~~ **fait** (12/10/2026, branche `eleve`) · [#32](https://github.com/DavidGiangiacomo/langue-morte/issues/32)
@@ -355,29 +359,56 @@ Suivi : [#23](https://github.com/DavidGiangiacomo/langue-morte/issues/23) — le
 
 Suivi : [#24](https://github.com/DavidGiangiacomo/langue-morte/issues/24) — les récits ouverts y sont des sous-issues.
 
-**VOIX-1 — La branche Personne** *(`je`, `toi`, `nous`, `toi-qui`, `moi-absent`, `nous-fûmes`)* · T:L · [#33](https://github.com/DavidGiangiacomo/langue-morte/issues/33)
+**VOIX-1 — La branche Personne** *(`je`, `toi`, `nous`, `toi-qui`, `moi-absent`, `nous-fûmes`)* · ~~T:L~~ **fait** (14/10/2026, branche de travail empilée sur `eleve`) · [#33](https://github.com/DavidGiangiacomo/langue-morte/issues/33)
 > En tant que joueur, je veux découvrir qui parle.
 
 - Fini quand : les six glyphes existent ; `nous-fûmes` verrouille le récit au passé, **y compris les passages déjà lus**, et n'apparaît qu'une fois dans tout le corpus (dernier mot de la tablette 30).
+- *Fait* : ⟨nous⟩ (1 800 C) ouvre la branche — la porte que la tablette 18
+  laissait, qu'il rend entière —, ⟨nous-fûmes⟩ (9 500 C) la ferme, et avec elle la partie, sur
+  le dernier mot du corpus. Aucun multiplicateur. ⟨toi-qui⟩ et ⟨moi-absent⟩ se posent à la
+  grille dès leur première moitié ; ⟨moi-absent⟩ n'a aucune attestation. **Les prix butent sur
+  I1** : il faut monter à 9 500 C pour que l'acte IV ait un rythme (104,7–108,6 min,
+  118,6–122,2 sans Élève, écarts de 2 à 6 min), et il ne reste rien sous le plafond pour
+  l'acte V — voir ECO-3. **Premier franchissement d'acte** de la règle 19 : l'entrée dans
+  l'acte IV re-solde la contradiction, et les lectures tranchées après `peut-être` y passent
+  enfin. **Et la sanction coûte trois fois plus** chez qui ne révise jamais : +32 min pour la
+  paire réparante au lieu de +11, I4 cède à huit minutes. Non réglé, à observer. Voir
+  `docs/journal.md`, « La Personne ».
+- **Le verrou du passé est à l'écran** (tranché par l'auteur le 14/10/2026) : le dernier mot du
+  corpus met le récit au passé, jusque dans ce qui est déjà lu — « je gravé · toi lire »,
+  « après · nous · il-fallait » —, sauf ce qui s'adresse à ⟨toi⟩, qui reste au présent. Il est
+  dans la traduction, jamais dans le texte : voir la règle 22 de `CLAUDE.md`.
 
-**VOIX-2 — Le corpus était à la deuxième personne depuis le début** · T:M · [#35](https://github.com/DavidGiangiacomo/langue-morte/issues/35)
+**VOIX-2 — Le corpus était à la deuxième personne depuis le début** · ~~T:M~~ **fait** (14/10/2026, branche de travail empilée sur `eleve`) · [#35](https://github.com/DavidGiangiacomo/langue-morte/issues/35)
 > En tant que joueur, je veux qu'on me réaffiche ce que j'ai déjà lu, désormais adressé à moi.
 
 - Fini quand : `toi` déclenche un réaffichage des passages déjà lus ; rien n'est ajouté au texte — la relecture suffit (règle 5).
+- *Fait* : l'achat de ⟨toi⟩ replie le corpus une fois, comme une concordance, sur les
+  quatre-vingt-douze lignes qui portent ⟨toi⟩, ⟨toi-qui⟩ ou ⟨lire⟩ — treize disent « toi », les
+  autres sont déjà lues. Tranché par l'auteur contre une relecture déroulée et une deuxième
+  personne conjuguée. Le choix porte sur les signes (règle 17), ne compte pas dans le doute
+  (règle 18), et le journal d'actions date l'ouverture et la sortie : la durée de la relecture
+  est la question du playtest. Voir `docs/journal.md`, « VOIX-2 ».
 
-**VOIX-3 — Les Questions** · T:XL · [#36](https://github.com/DavidGiangiacomo/langue-morte/issues/36)
+**VOIX-3 — Les Questions** · T:XL · **fait en partie** (19/10/2026, même branche) · [#36](https://github.com/DavidGiangiacomo/langue-morte/issues/36)
 > En tant que joueur, je veux interroger le texte et qu'il réponde, dans les limites de ce qui a été gravé il y a quatre mille ans.
 
 - Fini quand : la ressource Q existe (0 à 12 sur toute la partie, design doc §4) ; poser une question consomme un Q ; **chaque réponse est une ligne du corpus, jamais un texte écrit pour l'occasion**.
 - Le plus gros risque de conception du lot : c'est le seul système où le jeu peut se mettre à *parler* au lieu de laisser lire.
+- *Note de conception, 19/10/2026* : `docs/note-questions.md` — trois options mesurées. **Tranché le même jour : l'option 3, avec le gel.**
+- *Fait* : une question est une condition — ⟨si⟩ et des signes qu'on sait lire — et la réponse est ce que le corpus a gravé après, quinze conditions, rien d'écrit pour l'occasion. La Certitude s'arrête à 9 999 ; à partir de ⟨toi⟩ le surplus fait des questions, 4 000 chacune, douze sur la partie, jamais la nuit. La Grammaire gèle aux mots de la fin. Voir la règle 24 de `CLAUDE.md` et `docs/journal.md`, « Les Questions ».
+- **Reste** : les mots qu'elles ouvrent — ⟨finir⟩, ⟨devenir⟩, ⟨germer⟩, marqués `rep` — arrivent avec GRAINE-1, et le prix des questions se remesure quand ECO-2 aura porté l'acte V dans `sim.py`.
 
-**VOIX-4 — Le Corpus jumeau** *(instrument 8)* · T:M · [#37](https://github.com/DavidGiangiacomo/langue-morte/issues/37)
+**VOIX-4 — Le Corpus jumeau** *(instrument 8)* · ~~T:M~~ **fait** (19/10/2026, branche de travail empilée sur `eleve`) · [#37](https://github.com/DavidGiangiacomo/langue-morte/issues/37)
 > En tant que joueur, je veux qu'une deuxième inscription soit trouvée.
 
-**VOIX-5 — I2 : perdre la lisibilité de ses propres nombres** · T:M · [#38](https://github.com/DavidGiangiacomo/langue-morte/issues/38)
+- *Fait* : une copie du corpus — « si copier 100 · un devenir » —, ouverte par ⟨nous⟩, en un seul exemplaire. Chaque tablette rouvre la moitié de son gisement, tarifée au premier relevé sur la copie (règle 9) ; l'original passe d'abord. La main passe à 26–33 % des occurrences avec Élèves et 26 % sans, sous le plafond de 40. Voir la règle 29 de `CLAUDE.md` et `docs/journal.md`, « Le Corpus jumeau ».
+
+**VOIX-5 — I2 : perdre la lisibilité de ses propres nombres** · ~~T:M~~ **fait** (20/10/2026, branche de travail empilée sur `eleve`) · [#38](https://github.com/DavidGiangiacomo/langue-morte/issues/38)
 > En tant que joueur, je veux que la notation scientifique arrive **en signes non déchiffrés**, au moment précis où mes nombres deviennent énormes.
 
 - Fini quand : pas de notation scientifique avant l'acte IV ; à son apparition, elle est illisible ; elle se déchiffre ensuite comme le reste.
+- *Fait* : au million, une fois l'acte IV ouvert, un nombre garde trois chiffres au joueur et ses zéros s'écrivent du tracé de ⟨zéro⟩ — compteurs et coûts. ⟨zéro⟩, posé à la grille, rend la notation compacte de ⟨cent⟩. Le prototype n'affiche jamais plus de cinq millions : seule la tranche du million existe. Qui ne compose pas ⟨zéro⟩ joue 40 à 56 minutes sans lire ses nombres. Voir la règle 30 de `CLAUDE.md` et `docs/journal.md`, « I2 — les zéros sont les leurs ».
 
 ---
 
@@ -389,17 +420,20 @@ Suivi : [#25](https://github.com/DavidGiangiacomo/langue-morte/issues/25) — le
 > En tant que joueur, je veux lire la fin dans leur langue.
 
 - `devenir-lecture` est le dernier signe et n'est accessible que par composition (COMP-4).
+- *Fait* (19/10/2026, branche de travail empilée sur `eleve`) : sept signes à 9 999, aucun multiplicateur. ⟨finir⟩, ⟨devenir⟩ et ⟨germer⟩ ne s'offrent qu'une fois qu'une réponse les a portés (VOIX-3) ; ⟨devenir-lecture⟩ **compte dans l'arbre et le lexique l'offre en dernier** — tranché par l'auteur ce jour-là, la question ouverte de l'issue —, la grille le donnant avant à qui a ⟨lire⟩ et ⟨devenir⟩. Les portes sont au lexique (`offert()`), pas dans `acheterGl` : ⟨germer⟩ posé à la grille fait l'économie de sa question. Mesuré : 133,5–136,9 min avec Élèves, 159,5–162,6 sans, acte V de 28,2 et 40,3 min, I4 tenu. Voir la règle 25 de `CLAUDE.md` et `docs/journal.md`, « La Fin ».
 - `notre-fin · ne-pas` ne se tranche jamais : « notre fin : non » ou « pas notre fin ». **Le jeu ne dira pas laquelle.**
 
-**GRAINE-2 — Le Lecteur** *(instrument 9)* · T:M · [#40](https://github.com/DavidGiangiacomo/langue-morte/issues/40)
+**GRAINE-2 — Le Lecteur** *(instrument 9)* · ~~T:M~~ **fait** (19/10/2026, branche de travail empilée sur `eleve`) · [#40](https://github.com/DavidGiangiacomo/langue-morte/issues/40)
 > En tant que joueur, je veux acheter un instrument avant de savoir ce que c'est, et découvrir que ce n'en est pas un.
 
 - Fini quand : l'instrument est achetable sans description ; la révélation (« c'est le corpus qui a commencé à lire ») arrive par le texte, pas par une infobulle.
+- *Fait* : ouvert par ⟨semence⟩, payé en occurrences, sans nom français ni ligne d'effet — son nom est le signe ⟨devenir-lecture⟩, qu'on lit au dernier achat. Il ne produit rien : il lit le corpus tout seul, une tablette par minute et par Lecteur, et chaque tablette lue verse 300 à la question suivante. On le voit faire, dans la barre et dans le texte ; la tablette 27 dit ce qu'il était. Mesuré : acte V 25,6 min avec Élèves, 36,3 sans, pire trou sans Élève 5,8 min au lieu de 7,2. Voir la règle 28 de `CLAUDE.md` et `docs/journal.md`, « Le Lecteur ».
 
 **GRAINE-3 — La révélation** · T:M · [#41](https://github.com/DavidGiangiacomo/langue-morte/issues/41)
 > En tant que joueur, je veux comprendre que la langue a été conçue pour être cassée par un inconnu.
 
 - Fini quand : les tablettes 28 (« la fabrique ») et 21 (« l'abécédaire ») sont pleinement lisibles et se répondent ; le joueur reconnaît dans la tablette 28 **l'ordre des branches de l'arbre qu'il suit depuis trois heures**.
+- *Constaté le 19/10/2026* : la première moitié est tenue par GRAINE-1. Avec les quarante-cinq signes, les seuls signes du corpus hors du lexique sont les six noms propres, qui ne se déchiffrent jamais : les tablettes 21 et 28 se lisent entières, à leurs noms près. La seconde moitié — le joueur reconnaît-il l'ordre de l'arbre — est une question de playtest.
 
 ---
 
@@ -407,23 +441,28 @@ Suivi : [#25](https://github.com/DavidGiangiacomo/langue-morte/issues/25) — le
 
 Suivi : [#26](https://github.com/DavidGiangiacomo/langue-morte/issues/26) — les récits ouverts y sont des sous-issues.
 
-**FIN-1 — Achever** · T:M · [#42](https://github.com/DavidGiangiacomo/langue-morte/issues/42)
+**FIN-1 — Achever** · ~~T:M~~ **fait** (19/10/2026, branche de travail empilée sur `eleve`) · [#42](https://github.com/DavidGiangiacomo/langue-morte/issues/42)
 > En tant que joueur, je veux lire le dernier signe et voir l'interface disparaître.
 
 - Fini quand : le corpus passe à 100 % ; l'écran se vide progressivement (compteurs, instruments, lexique), il ne reste que le texte, entièrement en français ; puis le texte s'efface.
+- *Fait*, avec FIN-2 : le dernier signe de l'arbre ouvre une fenêtre à deux boutons, au lexique comme à la grille, et seulement quand on peut le payer. Achever : l'effacement attend qu'on ait lu la tablette du dernier signe (règle 16), l'interface s'en va pièce à pièce, le texte glisse au milieu, reste seul, et s'efface ; il ne reste que « recommencer ». La carte de statistiques est retirée. Voir la règle 26 de `CLAUDE.md` et `docs/journal.md`, « Les deux fins ».
+- **« Le corpus passe à 100 % » n'est pas tenu, et c'est voulu** : les noms propres ne se déchiffrent jamais, et un composé secret jamais trouvé reste en signes. L'effacement montre le corpus tel qu'il a été lu ; le rendre entier est le travail de FIN-3.
 
-**FIN-2 — Interrompre** · T:S · [#43](https://github.com/DavidGiangiacomo/langue-morte/issues/43)
+**FIN-2 — Interrompre** · ~~T:S~~ **fait** (19/10/2026, avec FIN-1) · [#43](https://github.com/DavidGiangiacomo/langue-morte/issues/43)
 > En tant que joueur, je veux pouvoir laisser un signe non lu.
 
 - Fini quand : le jeu se ferme sur le corpus figé et **ne propose pas de reprendre** ; aucune des deux fins n'est présentée comme la bonne ; aucun score.
+- *Fait* : l'interface s'en va, le corpus reste figé et ne s'efface pas, et la partie ne se reprend jamais, pas même au chargement. Les deux boutons portent le même habit, dans un ordre tiré au sort, et interrompre ne s'offre qu'à qui pourrait achever — sans quoi il serait un repli. **La première migration de sauvegarde** est écrite pour lui (version 2).
 
-**FIN-3 — La relecture** · T:M · [#46](https://github.com/DavidGiangiacomo/langue-morte/issues/46)
+**FIN-3 — La relecture** · ~~T:M~~ **fait** (19/10/2026, branche de travail empilée sur `eleve`) · [#46](https://github.com/DavidGiangiacomo/langue-morte/issues/46)
 > En tant que joueur qui a achevé, je veux relire le corpus en sachant tout, y compris ce que j'ai raté.
 
 - Fini quand : le corpus est intégralement lisible dès le départ ; **toutes** les erreurs de traduction de la partie sont surlignées, y compris celles jamais détectées ; environ vingt minutes, aucune mécanique.
 - Dépend de : AMB-1 (le journal des choix), FIN-1.
 - « Ce n'est pas un prestige, c'est un épilogue. » Coût de production faible, valeur émotionnelle haute — **ne pas le sacrifier au planning.**
 - Depuis le 14/09/2026 ce n'est plus une préférence d'auteur : les paires réparantes étant laissées passer (§7.3), **la relecture est le seul endroit où le jeu admet jamais qu'on a lu autre chose.**
+- *Fait* : « relire » s'offre après avoir achevé ; le corpus revient entier, écrit juste, et chaque jeton porte sa marque — **mal lu** (resté faux à la fin, composés salis compris), **mal lu, puis corrigé** (une révision l'avait rendu), **jamais trouvé** (⟨grenier⟩, le zéro). Le survol dit le mot lu et qui l'avait lu, le joueur ou un Élève. Une légende nomme, rien ne compte. Deux champs de sauvegarde, `fautes` et `lusEleve`, sans migration. Voir la règle 27 de `CLAUDE.md` et `docs/journal.md`, « La relecture ».
+- **L'entretien de playtest se fait avant « relire »**, qui répond à trois de ses questions.
 
 ---
 
@@ -442,14 +481,18 @@ Suivi : [#27](https://github.com/DavidGiangiacomo/langue-morte/issues/27) — le
 > En tant qu'auteur, je veux vérifier le rythme de trois heures sans jouer trois heures.
 
 - Fini quand : le simulateur modélise l'Élève, les Questions, la dette et la contradiction ; il sort les tranches d'I6 sur toute la partie ; `balayage.py` peut balayer les nouvelles constantes.
-- *Fait de ce récit* : la dette et la contradiction (CONTR-1), et **l'Élève** (12/10/2026) — `elv_b`, `elv_r`, `elv_p`, `elv_e` sont dans `P`, donc balayables. Restent les Questions et les actes IV–V.
+- *Fait de ce récit* : la dette et la contradiction (CONTR-1), et **l'Élève** (12/10/2026) — `elv_b`, `elv_r`, `elv_p`, `elv_e` sont dans `P`, donc balayables. **La Personne** (14/10/2026) et le franchissement d'acte de la règle 19. **Le plafond de 9 999, les questions nées du surplus et le gel de la Grammaire** (19/10/2026, VOIX-3) — `c_max`, `q_cout`, `q_max` sont dans `P`. **L'acte V** (19/10/2026, GRAINE-1) : les sept signes de la Fin, les mots ouverts par une réponse (`REP`), le dernier signe (`DERNIER`), et un acheteur qui pose la question dès qu'il en a une en main. **Le Lecteur** (19/10/2026, GRAINE-2) — `lec_b`, `lec_r`, `lec_v`, `lec_q` sont dans `P`. **Le Corpus jumeau** (19/10/2026, VOIX-4) — `jum_b`, `jum_f`, et un second gisement avec son tarif. Les neuf instruments y sont.
 - **Bloquant pour tout réglage des actes IV–V** (règle 7).
 
-**ECO-3 — Tenir I1 et I4 sur 45 glyphes** · T:L · [#47](https://github.com/DavidGiangiacomo/langue-morte/issues/47)
+**ECO-3 — Tenir I1 et I4 sur 45 glyphes** · ~~T:L~~ **fait** (20/10/2026, branche de travail empilée sur `eleve`) · [#47](https://github.com/DavidGiangiacomo/langue-morte/issues/47)
 > En tant que joueur, je veux un déblocage toutes les 4 à 6 minutes, et jamais plus de 8 minutes sans rien.
 
 - La Certitude ne dépasse jamais 4 chiffres à l'écran (I1) alors que les Occurrences vont à ~10¹⁰. **La divergence est le propos ; la tenir sur 25 glyphes de plus est le vrai travail d'équilibrage restant.**
+- **Depuis la Personne (14/10/2026), le prix ne suffit plus.** Il a fallu monter ⟨nous-fûmes⟩ à 9 500 C pour que l'acte IV tienne quatre à six minutes par signe sans Élève ; au-delà, I1 interdit. L'acte V n'a donc plus un cran de prix pour régler son rythme, alors que la Grammaire croît encore de 16 % par signe. Les leviers restants sont des taux — l'exposant de la Grammaire, ou un puits de Certitude (les Questions ?) — et c'est à mesurer, pas à estimer (règle 7).
+- **Les deux leviers sont posés depuis VOIX-3** (19/10/2026) : la Certitude s'arrête à 9 999 et ce qui déborde fait des questions, dont le prix n'est jamais détenu d'un coup et peut donc croître ; et la Grammaire gèle aux mots de la fin. Mesuré sur un acte V provisoire, trois questions à 4 000 et le gel tiennent I4 avec et sans Élèves (28,2 et 40,3 min d'acte V) ; aucun des deux seul ne le fait. À remesurer dans `sim.py` avec l'acte V réel, le Corpus jumeau et le Lecteur.
 - Depuis le 14/09/2026, la **courbe de dégagement** (`REV_R`) est un paramètre balayé et non plus une constante implicite. C'est le seul bouton connu qui tire à la fois la part manuelle des occurrences et la pire tranche d'I6 — et dans le même sens : le ralentir améliore les deux. À rebalayer quand `sim.py` couvrira les actes IV et V (ECO-2), parce que tout ce qu'on sait de son comportement au-delà de 28 signes vient d'un arbre tronqué.
+
+- *Fait* (20/10/2026) : I1 est une règle depuis VOIX-3. Pour I4, deux trous mesurés et tranchés par l'auteur. **La contradiction** chez qui ne révise jamais doublait tout ce qui restait aux actes IV et V (+60 à +85 min, huit à onze minutes par signe) : elle ne divise plus que par 1,25 une fois l'acte IV ouvert, et les Élèves ne rendent plus leur bonus tant qu'elle court — sans quoi des Élèves qui lisent tout faux finissaient avant le joueur sans Élève. Pire attente 6,7 à 7,4 min dans les six cas mesurés. **L'acte V avec Élèves** (3,45–3,58 min par signe) est accepté : la borne basse d'I4 se mesure sur le joueur sans Élève. Voir la règle 31 de `CLAUDE.md` et `docs/journal.md`, « ECO-3 ».
 
 **ECO-4 — PT10 et suivants** · T:M *(récurrent)* · [#48](https://github.com/DavidGiangiacomo/langue-morte/issues/48)
 > En tant qu'auteur, je veux qu'un joueur qui ne sait pas ce qu'il cherche voie la crue baisser.
@@ -458,7 +501,8 @@ Suivi : [#27](https://github.com/DavidGiangiacomo/langue-morte/issues/27) — le
 - **Le réglage du 09/09/2026 (`REC_R` 1,18 → 1,30, Copiste à 10) n'a aucun playtest derrière lui.** C'est la première chose que PT10 valide ou casse. La composition ne l'a pas touché — mesuré identique au chiffre près, c'était la condition du lot.
 - **Question neuve de PT10** : ⟨grenier⟩ se trouve-t-il ? Et ⟨ne-pas⟩ posé sur ⟨un⟩, quand le joueur vient d'acheter ⟨ne-pas⟩ et qu'il a neuf zéros sous les yeux sur la tablette 29 ? Le journal d'actions compte les tentatives de composition, avec leur paire et leur minute. Aucun simulateur ne peut y répondre.
 - ~~**La tranche 20-30′ monte d'un lot à l'autre**~~ — *traité le 14/09/2026, et la prémisse était fausse* : elle n'est pas en pente, elle oscille (dent de scie de quatre points sur les dénominateurs 28 à 45, dont 28 était le sommet). Le mécanisme, lui, était bien `revCount()`. `REV_R = 1,1` en ramène l'amplitude à 1,1 point ; ce qui est acheté, c'est que ce chiffre ne dépende plus de la taille du lexique. Le premier candidat de correction gagnait deux points d'I6 en ramenant la part manuelle des occurrences de 22,9 % à 12,4 % — PT6 en miniature (règle 9) — d'où le plancher de 15 % entré dans le tri de `balayage.py`, qui balaie aussi `rev_r`. Voir `docs/journal.md`, « Le dégagement ne dérive pas, il oscille ».
-- **Le garde-fou de durée de `balayage.py` suit la taille du lexique**, et doit être re-basé à chaque lot : resté à (71, 77) — PT9, vingt glyphes — il rejetait ses dix-huit combinaisons depuis `da61b19`, réglage en place compris, en affichant « 0 sur 18 ». Re-basé à (84, 92), puis à **(86, 95)** à 28 glyphes. La grille compte désormais `rev_r` (la courbe de dégagement) et un garde-fou de plus, la part manuelle des occurrences : 39 combinaisons sur 54 passent, dont le réglage en place (89,7–92,9 min, écart 5,2, main 23 %, pire tranche 26 %).
+- **Le garde-fou de durée de `balayage.py` suit la taille du lexique**, et doit être re-basé à chaque lot : resté à (71, 77) — PT9, vingt glyphes — il rejetait ses dix-huit combinaisons depuis `da61b19`, réglage en place compris, en affichant « 0 sur 18 ». Re-basé à (84, 92), puis à **(86, 95)** à 28 glyphes. La grille compte désormais `rev_r` (la courbe de dégagement) et un garde-fou de plus, la part manuelle des occurrences : 39 combinaisons sur 54 passent, dont le réglage en place (89,7–92,9 min, écart 5,2, main 23 %, pire tranche 26 %). **Le plancher de la main suit la longueur de la partie, lui aussi** : à quarante-trois glyphes (GRAINE-1, 19/10/2026), la Fin la fait passer de 17,2 % à 13,1 % sans Élève, et à 15 % les 54 combinaisons tombaient. Re-basé à 11, sur la famille qu'il doit attraper (« tout dégager à 80 % de l'arbre » : 9,7 %) ; durée (121, 165), écart max 8.
+- **PT11 (20/10/2026) joue les cinq actes**, déployés sur Pages depuis `develop`, en deux séances au plus. Le protocole est réécrit (`docs/pt11-protocole.md`) : vingt et une questions dans l'ordre où elles ne se contaminent pas, ce que le journal répond seul, et la relecture laissée au joueur. Le journal d'actions date désormais chaque reprise de partie (`reprise`), et `depouiller.py` rapporte les coupures, les attentes de plus de huit minutes, les Élèves, la concordance avant de trancher, les relevés après ⟨nous⟩ et le Lecteur.
 
 ---
 
@@ -543,7 +587,9 @@ Suivi : [#29](https://github.com/DavidGiangiacomo/langue-morte/issues/29) — le
   qu'ajouter des champs, que `fresh()` donne déjà aux parties qui ne les ont pas — c'est la
   mesure, pas un oubli. La première qu'on voit venir est celle de **FIN-2**, qui devra
   distinguer une partie interrompue (`nArbre() < NGL` par définition) d'une partie que l'arbre
-  a dépassée.
+  a dépassée. *Écrite le 19/10/2026* : la règle de réouverture lit `S_.fin`, et une partie
+  finie avant les deux fins est achevée (version 2). Il n'a pas fallu écrire la taille de
+  l'arbre à l'arrêt : c'est le choix qui distingue les deux parties, pas leur taille.
 - **Trouvé en le faisant** : la liste des instruments était recopiée à la main dans le
   chargement, donc tout instrument neuf s'écrivait à deux endroits — l'Élève
   ([#56](https://github.com/DavidGiangiacomo/langue-morte/pull/56)) a dû l'écrire aux deux.
@@ -565,7 +611,7 @@ Suivi : [#29](https://github.com/DavidGiangiacomo/langue-morte/issues/29) — le
 **LIV-5 — Étendre `verifier.py`** · T:L · [#53](https://github.com/DavidGiangiacomo/langue-morte/issues/53)
 > En tant qu'auteur, je veux que chaque mécanique nouvelle soit couverte bout en bout.
 
-- Le fichier porte aujourd'hui **325 assertions** sur le relevé, le recoupement, la numération, le gisement, la datation, les infobulles, la composition, la fenêtre de fin qui attend sa lecture, et la reprise d'une sauvegarde d'avant une mécanique neuve. Chaque épic de cette feuille de route doit y ajouter ses vérifications — en particulier AMB-4 (la phrase absurde est bien rendue) et COMP-3 (`zéro` replie les compteurs).
+- Le fichier porte aujourd’hui **444 assertions** (20/10/2026) sur le relevé, le recoupement, la numération, le gisement, la datation, les infobulles, la composition, la fenêtre de fin qui attend sa lecture, et la reprise d'une sauvegarde d'avant une mécanique neuve. Chaque épic de cette feuille de route doit y ajouter ses vérifications — en particulier AMB-4 (la phrase absurde est bien rendue) et COMP-3 (`zéro` replie les compteurs).
   *15/09/2026* : la section 21 en ajoute vingt-cinq sur l'ambiguïté, dont les cinq ruptures d'AMB-4
   qui existent dans l'arbre d'aujourd'hui et la vérification que **rien à l'écran ne nomme la dette** ;
   la section 22 en ajoute vingt-deux sur le doute et la révision, dont **le degré de doute est le
@@ -586,6 +632,12 @@ Suivi : [#29](https://github.com/DavidGiangiacomo/langue-morte/issues/29) — le
   *12/10/2026* : une de plus — la carte de fin ouverte ne contient ni « crue », ni
   « question », ni « doute », ni « contradiction », ni « deuxième personne ». Elle échoue
   sur la carte d'avant, qui soufflait la question de PT8 au joueur qu'on allait interroger.
+  *19/10/2026* : la section 6 est réécrite pour les deux fins (FIN-1, FIN-2) — la fenêtre au
+  lexique et à la grille, l'attente de lecture, ce qui reste à l'écran (« recommencer » et pas un
+  chiffre), la partie interrompue qui ne reprend pas au chargement — et la section 27 vérifie la
+  première migration écrite : 395 assertions. Puis la relecture (FIN-3) : le texte entier,
+  les trois marques sur les jetons, l'Élève nommé, la légende qui ne compte rien, et la
+  relecture qui survit au rechargement : 412.
   *19/10/2026* : dix de plus sur la sauvegarde (LIV-3) — une partie de l'ancienne clé
   déménage numérotée et **sans perdre sa nuit**, chaque instrument qu'elle ne connaissait pas
   arrive à zéro **sans que le test les nomme**, la version se compte sur une migration posée
@@ -609,15 +661,17 @@ depuis le 14/09/2026 ; E3 et MOD-2 sont faits le 15/09/2026, avec CONTR-2 et CON
 `peut-être` ne pouvait pas laisser dehors — un doute qu'on ne peut pas payer ne sert à rien.
 CONTR-1 puis MOD-3 ferment la boucle le même jour : voir son doute, voir où le texte ne
 tient pas, payer pour rouvrir, ou encaisser. **E5, l'Élève, est écrit le 12/10/2026 sur la
-branche `eleve`** : J2 sera fait le jour où elle sera fusionnée, c'est-à-dire après le retour
-du journal de PT11 — il déplace l'économie que PT11 doit mesurer. Puis J3, l'acte IV.
+branche `eleve`**, et devait attendre le retour du journal de PT11. **Le 20/10/2026, l'auteur
+a décidé que PT11 jouerait les cinq actes** : l'Élève, les actes IV et V, les deux fins et la
+relecture sont fusionnés sur `develop` pour être déployés. J2 et J3 sont faits ; de J4, il
+reste la révélation, que PT11 mesurera.
 
 | Jalon | Contenu | Ce qu'on peut jouer à la fin |
 |---|---|---|
 | ~~**J1 — L'acte III se termine**~~ *(fait, 14/09/2026)* | ~~E1 (composition)~~ + ~~PAR-1~~ + ~~MOD-1~~ + ~~COMP-3~~ + ~~PAR-2~~ | 28 glyphes, la composition, `les-lecteurs` |
-| ~~**J2 — Le mensonge**~~ *(fait, 15/09/2026)* | ~~TXT-1 · E3 · MOD-2 · MOD-3 · E4~~ → **E5 (Élève)** écrit, à fusionner après PT11 | l'acte III entier, la confiance, la contradiction, **`faux`** |
-| **J3 — La voix** | E6 (Personne, Questions, Corpus jumeau, I2) | l'acte IV |
-| **J4 — La graine** | E7 + E8 | les cinq actes, les deux fins, la relecture |
+| ~~**J2 — Le mensonge**~~ *(fait, 15/09/2026 ; l'Élève fusionné le 20/10/2026)* | ~~TXT-1 · E3 · MOD-2 · MOD-3 · E4 · E5 (Élève)~~ | l'acte III entier, la confiance, la contradiction, **`faux`** |
+| ~~**J3 — La voix**~~ *(fait, 20/10/2026)* | ~~E6 (Personne, Questions, Corpus jumeau, I2)~~ | l'acte IV |
+| **J4 — La graine** *(écrit, 20/10/2026, sauf GRAINE-3)* | ~~E7~~ + ~~E8~~ — reste la révélation, question 19 de PT11 | les cinq actes, les deux fins, la relecture |
 | **J5 — 1.0** | E9 (final) + E11 | une version publique |
 
 **En parallèle, en continu** : ECO-2 (le simulateur doit précéder chaque réglage), ECO-4

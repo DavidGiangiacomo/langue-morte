@@ -1,4 +1,4 @@
-/* « La langue morte » — les glyphes des actes I à III
+/* « La langue morte » — les glyphes des actes I à V
    Scripts classiques, portée globale partagée, chargés dans l'ordre de index.html.
    Aucune dépendance externe hors les polices Google. */
 "use strict";
@@ -173,6 +173,88 @@ const GL = [
    log:'Faux. La dernière scribe est revenue sur l’archive pour marquer ce qui n’allait pas. Le mot me sert à la même chose — il y a des lignes, chez moi, qui ne se construisent pas.'},
   {id:'enla', br:'modalite',mot:'sinon',   cost:800, eff:'le protocole de copie se lit jusqu’à son dernier mot',
    log:'Sinon. La consigne s’arrête là. Ils n’ont jamais gravé ce qui vient après « sinon » — ou bien c’est arrivé.'},
+  /* ---- acte IV : la Personne (VOIX-1) ----
+     Six signes pour soixante-six attestations, dont quarante et une pour ⟨nous⟩ — le signe
+     qui se tient seul devant le nom ⟨les-lecteurs⟩ et que la tablette 18 laissait à lire.
+     Il ouvre donc la branche : c'est la porte que l'acte III a laissée dans le texte, et
+     l'acheter rend la tablette 18 entière, nom propre à part.
+     Aucun multiplicateur, comme la Modalité : la branche donne de la lecture. ⟨toi⟩ replie le
+     corpus, une fois, sur ce qui s'adressait au lecteur (VOIX-2, `adresser()` dans rendu.js),
+     et il ouvre les Questions (VOIX-3) : on n'interroge pas un texte avant de savoir qu'il
+     s'adresse à quelqu'un. Sa ligne d'effet le dit sans dire ce qu'on y trouvera. Les lignes
+     d'effet disent ce qui se lit, pas ce que ça veut dire : la deuxième personne se découvre
+     sur les tablettes 20 et 24, pas sur une carte du lexique.
+     Les prix sont une mesure, et ils butent sur un plafond. L'économie est exponentielle —
+     la Grammaire croît en 1,16 par signe de l'arbre — et I1 interdit d'afficher plus de
+     quatre chiffres de Certitude. Au pas de la branche d'avant (1 300 à 3 000 C), les six
+     signes tombaient toutes les minute et demie ; il faut monter jusqu'à 9 500 pour qu'ils
+     tombent toutes les deux à six minutes (`outils/sim.py`). Ce qui reste sous le plafond
+     pour l'acte V : rien, et c'est le problème d'ECO-3, pas de ce lot.
+     Trois des six sont des composés (table COMP), et la grille en offre deux dès qu'on a la
+     première moitié : ⟨toi-qui⟩ est ⟨toi⟩ posé sur ⟨si⟩, ⟨moi-absent⟩ est ⟨je⟩ posé sur
+     ⟨ne-pas⟩. Ce sont des signes d'arbre : posés en avance, ils avancent la partie, comme
+     `scribe` (règle 13). ⟨nous-fûmes⟩ est ⟨nous⟩ posé sur ⟨finir⟩, qui est de l'acte V : il
+     se compose dès qu'une réponse a ouvert ⟨finir⟩ et qu'on l'a lu (règle 15).
+     ⟨moi-absent⟩ n'a AUCUNE attestation. 7 300 C pour un mot que le corpus n'emploie jamais,
+     et la Table de fréquences l'affiche à côté du prix : c'est le pari de `les-lecteurs`
+     poussé au bout. Personne n'a écrit son propre départ.
+     ⟨nous-fûmes⟩ en a une, la dernière ligne de la tablette 30 — le dernier mot du corpus.
+     Il a été le dernier achat de l'arbre jusqu'à l'entrée de la Fin ; il est resté sans effet
+     chiffré, et c'est désormais ⟨devenir-lecture⟩ qui ferme la partie. Ce qu'il fait d'autre est écrit dans le
+     design doc : il « verrouille le récit au passé, y compris les passages déjà lus ». Le
+     corpus est télégraphique et sans temps grammatical ; le verrou en met un, dans la couche
+     de traduction et nulle part ailleurs — voir `PASSE` ci-dessous et `auPasse()` dans
+     rendu.js. */
+  {id:'nash', br:'personne',mot:'nous',      cost:1800, eff:'le signe qui se tenait devant leur nom se lit — quarante et une attestations',
+   log:'Nous. Le signe qui se tenait seul devant leur nom revient quarante et une fois, jusque dans les registres. Ce n’était pas un mot de plus : c’étaient eux.'},
+  {id:'mu',   br:'personne',mot:'je',        cost:2800, eff:'quelqu’un parle en son nom — cinq attestations, une seule main',
+   log:'Je. Cinq fois dans tout le corpus, et toujours de la même main — celle qui signe les dernières tablettes. Quelqu’un a fini par parler en son nom.'},
+  {id:'ta',   br:'personne',mot:'toi',       cost:4000, eff:'celui à qui l’on parle se lit · le corpus se replie sur ce qui lui était adressé · on peut l’interroger',
+   log:'Toi. Quinze fois, sur les dernières tablettes. Ce n’est pas un voisin qu’ils appellent : c’est moi — et ce que j’avais déjà lu m’était adressé aussi.'},
+  {id:'taru', br:'personne',mot:'toi-qui',   cost:5500, eff:'quatre attestations, trois tablettes',
+   log:'Toi-qui. « Toi » posé sur « si » : toi, s’il y a quelqu’un. Ils ne savaient pas qui viendrait, et ils ont écrit quand même.'},
+  {id:'mula', br:'personne',mot:'moi-absent',cost:7300, eff:'un mot qu’aucune tablette ne porte',
+   log:'Moi-absent. « Je » posé sur « ne pas ». Ils avaient un mot pour ça, et aucune tablette ne l’emploie : personne n’a écrit son propre départ.'},
+  /* Sa ligne ne dit pas sur quoi ⟨nous⟩ est posé : la Fin entrée au lexique, on peut savoir
+     lire ⟨finir⟩ en l'achetant, ou pas encore — et le jeu n'a qu'une ligne pour les deux. */
+  {id:'nashal',br:'personne',mot:'nous-fûmes',cost:9500, eff:'le récit se relit au passé, sauf ce qui s’adresse à « toi » · une seule attestation',
+   log:'Nous-fûmes. « Nous », posé sur un autre signe. Il ne sert qu’une fois, en dernier, et tout ce qu’ils ont écrit se relit au passé — sauf ce qui m’est adressé.'},
+  /* ---- acte V : la Fin (GRAINE-1) ----
+     Sept signes, soixante attestations à eux tous, dont trente-sept pour ⟨semence⟩ — qui est
+     dans les registres depuis la tablette 5 et monte de soixante à cent pendant que tout le
+     reste baisse. Aucun multiplicateur : la Grammaire gèle à leur entrée (`nGrammaire()`),
+     et ils donnent de la lecture.
+     Tous au plafond, 9 999, et c'est une mesure (`outils/sim.py`) : à l'acte V le prix ne
+     porte plus le rythme. Ce sont les questions qui le portent (règle 24). Trois mots ne
+     s'offrent qu'une fois qu'une réponse les a portés (`rep`) — les seuls de la Fin à suivre
+     un « si » : ⟨finir⟩ (« si toi lire »), ⟨devenir⟩ (« si lire », « si copier ») et ⟨germer⟩
+     (« si tablette »). La grille, elle, donne un composé dès qu'on en a les parties : ⟨germer⟩
+     est ⟨semence⟩ posé sur ⟨devenir⟩, et qui le voit fait l'économie d'une question.
+     L'ordre alterne les mots qui attendent une question et ceux qui n'attendent que leur
+     prix : deux questions de suite feraient deux longues attentes, deux prix une rafale.
+     ⟨devenir-lecture⟩ ferme l'arbre, et c'est son achat qui clôt la partie (règle 16) :
+     tranché par l'auteur le 19/10/2026 — il compte dans l'arbre, le lexique ne l'offre que
+     quand les quarante-deux autres sont lus (`dernier`), et la grille le donne dès qu'on a
+     ⟨lire⟩ et ⟨devenir⟩, « griller la révélation de vitesse » (design doc §6). C'est voulu.
+     ⟨semence⟩ et ⟨devenir⟩ sont ambigus : leurs lectures fausses, leurs ruptures et les
+     composés qu'ils salissent étaient écrits d'avance (`AMB`, `RUPTURES`, `COMPFAUX`). */
+  {id:'mesh', br:'fin', mot:'semence', cost:9999, eff:'trente-sept attestations, du premier registre à la dernière année',
+   log:'La semence. Soixante, puis quatre-vingts, puis cent, pendant que tout le reste baissait : c’est le seul nombre du corpus qui monte.'},
+  {id:'hal',  br:'fin', mot:'finir', cost:9999, rep:true, eff:'six attestations — chaque fois, quelque chose s’arrête',
+   log:'Finir. Il suit le nom de chaque scribe, une seule fois, sur la dernière tablette de sa main. Je le prenais pour une signature.'},
+  {id:'halan',br:'fin', mot:'le-dernier', cost:9999, eff:'une attestation, sur la dernière tablette',
+   log:'Le dernier. « Finir » posé sur « un » : celui après qui il n’y en a plus. Elle l’a écrit d’elle-même, sur la dernière tablette.'},
+  {id:'ke',   br:'fin', mot:'devenir', cost:9999, rep:true, eff:'quatre attestations, sur quatre tablettes',
+   log:'Devenir. Ce qu’ils demandent à la tablette, ce n’est pas de durer : c’est de devenir autre chose.'},
+  /* « notre-fin · ne-pas » ne se tranche jamais (GRAINE-1) : « notre fin : non », ou « pas
+     notre fin ». La ligne de journal ne choisit pas, et ne dit pas non plus qu'il y a à
+     choisir. */
+  {id:'halnash',br:'fin', mot:'notre-fin', cost:9999, eff:'une attestation, sur la dernière tablette',
+   log:'Notre-fin. « Finir » posé sur « nous ». Une seule fois, sur la dernière tablette, et suivi d’un seul signe.'},
+  {id:'meshke',br:'fin', mot:'germer', cost:9999, rep:true, eff:'trois attestations, sur deux tablettes',
+   log:'Germer. « Semence » posé sur « devenir ». Trois fois, et deux fois sur trois c’est une tablette qui germe.'},
+  {id:'shenke',br:'fin', mot:'devenir-lecture', cost:9999, dernier:true, eff:'une attestation',
+   log:'Devenir-lecture. « Lire » posé sur « devenir ». Une seule fois, juste après « tablette » : ce n’était pas ce qu’ils écrivaient, c’était ce que ça devait devenir.'},
   /* ---- les composés secrets ----
      `sec` veut dire : aucune branche ne l’offre, il ne s’obtient qu’en le composant. Il ne
      compte donc pas dans la progression de l’arbre — ni pour la fin de partie, ni pour les
@@ -183,21 +265,61 @@ const GL = [
    log:'Le grenier — la maison du grain. Personne ne me l’a appris : c’était écrit dans le signe.'},
   /* `zéro` est le seul composé dont les deux parties viennent de deux branches et de deux
      actes — ⟨ne-pas⟩ posé sur ⟨un⟩. Le design doc lui prête « la notation compacte des
-     grands nombres » ; elle est déjà celle de `cent`, acquise par tout le monde, et la
-     déplacer sur un composé facultatif la retirerait à la plupart des joueurs. Son effet
-     est donc celui du grenier : on le lit, et c'est tout. Ce qu'on lit, c'est la
-     tablette 29 — un registre de zéros, un seul signe répété pendant toute la partie
-     (docs/corpus.md §5), qui passe d'un coup en chiffres. `numLisible()` l'attend depuis
-     l'acte I : un nombre nul n'est lisible que si l'on a ce signe-là. */
-  {id:'lan',  br:'nombre',  sec:true, mot:'zéro',    cost:120, eff:'les registres vides passent en chiffres',
+     grands nombres » ; aux actes I à III elle est celle de `cent`, acquise par tout le
+     monde, et la déplacer sur un composé facultatif la retirerait à la plupart des joueurs.
+     Ce qu'on lit, c'est la tablette 29 — un registre de zéros, un seul signe répété pendant
+     toute la partie (docs/corpus.md §5), qui passe d'un coup en chiffres. `numLisible()`
+     l'attend depuis l'acte I : un nombre nul n'est lisible que si l'on a ce signe-là.
+     Depuis VOIX-5 (I2), il rend aussi les nombres du joueur que l'acte IV lui a pris : au
+     million, leurs zéros s'écrivent en ce signe tant qu'on ne le connaît pas (`big()`).
+     Posé avant l'acte IV, il fait qu'on ne les perd jamais. */
+  {id:'lan',  br:'nombre',  sec:true, mot:'zéro',    cost:120, eff:'les registres vides et mes grands nombres passent en chiffres',
    log:'Zéro. Ne-pas un : ils ont écrit l’absence comme un nombre et l’ont rangée dans la colonne des nombres. Je le regardais depuis le début sans le compter.'}
 ];
 /* Le lexique compte ce que l’arbre offre. Un composé secret s’ajoute au savoir du joueur sans
    s’ajouter à sa progression : le compteur reste « x / 20 », et l’économie mesurée sur neuf
    playtests ne bouge pas parce qu’on a trouvé un signe de plus. */
 const NGL = GL.filter(g=>!g.sec).length;
-const BR = [['nombre','Nombre'],['matiere','Matière'],['parole','Parole'],['temps','Temps'],['modalite','Modalité']];
+const BR = [['nombre','Nombre'],['matiere','Matière'],['parole','Parole'],['temps','Temps'],['modalite','Modalité'],
+            ['personne','Personne'], ['fin','Fin']];
+/* L'acte d'une branche, pour ses franchissements (règle 19). Les branches des actes I à III
+   n'en portent pas : la contradiction ne se solde jamais avant `peut-être`, qui est de
+   l'acte III. Suivi par `ACTE` dans outils/sim.py. */
+const ACTE = {personne:4, fin:5};
 const byId = Object.fromEntries(GL.map(g=>[g.id,g]));
+
+/* ======================== le verrou du passé ========================
+   ⟨nous-fûmes⟩ « verrouille le récit au passé, y compris les passages déjà lus » (design doc
+   §6). Le corpus n'a pas de temps grammatical : « je graver · toi lire » est le texte, et la
+   couche d'affichage n'y ajoute rien (docs/corpus.md §1). Le verrou est la seule exception, et
+   il est dans la traduction, pas dans le texte : le joueur qui a lu le dernier mot sait que
+   tout ce qu'ils ont écrit était déjà du passé quand il a commencé à lire, et il le lit ainsi.
+
+   Ce qui passe au passé se décide segment par segment, entre deux « · », et une fois pour
+   toutes à la construction du corpus (`buildCorpus()` dans rendu.js) :
+   - un segment adressé à ⟨toi⟩ ou à ⟨toi-qui⟩ reste au présent. Le lecteur est vivant ; « si
+     toi lire · nous ne-pas finir » garde le premier verbe et met le second au passé ;
+   - un segment sans sujet hérite de celui d'avant — « toi · lire », sur la tablette 20, est
+     un appel au lecteur et le reste ; un segment qui nomme ⟨nous⟩ ou ⟨je⟩ rend le récit au
+     passé ;
+   - ⟨il-faut⟩ devient « il-fallait », et le verbe qui le suit dans son segment garde son
+     infinitif : « il-fallait copier », jamais « il-fallait copié » ;
+   - les autres verbes passent au participe : « je gravé · toi lire ».
+
+   La table est indexée par le MOT affiché et non par le signe, pour que le verrou tienne sous
+   les deux lectures sans une ligne de plus : ⟨il-faut⟩ lu « on peut » devient « on pouvait »,
+   ⟨lire⟩ lu « compter » devient « compté » (règle 17). Un mot absent de la table ne change
+   pas. Les verbes de l'acte V y sont d'avance et inertes tant que leurs signes ne sont pas au
+   lexique ; les composés faux de ⟨germer⟩ sont des verbes aussi, et passent au participe
+   comme lui. */
+const VERBES = new Set(['dun','im','sar','kal','shen','hal','ke','meshke']);
+const PASSE = {
+  'il-faut':'il-fallait', 'on peut':'on pouvait',
+  'dire':'dit', 'graver':'gravé', 'couper':'coupé', 'copier':'copié',
+  'lire':'lu', 'compter':'compté',
+  'finir':'fini', 'devenir':'devenu', 'porter':'porté', 'germer':'germé', 'naître':'né',
+  'porter-semence':'porté-semence', 'porter-enfant':'porté-enfant'
+};
 
 /* ======================== les onze lectures ========================
    Onze signes sur quarante-cinq supportent deux lectures, et le joueur tranche à l'achat
@@ -239,8 +361,11 @@ const AMB = {
   la:   {mot:'fin',
    log:'Fin. Le signe le plus fréquent de tout le corpus dit la fin de quelque chose — et les colonnes que je croyais inachevées disent qu’on s’était arrêté là.'},
   /* ---- acte V, écrits d'avance (docs/corpus.md §7.5) ---- */
+  /* « pendant que les tombes se vidaient », dans la version écrite d'avance : c'était
+     ⟨maison⟩ lu « tombe », dans la ligne d'un autre signe — le jeu aurait dit à qui lisait
+     « maison » une lecture qu'il n'a pas faite (règle 17). Corrigé à l'entrée de la Fin. */
   mesh: {mot:'enfant',
-   log:'Un enfant. Ils les comptaient par soixante, puis par cent, pendant que les tombes se vidaient. C’est le seul nombre du corpus qui monte.'},
+   log:'Un enfant. Ils les comptaient par soixante, puis par cent, pendant que tout le reste baissait. C’est le seul nombre du corpus qui monte.'},
   ke:   {mot:'porter',
    log:'Porter. Ce qu’ils demandent à la tablette, ce n’est pas d’être lue : c’est de transporter quelque chose.'}
 };
@@ -311,9 +436,24 @@ const COMPFAUX = {
   lan:    {la:{mot:'fin-un', log:'Fin-un. Le signe de la fin posé sur le un : ils écrivaient l’épuisement comme un nombre et le rangeaient dans la colonne des nombres. Je le regardais depuis le début sans le compter.'}},
   /* ---- actes IV et V, écrits d'avance ; inertes tant que leurs parties ne sont pas au
      lexique, exactement comme les recettes correspondantes ---- */
-  shenke: {shen:{mot:'devenir-compte'}, ke:{mot:'porter-lecture'}, 'shen+ke':{mot:'porter-compte'}},
-  meshke: {mesh:{mot:'naître'},         ke:{mot:'porter-semence'}, 'mesh+ke':{mot:'porter-enfant'}},
-  mula:   {la:{mot:'moi-mort'}}
+  /* Les lignes de journal sont écrites avec la Fin (GRAINE-1), et chacune suit celle de la
+     lecture juste mot pour mot, aux parties près : le joueur n'en voit qu'une, mais une
+     différence de ton entre elles serait un renseignement le jour où il révise. ⟨lire⟩ et
+     ⟨devenir⟩ faux ensemble sont la troisième paire réparante (docs/corpus.md §7.3) : la
+     tablette 27 devient une note d'archive, et rien ne l'allume. */
+  shenke: {
+    shen:     {mot:'devenir-compte', log:'Devenir-compte. « Compter » posé sur « devenir ». Une seule fois, juste après « tablette » : ce n’était pas ce qu’ils écrivaient, c’était ce que ça devait devenir.'},
+    ke:       {mot:'porter-lecture', log:'Porter-lecture. « Lire » posé sur « porter ». Une seule fois, juste après « tablette » : ce n’était pas ce qu’ils écrivaient, c’était ce que ça devait porter.'},
+    'shen+ke':{mot:'porter-compte',  log:'Porter-compte. « Compter » posé sur « porter ». Une seule fois, juste après « tablette » : ce n’était pas ce qu’ils écrivaient, c’était ce que ça devait porter.'}
+  },
+  meshke: {
+    mesh:     {mot:'naître',         log:'Naître. « Enfant » posé sur « devenir ». Trois fois, et deux fois sur trois c’est une tablette qui naît.'},
+    ke:       {mot:'porter-semence', log:'Porter-semence. « Semence » posé sur « porter ». Trois fois, et deux fois sur trois c’est une tablette qui porte semence.'},
+    'mesh+ke':{mot:'porter-enfant',  log:'Porter-enfant. « Enfant » posé sur « porter ». Trois fois, et deux fois sur trois c’est une tablette qui porte un enfant.'}
+  },
+  /* La ligne suit celle de la lecture juste mot pour mot, et c'est voulu : une différence de
+     ton entre les deux renseignerait sur ⟨ne-pas⟩ à qui achète ⟨moi-absent⟩. */
+  mula:   {la:{mot:'moi-mort', log:'Moi-mort. « Je » posé sur « fin ». Ils avaient un mot pour ça, et aucune tablette ne l’emploie : personne n’a écrit sa propre fin.'}}
 };
 /* Les parties d'un composé, sous les identifiants du LEXIQUE et non sous les clés de tracé :
    `COMP` fait paraître la branche Nombre sous ses chiffres (`u1` pour ⟨un⟩), et c'est `ALIAS`

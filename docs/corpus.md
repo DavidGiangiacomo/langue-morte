@@ -15,7 +15,7 @@ Trois conséquences de production :
 
 - **La masse répétitive n'est pas du remplissage, elle est le substrat du déchiffrement.** Elle se génère à partir de règles (§6), elle ne s'écrit pas à la main.
 - **Tout le corpus tient dans 45 mots** plus les nombres et six noms propres jamais déchiffrés. Cette contrainte n'est pas une limite subie : c'est elle qui produit le style. Un peuple qui n'a que « ne-pas » pour dire l'absence écrit « eau ne-pas », et c'est plus dur que n'importe quelle phrase qu'on pourrait écrire à sa place.
-- **Le français lu est télégraphique.** Pas d'articles, pas de prépositions, pas d'accord. La couche d'affichage n'ajoute rien. « champ 3 · grain 140 » est le texte, pas un résumé du texte.
+- **Le français lu est télégraphique.** Pas d'articles, pas de prépositions, pas d'accord. La couche d'affichage n'ajoute rien. « champ 3 · grain 140 » est le texte, pas un résumé du texte. *Une seule exception, depuis le 14/10/2026 : le verrou du passé de ⟨nous-fûmes⟩, qui met le récit au passé dans la traduction et jamais dans le texte (règle 22 de `CLAUDE.md`).*
 
 **Réalisé** : 705 lignes, **3 838 signes**, dont 58 % lisibles avec les 13 signes du MVP.
 
@@ -641,7 +641,7 @@ déjà. C'est là que le piège se referme.
 | `eau` | sang | Le sang. Un relevé par année, tenu sur deux siècles. Je préfère ne pas savoir de quoi ils tenaient le compte si scrupuleusement. |
 | `grain` | poussière | De la poussière. Ce ne sont pas des prières : ce sont des comptes de cendres, et ils les ont tenus jusqu'au bout. |
 | `maison` | tombe | Une tombe. Les outils du corpus prennent un nom, et ce n'est pas celui d'une ville : trente et une tombes la première année, deux la dernière. |
-| `semence` | enfant | Un enfant. Ils les comptaient par soixante, puis par cent, pendant que les tombes se vidaient. C'est le seul nombre du corpus qui monte. |
+| `semence` | enfant | Un enfant. Ils les comptaient par soixante, puis par cent, pendant que tout le reste baissait. C'est le seul nombre du corpus qui monte. *(« pendant que les tombes se vidaient » jusqu'au 19/10/2026 : c'était ⟨maison⟩ lu « tombe », une lecture que le joueur n'a pas forcément faite — règle 17)* |
 | `année` | soleil | Le soleil. Chaque tablette porte le sien depuis le début — je ne savais pas lire la date. |
 | `graver` | couper | Couper. Quelqu'un a tenu ce stylet, et il a entaillé l'argile comme on entaille autre chose. |
 | `il-faut` | on peut | On peut. Ce n'est pas un inventaire qui parle, c'est quelqu'un qui autorise — et sur deux siècles, l'autorisation ne change pas : copier. |
@@ -649,8 +649,11 @@ déjà. C'est là que le piège se referme.
 | `devenir` | porter | Porter. Ce qu'ils demandent à la tablette, ce n'est pas d'être lue : c'est de transporter quelque chose. |
 | `ne-pas` | fin | Fin. Le signe le plus fréquent de tout le corpus dit la fin de quelque chose — et les colonnes que je croyais inachevées disent qu'on s'était arrêté là. |
 
-`semence` et `devenir` n'ont pas encore d'entrée juste : leur branche est l'acte V (GRAINE-1). Les
-lectures fausses ci-dessus sont écrites d'avance et attendent leur signe.
+`semence` et `devenir` ont leur entrée juste depuis l'entrée de la Fin (GRAINE-1, 19/10/2026),
+dans `src/lexique.js` : « La semence. Soixante, puis quatre-vingts, puis cent, pendant que tout le
+reste baissait : c'est le seul nombre du corpus qui monte. » et « Devenir. Ce qu'ils demandent à
+la tablette, ce n'est pas de durer : c'est de devenir autre chose. » Chacune suit la fausse au
+plus près, comme ⟨moi-absent⟩ suit ⟨moi-mort⟩.
 
 ---
 
