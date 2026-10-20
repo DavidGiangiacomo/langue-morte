@@ -227,6 +227,18 @@ enrober('relire', () => relecture, () => {
   return n('malu') + ' mal lus · ' + n('corrige') + ' corrigés · ' + n('jamais') + ' jamais trouvés';
 });
 
+/* I2 (VOIX-5) : la première fois qu'un nombre du joueur s'écrit avec leurs zéros, et lequel.
+   Ce n'est pas une action, c'est ce que l'écran a montré — une ligne par partie. Entre elle et
+   la composition de ⟨zéro⟩ se lit le temps passé sans pouvoir lire ses propres nombres. Un
+   drapeau et non `dejaTracee()` : la fonction tourne à chaque frame, et remonter le journal à
+   chaque appel coûterait plus que tout le reste de la barre. */
+let zerosVus = dejaTracee('zeros');
+const _grandNombre = grandNombre;
+grandNombre = function(n){
+  if(!zerosVus){ zerosVus = true; tracer('zeros', nf.format(n)); }
+  return _grandNombre(n);
+};
+
 /* La navigation dit si la barre de tablettes sert. On ignore les sauts qui n'aboutissent
    pas ailleurs, sinon maintenir `j` en fin de corpus remplirait le relevé. */
 let derniereTablette = null;
@@ -311,7 +323,7 @@ $('tr-cp').addEventListener('click', e => {
    précédente qu'elle date, pas le début de la suivante. */
 const _recommencer = recommencer;
 recommencer = function(){
-  tracer('reset'); prochainEtat = 0; derniereTablette = null; doneT0 = 0;
+  tracer('reset'); prochainEtat = 0; derniereTablette = null; doneT0 = 0; zerosVus = false;
   return _recommencer();
 };
 

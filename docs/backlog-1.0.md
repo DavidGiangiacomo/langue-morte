@@ -92,6 +92,7 @@ Suivi : [#21](https://github.com/DavidGiangiacomo/langue-morte/issues/21) — le
 - Dépend de : COMP-1, **et de `ne-pas`** (MOD-1) — c'est la première fois qu'une branche de l'acte IV mord sur une branche de l'acte I.
 - Attention : la tablette 29 (registre de zéros) doit rester un seul signe répété jusque-là (`docs/corpus.md` §5, note « heureux accident »).
 - *Fait* : 120 C, hors arbre, sans effet mécanique. **La notation compacte des grands nombres ne lui revient pas** — elle est déjà celle de `cent`, acquise par tout le monde, et la déplacer sur un composé facultatif la retirerait à la plupart des joueurs (voir `docs/journal.md`, « La Modalité, et le zéro »). Onze zéros passent en chiffres, dont les neuf de la tablette 29, qui reste un seul signe répété jusque-là. Coût mesuré pour qui le pose : deux minutes de progression, écart max porté à 6,2 min.
+- *Repris le 20/10/2026 (VOIX-5)* : à l'acte IV, ⟨zéro⟩ rend enfin des nombres — ceux du joueur, dont les zéros s'écrivent en son tracé au million tant qu'il ne l'a pas posé. Ce que le design doc §7 lui promettait, au moment où il y a quelque chose à rendre.
 
 **COMP-4 — `grenier` et `devenir-lecture`** · T:S — *`grenier` fait ; `devenir-lecture` fait avec GRAINE-1 (19/10/2026, branche de travail)* · [#30](https://github.com/DavidGiangiacomo/langue-morte/issues/30)
 > En tant que joueur, je veux que les deux autres composés secrets soient atteignables en avance sur le récit.
@@ -401,10 +402,11 @@ Suivi : [#24](https://github.com/DavidGiangiacomo/langue-morte/issues/24) — le
 
 - *Fait* : une copie du corpus — « si copier 100 · un devenir » —, ouverte par ⟨nous⟩, en un seul exemplaire. Chaque tablette rouvre la moitié de son gisement, tarifée au premier relevé sur la copie (règle 9) ; l'original passe d'abord. La main passe à 26–33 % des occurrences avec Élèves et 26 % sans, sous le plafond de 40. Voir la règle 29 de `CLAUDE.md` et `docs/journal.md`, « Le Corpus jumeau ».
 
-**VOIX-5 — I2 : perdre la lisibilité de ses propres nombres** · T:M · [#38](https://github.com/DavidGiangiacomo/langue-morte/issues/38)
+**VOIX-5 — I2 : perdre la lisibilité de ses propres nombres** · ~~T:M~~ **fait** (20/10/2026, branche de travail empilée sur `eleve`) · [#38](https://github.com/DavidGiangiacomo/langue-morte/issues/38)
 > En tant que joueur, je veux que la notation scientifique arrive **en signes non déchiffrés**, au moment précis où mes nombres deviennent énormes.
 
 - Fini quand : pas de notation scientifique avant l'acte IV ; à son apparition, elle est illisible ; elle se déchiffre ensuite comme le reste.
+- *Fait* : au million, une fois l'acte IV ouvert, un nombre garde trois chiffres au joueur et ses zéros s'écrivent du tracé de ⟨zéro⟩ — compteurs et coûts. ⟨zéro⟩, posé à la grille, rend la notation compacte de ⟨cent⟩. Le prototype n'affiche jamais plus de cinq millions : seule la tranche du million existe. Qui ne compose pas ⟨zéro⟩ joue 40 à 56 minutes sans lire ses nombres. Voir la règle 30 de `CLAUDE.md` et `docs/journal.md`, « I2 — les zéros sont les leurs ».
 
 ---
 
@@ -661,7 +663,7 @@ du journal de PT11 — il déplace l'économie que PT11 doit mesurer. Puis J3, l
 |---|---|---|
 | ~~**J1 — L'acte III se termine**~~ *(fait, 14/09/2026)* | ~~E1 (composition)~~ + ~~PAR-1~~ + ~~MOD-1~~ + ~~COMP-3~~ + ~~PAR-2~~ | 28 glyphes, la composition, `les-lecteurs` |
 | ~~**J2 — Le mensonge**~~ *(fait, 15/09/2026)* | ~~TXT-1 · E3 · MOD-2 · MOD-3 · E4~~ → **E5 (Élève)** écrit, à fusionner après PT11 | l'acte III entier, la confiance, la contradiction, **`faux`** |
-| **J3 — La voix** | E6 (Personne, Questions, Corpus jumeau, I2) | l'acte IV |
+| **J3 — La voix** *(écrit, 20/10/2026, sur la branche empilée sur `eleve`)* | ~~E6 (Personne, Questions, Corpus jumeau, I2)~~ | l'acte IV |
 | **J4 — La graine** | E7 + E8 | les cinq actes, les deux fins, la relecture |
 | **J5 — 1.0** | E9 (final) + E11 | une version publique |
 

@@ -265,13 +265,15 @@ const GL = [
    log:'Le grenier — la maison du grain. Personne ne me l’a appris : c’était écrit dans le signe.'},
   /* `zéro` est le seul composé dont les deux parties viennent de deux branches et de deux
      actes — ⟨ne-pas⟩ posé sur ⟨un⟩. Le design doc lui prête « la notation compacte des
-     grands nombres » ; elle est déjà celle de `cent`, acquise par tout le monde, et la
-     déplacer sur un composé facultatif la retirerait à la plupart des joueurs. Son effet
-     est donc celui du grenier : on le lit, et c'est tout. Ce qu'on lit, c'est la
-     tablette 29 — un registre de zéros, un seul signe répété pendant toute la partie
-     (docs/corpus.md §5), qui passe d'un coup en chiffres. `numLisible()` l'attend depuis
-     l'acte I : un nombre nul n'est lisible que si l'on a ce signe-là. */
-  {id:'lan',  br:'nombre',  sec:true, mot:'zéro',    cost:120, eff:'les registres vides passent en chiffres',
+     grands nombres » ; aux actes I à III elle est celle de `cent`, acquise par tout le
+     monde, et la déplacer sur un composé facultatif la retirerait à la plupart des joueurs.
+     Ce qu'on lit, c'est la tablette 29 — un registre de zéros, un seul signe répété pendant
+     toute la partie (docs/corpus.md §5), qui passe d'un coup en chiffres. `numLisible()`
+     l'attend depuis l'acte I : un nombre nul n'est lisible que si l'on a ce signe-là.
+     Depuis VOIX-5 (I2), il rend aussi les nombres du joueur que l'acte IV lui a pris : au
+     million, leurs zéros s'écrivent en ce signe tant qu'on ne le connaît pas (`big()`).
+     Posé avant l'acte IV, il fait qu'on ne les perd jamais. */
+  {id:'lan',  br:'nombre',  sec:true, mot:'zéro',    cost:120, eff:'les registres vides et mes grands nombres passent en chiffres',
    log:'Zéro. Ne-pas un : ils ont écrit l’absence comme un nombre et l’ont rangée dans la colonne des nombres. Je le regardais depuis le début sans le compter.'}
 ];
 /* Le lexique compte ce que l’arbre offre. Un composé secret s’ajoute au savoir du joueur sans

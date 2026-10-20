@@ -663,8 +663,25 @@ const hypCost = () => 3;
 /* ---- formats ---- */
 const nf = new Intl.NumberFormat('fr-FR');
 function f(n,d){ return n.toFixed(d).replace('.',','); }
+/* I2 (VOIX-5) : au million, une fois l'acte IV ouvert, le joueur perd la lisibilité de ses
+   propres nombres. Trois chiffres restent les siens ; les zéros qui suivent sont les leurs,
+   dessinés comme ⟨zéro⟩ — ⟨ne-pas⟩ sur ⟨un⟩ (règle 4), le signe qui tenait ses compteurs à la
+   première seconde. 2 345 678 s'écrit « 234 » et quatre zéros ; 1 050 000, « 105 » et quatre ;
+   1 000 000, « 1 » et six : un zéro de queue n'est jamais un chiffre à lui. La largeur dit
+   l'ordre de grandeur, et on la déchiffre en la regardant monter, comme le compteur de
+   l'acte I. ⟨zéro⟩, posé à la grille, rend la notation compacte de ⟨cent⟩ — ce que le design
+   doc §7 lui promettait. Le seuil est une règle et pas une mesure : le simulateur n'affiche
+   rien au million avant ⟨nous⟩, mais un joueur qui thésaurise le pourrait. */
+const GRAND = 1e6;
+const acteIV = () => S_.gl.some(x => byId[x] && !byId[x].sec && (ACTE[byId[x].br]||0) >= 4);
+const zerosLeurs = n => n >= GRAND && !has('lan') && acteIV();
+function grandNombre(n){
+  const s = String(n), sig = s.slice(0, 3).replace(/0+$/, '');
+  return sig + '<span class="numgl zeros">' + sv('lan').repeat(s.length - sig.length) + '</span>';
+}
 function big(n){
   n = Math.floor(n);
+  if(zerosLeurs(n)) return grandNombre(n);
   if(has('meku')){
     if(n>=1e9) return f(n/1e9,2)+' Md';
     if(n>=1e6) return f(n/1e6,2)+' M';

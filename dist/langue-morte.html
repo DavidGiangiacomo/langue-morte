@@ -131,6 +131,10 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .tablet[hidden]{display:none}
 .numgl{display:inline-flex;gap:2px;align-items:center;color:var(--faint)}
 .numgl .gl{width:11px;height:15px}
+/* I2 : les zéros d'un grand nombre, collés aux chiffres qu'ils prolongent (VOIX-5) — dans
+   la couleur du nombre et non dans celle des glyphes inertes : ils en font partie, et c'est
+   le nombre du joueur qui change d'écriture, pas un signe qui s'ajoute à côté. */
+.numgl.zeros{margin-left:1px;vertical-align:-2px;color:inherit;opacity:.8}
 
 .log{border-top:1px solid var(--line);padding:9px 16px;min-height:52px;display:flex;flex-direction:column;gap:3px;justify-content:center}
 .log p{margin:0;font-size:14.5px;font-style:italic;color:var(--mid)}
@@ -971,13 +975,15 @@ const GL = [
    log:'Le grenier — la maison du grain. Personne ne me l’a appris : c’était écrit dans le signe.'},
   /* `zéro` est le seul composé dont les deux parties viennent de deux branches et de deux
      actes — ⟨ne-pas⟩ posé sur ⟨un⟩. Le design doc lui prête « la notation compacte des
-     grands nombres » ; elle est déjà celle de `cent`, acquise par tout le monde, et la
-     déplacer sur un composé facultatif la retirerait à la plupart des joueurs. Son effet
-     est donc celui du grenier : on le lit, et c'est tout. Ce qu'on lit, c'est la
-     tablette 29 — un registre de zéros, un seul signe répété pendant toute la partie
-     (docs/corpus.md §5), qui passe d'un coup en chiffres. `numLisible()` l'attend depuis
-     l'acte I : un nombre nul n'est lisible que si l'on a ce signe-là. */
-  {id:'lan',  br:'nombre',  sec:true, mot:'zéro',    cost:120, eff:'les registres vides passent en chiffres',
+     grands nombres » ; aux actes I à III elle est celle de `cent`, acquise par tout le
+     monde, et la déplacer sur un composé facultatif la retirerait à la plupart des joueurs.
+     Ce qu'on lit, c'est la tablette 29 — un registre de zéros, un seul signe répété pendant
+     toute la partie (docs/corpus.md §5), qui passe d'un coup en chiffres. `numLisible()`
+     l'attend depuis l'acte I : un nombre nul n'est lisible que si l'on a ce signe-là.
+     Depuis VOIX-5 (I2), il rend aussi les nombres du joueur que l'acte IV lui a pris : au
+     million, leurs zéros s'écrivent en ce signe tant qu'on ne le connaît pas (`big()`).
+     Posé avant l'acte IV, il fait qu'on ne les perd jamais. */
+  {id:'lan',  br:'nombre',  sec:true, mot:'zéro',    cost:120, eff:'les registres vides et mes grands nombres passent en chiffres',
    log:'Zéro. Ne-pas un : ils ont écrit l’absence comme un nombre et l’ont rangée dans la colonne des nombres. Je le regardais depuis le début sans le compter.'}
 ];
 /* Le lexique compte ce que l’arbre offre. Un composé secret s’ajoute au savoir du joueur sans
@@ -1866,8 +1872,25 @@ const hypCost = () => 3;
 /* ---- formats ---- */
 const nf = new Intl.NumberFormat('fr-FR');
 function f(n,d){ return n.toFixed(d).replace('.',','); }
+/* I2 (VOIX-5) : au million, une fois l'acte IV ouvert, le joueur perd la lisibilité de ses
+   propres nombres. Trois chiffres restent les siens ; les zéros qui suivent sont les leurs,
+   dessinés comme ⟨zéro⟩ — ⟨ne-pas⟩ sur ⟨un⟩ (règle 4), le signe qui tenait ses compteurs à la
+   première seconde. 2 345 678 s'écrit « 234 » et quatre zéros ; 1 050 000, « 105 » et quatre ;
+   1 000 000, « 1 » et six : un zéro de queue n'est jamais un chiffre à lui. La largeur dit
+   l'ordre de grandeur, et on la déchiffre en la regardant monter, comme le compteur de
+   l'acte I. ⟨zéro⟩, posé à la grille, rend la notation compacte de ⟨cent⟩ — ce que le design
+   doc §7 lui promettait. Le seuil est une règle et pas une mesure : le simulateur n'affiche
+   rien au million avant ⟨nous⟩, mais un joueur qui thésaurise le pourrait. */
+const GRAND = 1e6;
+const acteIV = () => S_.gl.some(x => byId[x] && !byId[x].sec && (ACTE[byId[x].br]||0) >= 4);
+const zerosLeurs = n => n >= GRAND && !has('lan') && acteIV();
+function grandNombre(n){
+  const s = String(n), sig = s.slice(0, 3).replace(/0+$/, '');
+  return sig + '<span class="numgl zeros">' + sv('lan').repeat(s.length - sig.length) + '</span>';
+}
 function big(n){
   n = Math.floor(n);
+  if(zerosLeurs(n)) return grandNombre(n);
   if(has('meku')){
     if(n>=1e9) return f(n/1e9,2)+' Md';
     if(n>=1e6) return f(n/1e6,2)+' M';
@@ -3654,7 +3677,7 @@ const TKEY = 'langue-morte-traces-v1';
    réécrit cette ligne ; en jouant depuis `src/` elle reste « src ». Un TSV qui revient
    trois semaines après la partie ne dit rien de lui-même sans ça : ni contre quels réglages
    il a été joué, ni si le sélecteur de vitesse était même à l'écran. */
-let BUILD = 'dev · 2026-10-19';
+let BUILD = 'dev · 2026-10-20';
 const TMAX = 20000;              // garde-fou : PT1 avait produit 3 853 clics
 let TR = [];
 try{ const raw = localStorage.getItem(TKEY); if(raw) TR = JSON.parse(raw) || []; }catch(e){}
@@ -3858,6 +3881,18 @@ enrober('relire', () => relecture, () => {
   return n('malu') + ' mal lus · ' + n('corrige') + ' corrigés · ' + n('jamais') + ' jamais trouvés';
 });
 
+/* I2 (VOIX-5) : la première fois qu'un nombre du joueur s'écrit avec leurs zéros, et lequel.
+   Ce n'est pas une action, c'est ce que l'écran a montré — une ligne par partie. Entre elle et
+   la composition de ⟨zéro⟩ se lit le temps passé sans pouvoir lire ses propres nombres. Un
+   drapeau et non `dejaTracee()` : la fonction tourne à chaque frame, et remonter le journal à
+   chaque appel coûterait plus que tout le reste de la barre. */
+let zerosVus = dejaTracee('zeros');
+const _grandNombre = grandNombre;
+grandNombre = function(n){
+  if(!zerosVus){ zerosVus = true; tracer('zeros', nf.format(n)); }
+  return _grandNombre(n);
+};
+
 /* La navigation dit si la barre de tablettes sert. On ignore les sauts qui n'aboutissent
    pas ailleurs, sinon maintenir `j` en fin de corpus remplirait le relevé. */
 let derniereTablette = null;
@@ -3942,7 +3977,7 @@ $('tr-cp').addEventListener('click', e => {
    précédente qu'elle date, pas le début de la suivante. */
 const _recommencer = recommencer;
 recommencer = function(){
-  tracer('reset'); prochainEtat = 0; derniereTablette = null; doneT0 = 0;
+  tracer('reset'); prochainEtat = 0; derniereTablette = null; doneT0 = 0; zerosVus = false;
   return _recommencer();
 };
 

@@ -132,7 +132,7 @@ class Rejeu:
                  recs=[], comps=[], concs=[], navs=[], revs=[], achats=[], etats=[],
                  couts_t=[], main_t=[], contr=None, contr_levee=None,
                  finjeu=None, fin=None, gis_fichier=None, eleve={}, toi=None, questions=[],
-                 fins=[], interrompu=None, relu=None)
+                 fins=[], interrompu=None, relu=None, zeros=None)
         prev_t = self.ev[0][0]
         for t, genre, det in self.ev:
             s['o_auto'] += self.obrut() * max(0.0, t - prev_t)
@@ -236,6 +236,11 @@ class Rejeu:
             elif genre == 'tablette':
                 s['navs'].append((t, det))
 
+            # I2 (VOIX-5) : la première fois qu'un nombre du joueur s'écrit avec leurs zéros,
+            # et lequel. Une seule ligne par partie ; ce n'est pas une action.
+            elif genre == 'zeros':
+                s['zeros'] = (t, det)
+
             elif genre == 'veillee':
                 # La ligne porte le TOTAL d'occurrences au retour, pas le gain. On prend
                 # donc le dernier solde connu comme point de départ : c'est approximatif,
@@ -307,7 +312,7 @@ def mmss(t):
 # secondes-là et celles de la montre. Le contrôle ci-dessous le trouverait donc parfaitement
 # cohérent — d'où l'avertissement en tête de rapport, qui ne se déduit d'aucun chiffre.
 INERTES = ('etat', 'tablette', 'concChoisir', 'fin', 'finjeu', 'vitesse', 'finsOuvrir', 'interrompre',
-           'relire', 'lireCorpus')
+           'relire', 'lireCorpus', 'zeros')
 
 
 def controle(ev):
@@ -534,6 +539,30 @@ def rapport(ev, nom):
         print('  %d posée%s · %d réponse%s · %d silence%s'
               % (len(s['questions']), 's' if len(s['questions']) > 1 else '',
                  n_rep, 's' if n_rep > 1 else '', n_sil, 's' if n_sil > 1 else ''))
+
+    # I2 (VOIX-5) : au million, une fois l'acte IV ouvert, les zéros des nombres du joueur
+    # s'écrivent en ⟨zéro⟩ tant qu'il ne l'a pas composé. Ce qui se mesure : quand, et combien
+    # de temps il a joué sans lire ses propres nombres — puis, de vive voix, s'il les a
+    # déchiffrés en les regardant monter.
+    acte4 = next((t for t, g, _, _, _, _ in s['achats'] if sim.ACTE.get(BRANCHE.get(g), 0) >= 4), None)
+    zero = next((t for t, g, _, _, _, _ in s['achats'] if g == 'lan'), None)
+    if acte4 is not None or s['zeros'] or zero is not None:
+        titre('mes nombres (I2, VOIX-5)')
+        print('  acte IV ouvert %s · ⟨zéro⟩ %s'
+              % (mmss(acte4) if acte4 is not None else 'jamais',
+                 'composé à ' + mmss(zero) if zero is not None else 'jamais composé'))
+        if s['zeros']:
+            t0, n0 = s['zeros']
+            print('  premier nombre écrit avec leurs zéros à %s : %s' % (mmss(t0), n0))
+            fin_t = zero if zero is not None and zero > t0 else (s['finjeu'] or (s['interrompu'] or [None])[0])
+            if zero is not None and zero > t0:
+                print('  %.1f min sans lire ses propres nombres, jusqu\'à ⟨zéro⟩' % ((zero - t0) / 60))
+            elif fin_t:
+                print('  %.1f min sans lire ses propres nombres, jusqu\'à la fin' % ((fin_t - t0) / 60))
+        elif zero is not None:
+            print('  ⟨zéro⟩ posé avant que ses nombres n\'atteignent le million : ils ne lui ont jamais été pris')
+        elif acte4 is not None:
+            print('  aucun nombre n\'a atteint le million')
 
     if s['finjeu'] or s['fin'] or s['fins']:
         titre('la fin (FIN-1, FIN-2, FIN-3, règle 16)')

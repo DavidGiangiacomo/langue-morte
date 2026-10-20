@@ -120,6 +120,10 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .tablet[hidden]{display:none}
 .numgl{display:inline-flex;gap:2px;align-items:center;color:var(--faint)}
 .numgl .gl{width:11px;height:15px}
+/* I2 : les zéros d'un grand nombre, collés aux chiffres qu'ils prolongent (VOIX-5) — dans
+   la couleur du nombre et non dans celle des glyphes inertes : ils en font partie, et c'est
+   le nombre du joueur qui change d'écriture, pas un signe qui s'ajoute à côté. */
+.numgl.zeros{margin-left:1px;vertical-align:-2px;color:inherit;opacity:.8}
 
 .log{border-top:1px solid var(--line);padding:9px 16px;min-height:52px;display:flex;flex-direction:column;gap:3px;justify-content:center}
 .log p{margin:0;font-size:14.5px;font-style:italic;color:var(--mid)}

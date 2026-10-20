@@ -23,6 +23,9 @@ Contrôle :
      moitié de son gisement, tarifée au premier relevé sur la copie ; l'original passe
      d'abord, la barre et le texte le montrent, et le journal d'actions dit quel gisement a
      payé
+ 33. I2 : au million, une fois l'acte IV ouvert, les zéros des nombres du joueur s'écrivent
+     en ⟨zéro⟩ — compteurs et coûts, pas avant ⟨nous⟩, pas sous le million —, ⟨zéro⟩ posé à
+     la grille rend la notation compacte, et le journal d'actions date la première fois
   7. le relevé se fait dans le corpus ; le gisement s'épuise et se tarife à la 1re visite
   8. le recoupement se fait dans le corpus : deux passages d'un même signe
   9. la datation : une tablette se date quand on sait lire sa date, et pas avant
@@ -1222,7 +1225,9 @@ def main() -> None:
         # la fin : datée au dernier signe de l'arbre, sans attendre l'effacement (FIN-1)
         neuf()
         page.evaluate("() => { S_.C = 9e6; GL.filter(g => !g.sec).forEach(g => acheterGl(g.id)); }")
-        j = journal()
+        # Sans les lignes `zeros` (I2) : une Certitude à neuf millions, que le jeu plafonne à
+        # 9 999, s'écrit avec leurs zéros à la frame suivante — ce n'est pas une action.
+        j = [e for e in journal() if e[0] != "zeros"]
         verifier([g for g, _ in j].count("finjeu") == 1 and j[-1][0] == "finjeu",
                  "« finjeu » suit le dernier signe de l'arbre, et une seule fois")
         verifier(not any(g == "fin" for g, _ in j),
@@ -2374,6 +2379,61 @@ def main() -> None:
             TR.filter(e => e[1] === 'relever').slice(-1)[0][2]]""")
         verifier("rel2" in r[0] and r[1] == "tablette 3 · copie",
                  f"relevé une seconde fois, le jeton le montre, et le journal d'actions dit lequel a payé : {r}")
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+
+        # ---- I2 : perdre la lisibilité de ses propres nombres (VOIX-5) ----
+        # Au million, une fois l'acte IV ouvert, trois chiffres restent au joueur et les zéros
+        # qui suivent sont les leurs, dessinés comme ⟨zéro⟩. ⟨zéro⟩, posé à la grille, rend la
+        # notation compacte de ⟨cent⟩.
+        print("\nI2 : les zéros sont les leurs")
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+        page.evaluate("""() => { S_.C = 9e6; S_.H = 9e6;
+            GL.filter(g => !g.sec && !['personne', 'fin'].includes(g.br)).forEach(g => acheterGl(g.id, 'j'));
+            concFermer(); S_.O = 2345678; S_.H = 0; S_.C = 0; }""")
+        page.wait_for_timeout(200)
+        compteur = lambda: page.evaluate("""() => { const v = $('vl-O');
+            return [v.textContent, v.querySelectorAll('.zeros svg').length]; }""")
+        r = compteur()
+        verifier(r == ["2,35 M", 0], f"avant ⟨nous⟩, le million s'écrit encore en ⟨cent⟩ : {r}")
+        page.evaluate("() => { S_.C = 9999; acheterGl('nash'); S_.C = 0; S_.O = 2345678; }")
+        page.wait_for_timeout(200)
+        r = compteur()
+        verifier(r == ["234", 4], f"l'acte IV ouvert, trois chiffres sont les miens et quatre zéros les leurs : {r}")
+        r = page.evaluate("""() => { const z = $('vl-O').querySelector('.zeros svg');
+            return z && z.outerHTML === new DOMParser().parseFromString(sv('lan'), 'text/html').body.firstChild.outerHTML; }""")
+        verifier(r is True, "et ces zéros sont le tracé de ⟨zéro⟩, ⟨ne-pas⟩ sur ⟨un⟩")
+        # Tronqué et non arrondi, comme `big()` tronque avant de replier : un nombre à moi ne
+        # s'affiche jamais plus grand qu'il n'est.
+        r = page.evaluate("""() => [1000000, 1050000, 1200000, 1999999, 999000, 500000, 123456789].map(n => {
+            const d = document.createElement('span'); d.innerHTML = big(n);
+            return [d.textContent, d.querySelectorAll('.zeros svg').length]; })""")
+        verifier(r == [["1", 6], ["105", 4], ["12", 5], ["199", 4], ["999,0 k", 0], ["500,0 k", 0], ["123", 6]],
+                 f"un zéro de queue n'est jamais un chiffre à moi, et rien ne change sous le million : {r}")
+        # Les coûts passent par la même porte que les compteurs : le prix d'un Élève au million.
+        page.evaluate("() => { S_.b.gram = 1; S_.b.elv = 7; }")
+        page.wait_for_timeout(200)
+        r = page.evaluate("""() => { const c = $('instr').querySelector('[data-ins=elv] .cs');
+            return [c.textContent, c.querySelectorAll('.zeros svg').length, insCost(INS.find(i => i.k === 'elv'))]; }""")
+        verifier(r[0] == "122" and r[1] == 4 and r[2] == 1224441,
+                 f"un coût au million aussi : {r}")
+        r = page.evaluate("() => tracesTSV()").split("\n")
+        r = [l for l in r[max(i for i, l in enumerate(r) if "\treset\t" in l):] if "\tzeros\t" in l]
+        verifier(len(r) == 1 and r[0].split("\t")[3].replace("\u202f", " ") == "2 345 678",
+                 f"le journal d'actions date la première fois, une seule : {[l.split(chr(9))[2:] for l in r]}")
+        # Un composé secret n'ouvre pas l'acte IV : il ne franchit rien (règle 13).
+        r = page.evaluate("() => { S_.gl = S_.gl.filter(x => x !== 'nash'); return acteIV(); }")
+        verifier(r is False, "un composé secret ne compte pas pour l'acte IV")
+        page.evaluate("() => { S_.gl.push('nash'); }")
+        # ⟨zéro⟩ les rend : la notation compacte revient, compteurs et coûts.
+        r = page.evaluate("() => { S_.C = 9999; S_.H = 9999; return [composer('la', 'an'), has('lan'), byId.lan.eff]; }")
+        verifier(r[0] == "acquis" and r[1] is True and "grands nombres" in r[2],
+                 f"⟨zéro⟩ se pose à la grille, et sa ligne dit ce qu'il rend : {r}")
+        page.evaluate("() => { S_.O = 2345678; }")
+        page.wait_for_timeout(200)
+        r = compteur() + [page.evaluate("() => $('instr').querySelector('[data-ins=elv] .cs').textContent")]
+        verifier(r == ["2,35 M", 0, "1,22 M"], f"et mes nombres se relisent : {r}")
         page.evaluate("() => $('reset').click()")
         page.wait_for_timeout(200)
 

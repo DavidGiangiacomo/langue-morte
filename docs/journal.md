@@ -142,6 +142,100 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## I2 — les zéros sont les leurs
+
+*20/10/2026, VOIX-5, sur la branche empilée sur `eleve`.*
+
+L'invariant tient en deux phrases depuis le premier jour : « Pas de notation scientifique avant
+l'acte IV. Quand elle apparaît, elle apparaît d'abord en signes non déchiffrés : le joueur perd
+la lisibilité de ses propres nombres au moment où ils deviennent énormes. » Et « Le compteur
+n'est pas le corpus », plus bas, l'attendait : `readN` ouvre cette lisibilité à l'acte I,
+VOIX-5 devait la refermer à l'acte IV.
+
+### Ce que la mesure a montré avant tout choix
+
+**Il n'y a pas de 10¹⁰ à l'écran.** Le design doc annonce des Occurrences « de 1 à ~10¹⁰ » ;
+c'est vrai de ce que la partie produit, pas de ce qu'elle affiche. Le stock se dépense à mesure
+et culmine vers trois millions, les prix des instruments vers cinq ; rien de ce qui passe par
+`big()` n'atteint la dizaine de millions. Une « notation scientifique » n'a donc qu'une tranche
+à écrire dans le prototype : le million.
+
+**Et le million tombe à l'acte IV de lui-même.** Le premier nombre affiché qui l'atteint est un
+prix d'instrument — celui de l'Élève suivant, quand on en prend —, puis vient le stock
+d'occurrences. Le premier arrive à l'achat de ⟨nous⟩ avec Élèves (88–91 min), une à quatre
+minutes après sans eux, dans les six parties simulées ; le stock, à 90–97 et 98–106. L'invariant
+tient déjà par l'économie ; il restait à le faire tenir par une règle, contre le joueur qui
+thésaurise.
+
+**Tous les signes sont pris**, les quarante-cinq. Aucun ne peut être inventé pour déchiffrer la
+notation neuve — mais un seul n'a pas d'autre effet que d'être lu : ⟨zéro⟩, à qui le design
+doc §7 prêtait « la notation compacte des grands nombres » et que COMP-3 en avait privé,
+parce qu'elle était déjà celle de ⟨cent⟩, acquise par tout le monde.
+
+### Ce qui est tranché
+
+Trois questions à l'auteur, trois réponses, celles que je recommandais.
+
+- **Les zéros sont les leurs.** Au million, trois chiffres restent au joueur, en chiffres
+  arabes, et les zéros qui suivent s'écrivent du tracé de ⟨zéro⟩ — ⟨ne-pas⟩ sur ⟨un⟩. 2 345 678
+  devient « 234 » et quatre zéros ; 1 000 000, « 1 » et six. Contre une vraie mantisse suivie
+  d'un exposant en chiffres de la langue morte (« 2,34 ⟨zéro⟩⟨cinq⟩⟨un⟩ »), plus opaque, et
+  dont seul l'exposant 6 paraît jamais ; et contre « mille mille », que le redoublement de
+  ⟨deux⟩ fait lire 2 000.
+- **⟨zéro⟩, posé à la grille, la déchiffre.** La notation compacte revient. Contre une porte
+  garantie à un signe de la Personne, qui lui aurait donné un effet sans rapport avec lui, et
+  contre une perte définitive.
+- **Au million, pas avant ⟨nous⟩.** Contre une bascule à l'entrée de l'acte IV dès 10 000, où
+  c'est l'acte qui décide et non la taille des nombres.
+
+### Pourquoi ça tient
+
+**La notation se déchiffre sans rien acheter.** Elle est positionnelle : les glyphes sont des
+zéros, à la place exacte où le joueur les attendait, et le nombre garde sa largeur. Un compteur
+qui passe de « 999,9 k » à « 1 » suivi de six fois le même signe, puis à « 101 » et quatre,
+puis à « 102 », apprend ce qu'est ce signe à qui le regarde monter. C'est le « premier plaisir
+du jeu » de l'acte I (design doc §10), celui qu'⟨un⟩ éteint à la deuxième Certitude : il revient
+à l'acte IV, à l'envers — on perd l'écriture de ses nombres au lieu de la gagner.
+
+**⟨zéro⟩ ne renseigne rien de neuf** (règle 14). Son tracé est sous les yeux du joueur depuis
+la première seconde : ce sont ses compteurs vides, et onze zéros du corpus. Le revoir dans un
+nombre ne dit pas qu'il se compose ; la palette, elle, ne le montre toujours pas.
+
+**La règle 3 ne bouge pas.** Les compteurs ne passent pas par `numLisible()` : ce sont les
+chiffres du joueur qui restent, et seuls ses zéros changent d'écriture. I2 est une quatrième
+porte, après les trois autres, dans `big()` — donc compteurs et coûts d'un coup, puisque c'est
+par là que tous deux passent.
+
+### Ce que le lot a trouvé en chemin
+
+**Tronquer, pas arrondir.** La notation compacte arrondit sa mantisse (`toFixed`) : 2 345 678
+s'y écrit « 2,35 M ». La notation neuve tronque, comme `big()` tronque avant de replier — un
+nombre du joueur ne s'affiche jamais plus grand qu'il n'est, et pour un prix c'est ce qui
+compte. Les deux notations ne disent donc pas tout à fait le même chiffre ; c'est ⟨cent⟩ qui a
+tort, et on ne le touche pas ici.
+
+**Les zéros prennent la couleur du nombre.** Dessinés comme les glyphes de nombre inertes, ils
+étaient presque invisibles à onze pixels : c'est le nombre du joueur qui change d'écriture, pas
+un signe qui s'ajoute à côté.
+
+**Le journal d'actions date ce que l'écran a montré**, et non une action : une ligne `zeros`,
+la première fois et une seule par partie. `depouiller.py` en tire le temps passé sans lire ses
+nombres, jusqu'à ⟨zéro⟩ ou jusqu'à la fin. Un test le savait avant moi : la Certitude que les
+tests poussent à neuf millions s'écrivait avec leurs zéros, et une ligne `zeros` venait se
+glisser après `finjeu`.
+
+### Mesuré
+
+Affichage seul : `sim.py` et `balayage.py` ne bougent pas (128,2–133,6 min au réglage en place,
+153,2–157,7 sans Élève, 42 combinaisons sur 54). Ce qui se mesure, c'est la durée de la perte :
+qui ne compose jamais ⟨zéro⟩ joue **40 à 42 minutes** sans lire ses nombres avec Élèves, **55 à
+56** sans — le tiers de la partie. Pour le playtest : **remarque-t-on qu'on a perdu ses
+nombres, les relit-on en les regardant monter, et compose-t-on ⟨zéro⟩ ensuite — à quelle
+minute ?** La troisième se lit dans le TSV ; les deux autres se demandent de vive voix, après
+la question sur ⟨grenier⟩ et le zéro, pour ne pas la souffler.
+
+`outils/verifier.py` passe de 429 à **438 assertions**.
+
 ## Le Corpus jumeau — une copie à relever
 
 *19/10/2026, VOIX-4, sur la branche empilée sur `eleve`.*
@@ -768,7 +862,7 @@ propres comptes ; le corpus reste les nombres de quelqu'un d'autre, et ceux-là 
 signe par signe. Le design doc en fait une catégorie à part depuis le premier jour, au §9,
 invariant **I2** : « le joueur perd la lisibilité de **ses propres nombres** au moment où ils
 deviennent énormes ». `readN` ouvre cette lisibilité à l'acte I ; VOIX-5 la refermera à
-l'acte IV. Les deux portes se tiennent par le même mot.
+l'acte IV. Les deux portes se tiennent par le même mot. *(Refermée le 20/10/2026 : voir « I2 — les zéros sont les leurs ».)*
 
 ### Pourquoi la règle 3 ne *peut pas* s'appliquer là
 

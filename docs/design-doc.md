@@ -136,7 +136,7 @@ Le détail des 45 signes est dans `docs/corpus.md` §2. Effets notables :
 - **17 des 45 signes sont des composés** (table `COMP` dans `src/signes.js`), et ils sont dessinés comme composés dès le premier écran : le joueur voit ⟨maison⟩ et ⟨grain⟩ dans ⟨grenier⟩ bien avant de pouvoir composer quoi que ce soit.
 - **3 ne sont accessibles que par composition** et ne sont jamais offerts par la progression : `zéro` (= `ne-pas` + `un`), `grenier`, `devenir-lecture`.
 
-`zéro` est l'exemple canonique : un signe de la branche Nombre qui se compose avec un signe de la branche Modalité, deux actes plus tard. Il donne rétroactivement la notation compacte des grands nombres. Le joueur qui le trouve seul comprend, à ce moment précis, que ce peuple a *inventé* le zéro — et qu'il regardait ce signe dans ses propres compteurs depuis la première seconde de jeu sans le savoir.
+`zéro` est l'exemple canonique : un signe de la branche Nombre qui se compose avec un signe de la branche Modalité, deux actes plus tard. Il donne rétroactivement la notation compacte des grands nombres. *(Aux actes I à III elle est celle de `cent`, que tout le monde achète ; à l'acte IV, quand les nombres du joueur passent au million et que leurs zéros s'écrivent en signes, c'est lui qui la rend — VOIX-5, 20/10/2026.)* Le joueur qui le trouve seul comprend, à ce moment précis, que ce peuple a *inventé* le zéro — et qu'il regardait ce signe dans ses propres compteurs depuis la première seconde de jeu sans le savoir.
 
 C'est le système qui fait la différence entre ce jeu et un Cookie Clicker rethématisé : il y a un espace de découverte que le jeu ne guide pas.
 
@@ -187,7 +187,7 @@ Le piège est délibéré : se tromper *paie mieux à court terme*. C'est du bia
 ### Invariants
 
 - **I1** — La Certitude ne dépasse jamais 4 chiffres à l'écran. *Depuis VOIX-3 (19/10/2026), c'est une règle et non plus une contrainte d'équilibrage : elle s'arrête à 9 999, et ce qui déborde devient question (§4).*
-- **I2** — Pas de notation scientifique avant l'acte IV. Quand elle apparaît, elle apparaît **d'abord en signes non déchiffrés** : le joueur perd la lisibilité de ses propres nombres au moment où ils deviennent énormes.
+- **I2** — Pas de notation scientifique avant l'acte IV. Quand elle apparaît, elle apparaît **d'abord en signes non déchiffrés** : le joueur perd la lisibilité de ses propres nombres au moment où ils deviennent énormes. *Posé le 20/10/2026 (VOIX-5) : au million, une fois l'acte IV ouvert, trois chiffres restent au joueur et les zéros qui suivent s'écrivent du tracé de ⟨zéro⟩ ; ⟨zéro⟩, posé à la grille, rend la notation compacte. Le prototype n'affiche jamais plus de cinq millions — le ~10¹⁰ du §1 est ce que la partie produit, pas ce qu'elle montre.*
 - **I3** — Chaque nouveau palier d'instrument devient abordable ~90 s après le premier achat du palier précédent.
 - **I4** — Un signe toutes les 4 à 6 min en moyenne ; **jamais plus de 8 min sans déblocage**.
 - ~~**I5** — Le pourcentage de corpus lisible progresse quasi linéairement.~~ **RETIRÉ.** Mesuré faux : les signes se déchiffrent front-chargé (la masse administrative tombe tôt), les lignes entières back-chargé (le sens ne se complète qu'à la fin). L'écart entre les deux *est* le propos du jeu. Le jeu affiche les deux mesures et n'en lisse aucune.
