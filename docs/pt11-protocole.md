@@ -22,6 +22,11 @@ le met à la portée du joueur dès la 48ᵉ minute ; on saura combien il en pre
 
 ## 1. Le message à envoyer
 
+**Avant de l'envoyer** : `python build.py && python outils/repetition.py` doit finir sur
+« répétition tenue ». La répétition fait jouer une partie entière à la page que Pages
+déploie et dépouille son journal ; un défaut de `traces.js` qu'elle trouverait ne se corrige
+plus une fois le message parti (§5), et le journal du joueur, lui, ne se refait pas.
+
 *À copier tel quel. Rien à y ajouter — en particulier rien sur ce qu'est le jeu, ni sur ce qui
 se passe à la fin.*
 
@@ -94,15 +99,20 @@ renseignement et fausse tout ce qui suit.
    a une ligne `vitesse`, le joueur n'a pas joué la page déployée. Et l'en-tête dit de quel
    build sort le journal — il doit dire `playtest` et `43 glyphes d'arbre`.
 2. **L'écart médian ΔO prédit / observé**, attendu à 0,0 %. S'il ne l'est pas, ne rien croire
-   de la section « la main ».
+   de la section « la main ». Il porte sur chaque intervalle de trente secondes, relevés,
+   achats et recoupements compris : il contrôle donc aussi le tarif de chaque tablette, c'est-à-
+   dire la part de la main elle-même. Jusqu'à la répétition générale du 20/10/2026, il ne
+   lisait que les intervalles sans un relevé, et un joueur qui relève régulièrement — ce que
+   le Corpus jumeau demande — aurait rendu un journal sans contrôle.
 3. **La coupure.** On en attend une, entre les deux séances, et le journal la date. Avant
    ⟨nuit⟩ (vers la 73ᵉ minute au simulateur), rien ne se passe pendant qu'elle dure : la
    partie attend. Après, la production hors ligne est créditée au retour *sans avancer le
    chrono de jeu* — 40 % du débit, quatre heures au plus, et jamais une question (règle 24) —,
-   et la ligne `veillee` porte le total au retour, pas le gain. Le contrôle 2 montrera
-   l'intervalle qui l'enjambe comme une anomalie locale : c'est la coupure, pas une
-   divergence entre `sim.py` et `economie.js`. **Le chrono du journal est du temps de jeu** :
-   la durée de la partie se lit dessus, coupure exclue.
+   et la ligne `veillee` porte le total au retour, pas le gain. Le contrôle 2 écarte
+   l'intervalle qui l'enjambe et le dit (« 1 écarté par la coupure »). **Le chrono du journal
+   est du temps de jeu** : la durée de la partie se lit dessus, coupure exclue — et jusqu'à
+   l'arrêt de la partie seulement, que le rapport donne en tête ; après, le journal court à
+   l'horloge (la dernière tablette, l'effacement, la relecture).
 
 ### Ce que le journal répond seul — à lire, jamais à demander
 

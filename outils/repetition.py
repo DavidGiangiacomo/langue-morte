@@ -354,6 +354,14 @@ JOUEUR_JS = r"""(cfg) => {
       suivre();
       R.clic += cfg.cpm/60*2;
       for(; R.clic >= 1; R.clic--) relever1();
+      // Quelques hypothèses formulées à la main au début, comme en PT5 : le bouton répète tant
+      // qu'on appuie (`repeat()` dans jeu.js), il se presse donc et ne se clique pas.
+      if(S_.t > 120 && (R.hyp || 0) < 6 && S_.O >= 20 && !$('a-hyp').disabled){
+        const n = S_.H;
+        $('a-hyp').dispatchEvent(new PointerEvent('pointerdown'));
+        $('a-hyp').dispatchEvent(new PointerEvent('pointerup'));
+        if(S_.H > n){ R.hyp = (R.hyp || 0) + 1; V.hyp = (V.hyp || 0) + 1; }
+      }
       instruments();
       recoupements();
       questions();
@@ -364,7 +372,7 @@ JOUEUR_JS = r"""(cfg) => {
       suivre();
     }catch(e){ V.err.push(String(e && e.stack || e)); }
   }
-  setInterval(pas, 2000);
+  R.iv = setInterval(pas, 2000);
   return true;
 }"""
 
@@ -454,10 +462,18 @@ def jouer(nav):
             break
         if e['t'] > PLAFOND_MIN * 60 or frames > PLAFOND_MIN * 60 * 2 + 4000:
             sys.exit('la partie ne finit pas : %d signes à %d min' % (e['n'], e['t'] / 60))
-    tsv = page.evaluate('() => tracesTSV()')
     R = page.evaluate('() => __R')
     fin = page.evaluate("""() => ({t: S_.t, lect: S_.lect, gl: S_.gl, tete: S_.tete, rev: S_.rev,
       b: S_.b, contr: S_.contr, fin: S_.fin})""")
+    # « recommencer », le seul bouton qui reste, et quelques relevés : un journal de playtest
+    # en contient souvent plusieurs parties (PT5, PT10), et le dépouillement doit retrouver
+    # la bonne.
+    page.evaluate("""() => { clearInterval(window.__R.iv); $('again').click();
+      [...elCorpus.querySelectorAll('.tablet[data-tb="1"] .tok[data-j]')].slice(0, 6)
+        .forEach(el => el.click()); }""")
+    for _ in range(20):
+        page.clock.fast_forward(500)
+    tsv = page.evaluate('() => tracesTSV()')
     ctx.close()
     if autre is None:
         sys.exit('la fenêtre des deux fins ne s\'est jamais ouverte deux fois')
@@ -468,7 +484,8 @@ def confronter(tsv, v, coupure, fin):
     """Ce que le jeu a fait, contre ce que `depouiller.py` en lit."""
     ev = depouiller.lire(io.StringIO(tsv))
     ps = [p for p in depouiller.parties(ev) if depouiller.agit(p) >= 5]
-    p = ps[-1]
+    # la même règle que `depouiller.py` : la plus fournie
+    p = max(ps, key=depouiller.agit)
     s = depouiller.Rejeu(p).jouer()
     lignes, ecarts = [], []
 
@@ -483,6 +500,8 @@ def confronter(tsv, v, coupure, fin):
             ecarts.append(quoi)
 
     v_achats = [(round(t, 1), g, l, e) for t, g, l, e in v['achats']]
+    ligne('parties jouées dans le journal', 2, len(ps))
+    ligne('… la plus fournie est la partie entière', True, p is ps[0])
     ligne('signes acquis (lexique et grille)', len(fin['gl']), len(s['achats']))
     ligne("signes d'arbre", sum(1 for g in fin['gl'] if g not in sim.SECRETS),
           sum(1 for x in s['achats'] if x[1] not in sim.SECRETS))
@@ -497,6 +516,7 @@ def confronter(tsv, v, coupure, fin):
     o_tot_jeu, o_tot_lu = o_auto_jeu + v['o_main'], s['o_auto'] + s['o_main']
     ligne('part de la main (%)', round(100 * v['o_main'] / o_tot_jeu, 1),
           round(100 * s['o_main'] / o_tot_lu, 1), 0.02)
+    ligne('hypothèses formulées à la main', v.get('hyp', 0), s['formuler'])
     ligne('recoupements', v['recs'], len(s['recs']))
     ligne('Certitude recoupée', round(v['c_main']), round(s['cert_main']))
     ligne('révisions', [g for _, g in v['revs']], [r[1] for r in s['revs']])

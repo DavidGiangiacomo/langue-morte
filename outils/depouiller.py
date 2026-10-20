@@ -85,6 +85,16 @@ def lire(flux):
         except ValueError:
             continue
         ev.append((t, ch[2], ch[3] if len(ch) > 3 else ''))
+    # Une question qui obtient une réponse fait sauter le corpus à la tablette qui répond
+    # (`qMontrer`, VOIX-3), et le journal la date comme une navigation. C'est le jeu qui répond,
+    # pas le joueur qui cherche : comptée en navigation, elle bouchait les trous sans un geste
+    # dans le texte et se lisait comme « il est allé voir une tablette que le Lecteur venait de
+    # lire ». Trouvé par la répétition générale du 20/10/2026. Elle suit la ligne de la question,
+    # au même instant ; on la renomme ici, une fois, pour que rien en aval ne la compte.
+    for i in range(1, len(ev)):
+        if (ev[i][1] == 'tablette' and ev[i - 1][1] == 'questionner' and '→' in ev[i - 1][2]
+                and ev[i][0] == ev[i - 1][0]):
+            ev[i] = (ev[i][0], 'reponse-vue', ev[i][2])
     return ev
 
 
@@ -169,7 +179,7 @@ class Rejeu:
 
     def jouer(self):
         s = dict(o_auto=0.0, o_main=0.0, o_nuit=0.0, cert_main=0.0, cert_couts=0.0,
-                 relev=0, vides=0, sans_tb=0, formuler=0, copie=0,
+                 relev=0, vides=0, sans_tb=0, formuler=0, copie=0, sauts=0,
                  recs=[], comps=[], concs=[], navs=[], revs=[], achats=[], etats=[],
                  couts_t=[], main_t=[], contrs=[], dette_fin=0,
                  finjeu=None, fin=None, gis_fichier=None, eleve={}, toi=None, questions=[],
@@ -284,6 +294,8 @@ class Rejeu:
 
             elif genre == 'tablette':
                 s['navs'].append((t, det))
+            elif genre == 'reponse-vue':
+                s['sauts'] += 1
 
             # I2 (VOIX-5) : la première fois qu'un nombre du joueur s'écrit avec leurs zéros,
             # et lequel. Une seule ligne par partie ; ce n'est pas une action.
@@ -588,10 +600,11 @@ def rapport(ev, nom):
               % (pire, 'tenu' if pire <= 30 else 'DÉPASSÉ'))
 
     titre('le corpus')
-    print('  concordances %d%s · navigations %d'
+    print('  concordances %d%s · navigations %d%s'
           % (len(s['concs']),
              (' (' + ', '.join(c[1].split(' ·')[0] for c in s['concs'][:8]) + ')') if s['concs'] else '',
-             len(s['navs'])))
+             len(s['navs']),
+             ' — sans les %d sauts du jeu vers une réponse' % s['sauts'] if s['sauts'] else ''))
     if s['toi']:
         o, f, det = s['toi']
         print('  repli « à toi » ouvert à %s (%s)%s'

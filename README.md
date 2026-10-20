@@ -53,6 +53,12 @@ python build.py && python outils/verifier.py
 
 444 assertions bout en bout, en trente-cinq sections : absence d'erreur JS, rendu complet du corpus, échelle de la numération signe par signe, infobulles, gisement et tarif du relevé, recoupement, datation et rangement chronologique, concordance, composition, ambiguïté, doute, révision, contradiction et passages rompus, l'Élève qui tranche à la place du joueur, la branche Personne et le franchissement d'acte, les Questions, le Corpus jumeau, la branche Fin et son dernier signe, le Lecteur, les deux fins et la relecture, les nombres du joueur au million, la sanction aux actes IV et V, progression hors ligne, reprise d'une sauvegarde commencée avant une mécanique neuve, sa migration d'une version à l'autre, ce que le panneau de composition dit de lui-même, et ce que chacun des builds n'a pas. Chaque mécanique ajoutée doit y ajouter les siennes.
 
+```bash
+python build.py && python outils/repetition.py
+```
+
+La répétition générale du dépouillement : une partie entière jouée au build de playtest par l'acheteur de `sim.py`, dans l'interface, sur une horloge simulée — deux séances, les deux fins, la relecture —, puis son journal d'actions confronté ligne à ligne à ce que `outils/depouiller.py` en lit. Environ cinq minutes. À relancer avant chaque playtest : un journal de joueur ne se refait pas.
+
 ## Équilibrer
 
 ```bash

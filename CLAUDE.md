@@ -44,6 +44,8 @@ outils/
   balayage.py   simule l'économie avec un ensemble de paramètres
   corpus.py     docs/corpus.md → src/corpus.js
   depouiller.py journal d'actions d'un playtest → les chiffres du journal de bord
+  repetition.py répétition générale : une partie entière jouée au build de playtest,
+                son journal confronté à ce que `depouiller.py` en lit (Playwright)
   sim.py        simulateur d'économie (rythme sans jouer 40 min) — porte le modèle,
                 que `balayage.py` et `depouiller.py` lisent tous les deux
   verifier.py   tests bout en bout (Playwright)
@@ -62,16 +64,29 @@ python outils/sim.py            # simule le rythme d'une partie
 python outils/balayage.py       # balaie une grille de constantes, filtre sur les garde-fous
 python outils/depouiller.py traces-20260915-2030.tsv   # dépouille un playtest
 python build.py && python outils/verifier.py    # tests
+python build.py && python outils/repetition.py  # répétition générale du dépouillement (~5 min)
 ```
 
 `depouiller.py` **rejoue le modèle d'économie sur la timeline du journal d'actions** : les
 tarifs figés du relevé (règle 9) ne sont écrits nulle part dans le TSV et la part manuelle
 des occurrences n'est pas calculable sans eux. Il finit par un contrôle de lui-même — ΔO
-prédit contre ΔO observé sur les intervalles calmes, écart médian attendu à 0,0 % — qui est
-aussi le seul garde-fou contre une divergence entre `sim.py` et `economie.js`. Si ce chiffre
-n'est pas nul, ne rien croire de la section « la main ». Les constantes et les six
+prédit contre ΔO observé sur **chaque** intervalle entre deux relevés d'état, tenu comme un
+grand livre (production, Table, relevés, achats, recoupements), seule la coupure entre deux
+séances exclue, écart médian attendu à 0,0 % — qui est aussi le seul garde-fou contre une
+divergence entre `sim.py` et `economie.js`, **et le seul contrôle du tarif de la main** :
+jusqu'au 20/10/2026 il ne lisait que les intervalles sans relevé, et un joueur qui relève
+régulièrement le rendait aveugle. Si ce chiffre n'est pas nul, ne rien croire de la section
+« la main ». Les constantes et les six
 multiplicateurs viennent de `sim.py` (`multis()`), qui les lit lui-même de `src/` : ne jamais
 en faire une troisième copie.
+
+`repetition.py` **fait jouer une partie entière au build de playtest** — l'acheteur de
+`sim.py`, qui agit dans l'interface, sur une horloge simulée par pas d'une frame, en deux
+séances avec une coupure, jusqu'à la relecture, et l'autre fin sur une copie de la même
+partie — en tenant sa propre comptabilité mesurée dans le jeu, puis confronte ligne à ligne
+le journal exporté à ce que `depouiller.py` en lit. **À relancer avant chaque playtest et après
+toute modification de `traces.js` ou de `depouiller.py`** : un journal de playtest ne se refait
+pas, et `verifier.py` ne contrôle les lignes de trace qu'une à une.
 
 `python build.py` sort **quatre pages du même `src/`, en un seul passage et sans drapeau** —
 une variante qu'il faut penser à réclamer est celle qu'on oublie de reconstruire, et c'est
