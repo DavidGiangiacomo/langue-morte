@@ -47,9 +47,9 @@ RACINE = pathlib.Path(__file__).parent.parent
 PAGE = RACINE / 'dist' / 'playtest.html'
 
 # Le joueur. La cadence de relevé est celle de `sim.py` par défaut ; les lectures fausses sont
-# choisies pour faire passer la partie par la contradiction — ⟨grain⟩, ⟨tablette⟩ … pèsent
-# sept points avant les Élèves, deux de plus que le seuil — et donc par la révision qui la
-# lève. Ce n'est pas un joueur probable : c'est celui qui emprunte le plus de chemins du
+# choisies pour faire passer la partie par la contradiction — ⟨maison⟩, ⟨eau⟩, ⟨graver⟩ et
+# ⟨année⟩ pèsent sept points avant les Élèves, deux de plus que le seuil — et donc par la
+# révision qui la lève. Ce n'est pas un joueur probable : c'est celui qui emprunte le plus de chemins du
 # journal. Les Élèves, eux, tirent leurs lectures au dé ; le dé est semé (`GRAINE`), et la
 # partie est la même à chaque lancement.
 JOUEUR = dict(
@@ -401,8 +401,7 @@ def interrompue(nav, page):
     for _ in range(40):
         p2.clock.fast_forward(500)
     tsv = p2.evaluate('() => tracesTSV()')
-    jeu = p2.evaluate("() => ({fin: S_.fin, done: S_.done, t: S_.t, apres: !$('apres').hidden,"
-                      " relire: !$('relire').hidden})")
+    jeu = p2.evaluate('() => ({fin: S_.fin})')
     ctx.close()
     if erreurs:
         sys.exit('la partie interrompue a planté : %s' % erreurs[:3])
@@ -445,15 +444,14 @@ def jouer(nav):
         # d'un vrai joueur portera.
         if coupure is None and e['t'] >= COUPURE_MIN * 60 and e['esh'] and not e['done']:
             avant = page.evaluate("""() => { sauver(); sauverTraces();
-              return {R: __R, O: S_.O, ob: oBrut(), now: Date.now(), t: S_.t}; }""")
+              return {R: __R, ob: oBrut(), now: Date.now()}; }""")
             page.close()
             reprise = datetime.datetime.fromtimestamp(avant['now'] / 1000) \
                 + datetime.timedelta(minutes=ABSENCE_MIN)
             page, erreurs = nouvelle_page(ctx, reprise)
-            o_retour = page.evaluate('() => S_.O')
-            ecoule = min(ABSENCE_MIN * 60, 4 * 3600)
-            coupure = dict(t=avant['t'], absence=ABSENCE_MIN,
-                           nuit_nette=o_retour - avant['O'], nuit_brute=avant['ob'] * ecoule * 0.4)
+            # la nuit, brute : 40 % du débit pendant l'absence, quatre heures au plus (`veillee`)
+            coupure = dict(absence=ABSENCE_MIN,
+                           nuit_brute=avant['ob'] * min(ABSENCE_MIN * 60, 4 * 3600) * 0.4)
             page.evaluate(JOUEUR_JS, dict(JOUEUR, etat=avant['R']))
             continue
         if e['relu']:
@@ -463,8 +461,7 @@ def jouer(nav):
         if e['t'] > PLAFOND_MIN * 60 or frames > PLAFOND_MIN * 60 * 2 + 4000:
             sys.exit('la partie ne finit pas : %d signes à %d min' % (e['n'], e['t'] / 60))
     R = page.evaluate('() => __R')
-    fin = page.evaluate("""() => ({t: S_.t, lect: S_.lect, gl: S_.gl, tete: S_.tete, rev: S_.rev,
-      b: S_.b, contr: S_.contr, fin: S_.fin})""")
+    fin = page.evaluate('() => ({lect: S_.lect, gl: S_.gl, tete: S_.tete, b: S_.b, contr: S_.contr})')
     # « recommencer », le seul bouton qui reste, et quelques relevés : un journal de playtest
     # en contient souvent plusieurs parties (PT5, PT10), et le dépouillement doit retrouver
     # la bonne.
@@ -522,8 +519,7 @@ def confronter(tsv, v, coupure, fin):
     ligne('révisions', [g for _, g in v['revs']], [r[1] for r in s['revs']])
     # les lectures : le dernier état, révisions comprises, et qui a tranché
     lu_f = sorted(g for g, l in fin['lect'].items() if l == 'f')
-    rejeu_f = sorted(g for g in sim.AMBIGUS if s['achats'] and any(
-        x[1] == g for x in s['achats']) and depouiller_lecture(s, g) == 'f')
+    rejeu_f = sorted(g for g in sim.AMBIGUS if depouiller_lecture(s, g) == 'f')
     ligne('lectures fausses à la fin', lu_f, rejeu_f)
     ligne('signes lus par un Élève', sorted(g for _, g, _, e in v_achats if e),
           sorted(s['eleve']))

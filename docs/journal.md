@@ -142,6 +142,98 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## La répétition générale du dépouillement
+
+*20/10/2026, avant l'envoi du message de PT11.*
+
+Un journal de playtest ne se refait pas. Le jour où celui de PT11 reviendra, `depouiller.py`
+devra le lire du premier coup, et ses chiffres devront être vrais. Or il n'avait jamais lu un
+journal de cinq actes sorti du jeu lui-même : `verifier.py` contrôle chaque ligne de trace
+une à une, il ne fait jamais jouer une partie entière, et c'est sur une partie entière que le
+rejeu d'économie peut dériver sans que rien ne casse.
+
+### Ce que fait la répétition
+
+`outils/repetition.py` fait jouer une partie au **build de playtest**, la page même que Pages
+déploie. Le joueur est l'acheteur de `sim.py` — mêmes règles d'achat, quinze relevés par
+minute —, et il agit **dans l'interface** : il clique les jetons du corpus, la barre, les
+cartes du lexique, les fenêtres des deux lectures et des deux fins, la grille, le panneau des
+questions. Il lit faux ⟨maison⟩, ⟨eau⟩, ⟨graver⟩ et ⟨année⟩ avant les Élèves — sept points de
+dette, deux de plus que le seuil —, de quoi passer par la contradiction et par les révisions
+qui la lèvent ; il concorde deux signes avant de les
+trancher, compose une paire fausse, une paire juste impayable, ⟨grenier⟩ et le zéro, pose un
+silence et les trois questions de la Fin, ouvre la fenêtre des deux fins, la referme, achève,
+va lire la tablette 27, relit, puis recommence. Le temps est une horloge simulée qui avance
+d'une demi-seconde à la fois : chaque pas est une frame du jeu, `tick` et peinture compris —
+ni le sélecteur de vitesse ni un appel direct à `tick`, les secondes du journal sont celles
+que le jeu a comptées. La partie se joue en deux séances, la page fermée puis rouverte
+cinquante-cinq minutes d'horloge plus tard, nuit comprise ; et quand la fenêtre des deux fins
+s'ouvre, la partie est copiée dans un second navigateur qui choisit d'interrompre. Les dés des
+Élèves sont semés : la partie est la même à chaque lancement. Deux heures de jeu passent en
+cinq minutes et demie.
+
+Pendant ce temps le joueur tient sa propre comptabilité, **mesurée dans le jeu et jamais
+rejouée** : ce que chaque relevé a fait gagner, lu sur le solde avant et après le clic ; ce
+que les instruments ont produit, cumulé dans `produire` ; ce que chaque recoupement a rendu ;
+ce que la nuit a crédité. À la fin, le journal exporté passe par `depouiller.py`, et les deux
+se confrontent sur trente-quatre lignes, et cinq de plus pour la partie
+interrompue.
+
+### Ce qu'elle a trouvé — quatre défauts, tous dans le dépouillement
+
+**Le contrôle était aveugle.** Le rapport finissait sur « pas assez d'intervalles calmes pour
+contrôler ». Le contrôle ΔO ne lisait que les intervalles de trente secondes sans un relevé, un
+achat ni un recoupement — et à quinze relevés par minute il n'en reste aucun. PT10 en avait,
+parce que son joueur avait passé cinquante minutes sans toucher au texte. Un joueur de PT11
+qui revient relever sur la copie du Corpus jumeau — ce que VOIX-4 existe pour obtenir — aurait
+rendu un journal sans contrôle, et le protocole dit de ne rien croire de « la main » sans lui.
+Il tient désormais un **grand livre** : ce que les instruments produisent, moins ce que la
+Table boit, plus chaque relevé à son tarif reconstitué, moins le prix de chaque instrument, de
+chaque recoupement et de chaque hypothèse. Sur la partie de répétition, 235 intervalles,
+écart médian 0,0 %, entre −0,1 et +0,1 % ; seule la coupure en est écartée, et le rapport le
+dit. Et il contrôle du même coup **le tarif de la main**, qu'aucun intervalle calme ne pouvait
+voir : c'était pourtant le chiffre qu'il était censé garder.
+
+**La production continuait après la partie.** Le rejeu faisait produire les instruments
+jusqu'à la dernière ligne du journal, donc pendant la lecture de la dernière tablette,
+l'effacement et la relecture, qui se datent à l'horloge une fois la partie arrêtée. Quatre-
+vingt-seize secondes ici : +3,3 % aux instruments, et la part de la main à 33,4 % au lieu de
+34,1 %. Un joueur qui reste vingt minutes dans la relecture l'aurait faussée d'autant plus.
+La durée en tête du rapport avait le même défaut ; elle s'arrête désormais à l'arrêt de la
+partie, et les « trous sans un geste dans le texte » aussi.
+
+**Le jeu qui répond n'est pas le joueur qui cherche.** Une question qui obtient une réponse
+fait sauter le corpus à la tablette qui répond (`qMontrer`), et le journal datait ce saut comme
+une navigation : trois sur trente et une. Elles bouchaient les trous sans geste, et deux
+comptaient pour « est allé voir une tablette que le Lecteur venait de lire » — la question 17
+du protocole. Le dépouillement les reconnaît (la ligne qui suit une réponse, au même instant)
+et les compte à part.
+
+**Le rapport taisait la première contradiction.** Elle s'est armée deux fois — à ⟨peut-être⟩,
+levée par la deuxième révision, puis à l'entrée de l'acte V, levée par la troisième —, et le
+rapport ne montrait que la seconde, chaque armement écrasant le précédent. Il les montre
+toutes. Il écrivait aussi « dette 12 » à côté d'une contradiction levée : douze à l'achat,
+quatre après les révisions. Il dit désormais les deux.
+
+### Ce qu'elle n'a pas trouvé
+
+**Rien dans `traces.js`.** Les trente-quatre grandeurs confrontées se lisent toutes dans le
+journal, et tombent juste — les comptes au relevé près, les occurrences de la main à l'unité,
+les instruments au dixième de pour cent près, l'écart restant étant la nuit, que la ligne
+`veillee` ne donne qu'en total et que le rapport annonce comme une estimation. La page déployée
+n'a donc pas à changer, et rien ne va sur `develop`.
+
+Et le jeu joué par l'acheteur du simulateur retombe sur le simulateur : 601 relevés utiles et
+39 recoupements, les mêmes que `sim.py` à quinze relevés par minute ; neuf Élèves, comme
+l'acheteur en empile (règle 31) ; la main à 34,0 %, entre les 32,7 % de la partie qui lit
+juste et les 35,0 % de celle qui lit tout faux sans contradiction. Ce n'est pas une mesure de rythme — ce joueur
+révise, compose et ne ressemble à personne —, mais c'est la première fois que le modèle et le
+jeu sont confrontés sur une partie entière, et non sur des intervalles de trente secondes.
+
+**À relancer avant chaque playtest**, et après toute modification de `traces.js` ou de
+`depouiller.py`. Elle ne remplace pas `verifier.py`, qui reste le seul à vérifier les règles ;
+elle vérifie que ce qui mesure les parties les mesure juste.
+
 ## PT11 joue les cinq actes
 
 *20/10/2026.*
