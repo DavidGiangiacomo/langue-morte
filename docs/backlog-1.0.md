@@ -94,7 +94,7 @@ Suivi : [#21](https://github.com/DavidGiangiacomo/langue-morte/issues/21) — le
 - *Fait* : 120 C, hors arbre, sans effet mécanique. **La notation compacte des grands nombres ne lui revient pas** — elle est déjà celle de `cent`, acquise par tout le monde, et la déplacer sur un composé facultatif la retirerait à la plupart des joueurs (voir `docs/journal.md`, « La Modalité, et le zéro »). Onze zéros passent en chiffres, dont les neuf de la tablette 29, qui reste un seul signe répété jusque-là. Coût mesuré pour qui le pose : deux minutes de progression, écart max porté à 6,2 min.
 - *Repris le 20/10/2026 (VOIX-5)* : à l'acte IV, ⟨zéro⟩ rend enfin des nombres — ceux du joueur, dont les zéros s'écrivent en son tracé au million tant qu'il ne l'a pas posé. Ce que le design doc §7 lui promettait, au moment où il y a quelque chose à rendre.
 
-**COMP-4 — `grenier` et `devenir-lecture`** · T:S — *`grenier` fait ; `devenir-lecture` fait avec GRAINE-1 (19/10/2026, branche de travail)* · [#30](https://github.com/DavidGiangiacomo/langue-morte/issues/30)
+**COMP-4 — `grenier` et `devenir-lecture`** · ~~T:S~~ **fait** — *`grenier` le 10/09/2026, `devenir-lecture` avec GRAINE-1 (19/10/2026)* · [#30](https://github.com/DavidGiangiacomo/langue-morte/issues/30)
 > En tant que joueur, je veux que les deux autres composés secrets soient atteignables en avance sur le récit.
 
 - Fini quand : les deux ne sont offerts par aucune progression ; `devenir-lecture` composé tôt fait recevoir la tablette 17 « en pleine figure » sans que rien ne soit ajouté au texte.
@@ -256,7 +256,7 @@ Suivi : [#22](https://github.com/DavidGiangiacomo/langue-morte/issues/22) — le
   ligne à la carte de fin : un test vérifie que rien à l'écran ne la nomme. CONTR-1 sera son
   premier lecteur.
 
-**AMB-4 — L'indice est dans le texte, et nulle part ailleurs** · T:M · [#31](https://github.com/DavidGiangiacomo/langue-morte/issues/31)
+**AMB-4 — L'indice est dans le texte, et nulle part ailleurs** · ~~T:M~~ **fait** (19/10/2026, avec GRAINE-1) · [#31](https://github.com/DavidGiangiacomo/langue-morte/issues/31)
 - *Fait pour ⟨semence⟩ et ⟨devenir⟩ avec GRAINE-1* (19/10/2026, branche de travail) : « si enfant · ne-pas né », tablette 22, et « il-fallait tablette · porté lu », tablette 17 — au passé, ⟨nous-fûmes⟩ étant lu à cette heure-là. La paire réparante ⟨semence⟩ + ⟨devenir⟩ éteint la première et pas la seconde. Les onze lectures fausses sont dans l'arbre.
 > En tant que joueur qui lit, je veux pouvoir trouver le signe fautif sans que le jeu me le dise.
 
@@ -337,7 +337,7 @@ Suivi : [#23](https://github.com/DavidGiangiacomo/langue-morte/issues/23) — le
   Un multiplicateur global ne règle que la durée : voir `docs/journal.md`, « L'Élève tranche
   à ma place ».
 
-**ELV-2 — …et qui se trompe** · T:L · [#34](https://github.com/DavidGiangiacomo/langue-morte/issues/34)
+**ELV-2 — …et qui se trompe** · ~~T:L~~ **fait** (12/10/2026, branche `eleve`) · [#34](https://github.com/DavidGiangiacomo/langue-morte/issues/34)
 > En tant que joueur, je veux découvrir que ce que l'Élève déchiffre tout seul est parfois faux.
 
 - Fini quand : l'Élève déchiffre de lui-même, avec un taux d'erreur croissant avec leur nombre ; ses erreurs alimentent la dette (AMB-3) ; empiler des Élèves déchiffre **vite et faux**.
@@ -390,14 +390,14 @@ Suivi : [#24](https://github.com/DavidGiangiacomo/langue-morte/issues/24) — le
   (règle 18), et le journal d'actions date l'ouverture et la sortie : la durée de la relecture
   est la question du playtest. Voir `docs/journal.md`, « VOIX-2 ».
 
-**VOIX-3 — Les Questions** · T:XL · **fait en partie** (19/10/2026, même branche) · [#36](https://github.com/DavidGiangiacomo/langue-morte/issues/36)
+**VOIX-3 — Les Questions** · ~~T:XL~~ **fait** (19/10/2026, même branche) · [#36](https://github.com/DavidGiangiacomo/langue-morte/issues/36)
 > En tant que joueur, je veux interroger le texte et qu'il réponde, dans les limites de ce qui a été gravé il y a quatre mille ans.
 
 - Fini quand : la ressource Q existe (0 à 12 sur toute la partie, design doc §4) ; poser une question consomme un Q ; **chaque réponse est une ligne du corpus, jamais un texte écrit pour l'occasion**.
 - Le plus gros risque de conception du lot : c'est le seul système où le jeu peut se mettre à *parler* au lieu de laisser lire.
 - *Note de conception, 19/10/2026* : `docs/note-questions.md` — trois options mesurées. **Tranché le même jour : l'option 3, avec le gel.**
 - *Fait* : une question est une condition — ⟨si⟩ et des signes qu'on sait lire — et la réponse est ce que le corpus a gravé après, quinze conditions, rien d'écrit pour l'occasion. La Certitude s'arrête à 9 999 ; à partir de ⟨toi⟩ le surplus fait des questions, 4 000 chacune, douze sur la partie, jamais la nuit. La Grammaire gèle aux mots de la fin. Voir la règle 24 de `CLAUDE.md` et `docs/journal.md`, « Les Questions ».
-- **Reste** : les mots qu'elles ouvrent — ⟨finir⟩, ⟨devenir⟩, ⟨germer⟩, marqués `rep` — arrivent avec GRAINE-1, et le prix des questions se remesure quand ECO-2 aura porté l'acte V dans `sim.py`.
+- ~~**Reste**~~ *(fait le 19/10/2026)* : les mots qu'elles ouvrent — ⟨finir⟩, ⟨devenir⟩, ⟨germer⟩, marqués `rep` — sont arrivés avec GRAINE-1, et le prix des questions a été remesuré une fois l'acte V porté dans `sim.py` (ECO-2).
 
 **VOIX-4 — Le Corpus jumeau** *(instrument 8)* · ~~T:M~~ **fait** (19/10/2026, branche de travail empilée sur `eleve`) · [#37](https://github.com/DavidGiangiacomo/langue-morte/issues/37)
 > En tant que joueur, je veux qu'une deuxième inscription soit trouvée.
@@ -416,7 +416,7 @@ Suivi : [#24](https://github.com/DavidGiangiacomo/langue-morte/issues/24) — le
 
 Suivi : [#25](https://github.com/DavidGiangiacomo/langue-morte/issues/25) — les récits ouverts y sont des sous-issues.
 
-**GRAINE-1 — La branche Fin** *(`finir`, `semence`, `devenir`, `le-dernier`, `germer`, `notre-fin`, `devenir-lecture`)* · T:L · [#39](https://github.com/DavidGiangiacomo/langue-morte/issues/39)
+**GRAINE-1 — La branche Fin** *(`finir`, `semence`, `devenir`, `le-dernier`, `germer`, `notre-fin`, `devenir-lecture`)* · ~~T:L~~ **fait** (19/10/2026) · [#39](https://github.com/DavidGiangiacomo/langue-morte/issues/39)
 > En tant que joueur, je veux lire la fin dans leur langue.
 
 - `devenir-lecture` est le dernier signe et n'est accessible que par composition (COMP-4).
@@ -477,7 +477,7 @@ Suivi : [#27](https://github.com/DavidGiangiacomo/langue-morte/issues/27) — le
 - Se traite **par l'ouverture** (un instrument plus tôt, ou un premier signe moins cher), pas par le recoupement.
 - Rappel règle 2 : la tranche 0–10 min ne se *mesure* pas (division par zéro) ; c'est l'abandon qu'on traite, pas le chiffre.
 
-**ECO-2 — Étendre `sim.py` aux actes IV et V** · T:L · [#45](https://github.com/DavidGiangiacomo/langue-morte/issues/45)
+**ECO-2 — Étendre `sim.py` aux actes IV et V** · ~~T:L~~ **fait** (19/10/2026) · [#45](https://github.com/DavidGiangiacomo/langue-morte/issues/45)
 > En tant qu'auteur, je veux vérifier le rythme de trois heures sans jouer trois heures.
 
 - Fini quand : le simulateur modélise l'Élève, les Questions, la dette et la contradiction ; il sort les tranches d'I6 sur toute la partie ; `balayage.py` peut balayer les nouvelles constantes.
