@@ -130,48 +130,78 @@ class Rejeu:
         self.armee = False
         self.m = sim.multis(has, mf, lambda: 1.0 if self.armee else sim.eleve(P, self.b['elv']))
         self.has = has
+        self.nrec = 0                # recoupements faits : leur prix croît avec leur nombre
 
     def obrut(self):
         return self.b['cop'] * P['cop_p'] * self.m['cop']() + self.b['ate'] * P['ate_p'] * self.m['ate']()
+
+    def releve(self, det):
+        """Ce qu'un relevé a rendu, et où il est allé : ('neuf' | 'copie' | 'plancher', tablette,
+        occurrences), ou (None, None, 0) pour un journal d'avant PT9, dont les relevés ne portent
+        pas leur tablette. Le tarif de chaque tablette se fige à son premier relevé (règle 9),
+        celui de la copie du Corpus jumeau à part (VOIX-4) — et le journal dit lequel des deux
+        gisements a payé, sans quoi rien ne le rejoue. Un seul endroit pour `jouer` et pour
+        `controle` : le contrôle vérifie ainsi le tarif lui-même, c'est-à-dire la main."""
+        m = RE_REL.search(det)
+        if not m:
+            return None, None, 0.0
+        tb = int(m.group(1))
+        tarif = lambda: (1 + P['click_share'] * self.obrut()) * self.m['click']()
+        if det.endswith('· copie'):
+            if tb not in self.prixJ:
+                self.prixJ[tb] = tarif()
+            return 'copie', tb, self.prixJ[tb]
+        if self.rel.get(tb, 0) < GIS.get(tb, 0):
+            if tb not in self.prix:
+                self.prix[tb] = tarif()
+            self.rel[tb] = self.rel.get(tb, 0) + 1
+            return 'neuf', tb, self.prix[tb]
+        return 'plancher', tb, P['click_floor'] * self.m['click']()
+
+    def cout_ins(self, k, n):
+        """Ce qu'a coûté le n-ième instrument `k` : `insCost()` au niveau d'avant. Le Corpus
+        jumeau n'a pas de croissance : il n'y en a qu'un."""
+        return math.ceil(P[k + '_b'] * P.get(k + '_r', 1) ** (n - 1))
+
+    def cout_rec(self):
+        """Ce que coûte en occurrences le prochain recoupement (`recCost()`)."""
+        return math.ceil(P['rec_o'] * (P['rec_r'] ** self.nrec) * (0.75 if self.has('gan') else 1))
 
     def jouer(self):
         s = dict(o_auto=0.0, o_main=0.0, o_nuit=0.0, cert_main=0.0, cert_couts=0.0,
                  relev=0, vides=0, sans_tb=0, formuler=0, copie=0,
                  recs=[], comps=[], concs=[], navs=[], revs=[], achats=[], etats=[],
-                 couts_t=[], main_t=[], contr=None, contr_levee=None,
+                 couts_t=[], main_t=[], contrs=[], dette_fin=0,
                  finjeu=None, fin=None, gis_fichier=None, eleve={}, toi=None, questions=[],
                  fins=[], interrompu=None, relu=None, zeros=None,
                  reprises=[], copie_tb={}, elv_achats=[], lec=[], lues=[])
         prev_t = self.ev[0][0]
         for t, genre, det in self.ev:
-            s['o_auto'] += self.obrut() * max(0.0, t - prev_t)
+            # La production s'arrête avec la partie (`S_.done`), et le journal continue : la
+            # fenêtre de lecture, l'effacement, la relecture se datent à l'horloge. Les compter
+            # en production faisait monter les instruments de 3 % dans la répétition générale du
+            # 20/10/2026 — quatre-vingt-seize secondes de fin —, et de vingt minutes de
+            # production chez qui s'attarde dans la relecture : la main en paraissait d'autant
+            # plus petite.
+            if s['finjeu'] is None:
+                s['o_auto'] += self.obrut() * max(0.0, t - prev_t)
             prev_t = t
 
             if genre == 'relever':
-                m = RE_REL.search(det)
-                if not m:
+                ou, tb, val = self.releve(det)
+                if ou is None:
                     # journaux d'avant PT9 : le relevé ne portait pas sa tablette, donc
                     # ni le gisement ni le tarif figé ne se reconstituent
                     s['sans_tb'] += 1
                     continue
-                tb = int(m.group(1))
-                # La copie du Corpus jumeau a son propre tarif, figé à son premier relevé : le
-                # journal dit lequel des deux gisements a payé, sans quoi rien ne le rejoue.
-                if det.endswith('· copie'):
-                    if tb not in self.prixJ:
-                        self.prixJ[tb] = (1 + P['click_share'] * self.obrut()) * self.m['click']()
-                    s['o_main'] += self.prixJ[tb]
-                    s['relev'] += 1; s['copie'] += 1
-                    s['copie_tb'][tb] = s['copie_tb'].get(tb, 0) + 1
-                elif self.rel.get(tb, 0) < GIS.get(tb, 0):
-                    if tb not in self.prix:
-                        self.prix[tb] = (1 + P['click_share'] * self.obrut()) * self.m['click']()
-                    s['o_main'] += self.prix[tb]
-                    self.rel[tb] = self.rel.get(tb, 0) + 1
-                    s['relev'] += 1
-                else:
-                    s['o_main'] += P['click_floor'] * self.m['click']()
+                s['o_main'] += val
+                if ou == 'plancher':
                     s['vides'] += 1
+                else:
+                    s['relev'] += 1
+                if ou == 'copie':
+                    s['copie'] += 1
+                    s['copie_tb'][tb] = s['copie_tb'].get(tb, 0) + 1
 
             elif genre == 'formuler':
                 s['formuler'] += 1
@@ -208,10 +238,12 @@ class Rejeu:
                 # dont six lecteurs déballent déjà les six champs.
                 if elv:
                     s['eleve'][gid] = int(elv)
-                # Re-soldée après une levée, elle écrase la précédente : c'est l'état de la
-                # fin qui se rapporte.
+                # Chaque fois qu'elle s'arme, et non la dernière seulement : elle se re-solde à
+                # chaque franchissement d'acte (règle 19), et la répétition générale l'a armée à
+                # ⟨peut-être⟩ puis à l'entrée de l'acte V — le rapport n'en montrait que la
+                # seconde, et taisait la révision qui avait levé la première.
                 if self.solder(gid):
-                    s['contr'], s['contr_levee'] = t, None
+                    s['contrs'].append([t, None])
 
             elif genre == 'recouper':
                 m = RE_REC.match(det)
@@ -229,7 +261,7 @@ class Rejeu:
                     s['couts_t'].append((t, float(cout)))
                     s['revs'].append((t, gid, avant, apres, int(cout), int(d0), int(d1)))
                     if self.lever():
-                        s['contr_levee'] = t
+                        s['contrs'][-1][1] = t
 
             elif genre == 'composer':
                 s['comps'].append((t, det, self.issue(det)))
@@ -291,6 +323,7 @@ class Rejeu:
                     s['gis_fichier'] = int(m.group(8))
 
         s['o_auto'] += s['o_nuit']
+        s['dette_fin'] = self.dette()
         return s
 
     def dette(self):
@@ -339,55 +372,77 @@ def mmss(t):
     return '%d:%02d' % (t // 60, t % 60)
 
 
-# Les seuls genres qui ne touchent NI le solde d'occurrences ni les multiplicateurs : on
-# peut donc mesurer par-dessus eux. Le recoupement et la formulation d'hypothèse coûtent des
-# occurrences (`rec_o`, `hyp_c`) — les oublier ici faisait passer trois intervalles pour une
-# divergence du modèle, jusqu'à −56 %.
-# `vitesse` en fait partie, et c'est là tout le problème qu'il pose : le sélecteur ne
-# touche ni les occurrences ni les multiplicateurs, il ne change que le rapport entre ces
-# secondes-là et celles de la montre. Le contrôle ci-dessous le trouverait donc parfaitement
-# cohérent — d'où l'avertissement en tête de rapport, qui ne se déduit d'aucun chiffre.
-INERTES = ('etat', 'tablette', 'concChoisir', 'fin', 'finjeu', 'vitesse', 'finsOuvrir', 'interrompre',
-           'relire', 'lireCorpus', 'zeros')
-
-
 def controle(ev):
-    """ΔO prédit contre ΔO observé, sur les intervalles entre deux relevés d'état que rien
-    ne vient troubler. La Table est alors la seule fuite d'occurrences. Si l'écart médian
-    n'est pas nul, le modèle a divergé du jeu et TOUS les chiffres de la section « la main »
-    sont à jeter — c'est le seul contrôle que ce fichier ait sur lui-même."""
+    """ΔO prédit contre ΔO observé, sur chaque intervalle entre deux relevés d'état. Le solde
+    d'occurrences se tient comme un grand livre : ce que les instruments produisent, moins ce
+    que la Table boit, plus ce que chaque relevé a rendu, moins le prix de chaque instrument,
+    de chaque recoupement et de chaque hypothèse formulée. Si l'écart médian n'est pas nul, le
+    modèle a divergé du jeu et TOUS les chiffres de la section « la main » sont à jeter —
+    c'est le seul contrôle que ce fichier ait sur lui-même.
+
+    Il ne mesurait jusqu'au 20/10/2026 que les intervalles « que rien ne trouble » : sans un
+    relevé, un achat ni un recoupement. La répétition générale l'a trouvé aveugle — à quinze
+    relevés par minute il n'en reste aucun, et un joueur qui revient relever sur la copie du
+    Corpus jumeau aurait rendu un journal sans contrôle. Le grand livre les garde tous, et il
+    contrôle du même coup le tarif figé de chaque tablette (règle 9), c'est-à-dire la main
+    elle-même, qu'aucun intervalle calme ne pouvait voir.
+
+    Seule la coupure entre deux séances en sort : la nuit (`veillee`) n'est pas un débit, et
+    la ligne porte un total. Et le sélecteur de vitesse n'y change rien — il ne touche ni les
+    occurrences ni les multiplicateurs, seulement le rapport entre ces secondes-là et celles
+    de la montre —, d'où l'avertissement en tête de rapport, qui ne se déduit d'aucun chiffre.
+    Rend les écarts triés, en % de ce qui est entré dans l'intervalle, et le nombre
+    d'intervalles écartés par une coupure."""
     r = Rejeu(ev)
-    prev, ecarts = None, []
+    pred = entre = 0.0
+    prev_t, prev_o, coupe, ecarts, coupes = ev[0][0], None, False, [], 0
     for t, genre, det in ev:
-        if genre not in INERTES:
-            if genre == 'acheterIns':
-                m = RE_INS.match(det)
-                if m:
-                    r.b[m.group(1)] = int(m.group(2))
-            elif genre == 'acheterGl':
-                m = RE_GL.match(det)
-                if m:
-                    r.gl[m.group(1)] = 'f' if m.group(3) else 'j'
-                    r.solder(m.group(1))
-            elif genre == 'reviser':
-                m = RE_REV.match(det)
-                if m:
-                    r.gl[m.group(1)] = 'f' if '✗' in m.group(3) else 'j'
-                    r.lever()
-            prev = None
-            continue
-        if genre != 'etat':
-            continue
-        m = RE_ETAT.search(det)
-        if not m:
-            continue
-        o = float(m.group(1))
-        if prev and t - prev[0] > 25:
-            pred = (r.obrut() - r.b['tab'] * P['tab_c']) * (t - prev[0])
-            if abs(pred) > 1000:
-                ecarts.append(100 * ((o - prev[1]) - pred) / pred)
-        prev = (t, o)
-    return sorted(ecarts)
+        if genre == 'finjeu':
+            break                    # la production est arrêtée : plus aucun relevé d'état
+        flux = r.obrut() * max(0.0, t - prev_t)
+        pred += flux - r.b['tab'] * P['tab_c'] * max(0.0, t - prev_t)
+        entre += flux
+        prev_t = t
+        if genre == 'relever':
+            ou, _, val = r.releve(det)
+            if ou is None:
+                coupe = True
+            pred += val
+            entre += val
+        elif genre == 'acheterIns':
+            m = RE_INS.match(det)
+            if m:
+                pred -= r.cout_ins(m.group(1), int(m.group(2)))
+                r.b[m.group(1)] = int(m.group(2))
+        elif genre == 'recouper':
+            pred -= r.cout_rec()
+            r.nrec += 1
+        elif genre == 'formuler':
+            pred -= P['hyp_c']
+        elif genre == 'acheterGl':
+            m = RE_GL.match(det)
+            if m:
+                r.gl[m.group(1)] = 'f' if m.group(3) else 'j'
+                r.solder(m.group(1))
+        elif genre == 'reviser':
+            m = RE_REV.match(det)
+            if m:
+                r.gl[m.group(1)] = 'f' if '✗' in m.group(3) else 'j'
+                r.lever()
+        elif genre in ('veillee', 'reprise'):
+            coupe = True
+        elif genre == 'etat':
+            m = RE_ETAT.search(det)
+            if not m:
+                continue
+            o = float(m.group(1))
+            if prev_o is not None and entre > 1000:
+                if coupe:
+                    coupes += 1
+                else:
+                    ecarts.append(100 * ((o - prev_o) - pred) / entre)
+            prev_o, pred, entre, coupe = o, 0.0, 0.0, False
+    return sorted(ecarts), coupes
 
 
 def titre(x):
@@ -408,8 +463,15 @@ def rapport(ev, nom):
     narbre = sum(1 for _, g, _, _, _, _ in s['achats'] if g not in sim.SECRETS)
 
     titre('la partie — %s' % nom)
-    print('  durée %s au chrono · %s entre le premier et le dernier geste'
-          % (mmss(t1), mmss(t1 - t0)))
+    # La durée est celle du jeu, jusqu'à l'arrêt : après, le journal court à l'horloge — la
+    # lecture de la dernière tablette, l'effacement, la relecture —, et une relecture de vingt
+    # minutes faisait passer la partie pour vingt minutes plus longue.
+    if s['finjeu']:
+        print('  durée %s jusqu\'à l\'arrêt de la partie · journal jusqu\'à %s'
+              % (mmss(s['finjeu']), mmss(t1)))
+    else:
+        print('  durée %s au chrono · %s entre le premier et le dernier geste'
+              % (mmss(t1), mmss(t1 - t0)))
     print('  %d signes d\'arbre sur %d · %d au lexique' % (narbre, NGL, len(s['achats'])))
     if s['etats']:
         e = s['etats'][-1]
@@ -481,8 +543,8 @@ def rapport(ev, nom):
               % (mmss(d_rel), mmss(d_rec) if d_rec is not None else '—'))
     apres = sum(1 for t, g, _ in ev if g in CORPUS_GESTES and t >= borne)
     if apres:
-        print("  %d gestes après l'arrêt de la partie, dans la fenêtre de lecture de FIN-1"
-              % apres)
+        print("  %d geste%s après l'arrêt de la partie, dans la fenêtre de lecture de FIN-1"
+              % (apres, 's' if apres > 1 else ''))
 
     titre('la main')
     print('  occurrences : %s relevées à la main sur %s produites = %.1f %%'
@@ -535,14 +597,17 @@ def rapport(ev, nom):
         print('  repli « à toi » ouvert à %s (%s)%s'
               % (mmss(o), det, ' · refermé à %s, %d s de relecture' % (mmss(f), f - o)
                  if f is not None else ' · jamais refermé'))
-    gestes = sorted(t for t, g, _ in ev if g in CORPUS_GESTES)
+    # Jusqu'à l'arrêt seulement : ce qui suit se compte à l'horloge, et une relecture longue
+    # y ferait un trou qui n'est pas de la partie.
+    fin_t = s['finjeu'] or t1
+    gestes = sorted(t for t, g, _ in ev if g in CORPUS_GESTES and t <= fin_t)
     if len(gestes) > 1:
         trous = sorted(((gestes[i + 1] - gestes[i], gestes[i], gestes[i + 1])
                         for i in range(len(gestes) - 1)), reverse=True)[:3]
         print('  les plus longs trous sans un geste dans le texte :')
         for d, a, z in trous:
             print('    %5.1f min — de %s à %s (%.0f %% de la partie)'
-                  % (d / 60, mmss(a), mmss(z), 100 * d / max(1e-9, t1 - t0)))
+                  % (d / 60, mmss(a), mmss(z), 100 * d / max(1e-9, fin_t - t0)))
 
     titre('les lectures (AMB-1 à 3, CONTR-1)')
     tranches = [(g, m, f) for _, g, m, f, _, _ in s['achats'] if g in sim.AMBIGUS]
@@ -579,7 +644,13 @@ def rapport(ev, nom):
                                                    ' · lu par %d Élève(s), %d %% d\'erreur'
                                                    % (elv[g], round(100 * sim.erreur(P, elv[g])))
                                                    if g in elv else ''))
-        print('  dette %d (seuil %d)' % (sum(sim.DETTE[g] for g in fx), P['contr_s']))
+        # À l'achat, et après les révisions : c'est la seconde que la contradiction lit. La
+        # répétition générale affichait « dette 12 » à côté d'une contradiction levée — douze
+        # à l'achat, quatre à la fin.
+        d_achat = sum(sim.DETTE[g] for g in fx)
+        print('  dette %d à l\'achat%s (seuil %d)'
+              % (d_achat, ', %d après les révisions' % s['dette_fin'] if s['dette_fin'] != d_achat
+                 else '', P['contr_s']))
     if s['elv_achats']:
         t1e = s['elv_achats'][0][0]
         # Avant ou après ⟨avant⟩ et ⟨ne-pas⟩ — les deux signes dont l'erreur, avec ⟨lire⟩,
@@ -593,9 +664,11 @@ def rapport(ev, nom):
         print('  Élèves : %d, le premier à %s — %s' % (s['elv_achats'][-1][1], mmss(t1e), rel))
     elif tranches:
         print('  aucun Élève')
-    if s['contr']:
-        print('  ⚠ contradiction ARMÉE à %s%s' % (mmss(s['contr']),
-              ' · levée à ' + mmss(s['contr_levee']) if s['contr_levee'] else ' · jamais levée'))
+    if s['contrs']:
+        print('  ⚠ contradiction ARMÉE %s : %s'
+              % ('une fois' if len(s['contrs']) == 1 else '%d fois' % len(s['contrs']),
+                 ' · '.join('à %s, %s' % (mmss(a), 'levée à ' + mmss(l) if l is not None
+                                          else 'jamais levée') for a, l in s['contrs'])))
     elif tranches:
         print('  contradiction non déclenchée')
     if s['revs']:
@@ -698,11 +771,14 @@ def rapport(ev, nom):
                 print('  relecture jamais ouverte')
 
     titre('contrôle du modèle')
-    ec = controle(ev)
+    ec, coupes = controle(ev)
     if not ec:
-        print('  pas assez d\'intervalles calmes pour contrôler — chiffres de « la main » à prendre avec des pincettes')
+        print('  aucun intervalle à contrôler — chiffres de « la main » à prendre avec des pincettes')
     else:
-        print('  ΔO prédit contre ΔO observé, %d intervalles que rien ne trouble :' % len(ec))
+        print('  ΔO prédit contre ΔO observé, %d intervalles — relevés, achats et recoupements'
+              % len(ec))
+        print('  compris%s :' % (', %d écarté%s par la coupure' % (coupes, 's' if coupes > 1 else '')
+                                  if coupes else ''))
         print('    écart médian %.1f %% · min %.1f %% · max %.1f %%' % (ec[len(ec) // 2], ec[0], ec[-1]))
         if abs(ec[len(ec) // 2]) > 1:
             print('  ⚠ le modèle a divergé du jeu : la section « la main » est à jeter')

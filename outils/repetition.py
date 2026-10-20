@@ -251,6 +251,9 @@ JOUEUR_JS = r"""(cfg) => {
   function fins(){
     V.fins.push(S_.t);
     if(R.finsVus++ === 0){ clic($('fins-annuler')); R.finRetour = S_.t + 20; return; }
+    // La seconde fois, la fenêtre reste ouverte le temps que la partie soit copiée dans un
+    // autre navigateur, qui choisira l'autre fin (`interrompue()` côté Python).
+    if(!R.jumelle){ R.jumelle = 'attend'; return; }
     clic(q('#fins-choix [data-fin="achever"]'));
   }
   function glyphes(){
@@ -312,7 +315,12 @@ JOUEUR_JS = r"""(cfg) => {
     const vis = visibles();
     let t = vis[(R.navIdx++) % vis.length];
     if(S_.b.lec && S_.tete >= 1 && vis.includes(Math.floor(S_.tete))) t = Math.floor(S_.tete);
-    if(clic(q('#rail [data-go="'+t+'"]'))) V.navs.push([S_.t, t]);
+    aller(t);
+  }
+  // Un saut vers la tablette où l'on est déjà n'est pas une navigation : le journal l'ignore,
+  // exprès (traces.js), et la vérité se compte de même.
+  function aller(t){
+    if(clic(q('#rail [data-go="'+t+'"]')) && t !== R.derniere){ V.navs.push([S_.t, t]); R.derniere = t; }
   }
 
   function suivre(){
@@ -328,8 +336,7 @@ JOUEUR_JS = r"""(cfg) => {
     suivre();
     if(!R.finNav && S_.fin === 'achevee' && finLire){
       R.finNav = true;
-      const t = [...finLire][0];
-      if(clic(q('#rail [data-go="'+t+'"]'))) V.navs.push([S_.t, t]);
+      aller([...finLire][0]);
     }
     if(V.fin === null && document.body.classList.contains('fin')) V.fin = performance.now();
     if(V.relu === null && S_.efface && !relecture){
@@ -340,6 +347,10 @@ JOUEUR_JS = r"""(cfg) => {
   function pas(){
     try{
       if(S_.done){ apres(); return; }
+      if(R.jumelle === 'faite' && !$('fins').hidden){
+        R.jumelle = 'finie'; clic(q('#fins-choix [data-fin="achever"]'));
+        if(S_.done){ apres(); return; }
+      }
       suivre();
       R.clic += cfg.cpm/60*2;
       for(; R.clic >= 1; R.clic--) relever1();
@@ -358,7 +369,36 @@ JOUEUR_JS = r"""(cfg) => {
 }"""
 
 ETAT_JS = """() => ({t: S_.t, done: S_.done, fin: S_.fin, efface: !!S_.efface, relu: relecture,
-  esh: has('esh'), n: S_.gl.length, err: __R.v.err.slice(0, 3), O: S_.O})"""
+  esh: has('esh'), n: S_.gl.length, err: __R.v.err.slice(0, 3), O: S_.O, jumelle: __R.jumelle})"""
+
+
+def interrompue(nav, page):
+    """L'autre fin, sur la même partie. La fenêtre des deux fins est ouverte : la sauvegarde et
+    le journal sont copiés dans un second navigateur, qui recharge la partie — un joueur qui
+    rouvre l'onglet au pied du dernier signe —, rouvre la fenêtre au lexique et choisit
+    d'interrompre. Rend le journal exporté et ce que le jeu dit de la partie."""
+    d = page.evaluate("""() => { sauver(); sauverTraces();
+      return {cle: KEY, tcle: TKEY, s: localStorage.getItem(KEY), tr: localStorage.getItem(TKEY),
+              now: Date.now(), t: S_.t}; }""")
+    ctx = nav.new_context(viewport={'width': 1440, 'height': 900})
+    ctx.add_init_script(HASARD % GRAINE)
+    ctx.add_init_script('localStorage.setItem(%s, %s); localStorage.setItem(%s, %s);'
+                        % (json.dumps(d['cle']), json.dumps(d['s']),
+                           json.dumps(d['tcle']), json.dumps(d['tr'])))
+    p2, erreurs = nouvelle_page(ctx, datetime.datetime.fromtimestamp(d['now'] / 1000))
+    p2.evaluate("""() => { paintLex();
+      const id = GL.find(g => estDernier(g.id)).id;
+      document.querySelector('#lex [data-gl="' + id + '"]').click();
+      document.querySelector('#fins-choix [data-fin="interrompre"]').click(); }""")
+    for _ in range(40):
+        p2.clock.fast_forward(500)
+    tsv = p2.evaluate('() => tracesTSV()')
+    jeu = p2.evaluate("() => ({fin: S_.fin, done: S_.done, t: S_.t, apres: !$('apres').hidden,"
+                      " relire: !$('relire').hidden})")
+    ctx.close()
+    if erreurs:
+        sys.exit('la partie interrompue a planté : %s' % erreurs[:3])
+    return tsv, dict(jeu, t_arret=d['t'])
 
 
 def nouvelle_page(ctx, quand):
@@ -378,11 +418,16 @@ def jouer(nav):
     ctx.add_init_script(HASARD % GRAINE)
     page, erreurs = nouvelle_page(ctx, DEBUT)
     page.evaluate(JOUEUR_JS, dict(JOUEUR, etat=None))
-    coupure, frames, t_reel = None, 0, time.time()
+    coupure, frames, t_reel, autre = None, 0, time.time(), None
     while True:
         for _ in range(120):
             page.clock.fast_forward(500)
-        frames += 120
+            frames += 1
+            # La fenêtre des deux fins attend, ouverte : on copie la partie avant qu'elle
+            # n'avance, pour que l'autre fin se joue sur exactement la même.
+            if frames % 4 == 0 and autre is None and page.evaluate('() => __R.jumelle') == 'attend':
+                autre = interrompue(nav, page)
+                page.evaluate("() => { __R.jumelle = 'faite'; }")
         e = page.evaluate(ETAT_JS)
         if e['err'] or erreurs:
             sys.exit('le joueur automatique a planté : %s' % (e['err'] or erreurs)[:3])
@@ -414,7 +459,9 @@ def jouer(nav):
     fin = page.evaluate("""() => ({t: S_.t, lect: S_.lect, gl: S_.gl, tete: S_.tete, rev: S_.rev,
       b: S_.b, contr: S_.contr, fin: S_.fin})""")
     ctx.close()
-    return tsv, R['v'], coupure, fin, frames, time.time() - t_reel
+    if autre is None:
+        sys.exit('la fenêtre des deux fins ne s\'est jamais ouverte deux fois')
+    return tsv, R['v'], coupure, fin, frames, time.time() - t_reel, autre
 
 
 def confronter(tsv, v, coupure, fin):
@@ -463,9 +510,18 @@ def confronter(tsv, v, coupure, fin):
     ligne('Élèves', fin['b']['elv'], s['elv_achats'][-1][1] if s['elv_achats'] else 0)
     ligne('Lecteurs', fin['b']['lec'], s['lec'][-1][1] if s['lec'] else 0)
     ligne('tablettes lues par le Lecteur', int(fin['tete']), sum(len(n) for _, n in s['lues']))
-    ligne('contradiction : armée', any(a for _, a in v['contr']), s['contr'] is not None)
+    # Chaque fois qu'elle s'arme et se lève, à la minute : le jeu les note au pas du joueur,
+    # le journal à l'instant de l'achat ou de la révision qui les cause — le même.
+    episodes = []
+    for t, armee in v['contr']:
+        if armee:
+            episodes.append([round(t / 60, 1), None])
+        elif episodes:
+            episodes[-1][1] = round(t / 60, 1)
+    ligne('contradiction : armée puis levée (min)', episodes,
+          [[round(a / 60, 1), round(l / 60, 1) if l is not None else None] for a, l in s['contrs']])
     ligne('contradiction : levée à la fin', not fin['contr'],
-          s['contr'] is None or s['contr_levee'] is not None)
+          not s['contrs'] or s['contrs'][-1][1] is not None)
     ligne('compositions', [(c, i) for _, c, i in v['comps']],
           [(d.split(' ✓')[0].split(' ✗')[0], {'acquis': 'acquis', 'impayable': 'impayable',
             'carnet': 'carnet'}[iss[0]]) for _, d, iss in s['comps']])
@@ -512,7 +568,7 @@ def main():
 
     with sync_playwright() as pw:
         nav = pw.chromium.launch()
-        tsv, v, coupure, fin, frames, duree = jouer(nav)
+        tsv, v, coupure, fin, frames, duree, autre = jouer(nav)
         nav.close()
     if sortie:
         sortie.write_text(tsv + '\n', encoding='utf-8')
@@ -524,10 +580,44 @@ def main():
 
     p, lignes, ecarts = confronter(tsv, v, coupure, fin)
     depouiller.titre('ce que le jeu a fait, contre ce que le dépouillement en lit')
+    afficher(lignes)
+    texte, plante, med = relire(p)
+    print(texte)
+
+    # L'autre fin, sur la même partie : ce que le rapport en dit doit être vrai aussi.
+    tsv2, jeu2 = autre
+    p2, lignes2, ecarts2 = confronter_interrompue(tsv2, jeu2)
+    depouiller.titre('la même partie, interrompue au dernier signe')
+    afficher(lignes2)
+    texte2, plante2, med2 = relire(p2)
+    print('\n'.join(l for l in texte2.split('\n') if 'INTERROMPUE' in l or 'durée' in l
+                    or 'relecture' in l or 'écart médian' in l))
+
+    print()
+    echec = False
+    for nom, pl, md, ec in (('achevée', plante, med, ecarts), ('interrompue', plante2, med2, ecarts2)):
+        if pl:
+            print('ÉCHEC (%s) : le rapport de dépouillement plante — %s' % (nom, pl))
+        if md is None or abs(md) > 0.05:
+            print('ÉCHEC (%s) : le contrôle ΔO de depouiller.py ne tombe pas à 0,0 %% (%s)' % (nom, md))
+        if ec:
+            print('ÉCHEC (%s) : %d écart%s entre le jeu et le dépouillement : %s'
+                  % (nom, len(ec), 's' if len(ec) > 1 else '', ', '.join(ec)))
+        echec = echec or bool(pl or ec) or md is None or abs(md) > 0.05
+    if echec:
+        sys.exit(1)
+    print('répétition tenue : le dépouillement lit la partie telle que le jeu l’a jouée, '
+          'achevée comme interrompue')
+
+
+def afficher(lignes):
     for quoi, jeu, lu, ok in lignes:
         print('  %s %-42s %-24s %s' % ('ok ' if ok else 'ÉCART', quoi, str(jeu)[:24], str(lu)[:60]))
 
-    # Le rapport tel que l'auteur le lira le jour où le journal revient : il doit sortir entier.
+
+def relire(p):
+    """Le rapport tel que l'auteur le lira le jour où le journal revient — il doit sortir
+    entier —, et l'écart médian du contrôle ΔO."""
     tampon = io.StringIO()
     try:
         with contextlib.redirect_stdout(tampon):
@@ -535,20 +625,28 @@ def main():
         plante = None
     except Exception as e:      # noqa: BLE001 — c'est précisément ce qu'on cherche
         plante = repr(e)
-    print(tampon.getvalue())
-    ec = depouiller.controle(p)
-    med = ec[len(ec) // 2] if ec else None
-    print()
-    if plante:
-        print('ÉCHEC : le rapport de dépouillement plante — %s' % plante)
-    if med is None or abs(med) > 0.05:
-        print('ÉCHEC : le contrôle ΔO de depouiller.py ne tombe pas à 0,0 %% (%s)' % med)
-    if ecarts:
-        print('ÉCHEC : %d écart%s entre le jeu et le dépouillement : %s'
-              % (len(ecarts), 's' if len(ecarts) > 1 else '', ', '.join(ecarts)))
-    if plante or ecarts or med is None or abs(med) > 0.05:
-        sys.exit(1)
-    print('répétition tenue : le dépouillement lit la partie telle que le jeu l’a jouée')
+    ec, _ = depouiller.controle(p)
+    return tampon.getvalue(), plante, (ec[len(ec) // 2] if ec else None)
+
+
+def confronter_interrompue(tsv, jeu):
+    ev = depouiller.lire(io.StringIO(tsv))
+    p = [x for x in depouiller.parties(ev) if depouiller.agit(x) >= 5][-1]
+    s = depouiller.Rejeu(p).jouer()
+    lignes, ecarts = [], []
+    def ligne(quoi, a, b, tol=0.0):
+        ok = abs(a - b) <= tol if isinstance(a, float) and isinstance(b, float) else a == b
+        lignes.append((quoi, a, b, ok))
+        if not ok:
+            ecarts.append(quoi)
+    ligne('interrompue', jeu['fin'] == 'interrompue', s['interrompu'] is not None)
+    ligne("arrêt de la partie (min)", round(jeu['t_arret'] / 60, 1),
+          round(s['finjeu'] / 60, 1) if s['finjeu'] else None)
+    ligne('effacement commencé', False, s['fin'] is not None)
+    ligne('relecture ouverte', False, s['relu'] is not None)
+    # la coupure entre les deux séances, et le rechargement au pied du dernier signe
+    ligne('coupures', 2, len(s['reprises']))
+    return p, lignes, ecarts
 
 
 if __name__ == '__main__':
