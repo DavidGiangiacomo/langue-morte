@@ -26,6 +26,9 @@ Contrôle :
  33. I2 : au million, une fois l'acte IV ouvert, les zéros des nombres du joueur s'écrivent
      en ⟨zéro⟩ — compteurs et coûts, pas avant ⟨nous⟩, pas sous le million —, ⟨zéro⟩ posé à
      la grille rend la notation compacte, et le journal d'actions date la première fois
+ 34. la sanction aux actes IV et V (ECO-3) : la contradiction ne divise plus que par 1,25 une
+     fois l'acte IV ouvert, les Élèves n'y rendent plus leur bonus mais tranchent toujours,
+     et le bandeau comme la ligne de l'instrument disent l'un et l'autre sans nommer un signe
   7. le relevé se fait dans le corpus ; le gisement s'épuise et se tarife à la 1re visite
   8. le recoupement se fait dans le corpus : deux passages d'un même signe
   9. la datation : une tablette se date quand on sait lire sa date, et pas avant
@@ -1599,6 +1602,29 @@ def main() -> None:
         r = page.evaluate("() => { S_.C = 9e5; acheterGl('nash'); return [dette() > 5, S_.contr]; }")
         page.wait_for_timeout(250)
         verifier(r == [True, 1], f"jusqu'au franchissement suivant — l'entrée dans l'acte IV : {r}")
+
+        # ---- la sanction aux actes IV et V (ECO-3) ----
+        # Le ÷2 doublait tout ce qui restait une fois les prix au plafond ; il ne divise plus que
+        # par 1,25. Et les Élèves attendent : sans ça, sept Élèves qui lisent tout faux
+        # finissaient avant le joueur sans Élève (règle 21).
+        print("\nla sanction aux actes IV et V")
+        r = page.evaluate("""() => { paintDoute(); return [contrDiv(), $('doute-etat').textContent]; }""")
+        verifier(r[0] == 1.25 and "réduite d’un cinquième" in r[1] and "par deux" not in r[1]
+                 and "élèves" not in r[1],
+                 f"une fois l'acte IV ouvert, la Certitude ne perd plus qu'un cinquième, et le bandeau le dit : {r}")
+        r = page.evaluate("""() => { S_.b.elv = 3; const arme = [elvMul(), M.gram()];
+            paintDoute(); paintInstr();
+            const ds = $('instr').querySelector('[data-ins=elv] .ds').textContent, bn = $('doute-etat').textContent;
+            S_.contr = 0; const libre = [elvMul(), M.gram()]; paintInstr();
+            const ds0 = $('instr').querySelector('[data-ins=elv] .ds').textContent;
+            S_.contr = 1; return [arme, libre, ds, ds0, bn, elvTranche()]; }""")
+        verifier(r[0][0] == 1 and abs(r[1][0] - 1.15) < 1e-9 and abs(r[1][1] / r[0][1] - 1.15) < 1e-9,
+                 f"tant qu'elle court, les Élèves ne rendent plus rien — et le rendent levée : {r[0]} / {r[1]}")
+        verifier("suspendu" in r[2] and "déchiffre seul" in r[2] and "+5 % aux autres" in r[3] and r[5] is True,
+                 f"leur ligne le dit, et ils tranchent toujours à l'achat : « {r[2]} »")
+        verifier("élèves attendent" in r[4] and not any(m in r[4] for m in ("grain", "maison", "avant", "lire", "faux")),
+                 f"le bandeau nomme l'attente, ni un signe ni un coupable : « {r[4]} »")
+        page.evaluate("() => { S_.b.elv = 0; }")
         # Rien, nulle part, ne dit si une révision était juste.
         vu = page.evaluate("() => document.querySelector('.shell').innerText.toLowerCase()")
         verifier(not any(m in vu for m in ("dette", "erreur", "correct", "mauvaise lecture")),

@@ -130,7 +130,11 @@ P = dict(
     # Certitude est divisée par deux jusqu'à révision. Le seuil suit `CONTR_SEUIL` dans
     # economie.js. Ce simulateur n'a pas de modèle de lecture et ne révise donc JAMAIS : il
     # mesure le pire cas, celui du joueur qui encaisse jusqu'au bout.
-    contr_s=5, contr_div=2.0,
+    # ECO-3 (20/10/2026) : ÷1,25 aux actes IV et V, où tout se paie en Certitude au plafond —
+    # le ÷2 d'origine y doublait tout ce qui restait (+60 à +85 min, I4 cassé partout). Et les
+    # Élèves ne rendent plus leur bonus tant qu'elle court (`elvMul()` dans economie.js) : sans
+    # ça, sept à neuf Élèves qui lisent tout faux finissaient avant le joueur sans Élève.
+    contr_s=5, contr_div=2.0, contr_div_tard=1.25,
     # L'Élève (ELV-1) : il ne produit rien, il multiplie ce que rendent les cinq autres —
     # +elv_p par Élève, linéaire, contre un prix géométrique. Ouvert par la première
     # Grammaire. Et il tranche à la place du joueur (ELV-2) : `elv_e` est le taux d'erreur
@@ -292,7 +296,8 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=(), eleves=None, ele
     elv_lus = []                   # (signe, Élèves à l'achat, taux d'erreur) — ELV-2
     # Armée une seule fois, à l'ouverture du doute, et jamais levée ici faute de révision.
     contr = [False]
-    etrangle = lambda: P['contr_div'] if contr[0] else 1.0
+    acte4 = lambda: any(ACTE.get(BRANCHE.get(x), 0) >= 4 for x in gl - SECRETS)
+    etrangle = lambda: (P['contr_div_tard'] if acte4() else P['contr_div']) if contr[0] else 1.0
     # Le signe qu'on vient d'acquérir est-il le premier de son acte ? (déjà dans `gl`)
     franchit = lambda g: (g[1] in ACTE and not any(
         ACTE.get(x[1], 0) == ACTE[g[1]] for x in ARBRE if x[0] in gl and x[0] != g[0]))
@@ -313,7 +318,7 @@ def run(P, cpm=15, cap_min=600, garde=0.0, compose=(), faux=(), eleves=None, ele
     # un problème de seuil, pas de taux — I6 y vaut 100 % tant que la première
     # Concordance n'est pas posée, quelle que soit la cadence de clic.
     premier = {}
-    _m = multis(has, mf, lambda: eleve(P, b['elv']))
+    _m = multis(has, mf, lambda: 1.0 if contr[0] else eleve(P, b['elv']))
     mcop, mate, mtab, mcon, mgram = _m['cop'], _m['ate'], _m['tab'], _m['con'], _m['gram']
     # La Grammaire cesse de croître avec les mots de la fin (VOIX-3) : elle compte l'arbre,
     # moins les branches de l'acte V. Suit `nGrammaire()` dans economie.js.

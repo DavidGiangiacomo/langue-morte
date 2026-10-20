@@ -142,6 +142,104 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## ECO-3 — les deux trous d'I4
+
+*20/10/2026, sur la branche empilée sur `eleve`.*
+
+Deux réserves écrites lot après lot, « non réglé, à observer » : l'acte V trop rapide avec
+Élèves depuis le Lecteur, et I4 qui cède sous contradiction depuis la Personne. Le simulateur
+couvre les cinq actes depuis GRAINE-2 ; plus rien n'empêchait de les mesurer pour de bon.
+
+### Ce que la mesure a montré avant tout choix
+
+**Le second trou était bien plus grand que ce que les docs en disaient.** Elles parlaient d'une
+attente de onze minutes « avant ⟨finir⟩ ». Mesurée signe par signe, la contradiction coûtait
+huit à onze minutes d'attente **à chaque signe** des actes IV et V, pendant deux actes : la
+paire réparante finissait à 214–218 min au lieu de 153–158, toutes fausses à 201–205, un seul
+Élève qui lit faux à 199–203. Le ÷2 de CONTR-1 avait été réglé quand la partie s'arrêtait à
+l'acte III, où il coûtait onze minutes parce que les occurrences portaient encore une part du
+rythme. Aux actes IV et V tout se paie en Certitude au plafond : diviser la Certitude par deux,
+c'est diviser par deux la vitesse de tout ce qui reste. La sanction n'avait pas changé ; la
+partie avait grandi sous elle.
+
+**Et ce joueur existe.** En PT10, la contradiction s'est déclenchée à dette 6, et il n'y a eu
+aucune révision. Un joueur qui révise s'en sort : avec un oracle qui révise le signe le plus
+lourd dès qu'il peut payer, la paire réparante retrouve 152,8–157,1 min, la durée d'une lecture
+parfaite. Mais l'oracle est le meilleur cas, et la paire réparante est justement celle que le
+texte ne trahit pas.
+
+**Le premier trou, lui, ne se ferme pas par le prix.** Avec Élèves l'acte V tient 3,45–3,58 min
+par signe, et l'acte IV 3,0–3,2 — sous les 4 d'I4 depuis VOIX-1, où on l'avait accepté sans le
+dire. Le prix des questions à 6 000 n'amène l'acte V qu'à 3,8, et creuse un trou de 7,5 min chez
+qui n'a pas d'Élève. Un Lecteur dont le prix triple au lieu de doubler ne déplace rien, un Élève
+gelé à l'entrée de l'acte V non plus. Ramener les Élèves à sept (croissance 1,8 → 2,2) donne
+3,7–3,9 ; seul un plafond à cinq atteint 4,0. Et l'acheteur en empile neuf, plus les sept de la
+règle 21 : ce sont les occurrences des actes IV et V qui les paient, pas le Corpus jumeau — neuf
+aussi sans lui.
+
+### Le piège qu'un seul levier cachait
+
+Adoucir la sanction aux actes IV et V faisait tenir I4 : à ÷1,25, la pire attente tombe à 7,4
+min. Mais **la règle 21 a une contrainte que la sanction tenait sans qu'on le sache** : sept
+Élèves qui lisent tout faux ne doivent pas finir avant le joueur qui n'en a aucun. Au ÷2 ils
+finissaient 11,6 min après lui. À ÷1,25, **11,7 min avant**. Le même diviseur devait étrangler
+assez l'empileur d'Élèves qui lisent faux pour qu'il perde son arbitrage, et assez peu le joueur
+sans Élève pour qu'il ne décroche pas — deux joueurs qui vont à des vitesses trop différentes.
+Balayé contre la croissance du prix des Élèves : une lamelle seulement tenait les deux, prix ×2,5
+et diviseur 1,35 à 1,4, déjà à 8,0 min de pire attente.
+
+D'où un levier qui les sépare : **tant que la contradiction court, les Élèves ne rendent plus leur
+bonus.** Ils recopiaient au propre, et ce qui est propre n'est plus sûr. Ils tranchent toujours à
+l'achat — c'est leur bonus qui attend, pas leur lecture. La suspension ne regarde pas qui a mal lu,
+le joueur ou eux : la sanction ne désigne rien (règle 19).
+
+### Ce qui est tranché
+
+Deux questions à l'auteur, deux réponses, celles que je recommandais.
+
+- **La sanction : ÷2 à l'acte III, ÷1,25 aux actes IV et V, et les Élèves attendent.** Contre
+  ÷1,25 seul, qui cassait l'arbitrage ; et contre le ÷2 gardé, I4 n'étant exigé que de qui
+  révise.
+- **L'acte V avec Élèves : on l'accepte, et la borne basse d'I4 se mesure sur le joueur sans
+  Élève.** L'Élève est l'instrument qui achète du temps. Contre sept Élèves (le trou rétrécit sans
+  se fermer, et tout le balayage est à refaire) et contre un plafond à cinq (un plafond dur sur un
+  instrument que la règle 21 règle par son prix).
+
+### Ce que le lot a trouvé en chemin
+
+**Le bandeau mentait sous l'acte IV.** Il disait « Certitude divisée par deux » quel que soit
+l'acte ; il dit désormais « réduite d'un cinquième » aux actes IV et V, et « les élèves attendent »
+quand il y en a. La ligne de l'Élève dit « suspendu tant qu'un passage refuse · déchiffre seul ».
+Rien ne nomme un signe ni un coupable.
+
+**Le contrôle de `depouiller.py` ne savait pas que la contradiction court.** Son rejeu des
+occurrences ignorait l'armement et les révisions — sans conséquence tant que la sanction ne
+touchait que la Certitude ; elle touche maintenant le bonus des Élèves, donc les occurrences du
+Copiste et de l'Atelier. L'armement et la levée sont sortis en méthodes du rejeu, que la section
+du rapport et le contrôle partagent : une seule façon de rejouer la règle 19.
+
+### Mesuré
+
+Joueur qui ne révise jamais, trois cadences :
+
+| cas | avant | après | pire attente |
+|---|---|---|---|
+| paire réparante (sans Élève) | 214,0–217,7 | **176,8–180,7** | 11,1 → **7,4** |
+| paire réparante, avec Élèves | — | 173,9–178,2 | **7,4** |
+| toutes fausses (sans Élève) | 201,4–205,3 | **167,1–171,2** | 10,2 → **6,7** |
+| doute à cinq, puis ⟨il-faut⟩ | 199,5–203,6 | **162,2–166,6** | 11,1 → **7,4** |
+| un Élève qui lit faux | 199,1–203,0 | **170,7–174,9** | 9,8 → **6,8** |
+| des Élèves qui lisent faux | 164,8–169,6 | **169,3–173,7** | 6,8 → **6,8** |
+
+La paire réparante coûte désormais **+23 min**, 15 % de la partie — CONTR-1 en coûtait 12 % à
+l'acte III. Les Élèves qui lisent tout faux finissent **seize minutes après** le joueur sans Élève
+qui lit juste. Les parties sans contradiction ne bougent pas d'un dixième (128,2–133,6 avec
+Élèves, 153,2–157,7 sans), et `balayage.py`, qui désarme la contradiction, non plus : **42
+combinaisons sur 54**. Pour le playtest : **la contradiction se déclenche-t-elle, et révise-t-on
+cette fois ?**
+
+`outils/verifier.py` passe de 438 à **442 assertions**.
+
 ## I2 — les zéros sont les leurs
 
 *20/10/2026, VOIX-5, sur la branche empilée sur `eleve`.*

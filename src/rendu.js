@@ -1044,9 +1044,10 @@ function paintDoute(){
   if(!ouvert) return;
   const c = revCost(), payable = S_.C >= c;
   setHTML($('doute-c'), 'rouvrir ' + (readC() ? big(c) : numGlyphs(c)));
-  /* « L'état est affiché sans ambiguïté » (CONTR-1). Ce que le bandeau dit : la Certitude est
-     divisée par deux, et une révision peut y mettre fin. Ce qu'il ne dit pas, et ne dira
-     jamais : lequel des signes est en cause. */
+  /* « L'état est affiché sans ambiguïté » (CONTR-1). Ce que le bandeau dit : ce que la
+     Certitude perd — la moitié à l'acte III, un cinquième aux actes IV et V (ECO-3) —, que les
+     élèves attendent quand il y en a, et qu'une révision peut y mettre fin. Ce qu'il ne dit
+     pas, et ne dira jamais : lequel des signes est en cause, ni qui l'a mal lu. */
   /* Combien de passages ne tiennent pas — jamais lesquels, ni à cause de quoi. Le chiffre
      aide à les chercher ; c'est au corpus de dire où, et au joueur de dire pourquoi. */
   const nr = $('doute-rupt'), vives = ruptureLignes().length;
@@ -1057,8 +1058,9 @@ function paintDoute(){
                 : 'Un passage ne se construit pas — il est allumé dans le corpus.');
   const bn = $('doute-etat');
   if(bn.hidden !== !S_.contr) bn.hidden = !S_.contr;
-  if(S_.contr) setHTML(bn, 'Un passage refuse de se résoudre. Certitude divisée par deux '
-    + 'jusqu’à ce qu’une lecture rouverte le dénoue.');
+  if(S_.contr) setHTML(bn, 'Un passage refuse de se résoudre. Certitude '
+    + (acteIV() ? 'réduite d’un cinquième' : 'divisée par deux')
+    + (S_.b.elv ? ', et les élèves attendent,' : '') + ' jusqu’à ce qu’une lecture rouverte le dénoue.');
   const liste = douteux();
   for(const g of GL){
     if(!AMB[g.id]) continue;

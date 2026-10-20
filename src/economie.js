@@ -306,7 +306,8 @@ const douteOuvre = () => has('mik');
 /* ======================== la contradiction (CONTR-1) ========================
    « Au franchissement de chaque acte, si dette > seuil, un passage refuse de se résoudre :
    la production de Certitude est divisée par deux jusqu'à révision. On ne perd jamais de
-   progression, seulement du débit » (design doc §8).
+   progression, seulement du débit » (design doc §8). Par deux à l'acte III, d'un cinquième aux
+   actes IV et V, et les Élèves attendent (ECO-3, `CONTR_DIV_TARD`, `elvMul()`).
 
    **Où elle se déclenche, dans un prototype qui n'a pas le franchissement voulu.** Le design
    place la première contradiction à la fin de l'acte III — c'est-à-dire, ici, sur le dernier
@@ -351,8 +352,16 @@ const douteOuvre = () => has('mik');
    ailleurs ; il n'y a pas de tick qui l'allume, pour qu'aucune sanction ne tombe sans un
    geste du joueur juste avant. */
 const CONTR_SEUIL = 5;
+/* ECO-3 (20/10/2026) : ÷2 à l'acte III, ÷1,25 aux actes IV et V. Le ÷2 a été réglé quand la
+   partie s'arrêtait à l'acte III, où il coûtait onze minutes à qui ne révise jamais : les
+   occurrences y portaient encore une part du rythme. Aux actes IV et V tout se paie en
+   Certitude au plafond, et le même ÷2 doublait tout ce qui restait — +60 à +85 min, huit à
+   onze minutes d'attente par signe sur deux actes, I4 cassé partout. À ÷1,25 la pire attente
+   tient 6,7 à 7,4 min dans les six cas mesurés. Et PT10 a montré que ce joueur-là existe :
+   la contradiction s'y est déclenchée, et il n'a fait aucune révision. */
 const CONTR_DIV = 2;
-const contrDiv = () => S_.contr ? CONTR_DIV : 1;
+const CONTR_DIV_TARD = 1.25;
+const contrDiv = () => S_.contr ? (acteIV() ? CONTR_DIV_TARD : CONTR_DIV) : 1;
 
 /* Le passage qui refuse : tablette 17, quatrième ligne — « eau · ne-pas tablette », la note
    de tri qui dit qu'un relevé manque. Le jeu le fait manquer.
@@ -465,7 +474,14 @@ function reviser(id, lect){
    retarde d'autant ce qu'il rapporte. C'est l'arbitrage, et il n'est écrit nulle part. */
 const ELV_P = 0.05;     // ce que chaque Élève ajoute à ce que rendent les cinq instruments
 const ELV_E = 0.15;     // la part des signes ambigus qu'un Élève seul lit faux
-const elvMul = () => 1 + ELV_P*S_.b.elv;
+/* Tant qu'un passage refuse, les Élèves ne rendent plus rien (ECO-3) : ils recopiaient au
+   propre, et ce qui est propre n'est plus sûr. Sans ça, adoucir la sanction aux actes IV et V
+   cassait l'arbitrage de la règle 21 — sept à neuf Élèves qui lisent tout faux finissaient
+   douze minutes AVANT le joueur sans Élève qui lit juste. Avec, seize minutes après. La
+   suspension ne regarde pas qui a mal lu, le joueur ou eux : la sanction ne désigne rien
+   (règle 19). Ils continuent de trancher à l'achat — c'est leur bonus qui attend, pas leur
+   lecture. */
+const elvMul = () => S_.contr ? 1 : 1 + ELV_P*S_.b.elv;
 const elvErr = () => 1 - Math.pow(1 - ELV_E, S_.b.elv);
 const elvTranche = () => S_.b.elv > 0;
 /* Le seul dé du jeu qui décide de quelque chose — celui d'`ambOuvrir` ne tire qu'un ordre
@@ -631,10 +647,12 @@ const INS = [
    unlock:()=>has('nur')},
   /* Ouvert par la première Grammaire, comme chaque instrument l'est par le précédent. Son
      prix est en occurrences, comme les six autres, et c'est sa croissance qui décide de
-     combien on en empile — 1,8 en laisse sept à l'acheteur du simulateur, 1,4 en laissait
-     dix. Sa ligne dit les deux moitiés de ce qu'il fait, et ne chiffre que la première. */
+     combien on en empile — 1,8 en laissait sept à l'acheteur du simulateur quand la partie
+     s'arrêtait à l'acte III, neuf depuis les actes IV et V ; 1,4 en laissait dix. Sa ligne dit
+     les deux moitiés de ce qu'il fait, et ne chiffre que la première ; sous contradiction,
+     elle dit que la première attend (ECO-3). */
   {k:'elv', nom:'Élève',                sig:'shen', base:20000,r:1.80,
-   ds:()=>'+'+f(ELV_P*100,0)+' % aux autres · déchiffre seul',
+   ds:()=>(S_.contr ? 'suspendu tant qu’un passage refuse' : '+'+f(ELV_P*100,0)+' % aux autres')+' · déchiffre seul',
    unlock:()=>S_.b.gram>0},
   /* Le Corpus jumeau (VOIX-4) : une copie du corpus, retrouvée — voir `JUM_F`. Ouvert par
      ⟨nous⟩, le premier signe de l'acte IV, et en un seul exemplaire (`max`). */

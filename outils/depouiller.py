@@ -120,7 +120,10 @@ class Rejeu:
         self.prixJ = {}              # le tarif de chaque tablette de la copie (VOIX-4)
         has = lambda i: i in self.gl
         mf = lambda i, x: ((1 + (x - 1) * sim.AMB_R) if self.gl.get(i) == 'f' else x) if has(i) else 1
-        self.m = sim.multis(has, mf, lambda: sim.eleve(P, self.b['elv']))
+        # Les Élèves ne rendent rien tant que la contradiction court (ECO-3) : le rejeu des
+        # occurrences doit le savoir, sans quoi le contrôle ΔO divergerait chez qui en a.
+        self.armee = False
+        self.m = sim.multis(has, mf, lambda: 1.0 if self.armee else sim.eleve(P, self.b['elv']))
         self.has = has
 
     def obrut(self):
@@ -185,15 +188,9 @@ class Rejeu:
                 # dont six lecteurs déballent déjà les six champs.
                 if elv:
                     s['eleve'][gid] = int(elv)
-                # La contradiction se solde à l'ouverture du doute, puis au premier signe de
-                # chaque acte une fois le doute ouvert (règle 19, VOIX-1) — et nulle part
-                # ailleurs. On la rejoue aux mêmes endroits que le jeu. Re-soldée après une
-                # levée, elle écrase la précédente : c'est l'état de la fin qui se rapporte.
-                franchi = 'mik' in self.gl and BRANCHE.get(gid) in sim.ACTE and not any(
-                    x != gid and BRANCHE.get(x) in sim.ACTE
-                    and sim.ACTE[BRANCHE[x]] == sim.ACTE[BRANCHE[gid]] for x in self.gl)
-                if ((gid == 'mik' or franchi) and (s['contr'] is None or s['contr_levee'])
-                        and self.dette() > P['contr_s']):
+                # Re-soldée après une levée, elle écrase la précédente : c'est l'état de la
+                # fin qui se rapporte.
+                if self.solder(gid):
                     s['contr'], s['contr_levee'] = t, None
 
             elif genre == 'recouper':
@@ -211,7 +208,7 @@ class Rejeu:
                     s['cert_couts'] += float(cout)
                     s['couts_t'].append((t, float(cout)))
                     s['revs'].append((t, gid, avant, apres, int(cout), int(d0), int(d1)))
-                    if s['contr'] and not s['contr_levee'] and self.dette() <= P['contr_s']:
+                    if self.lever():
                         s['contr_levee'] = t
 
             elif genre == 'composer':
@@ -279,6 +276,25 @@ class Rejeu:
     def dette(self):
         return sum(sim.DETTE[g] for g in sim.AMBIGUS if self.gl.get(g) == 'f')
 
+    def solder(self, gid):
+        """La contradiction se solde à l'ouverture du doute, puis au premier signe de chaque
+        acte une fois le doute ouvert (règle 19, VOIX-1) — et nulle part ailleurs. On la rejoue
+        aux mêmes endroits que le jeu ; rend vrai si elle vient de s'armer."""
+        franchi = 'mik' in self.gl and BRANCHE.get(gid) in sim.ACTE and not any(
+            x != gid and BRANCHE.get(x) in sim.ACTE
+            and sim.ACTE[BRANCHE[x]] == sim.ACTE[BRANCHE[gid]] for x in self.gl)
+        if (gid == 'mik' or franchi) and not self.armee and self.dette() > P['contr_s']:
+            self.armee = True
+            return True
+        return False
+
+    def lever(self):
+        """Levée par une révision qui fait repasser la dette sous le seuil."""
+        if self.armee and self.dette() <= P['contr_s']:
+            self.armee = False
+            return True
+        return False
+
     def issue(self, det):
         """Les trois issues d'une tentative de composition. Le journal les dit depuis le
         15/09/2026 ; avant, il ne marquait que la réussite, et une paire juste qu'on ne
@@ -332,6 +348,12 @@ def controle(ev):
                 m = RE_GL.match(det)
                 if m:
                     r.gl[m.group(1)] = 'f' if m.group(3) else 'j'
+                    r.solder(m.group(1))
+            elif genre == 'reviser':
+                m = RE_REV.match(det)
+                if m:
+                    r.gl[m.group(1)] = 'f' if '✗' in m.group(3) else 'j'
+                    r.lever()
             prev = None
             continue
         if genre != 'etat':
