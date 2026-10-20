@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Balayage de constantes — « La langue morte », actes I à III.
+Balayage de constantes — « La langue morte », actes I à V.
 Rejoue `sim.run` sur une grille de valeurs et ne rend qu'une ligne par combinaison,
 pour choisir un réglage sans lire quatre cents lignes de journal.
 
@@ -25,6 +25,12 @@ CADENCES = (5, 15, 40)
 # lesquels seule la lecture tranche n'existent pas : c'est le même réglage, joué par deux
 # joueurs qui n'ont pas lu la même chose, et il doit tenir pour les deux.
 LECTURES = ((), AMBIGUS)
+# ... et aux deux joueurs que l'Élève sépare (ELV-1) : celui qui n'en prend aucun, pour
+# trancher lui-même, et celui qui en empile autant que l'acheteur en veut. Sept Élèves
+# raccourcissent la partie de sept minutes ; n'en prendre aucun est un choix de lecture, pas
+# une faute de jeu, et le réglage doit tenir pour les deux. Quand le joueur lit tout faux,
+# ses Élèves aussi : les deux extrêmes restent des extrêmes.
+ELEVES = (0, None)
 GRILLE = dict(rec_r=(1.26, 1.30, 1.35), con_b=(350, 400, 450), cop_b=(10, 15),
               rev_r=(1.0, 1.1, 1.25))
 
@@ -42,8 +48,33 @@ GRILLE = dict(rec_r=(1.26, 1.30, 1.35), con_b=(350, 400, 450), cop_b=(10, 15),
 # variable, et trie d'autant moins : c'est assumé, et ce sont les trois autres garde-fous qui
 # trient, aucun n'étant touché par la lecture (pire tranche 26 % juste contre 22 % faux,
 # écart 5,2 contre 4,6, main 22,5 % contre 22,2 %).
-DUREE = (83.0, 96.0)
-ECART_MAX = 6.0
+# Re-basée le 12/10/2026 avec l'Élève, par le bas seulement : le plafond reste celui du
+# joueur sans Élève et tout juste (94,3), le plancher devient celui du joueur à sept Élèves
+# et tout faux (79,3). Quinze minutes d'amplitude pour dix-sept de fenêtre, soit un
+# garde-fou qui ne trie plus que les réglages franchement cassés — même constat qu'à AMB-1,
+# aggravé, et même réponse : I6, l'écart et la main ne bougent ni avec la lecture ni avec
+# l'Élève, et ce sont eux qui trient.
+# Re-basée le 14/10/2026 avec la Personne (VOIX-1, trente-six glyphes) : 118,6-122,2 min pour
+# le joueur sans Élève et tout juste, 97,8-101,6 pour celui qui en empile et lit tout faux.
+# Mêmes marges — trois minutes sous le plancher, deux au-dessus du plafond. 42 combinaisons
+# sur 54 passent, dont le réglage en place (97,8-122,2 min, écart 5,8, main 18 %, 25 %).
+# Re-basée le 19/10/2026 avec la Fin (GRAINE-1, quarante-trois glyphes) : 159,5-162,6 min pour
+# le joueur sans Élève et tout juste, 124,1-127,5 pour celui qui en empile et lit tout faux.
+# Mêmes marges. L'écart max, lui, passe de 6 à 8 — la borne d'I4, et non plus une marge en
+# dessous : l'acte V espace par construction les mots qu'une question ouvre, de 6,6 à 7,2 min
+# chez le joueur sans Élève, contre 3,2 à 5,2 avec. C'est le rythme voulu, mesuré en
+# choisissant les prix (docs/note-questions.md), pas un défaut qu'un garde-fou devrait cacher.
+# Re-basée le 19/10/2026 avec le Lecteur (GRAINE-2), qui comble les attentes de question de
+# l'acte V : 155,5-158,6 min sans Élève et tout juste, 121,7-125,1 toutes fausses avec Élèves.
+# Mêmes marges. À (121, 165), quinze combinaisons tombaient sur le plancher, de quelques
+# dixièmes : c'était la durée qui avait bougé, pas le réglage qui avait cassé. 42 sur 54 à
+# (118, 161), comme avant lui, dont le réglage en place (121,7-158,6 min, écart 5,8).
+# Re-basée le même jour avec le Corpus jumeau (VOIX-4), qui rend la main au corpus à l'acte IV
+# et raccourcit la partie d'une à trois minutes : 119,0-157,7 min au réglage en place, mêmes
+# marges. À (118, 161), 41 sur 54 ; à (116, 160), 42, dont le réglage en place (119,0-157,7 min,
+# écart 6,0, main 26 %).
+DUREE = (116.0, 160.0)
+ECART_MAX = 8.0
 I6_MAX = 30.0
 # La part manuelle des OCCURRENCES, entrée dans le tri le 14/09/2026 en même temps que
 # `rev_r`. Aucune combinaison de la grille actuelle ne s'en approche (22 à 24 %), et c'est
@@ -55,7 +86,21 @@ I6_MAX = 30.0
 # précédents ne le voyait passer. Le plancher est donc la borne utile ici ; le plafond de
 # 40 % du CLAUDE.md, lui, porte sur la mesure RÉELLE d'un playtest (36,3 % en PT9 pour
 # 22 % simulés), que ce simulateur n'atteint jamais.
-MAIN_MIN = 15.0
+# Re-basé le 19/10/2026 avec la Fin (GRAINE-1), et pour la raison qui fait re-baser la
+# durée : sur la partie entière, cette part n'est pas un invariant non plus. Le gisement est
+# fini et la production passive ne l'est pas, donc chaque minute ajoutée au bout la fait
+# baisser — la Fin en ajoute trente-cinq, gisement vidé à 395 relevés sur 399, et la main
+# passe de 17,2 % à l'entrée de l'acte V à 13,1 % au dernier signe. À 15, les 54
+# combinaisons tombaient, réglage en place compris, sans que rien ne soit cassé. Le plancher
+# est re-calé sur ce qu'il doit attraper, mesuré dans l'arbre de quarante-trois signes : la
+# grille fait 12 à 14 %, « tout dégager à 80 % de l'arbre » 9,7 %, à 90 % 11,5 %. À 11, le
+# premier est rejeté et la grille entière admise. Il trie moins bien qu'avant — l'écart entre
+# la famille fautive et la grille passe de dix points à trois, la queue passive de la Fin
+# tassant tout — et c'est noté, pas réglé : la règle 9 interdit de régler contre ce chiffre
+# avant PT11. 42 combinaisons sur 54 passent, comme à la Personne, dont le réglage en place
+# (124,1-162,6 min, écart 7,2, main 13 %, pire tranche 25 %) ; les douze autres ont toutes le
+# Copiste à 15 et passent le plafond de durée de quelques dixièmes.
+MAIN_MIN = 11.0
 NT = 6                  # tranches retenues : 0-10′ à 50-60′, au-delà tout est à zéro
 
 
@@ -69,16 +114,17 @@ def i6_tranches(s):
 
 
 def essai(variante):
-    """Une combinaison, jouée aux trois cadences et aux deux lectures extrêmes, réduite à
-    ses pires mesures."""
+    """Une combinaison, jouée aux trois cadences, aux deux lectures extrêmes, avec et sans
+    Élève, réduite à ses pires mesures."""
     durees, ecarts, con1, trs, mains = [], [], [], [], []
-    for cpm, lect in itertools.product(CADENCES, LECTURES):
+    for cpm, lect, elv in itertools.product(CADENCES, LECTURES, ELEVES):
         # `contr_s` hors d'atteinte : ce balayage mesure le RYTHME d'un réglage, pas la
         # sanction que le joueur s'inflige. La contradiction ajoute onze minutes à qui ne
         # révise jamais (CONTR-1) — les compter ici ferait rejeter un bon réglage pour une
         # punition qui n'est pas la sienne, et qui a une sortie. Elle se mesure à part,
         # dans `sim.py`.
-        tt, marks, _, s = run({**P, **variante, 'contr_s': 99}, cpm, faux=lect)
+        tt, marks, _, s = run({**P, **variante, 'contr_s': 99}, cpm, faux=lect,
+                              eleves=elv, eleve_lit='f' if lect else 'j')
         durees.append(tt)
         ecarts.append(max((marks[i][1] - marks[i - 1][1] for i in range(1, len(marks))),
                           default=0.0))

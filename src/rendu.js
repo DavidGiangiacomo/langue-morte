@@ -43,13 +43,15 @@ function buildCorpus(){
     let j=0;
     for(const line of tb.l){
       h+='<div class="ln">';
-      for(const tk of line.split(' ')){
+      const toks = line.split(' '), passe = auPasseLigne(toks);
+      toks.forEach((tk, k)=>{
         /* data-j : rang du jeton dans sa tablette. C'est lui qui permet au relevé de savoir
-           si l'on découvre un signe ou si l'on repasse sur ses propres pas. */
+           si l'on découvre un signe ou si l'on repasse sur ses propres pas.
+           data-t : ce jeton passe au passé sous le verrou de ⟨nous-fûmes⟩ (VOIX-1). */
         if(tk==='·') h+='<span class="tok sep">·</span>';
         else if(tk.charCodeAt(0)===37) h+='<span class="tok" data-j="'+(j++)+'" data-n="'+tk.slice(1)+'"></span>';
-        else h+='<span class="tok" data-j="'+(j++)+'" data-w="'+tk+'"></span>';
-      }
+        else h+='<span class="tok" data-j="'+(j++)+'" data-w="'+tk+'"'+(passe[k]?' data-t="1"':'')+'></span>';
+      });
       h+='</div>';
     }
     h+='</div>';
@@ -60,15 +62,48 @@ function buildCorpus(){
 
 /* Un jeton relevé reste marqué : c'est la trace du travail déjà fait, et la seule façon
    de voir d'un coup d'œil ce qu'il reste à parcourir sur une tablette. */
-function releves(){
+function releves(rel){
   const s = new Set();
-  for(const t in S_.rel) for(const j of S_.rel[t]) s.add(t+':'+j);
+  for(const t in rel) for(const j of rel[t]) s.add(t+':'+j);
   return s;
 }
 const cleTok = el => el.closest('.tablet').dataset.tb + ':' + el.dataset.j;
 
+/* ---- le verrou du passé (VOIX-1) ----
+   Les règles sont dans lexique.js, au-dessus de `PASSE`. Ce qui est ici les applique à une
+   ligne, une fois, à la construction : rien ne dépend de ce que le joueur a lu, seulement du
+   texte. Rend, pour chaque jeton de la ligne, s'il passe au passé sous le verrou. */
+function auPasseLigne(toks){
+  const out = new Array(toks.length).fill(false);
+  let adresse = false, debut = 0;
+  for(let k = 0; k <= toks.length; k++){
+    if(k < toks.length && toks[k] !== '·') continue;
+    const seg = toks.slice(debut, k);
+    if(seg.some(x => x === 'ta' || x === 'taru')) adresse = true;
+    else if(seg.some(x => x === 'nash' || x === 'mu')) adresse = false;
+    if(!adresse){
+      let modal = false;
+      seg.forEach((x, i) => {
+        if(x === 'dun'){ out[debut + i] = true; modal = true; }
+        else if(VERBES.has(x) && !modal) out[debut + i] = true;
+      });
+    }
+    debut = k + 1;
+  }
+  return out;
+}
+const auPasse = () => has('nashal');
+/* Le mot d'un jeton du corpus : celui du lexique (`motDe`), au passé si le verrou est posé et
+   que la ligne le veut. Le lexique, l'infobulle et la concordance gardent l'infinitif — c'est
+   le récit qui passe au passé, pas le dictionnaire. */
+const motTok = el => { const m = motDe(el.dataset.w);
+  return el.dataset.t && auPasse() ? (PASSE[m] || m) : m; };
+
 function paintCorpus(flashId){
-  const rel = releves();
+  if(relecture){ peindreRelecture(); return; }
+  /* Un jeton relevé sur l'original porte une marque, relevé aussi sur la copie du Corpus
+     jumeau, une marque plus forte : c'est ce qui dit, après la copie, ce qui reste à faire. */
+  const rel = releves(S_.rel), relJ = releves(S_.relJ);
   /* La ligne que la contradiction retient (CONTR-1). Un Set vide quand elle n'est pas armée,
      donc la boucle ci-dessous ne paie rien le reste du temps. */
   const jetons = refusJetons();
@@ -77,24 +112,30 @@ function paintCorpus(flashId){
     const id=el.dataset.w;
     const nie = !!refus && refus.has(el);
     const known = !nie && !!byId[id] && has(id);
-    const r = (rel.has(cleTok(el)) ? 'r' : '') + (nie ? 'x' : '');
+    const k = cleTok(el);
+    const r = (rel.has(k) || relJ.has(k) ? 'r' : '') + (rel.has(k) && relJ.has(k) ? 'c' : '') + (nie ? 'x' : '');
     /* Le mot entre dans la signature du cache : une lecture tranchée à l'achat repeint
        les attestations déjà peintes, sans quoi le mot faux n'arriverait que sur les
        tablettes touchées ensuite (AMB-2). */
-    const want = (known ? 'w:'+motDe(id) : 'g') + r;
-    if(el.__v===want && flashId!==id) return;
+    const mot = known ? motTok(el) : null;
+    const want = (known ? 'w:'+mot : 'g') + r;
+    /* Sous le verrou, ce qui change de temps s'allume comme un mot qu'on vient de lire : « y
+       compris les passages déjà lus » doit se voir, pas se constater. */
+    const passe = flashId==='nashal' && known && !!el.dataset.t;
+    if(el.__v===want && flashId!==id && !passe) return;
     el.__v=want;
-    el.className='tok '+(known?'w':'g')+(r.indexOf('r')>=0?' rel':'')+(nie?' refus':'')
-                +(flashId===id?' flash':'');
-    el.innerHTML = known ? motDe(id) : sv(id);
+    el.className='tok '+(known?'w':'g')+(r.indexOf('r')>=0?' rel':'')+(r.indexOf('c')>=0?' rel2':'')+(nie?' refus':'')
+                +(flashId===id || passe?' flash':'');
+    el.innerHTML = known ? mot : sv(id);
   });
   elCorpus.querySelectorAll('[data-n]').forEach(el=>{
     const n=+el.dataset.n, nie = !!refus && refus.has(el), lis = !nie && numLisible(n);
-    const r = (rel.has(cleTok(el)) ? 'r' : '') + (nie ? 'x' : '');
+    const k = cleTok(el);
+    const r = (rel.has(k) || relJ.has(k) ? 'r' : '') + (rel.has(k) && relJ.has(k) ? 'c' : '') + (nie ? 'x' : '');
     const want=(lis?'n':'g')+r;
     if(el.__v===want) return;
     el.__v=want;
-    el.className='tok '+(lis?'num':'g')+(r.indexOf('r')>=0?' rel':'')+(nie?' refus':'');
+    el.className='tok '+(lis?'num':'g')+(r.indexOf('r')>=0?' rel':'')+(r.indexOf('c')>=0?' rel2':'')+(nie?' refus':'');
     el.innerHTML = lis ? nf.format(n) : numGlyphs(n);
   });
   peindreRuptures();
@@ -120,6 +161,28 @@ function peindreRuptures(){
     const ln = tb && tb.children[r.l];
     if(ln) ln.classList.add('rompu');
   }
+}
+
+/* ==================== ce que le Lecteur a lu (GRAINE-2) ====================
+   Rien ne le décrit, et c'est ici qu'on le voit faire : une tablette lue porte un trait dans
+   la barre et au bord du texte, et dans la tablette en cours une ligne s'éclaire, puis la
+   suivante, au rythme d'une tablette par minute et par Lecteur. Le jeu ne dit pas ce que
+   c'est ; le joueur regarde, et la tablette 27 le lui dira (« tablette · devenir-lecture »). */
+let lecVue = '';
+function peindreLecteur(){
+  const n = Math.floor(S_.tete), t = n + 1;
+  const tb = S_.b.lec && n < CORPUS.length ? TBN[t] : null;
+  const ligne = tb ? Math.floor((S_.tete - n) * tb.l.length) : -1;
+  const cle = n + ':' + ligne;
+  if(cle === lecVue) return;
+  lecVue = cle;
+  /* `parcourue`, et non `lue` : la barre porte déjà `lue` pour une tablette dont le tarif est
+     figé (`peindreGisement()`), et les deux se volaient la classe. */
+  for(const c of $('rail').children) c.classList.toggle('parcourue', +c.dataset.go <= n);
+  for(const el of elCorpus.querySelectorAll('.tablet')) el.classList.toggle('parcourue', +el.dataset.tb <= n);
+  const v = elCorpus.querySelector('.ln.lecteur'); if(v) v.classList.remove('lecteur');
+  const el = tb && elCorpus.querySelector('.tablet[data-tb="'+t+'"]');
+  if(el && el.children[ligne]) el.children[ligne].classList.add('lecteur');
 }
 
 /* ============================ la datation ============================ */
@@ -239,7 +302,7 @@ function peindreGisement(){
   for(const c of $('rail').children){
     if(c.hidden) continue;
     const t=+c.dataset.go;
-    const sec = gisReste(t) <= 0, lue = !sec && S_.prix[t] !== undefined;
+    const sec = gisReste(t) <= 0, lue = !sec && prixEnCours(t) !== undefined;
     if(c.classList.contains('sec')!==sec) c.classList.toggle('sec',sec);
     if(c.classList.contains('lue')!==lue) c.classList.toggle('lue',lue);
   }
@@ -255,12 +318,15 @@ function titreCell(t){
      La répéter en français juste à qui a lu « soleil », c'est le jeu qui le corrige. */
   const d = !datee(t) ? '' : ANNEE[t].fin ? ' · '+motDe('nurhal')
                                           : ' · '+motDe('nur')+' '+ANNEE[t].n;
-  return 'tablette '+t+d+' — gisement '+r+'/'+GISEMENT[t]
+  /* Avec le Corpus jumeau, le gisement compte la copie, et le tarif est celui du gisement
+     en cours : l'original tant qu'il en reste, la copie ensuite (VOIX-4). */
+  const p = prixEnCours(t), copie = gisOrig(t) <= 0 && r > 0;
+  return 'tablette '+t+d+' — gisement '+r+'/'+(GISEMENT[t] + (S_.b.jum ? GIS_COPIE[t] : 0))
     + (r <= 0 ? ' · épuisée'
-      : S_.prix[t] === undefined
-        ? " · intacte : "+nf.format(Math.round(tarifRel()))
+      : p === undefined
+        ? ' · '+(copie ? 'copie intacte' : 'intacte')+' : '+nf.format(Math.round(tarifRel()))
           +" occ. par relevé si tu l'ouvres maintenant"
-        : ' · '+nf.format(Math.round(S_.prix[t]))+' occ. par relevé');
+        : ' · '+nf.format(Math.round(p))+' occ. par relevé');
 }
 /* ---- le recoupement, dans le texte ----
    Armé depuis le bouton, il se joue en deux clics : un premier passage, puis la même
@@ -334,6 +400,30 @@ function rejouerFlash(el){
    jusqu'à 0, en soixante-dix lignes au lieu de six cent soixante-seize. Personne ne la
    commente ; c'est au joueur de lire les nombres. */
 let concArme = false, concSel = null, concN = 0;
+/* ---- ce qui s'adresse au lecteur (VOIX-2) ----
+   « Le corpus n'est pas un registre : il est écrit à la deuxième personne, et il l'a toujours
+   été — le jeu réaffiche les passages déjà lus, désormais adressés au joueur » (design doc
+   §10). Rien n'est ajouté au texte : c'est le CHOIX DES LIGNES qui dit « toi ». À l'achat de
+   ⟨toi⟩, le corpus se replie une fois, comme une concordance, sur les lignes qui portent
+   ⟨toi⟩, ⟨toi-qui⟩ ou ⟨lire⟩ — quatre-vingt-douze lignes sur vingt-cinq tablettes, presque
+   toutes déjà lues : les consignes « il-faut lire · eau », les registres qui finissent sur
+   « si lire », l'abécédaire, la fabrique. Le joueur les relit, et revient au corpus quand il
+   veut. Tranché par l'auteur le 14/10/2026, contre une relecture déroulée et contre une
+   deuxième personne conjuguée à l'écran.
+   Le choix est fait sur les SIGNES, jamais sur les mots : ⟨lire⟩ lu « compter » se replie de
+   la même façon, et le repli ne renseigne sur aucune lecture (règle 17). Il ne compte pas
+   comme une concordance dans le degré de doute (`S_.conc`) : c'est le jeu qui montre, pas le
+   joueur qui rassemble, et le doute mesure ce que le joueur a fait (règle 18). */
+const ADRESSE = ['ta', 'taru', 'shen'];
+let concToi = false;
+function adresser(){
+  concSel = null; concArme = false; concToi = true;
+  peindreConc();
+  /* Tout ce qui précède la première tablette gardée est replié : le haut du corpus EST le
+     début de la relecture. `versTablette()` mesure depuis la première tablette, qui est
+     masquée ici, et s'arrêtait une ligne trop bas. */
+  elCorpus.scrollTo({top: 0});
+}
 
 function concArmer(v){
   concArme = v;
@@ -353,21 +443,23 @@ function concChoisir(id){
   S_.conc[id] = 1;
   peindreConc();
 }
-function concFermer(){ concSel = null; concArme = false; peindreConc(); }
+function concFermer(){ concSel = null; concArme = false; concToi = false; peindreConc(); }
 
 function peindreConc(){
-  elCorpus.classList.toggle('filtre', !!concSel);
+  elCorpus.classList.toggle('filtre', !!concSel || concToi);
   elCorpus.classList.toggle('conc-arme', concArme);
   concN = 0;
   for(const tb of elCorpus.children){
-    if(!concSel){
+    if(!concSel && !concToi){
       tb.classList.remove('vide');
       for(const ln of tb.children) ln.classList.remove('off');
       continue;
     }
     let n = 0, premiere = true;
     for(const ln of tb.children){
-      const a = ln.querySelectorAll('[data-w="'+concSel+'"]').length;
+      /* Une concordance compte des attestations ; le repli « à toi » compte des lignes. */
+      const a = concToi ? +ADRESSE.some(id => ln.querySelector('[data-w="'+id+'"]'))
+                        : ln.querySelectorAll('[data-w="'+concSel+'"]').length;
       n += a;
       /* La première ligne reste toujours : sans elle, la colonne n'aurait plus de date —
          et cette date est du texte ancien, pas un en-tête ajouté par le jeu. */
@@ -381,9 +473,15 @@ function peindreConc(){
 }
 
 function majConc(){
-  const b = $('a-con'), ouvert = S_.b.con > 0;
+  /* Le bouton sert aussi à sortir du repli « à toi », Concordance achetée ou non. */
+  const b = $('a-con'), ouvert = S_.b.con > 0 || concToi;
   if(b.hidden !== !ouvert) b.hidden = !ouvert;
   if(!ouvert) return;
+  if(concToi){
+    setHTML(b, 'à '+motDe('ta')+' · '+nf.format(concN)+' ligne'+(concN > 1 ? 's' : '')+' ✕');
+    b.classList.add('on');
+    return;
+  }
   const mot = concSel && byId[concSel] && has(concSel) ? motDe(concSel) : null;
   setHTML(b, !concSel ? (concArme ? 'choisis un signe' : 'concorder')
     : (mot || sv(concSel)) + ' · ' + nf.format(concN)
@@ -468,17 +566,21 @@ function buildInstr(){
 function paintInstr(){
   for(const i of INS){
     const b=$('instr').querySelector('[data-ins="'+i.k+'"]');
-    const open=i.unlock(), c=insCost(i), can=open&&S_.O>=c;
+    const open=i.unlock(), c=insCost(i), plein=insPlein(i), can=open&&!plein&&S_.O>=c;
     b.classList.toggle('locked',!open);
     b.classList.toggle('afford',can);
     b.disabled=!can;
-    setHTML(b.querySelector('.sg'), sv(i.sig));
-    const muet={cop:'kal',tab:'im',con:'shen',ate:'mesh',gram:'en'}[i.k];
-    setHTML(b.querySelector('.nn'), (open&&has('ur')) ? i.nom
+    /* Deux tablettes pour le Corpus jumeau : c'est ce qu'il est. */
+    setHTML(b.querySelector('.sg'), i.k === 'jum' ? sv(i.sig)+sv(i.sig) : sv(i.sig));
+    const muet={cop:'kal',tab:'im',con:'shen',ate:'mesh',gram:'en',elv:'zur'}[i.k];
+    /* Le Lecteur n'a pas de nom français : il porte un signe du corpus, qu'on lit quand on le
+       sait (GRAINE-2). */
+    setHTML(b.querySelector('.nn'), i.k === 'lec' ? nomLecteur()
+      : (open&&has('ur')) ? i.nom
       : '<span style="color:var(--dim)">'+sv('dun')+sv(muet)+sv('la')+'</span>');
     setHTML(b.querySelector('.lv'), open? nf.format(S_.b[i.k]) : '');
     setHTML(b.querySelector('.ds'), open&&has('im') ? i.ds() : '');
-    setHTML(b.querySelector('.cs'), open ? (readC()? big(c) : numGlyphs(c)) : '');
+    setHTML(b.querySelector('.cs'), open && !plein ? (readC()? big(c) : numGlyphs(c)) : '');
   }
 }
 
@@ -556,6 +658,118 @@ function paintComp(){
   }).join(''));
 }
 
+/* ==================== les Questions (VOIX-3) ====================
+   Le panneau ressemble à la grille de composition parce qu'il fait le même geste : poser
+   des signes qu'on sait lire. La palette suit la même règle (14) — les signes acquis, aucun
+   autre, même grisé. Ce qui diffère est ce qui revient : la grille ne dit jamais si une
+   paire existe, le texte, lui, répond — mais seulement avec ce qu'il a gravé.
+   La réponse s'écrit avec les mots du lexique, à l'infinitif comme la concordance : c'est un
+   relevé, pas le récit (règle 23). Les lignes qui la portent s'allument dans le corpus, où
+   le récit, lui, garde ses temps. */
+const Q_POSE = 3;       // signes posés après ⟨si⟩, au plus — la plus longue condition en a trois
+let qSel = [], qVue = null;
+
+function qPoser(id){
+  const i = qSel.indexOf(id);
+  if(i >= 0){ qSel.splice(i, 1); return; }        // recliquer retire
+  if(qSel.length < Q_POSE) qSel.push(id);
+}
+function qVider(){ qSel = []; }
+/* Un jeton de réponse : le mot s'il est lu, le signe sinon — comme dans le corpus. */
+function qJeton(tk){
+  if(tk === '·') return '<span class="qsep">·</span>';
+  if(tk.charCodeAt(0) === 37){ const n = +tk.slice(1);
+    return numLisible(n) ? nf.format(n) : numGlyphs(n); }
+  return byId[tk] && has(tk) ? '<span class="qmot">'+motDe(tk)+'</span>' : sv(tk);
+}
+const qCondHTML = cle => (has('en') ? motDe('en') : sv('en')) + ' '
+  + cle.split(' ').map(qJeton).join(' ');
+
+function buildQuest(){
+  setHTML($('q-choix'), GL.map(g =>
+    '<button class="pion" data-qpion="'+g.id+'" hidden>'+sv(g.id)+'</button>').join(''));
+}
+
+/* Les lignes de la réponse qu'on regarde. Repeintes au changement seulement, jamais à la
+   frame : une condition comme « si ne-pas » en porte cent trente. */
+let qPeints = [];
+function peindreQuestion(){
+  for(const ln of qPeints) ln.classList.remove('repondu');
+  qPeints = [];
+  if(!qVue) return;
+  for(const e of QUESTIONS[qVue] || []) for(const [t, l] of e.lignes){
+    const tb = elCorpus.querySelector('.tablet[data-tb="'+t+'"]');
+    const ln = tb && tb.children[l];
+    if(ln){ ln.classList.add('repondu'); qPeints.push(ln); }
+  }
+}
+/* Regarder une réponse : ses lignes s'allument, et le corpus va à la première qu'on a sous
+   les yeux. Une ligne pas encore sortie de terre ne se montre pas — la réponse le dit quand
+   même, elle était gravée. */
+function qMontrer(cle){
+  qVue = qVue === cle ? null : cle;
+  peindreQuestion();
+  if(!qVue) return;
+  for(const e of QUESTIONS[qVue] || []) for(const [t] of e.lignes)
+    if(degagee(t)){ versTablette(t); return; }
+}
+
+function paintQuest(){
+  const ouvert = questionsOuvertes();
+  if($('pquest').hidden !== !ouvert) $('pquest').hidden = !ouvert;
+  if(!ouvert) return;
+  const n = questionsEnMain();
+  setHTML($('q-n'), n ? nf.format(n)+' en main' : 'aucune en main');
+  /* Sa propre règle, à l'écran (règle 14) : d'où viennent les questions, et quand il n'en
+     viendra plus. Rien sur ce qu'il y a à demander. */
+  const fini = S_.qn >= Q_MAX;
+  setHTML($('q-regle'), fini ? 'Douze questions : il n’en viendra plus.'
+    : 'Au-delà de '+nf.format(C_MAX)+', ce que je comprends devient question.');
+  const w = $('q-jauge-w');
+  if(w.hidden !== fini) w.hidden = fini;
+  if(!fini){ $('q-jauge').style.width = Math.min(100, 100*S_.qf/Q_COUT)+'%';
+    const t = nf.format(Math.floor(S_.qf))+' / '+nf.format(Q_COUT);
+    if(w.title !== t) w.title = t; }
+
+  for(const g of GL){
+    const b = $('q-choix').querySelector('[data-qpion="'+g.id+'"]'), vu = has(g.id);
+    if(b.hidden !== !vu) b.hidden = !vu;
+    if(!vu) continue;
+    const m = motDe(g.id);
+    if(b.title !== m) b.title = m;
+    b.classList.toggle('pose', qSel.indexOf(g.id) >= 0);
+  }
+  setHTML($('q-si'), has('en') ? motDe('en') : sv('en'));
+  const slots = $('pquest').querySelectorAll('.slot');
+  for(let i = 0; i < Q_POSE; i++){
+    const id = qSel[i];
+    setHTML(slots[i], id ? sv(id) : '');
+    slots[i].classList.toggle('plein', !!id);
+    const t = id ? 'retirer ce signe' : 'poser un signe';
+    if(slots[i].title !== t) slots[i].title = t;
+  }
+  const cle = qSel.join(' '), deja = !!cle && S_.qa.indexOf(cle) >= 0;
+  $('a-quest').disabled = !cle || deja || n < 1;
+  setHTML($('ac-quest'), deja ? 'déjà demandé' : '1 question');
+
+  /* Ce qui a été demandé, le plus récent en haut. Le silence y reste aussi : c'est la seule
+     mémoire de ce qu'on a déjà essayé, comme le carnet. */
+  const r = $('q-reps');
+  if(r.hidden !== !S_.qa.length) r.hidden = !S_.qa.length;
+  if(S_.qa.length) setHTML(r, '<div class="ch">Déjà demandé</div>' + S_.qa.slice().reverse().map(k => {
+    const rep = QUESTIONS[k];
+    /* Ce qui est gravé d'abord, le silence après : « si lire » répond « devenir » une fois,
+       et cinquante-huit fois rien. */
+    const suites = !rep ? '<span class="qrien">le texte ne dit rien</span>'
+      : rep.slice().sort((a, b) => !a.suite - !b.suite).map(e => '<span class="qsuite">'
+          + (e.suite ? e.suite.split(' ').map(qJeton).join(' ') : '<span class="qrien">rien après</span>')
+          + (e.lignes.length > 1 ? ' <span class="qfois">×'+nf.format(e.lignes.length)+'</span>' : '')
+          + '</span>').join('');
+    return '<button class="qrep'+(k === qVue ? ' vu' : '')+'" data-q="'+k+'"'+(rep ? '' : ' disabled')+'>'
+         + '<span class="qcond">'+qCondHTML(k)+'</span><span class="qsuites">'+suites+'</span></button>';
+  }).join(''));
+}
+
 /* ==================== trancher à l'achat ====================
    Onze signes supportent deux lectures ; le joueur choisit au moment de payer, et paie le
    même prix dans les deux cas (design doc §8). La fenêtre ne porte qu'une chose de plus que
@@ -606,6 +820,210 @@ function ambChoisir(i){
   if(mode === 'revision') reviser(id, lect); else acheterGl(id, lect);
 }
 
+/* ==================== les deux fins (FIN-1, FIN-2) ====================
+   « Un dernier signe reste à l'écran. Deux boutons » (design doc §11) : le lire, ou le laisser
+   non lu. La fenêtre s'ouvre quand on va prendre le dernier signe de l'arbre, au lexique ou à
+   la grille, et seulement quand on peut le payer : interrompre n'est pas le repli de celui
+   qui ne peut pas achever, c'est un refus. C'est ce qui permet qu'aucune des deux ne soit
+   présentée comme la bonne — et, pour la même raison, elles portent le même habit, et leur
+   ordre est tiré au sort comme celui des deux lectures : la place de gauche se lit comme le
+   choix par défaut.
+   La fenêtre dit sa règle — la partie s'arrête dans les deux cas — et rien d'autre. Sans
+   elle, « le laisser non lu » se lirait comme « pas maintenant ».
+   `voie` : 'lexique', ou la paire posée à la grille, que `achever` repose pour payer. */
+let finsId = null, finsVoie = null;
+function finsOuvrir(id, voie){
+  if(S_.done || !estDernier(id) || S_.C < byId[id].cost) return;
+  finsId = id; finsVoie = voie || 'lexique';
+  setHTML($('fins-sig'), sv(id));
+  setHTML($('fins-cost'), readC() ? big(byId[id].cost) : numGlyphs(byId[id].cost));
+  const c = $('fins-choix'), bs = [...c.children];
+  if(Math.random() < 0.5) c.append(...bs.reverse());
+  $('fins').hidden = false;
+}
+function finsFermer(){ finsId = null; finsVoie = null; $('fins').hidden = true; }
+function finsChoisir(k){
+  if(finsId === null) return;
+  const id = finsId, voie = finsVoie;
+  finsFermer();
+  if(k === 'interrompre'){ interrompre(id); return; }
+  /* Achever, c'est acheter comme on achète : par la grille si c'est elle qui l'a trouvé — la
+     tentative se compte alors —, et sinon par le chemin du lexique, qui ouvre les deux
+     lectures si le signe en porte deux et qu'aucun Élève ne l'a lu avant. */
+  if(Array.isArray(voie)) composer(voie[0], voie[1], true);
+  else if(!AMB[id]) acheterGl(id);
+  else if(elvTranche()) acheterGl(id, elvLecture(), true);
+  else ambOuvrir(id);
+}
+
+/* ---- ce qui reste à l'écran ----
+   Achever : « l'écran se vide progressivement de son interface : plus de compteurs, plus
+   d'instruments, juste le texte, entièrement en français. Puis le texte s'efface aussi. »
+   Interrompre : « le jeu se ferme sur le corpus figé ». Les deux vident l'interface ; seule
+   la première emporte le texte. Ce qui reste ensuite est un seul bouton, « recommencer » —
+   et « relire » quand FIN-3 existera. Plus de carte de statistiques : « signes déchiffrés
+   87 % » était un score, et le design doc n'en veut aucun. Le journal d'actions les garde
+   pour l'auteur ; le joueur n'en a pas besoin pour savoir ce qu'il a lu.
+   La barre hors jeu reste, elle : le journal d'actions doit pouvoir partir après la fin, et
+   c'est au moment précis où la partie est finie qu'on l'exporte (PT5).
+   Les durées sont des secondes d'horloge — le jeu est arrêté — et des choix de mise en scène,
+   pas des réglages mesurés : le journal d'actions date le début de l'effacement (« fin »),
+   et c'est au playtest de dire si quarante secondes de texte seul sont trop ou trop peu. */
+const FIN_EFF = { interface: 14, lecture: 40, texte: 24 };
+const FIN_FONDU = 2.4;        // la durée d'un fondu, en secondes : le reste n'est que délais
+let finMinuteur = null, finCentreMin = null;
+/* L'interface, dans l'ordre où elle s'en va : les compteurs d'abord, les instruments, les
+   panneaux, le lexique, puis ce qui entoure le corpus, puis le titre. Le corpus et la barre
+   hors jeu n'y sont pas. */
+const finInterface = () => [
+  $('vl-O').closest('.panel'), $('a-hyp').closest('.panel'), $('instr').closest('.panel'),
+  $('pdoute'), $('pcomp'), $('pquest'), $('lex').closest('.panel'),
+  ...elCorpus.parentElement.querySelectorAll('.phead, .meter, .rail, .log'),
+  ...document.querySelectorAll('.masthead h1, .masthead .sub'),
+];
+/* `sec` : sans fondu, pour une partie terminée qu'on rouvre — la fin a déjà eu lieu. */
+function finVider(sec){
+  tipCacher(); ambFermer(); finsFermer(); recArmer(false);
+  const els = finInterface(), d = i => (sec ? 0 : i * FIN_EFF.interface / els.length) + 's';
+  els.forEach((el, i) => { el.classList.add('fin-x'); el.style.setProperty('--fin-d', d(i)); });
+  /* Le filet sous le titre et le fond du panneau du corpus partent avec le dernier élément :
+     à la fin, le texte ne doit plus être dans un cadre. */
+  for(const el of [document.querySelector('.masthead'), elCorpus.parentElement]){
+    el.classList.add('fin-cadre'); el.style.setProperty('--fin-d', d(els.length - 1)); }
+  document.body.style.setProperty('--fin-t', FIN_EFF.texte + 's');
+  document.body.classList.toggle('fin-sec', !!sec);
+  document.body.classList.add('fin');
+  /* L'interface partie, le texte glisse au milieu de la page : laissé dans sa colonne, il se
+     lisait comme un panneau oublié à gauche d'un écran vide. Un glissement et non une
+     nouvelle mise en page — le texte ne doit pas sauter sous les yeux de qui le lit. */
+  clearTimeout(finCentreMin);
+  finCentreMin = setTimeout(() => {
+    const w = elCorpus.parentElement, r = w.getBoundingClientRect();
+    w.style.transform = 'translateX(' + Math.round((innerWidth - r.width) / 2 - r.left) + 'px)';
+  }, sec ? 0 : (FIN_EFF.interface + FIN_FONDU) * 1000);
+}
+function finEffacer(){
+  finVider(false);
+  clearTimeout(finMinuteur);
+  finMinuteur = setTimeout(() => {
+    document.body.classList.add('fin-texte');
+    finMinuteur = setTimeout(() => { S_.efface = true; apresMontrer(); },
+                             (FIN_EFF.texte + FIN_FONDU) * 1000);
+  }, (FIN_EFF.interface + FIN_FONDU + FIN_EFF.lecture) * 1000);
+}
+/* « relire » n'existe qu'après avoir achevé (design doc §11) : interrompre laisse un signe non
+   lu, et la relecture est celle d'un livre qu'on a lu jusqu'au bout. */
+function apresMontrer(){
+  $('relire').hidden = S_.fin !== 'achevee' || relecture;
+  $('apres').hidden = false;
+}
+function finFiger(sec){
+  finVider(sec);
+  clearTimeout(finMinuteur);
+  finMinuteur = setTimeout(apresMontrer, sec ? 0 : (FIN_EFF.interface + FIN_FONDU) * 1000);
+}
+/* Au chargement d'une partie terminée. Une partie achevée dont l'effacement n'est pas allé à
+   son terme le reprend du début, sans attendre la tablette : on l'avait déjà lue. */
+function finPoser(){
+  if(S_.fin === 'interrompue') finFiger(true);
+  else if(S_.fin === 'achevee' && !S_.efface) finEffacer();
+  else if(S_.fin === 'achevee'){ finVider(true); document.body.classList.add('fin-texte'); apresMontrer(); }
+}
+function finDefaire(){
+  clearTimeout(finMinuteur); clearTimeout(finCentreMin); finMinuteur = finCentreMin = null;
+  elCorpus.parentElement.style.transform = '';
+  if(relecture){ relecture = false; $('legende').hidden = true;
+    elCorpus.querySelectorAll('[data-avant]').forEach(el => { delete el.dataset.avant; }); }
+  document.querySelectorAll('.fin-x, .fin-cadre').forEach(el => el.classList.remove('fin-x', 'fin-cadre'));
+  document.body.classList.remove('fin', 'fin-texte', 'fin-sec', 'relire');
+  $('apres').hidden = true; finsFermer();
+}
+
+/* ==================== la relecture (FIN-3) ====================
+   « Le corpus est intégralement lisible dès le départ, et le jeu surligne toutes les erreurs de
+   traduction de la partie, y compris celles jamais détectées. Vingt minutes, sans mécanique.
+   Ce n'est pas un prestige, c'est un épilogue » (design doc §11). Et depuis que les paires
+   réparantes passent sans rien trahir (docs/corpus.md §7.3), c'est le seul endroit où le jeu
+   admet jamais qu'on a lu autre chose.
+   Le texte s'écrit avec les lectures justes, et ce sont les JETONS qui se marquent : pendant
+   la partie la règle 20 interdisait de désigner le signe fautif, parce que ç'aurait été
+   l'oracle ; le livre est fermé, il n'y a plus rien à protéger. Trois marques, que la légende
+   nomme et qu'aucun chiffre ne compte (aucun score) :
+     mal lu                 la lecture en place à la fin ne donnait pas ce mot ;
+     mal lu, puis corrigé   une révision l'avait rendu, et la relecture s'en souvient ;
+     jamais trouvé          un composé secret que personne n'a posé, ou le zéro qu'il ouvrait.
+   Ce qu'on avait lu, et qui l'avait lu — le joueur ou un Élève —, se lit au survol. Les noms
+   propres restent en signes : ils ne se traduisent pas, ils ne se trompent pas non plus. */
+let relecture = false;
+const motLu = (el, lect) => { const m = motSous(el.dataset.w, lect);
+  return el.dataset.t && auPasse() ? (PASSE[m] || m) : m; };
+/* Les signes mal lus sous `lect` qui écartent ce jeton de son mot : lui, ou ses parties. */
+const fautifs = (id, lect) => [id, ...(PARTIES[id] || [])].filter(k => lect[k] === 'f');
+const quiLu = eleve => eleve ? 'un élève avait lu' : 'j’avais lu';
+function peindreRelecture(){
+  const juste = {}, avant = Object.assign({}, S_.lect);
+  for(const k in S_.fautes) if(!faux(k)) avant[k] = 'f';
+  elCorpus.querySelectorAll('[data-w]').forEach(el => {
+    const id = el.dataset.w, g = byId[id];
+    let cls = 'tok w', dit = '';
+    if(!g){ cls = 'tok g'; el.innerHTML = sv(id); }
+    else {
+      const vrai = motLu(el, juste);
+      if(!has(id)){ cls += ' jamais'; dit = 'jamais trouvé'; }
+      else {
+        const lu = motLu(el, S_.lect);
+        if(lu !== vrai){
+          cls += ' malu';
+          dit = quiLu(fautifs(id, S_.lect).every(k => S_.lusEleve[k])) + ' « ' + lu + ' »';
+        } else {
+          const av = motLu(el, avant);
+          if(av !== vrai){
+            cls += ' corrige';
+            const ks = fautifs(id, avant).filter(k => !faux(k));
+            dit = quiLu(ks.every(k => S_.fautes[k] === 'eleve')) + ' « ' + av + ' », puis corrigé';
+          }
+        }
+      }
+      el.innerHTML = vrai;
+    }
+    el.className = cls; el.__v = 'R';
+    if(dit) el.dataset.avant = dit; else delete el.dataset.avant;
+  });
+  elCorpus.querySelectorAll('[data-n]').forEach(el => {
+    const n = +el.dataset.n, lu = numLisible(n);
+    el.className = 'tok num' + (lu ? '' : ' jamais'); el.__v = 'R';
+    el.innerHTML = nf.format(n);
+    if(lu) delete el.dataset.avant; else el.dataset.avant = 'jamais trouvé';
+  });
+  /* Les lignes que `faux` allumait ne disent plus rien : le texte juste se construit partout. */
+  for(const el of elCorpus.querySelectorAll('.ln.rompu')) el.classList.remove('rompu');
+  ruptVues = '';
+}
+function relire(){
+  if(S_.fin !== 'achevee' || !S_.efface || relecture) return;
+  concFermer();
+  relecture = true;
+  peindreRelecture();
+  document.body.classList.remove('fin-texte');
+  document.body.classList.add('relire');
+  elCorpus.scrollTop = 0;
+  $('relire').hidden = true; $('legende').hidden = false;
+}
+/* L'infobulle de la relecture : ce qu'on avait lu, et qui. Rien sur les autres jetons. */
+function tipRelecture(e){
+  const el = e.target.closest('.tok[data-avant]');
+  if(!el){ tipCacher(); return; }
+  const cle = 'R' + el.dataset.avant;
+  if(cle !== tipCle){
+    tipCle = cle;
+    $('tip').innerHTML = (el.dataset.w !== undefined ? sv(el.dataset.w) : numGlyphs(+el.dataset.n))
+                       + '<span class="lab"></span>';
+    $('tip').querySelector('.lab').textContent = el.dataset.avant;
+    $('tip').hidden = false;
+  }
+  tipPlace(e.clientX, e.clientY);
+}
+
 /* ==================== le panneau du doute ====================
    Il n'existe pas avant `peut-être`, et c'est la moitié de ce que ce signe fait : jusque-là
    le lexique affiche chaque mot comme s'il avait été su. Chaque ligne porte ce qu'on a lu,
@@ -626,9 +1044,10 @@ function paintDoute(){
   if(!ouvert) return;
   const c = revCost(), payable = S_.C >= c;
   setHTML($('doute-c'), 'rouvrir ' + (readC() ? big(c) : numGlyphs(c)));
-  /* « L'état est affiché sans ambiguïté » (CONTR-1). Ce que le bandeau dit : la Certitude est
-     divisée par deux, et une révision peut y mettre fin. Ce qu'il ne dit pas, et ne dira
-     jamais : lequel des signes est en cause. */
+  /* « L'état est affiché sans ambiguïté » (CONTR-1). Ce que le bandeau dit : ce que la
+     Certitude perd — la moitié à l'acte III, un cinquième aux actes IV et V (ECO-3) —, que les
+     élèves attendent quand il y en a, et qu'une révision peut y mettre fin. Ce qu'il ne dit
+     pas, et ne dira jamais : lequel des signes est en cause, ni qui l'a mal lu. */
   /* Combien de passages ne tiennent pas — jamais lesquels, ni à cause de quoi. Le chiffre
      aide à les chercher ; c'est au corpus de dire où, et au joueur de dire pourquoi. */
   const nr = $('doute-rupt'), vives = ruptureLignes().length;
@@ -639,8 +1058,9 @@ function paintDoute(){
                 : 'Un passage ne se construit pas — il est allumé dans le corpus.');
   const bn = $('doute-etat');
   if(bn.hidden !== !S_.contr) bn.hidden = !S_.contr;
-  if(S_.contr) setHTML(bn, 'Un passage refuse de se résoudre. Certitude divisée par deux '
-    + 'jusqu’à ce qu’une lecture rouverte le dénoue.');
+  if(S_.contr) setHTML(bn, 'Un passage refuse de se résoudre. Certitude '
+    + (acteIV() ? 'réduite d’un cinquième' : 'divisée par deux')
+    + (S_.b.elv ? ', et les élèves attendent,' : '') + ' jusqu’à ce qu’une lecture rouverte le dénoue.');
   const liste = douteux();
   for(const g of GL){
     if(!AMB[g.id]) continue;
@@ -680,8 +1100,12 @@ function paintLex(){
     let prevDone=true;
     for(const g of list){
       const b=$('lex').querySelector('[data-gl="'+g.id+'"]');
-      const done=has(g.id), open=prevDone&&!done, can=open&&S_.C>=g.cost;
-      const cls='gcard'+(done?' done':can?' afford':open?'':' locked');
+      /* En tête de sa chaîne mais pas encore offert (`offert()`, economie.js) : la carte le
+         dit, parce que c'est une règle du lexique et non un indice — il ne se tait pas sur
+         lui-même (règle 14). Ce qu'il faut demander, c'est au corpus de le dire. */
+      const tete=prevDone&&!has(g.id), attend=tete&&!offert(g);
+      const done=has(g.id), open=tete&&!attend, can=open&&S_.C>=g.cost;
+      const cls='gcard'+(done?' done':can?' afford':open?'':attend?' attend':' locked');
       if(b.className!==cls) b.className=cls;
       b.disabled=!can;
       /* Le comptage d'occurrences sur les signes encore à acheter. En infobulle il n'était
@@ -694,7 +1118,9 @@ function paintLex(){
       setHTML(b.querySelector('.ttl'), done ? motDe(g.id)
         : montreFreq ? '<span class="frq">'+nf.format(freqGlyphe(g.id))+' occ.</span>' : '');
       setHTML(b.querySelector('.cost'), done? '✓' : open? (readC()? String(g.cost) : numGlyphs(g.cost)) : '');
-      setHTML(b.querySelector('.eff'), (done || (open && has('im'))) ? g.eff : '');
+      setHTML(b.querySelector('.eff'), (done || (open && has('im'))) ? g.eff
+        : attend && has('im') ? (g.rep ? 'le texte le donnera à qui l’interroge'
+                                       : 'il vient quand tout le reste est lu') : '');
       if(!done) prevDone=false;
     }
   }
@@ -884,16 +1310,18 @@ function pushLog(txt){
 /* ==================== recommencer ====================
    Était le corps de l'écouteur du bouton « réinitialiser ». Il en sort pour deux raisons :
    le bouton disparaît du build de playtest et de la version publique (LIV-2), alors que
-   « recommencer » de la carte de fin, lui, reste — il se déléguait à un bouton qui n'existe
-   plus. Et `traces.js` enveloppe des fonctions, pas des écouteurs anonymes.
+   « recommencer », qui reste seul à l'écran après les deux fins, est partout — il se
+   déléguait à un bouton qui n'existe plus. Et `traces.js` enveloppe des fonctions, pas des écouteurs anonymes.
    Ici plutôt que dans jeu.js parce que tout ce que ça remet à zéro est déclaré ici ou avant,
    et que traces.js se charge entre les deux. */
 function recommencer(){
-  S_=fresh(); LOGS.length=0; lastPct=-1; $('end').hidden=true;
+  S_=fresh(); LOGS.length=0; lastPct=-1; finDefaire();
   /* Sans ceci la table des signes de numération garde ceux de la partie précédente :
      on repart de zéro glyphe avec 229 nombres encore lisibles à l'écran. */
   majSignes(); touchees=new Set(); recArmer(false); concFermer(); compVider(); finDesarmer();
-  ambFermer();
+  ambFermer(); qVider(); qVue = null; peindreQuestion();
   $('log').innerHTML='<p class="hint">relève un signe : clique dans le corpus</p>';
-  paintCorpus(null); try{localStorage.removeItem(KEY);}catch(e){}
+  /* Recommencer efface la partie qu'on voit — jamais une sauvegarde que ce jeu n'a pas su
+     lire, qui n'est pas celle-là et qu'il n'a pas chargée (`charger()`). */
+  paintCorpus(null); if(!sauvegardeIntouchable) try{localStorage.removeItem(KEY);}catch(e){}
 }

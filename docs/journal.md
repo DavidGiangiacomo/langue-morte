@@ -142,6 +142,850 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## PT11 joue les cinq actes
+
+*20/10/2026.*
+
+PT11 attendait un joueur depuis le 14/10/2026, avec un protocole écrit le 17/09 pour les
+actes I à III. Pendant ce temps, la branche empilée sur `eleve` a écrit l'Élève, les actes IV
+et V, les deux fins et la relecture ; chaque lot y a laissé ses questions « pour le playtest »,
+et aucun protocole ne les rangeait. En voulant les ranger, la première question était de savoir
+à qui elles seraient posées.
+
+### Ce qui est tranché
+
+Quatre questions à l'auteur.
+
+- **Le prochain joueur joue la branche, à la place de `develop`.** Contre la recommandation :
+  je proposais PT11 sur `develop`, puis un PT12 pour la branche. Ce que ça coûte est écrit :
+  deux joueurs neufs devenaient un seul, mais **la seule mesure de l'économie sans Élève avant
+  de le fusionner** est perdue — il est à la portée du joueur dès la 48ᵉ minute. Le simulateur
+  la donne (règle 31) ; aucun joueur ne la donnera.
+- **La branche va sur `develop` pour que Pages la déploie** — proposé par l'auteur, à la place
+  des deux options que je proposais (envoyer le fichier, ou lancer le déploiement à la main
+  depuis la branche). C'est la plus simple pour le joueur : la même adresse que le message
+  prévoyait depuis le 17/09.
+- **Deux séances au plus.** Trois heures d'affilée sont une demande lourde, et l'abandon pour
+  fatigue s'y confondrait avec l'abandon pour ennui.
+- **« relire » n'est pas caché.** Le joueur qui achève le verra et cliquera sans doute avant
+  l'entretien. Le prévenir aurait annoncé qu'il y a quelque chose après la fin ; on le laisse
+  faire, et l'entretien s'adapte — la question « tu as remarqué que tu choisissais ? » devient
+  « pendant la partie, avant la fin, l'avais-tu remarqué ? », et vaut moins. C'est le prix.
+
+### Le protocole
+
+Réécrit plutôt qu'augmenté : `docs/pt11-protocole.md` garde la structure de la version du
+17/09 — le message, le dépouillement d'abord, les questions dans l'ordre, ce qu'on ne dit
+jamais, rien sur `develop` pendant le playtest —, et l'ancienne reste dans l'historique. Vingt
+et une questions au lieu de douze, en trois tours. Ce qui a décidé de l'ordre :
+
+- **Tout ce que l'écran a montré se demande au deuxième tour**, sans dire ce que ça cache : le
+  repli de ⟨toi⟩, le panneau des questions, l'instrument sans nom, la fenêtre des deux fins.
+  Chacune seulement si le journal dit qu'elle a eu lieu.
+- **Les nombres du joueur au million viennent après ⟨grenier⟩ et le zéro**, comme le compteur
+  de l'acte I : les deux désignent le tracé du zéro, que la question sur les composés mesure.
+- **La révélation de l'acte V** — la tablette 28 donne l'ordre des branches de l'arbre —
+  **passe juste avant « tu as remarqué que tu choisissais ? »**, qui reste la dernière ; et
+  « à qui attribues-tu un mot faux ? » la suit, parce qu'elle présuppose qu'il y en a eu.
+- **Une section entière dit ce que le journal répond seul** : la main, la composition, les
+  lectures séparées entre le joueur et les Élèves, les révisions, les questions posées, le
+  Lecteur, la fin. Ce qu'on peut lire ne se demande pas — une question est un renseignement.
+
+### Deux trous de mesure, trouvés en écrivant la section 2
+
+**Une coupure avant ⟨nuit⟩ ne laissait aucune trace.** La ligne `veillee` n'apparaît que s'il
+y a eu production hors ligne, et le chrono du journal est du temps de jeu : deux séances
+s'y lisaient comme une seule. Le journal d'actions écrit désormais une ligne `reprise` à chaque
+fois qu'une partie est rouverte, avec l'absence à l'horloge depuis la dernière sauvegarde.
+
+**Le dépouillement ne rapportait pas six des choses que le protocole lui attribuait** : les
+coupures, les attentes de plus de huit minutes entre deux signes (I4), le nombre d'Élèves et
+leur place par rapport à ⟨avant⟩ et ⟨ne-pas⟩, la concordance d'un signe faite avant de le
+trancher, les relevés après ⟨nous⟩ et sur quelles tablettes de la copie, et le Lecteur. Les
+six y sont, et les deux comparaisons d'ordre se font dans l'ordre du journal et non à
+l'instant — deux lignes portent souvent le même, et une concordance faite juste avant un achat
+ne se voyait pas. Les mots des signes sont lus dans `lexique.js`, comme le reste.
+
+`outils/verifier.py` passe de 442 à **444 assertions** (section 35).
+
+## ECO-3 — les deux trous d'I4
+
+*20/10/2026, sur la branche empilée sur `eleve`.*
+
+Deux réserves écrites lot après lot, « non réglé, à observer » : l'acte V trop rapide avec
+Élèves depuis le Lecteur, et I4 qui cède sous contradiction depuis la Personne. Le simulateur
+couvre les cinq actes depuis GRAINE-2 ; plus rien n'empêchait de les mesurer pour de bon.
+
+### Ce que la mesure a montré avant tout choix
+
+**Le second trou était bien plus grand que ce que les docs en disaient.** Elles parlaient d'une
+attente de onze minutes « avant ⟨finir⟩ ». Mesurée signe par signe, la contradiction coûtait
+huit à onze minutes d'attente **à chaque signe** des actes IV et V, pendant deux actes : la
+paire réparante finissait à 214–218 min au lieu de 153–158, toutes fausses à 201–205, un seul
+Élève qui lit faux à 199–203. Le ÷2 de CONTR-1 avait été réglé quand la partie s'arrêtait à
+l'acte III, où il coûtait onze minutes parce que les occurrences portaient encore une part du
+rythme. Aux actes IV et V tout se paie en Certitude au plafond : diviser la Certitude par deux,
+c'est diviser par deux la vitesse de tout ce qui reste. La sanction n'avait pas changé ; la
+partie avait grandi sous elle.
+
+**Et ce joueur existe.** En PT10, la contradiction s'est déclenchée à dette 6, et il n'y a eu
+aucune révision. Un joueur qui révise s'en sort : avec un oracle qui révise le signe le plus
+lourd dès qu'il peut payer, la paire réparante retrouve 152,8–157,1 min, la durée d'une lecture
+parfaite. Mais l'oracle est le meilleur cas, et la paire réparante est justement celle que le
+texte ne trahit pas.
+
+**Le premier trou, lui, ne se ferme pas par le prix.** Avec Élèves l'acte V tient 3,45–3,58 min
+par signe, et l'acte IV 3,0–3,2 — sous les 4 d'I4 depuis VOIX-1, où on l'avait accepté sans le
+dire. Le prix des questions à 6 000 n'amène l'acte V qu'à 3,8, et creuse un trou de 7,5 min chez
+qui n'a pas d'Élève. Un Lecteur dont le prix triple au lieu de doubler ne déplace rien, un Élève
+gelé à l'entrée de l'acte V non plus. Ramener les Élèves à sept (croissance 1,8 → 2,2) donne
+3,7–3,9 ; seul un plafond à cinq atteint 4,0. Et l'acheteur en empile neuf, plus les sept de la
+règle 21 : ce sont les occurrences des actes IV et V qui les paient, pas le Corpus jumeau — neuf
+aussi sans lui.
+
+### Le piège qu'un seul levier cachait
+
+Adoucir la sanction aux actes IV et V faisait tenir I4 : à ÷1,25, la pire attente tombe à 7,4
+min. Mais **la règle 21 a une contrainte que la sanction tenait sans qu'on le sache** : sept
+Élèves qui lisent tout faux ne doivent pas finir avant le joueur qui n'en a aucun. Au ÷2 ils
+finissaient 11,6 min après lui. À ÷1,25, **11,7 min avant**. Le même diviseur devait étrangler
+assez l'empileur d'Élèves qui lisent faux pour qu'il perde son arbitrage, et assez peu le joueur
+sans Élève pour qu'il ne décroche pas — deux joueurs qui vont à des vitesses trop différentes.
+Balayé contre la croissance du prix des Élèves : une lamelle seulement tenait les deux, prix ×2,5
+et diviseur 1,35 à 1,4, déjà à 8,0 min de pire attente.
+
+D'où un levier qui les sépare : **tant que la contradiction court, les Élèves ne rendent plus leur
+bonus.** Ils recopiaient au propre, et ce qui est propre n'est plus sûr. Ils tranchent toujours à
+l'achat — c'est leur bonus qui attend, pas leur lecture. La suspension ne regarde pas qui a mal lu,
+le joueur ou eux : la sanction ne désigne rien (règle 19).
+
+### Ce qui est tranché
+
+Deux questions à l'auteur, deux réponses, celles que je recommandais.
+
+- **La sanction : ÷2 à l'acte III, ÷1,25 aux actes IV et V, et les Élèves attendent.** Contre
+  ÷1,25 seul, qui cassait l'arbitrage ; et contre le ÷2 gardé, I4 n'étant exigé que de qui
+  révise.
+- **L'acte V avec Élèves : on l'accepte, et la borne basse d'I4 se mesure sur le joueur sans
+  Élève.** L'Élève est l'instrument qui achète du temps. Contre sept Élèves (le trou rétrécit sans
+  se fermer, et tout le balayage est à refaire) et contre un plafond à cinq (un plafond dur sur un
+  instrument que la règle 21 règle par son prix).
+
+### Ce que le lot a trouvé en chemin
+
+**Le bandeau mentait sous l'acte IV.** Il disait « Certitude divisée par deux » quel que soit
+l'acte ; il dit désormais « réduite d'un cinquième » aux actes IV et V, et « les élèves attendent »
+quand il y en a. La ligne de l'Élève dit « suspendu tant qu'un passage refuse · déchiffre seul ».
+Rien ne nomme un signe ni un coupable.
+
+**Le contrôle de `depouiller.py` ne savait pas que la contradiction court.** Son rejeu des
+occurrences ignorait l'armement et les révisions — sans conséquence tant que la sanction ne
+touchait que la Certitude ; elle touche maintenant le bonus des Élèves, donc les occurrences du
+Copiste et de l'Atelier. L'armement et la levée sont sortis en méthodes du rejeu, que la section
+du rapport et le contrôle partagent : une seule façon de rejouer la règle 19.
+
+### Mesuré
+
+Joueur qui ne révise jamais, trois cadences :
+
+| cas | avant | après | pire attente |
+|---|---|---|---|
+| paire réparante (sans Élève) | 214,0–217,7 | **176,8–180,7** | 11,1 → **7,4** |
+| paire réparante, avec Élèves | — | 173,9–178,2 | **7,4** |
+| toutes fausses (sans Élève) | 201,4–205,3 | **167,1–171,2** | 10,2 → **6,7** |
+| doute à cinq, puis ⟨il-faut⟩ | 199,5–203,6 | **162,2–166,6** | 11,1 → **7,4** |
+| un Élève qui lit faux | 199,1–203,0 | **170,7–174,9** | 9,8 → **6,8** |
+| des Élèves qui lisent faux | 164,8–169,6 | **169,3–173,7** | 6,8 → **6,8** |
+
+La paire réparante coûte désormais **+23 min**, 15 % de la partie — CONTR-1 en coûtait 12 % à
+l'acte III. Les Élèves qui lisent tout faux finissent **seize minutes après** le joueur sans Élève
+qui lit juste. Les parties sans contradiction ne bougent pas d'un dixième (128,2–133,6 avec
+Élèves, 153,2–157,7 sans), et `balayage.py`, qui désarme la contradiction, non plus : **42
+combinaisons sur 54**. Pour le playtest : **la contradiction se déclenche-t-elle, et révise-t-on
+cette fois ?**
+
+`outils/verifier.py` passe de 438 à **442 assertions**.
+
+## I2 — les zéros sont les leurs
+
+*20/10/2026, VOIX-5, sur la branche empilée sur `eleve`.*
+
+L'invariant tient en deux phrases depuis le premier jour : « Pas de notation scientifique avant
+l'acte IV. Quand elle apparaît, elle apparaît d'abord en signes non déchiffrés : le joueur perd
+la lisibilité de ses propres nombres au moment où ils deviennent énormes. » Et « Le compteur
+n'est pas le corpus », plus bas, l'attendait : `readN` ouvre cette lisibilité à l'acte I,
+VOIX-5 devait la refermer à l'acte IV.
+
+### Ce que la mesure a montré avant tout choix
+
+**Il n'y a pas de 10¹⁰ à l'écran.** Le design doc annonce des Occurrences « de 1 à ~10¹⁰ » ;
+c'est vrai de ce que la partie produit, pas de ce qu'elle affiche. Le stock se dépense à mesure
+et culmine vers trois millions, les prix des instruments vers cinq ; rien de ce qui passe par
+`big()` n'atteint la dizaine de millions. Une « notation scientifique » n'a donc qu'une tranche
+à écrire dans le prototype : le million.
+
+**Et le million tombe à l'acte IV de lui-même.** Le premier nombre affiché qui l'atteint est un
+prix d'instrument — celui de l'Élève suivant, quand on en prend —, puis vient le stock
+d'occurrences. Le premier arrive à l'achat de ⟨nous⟩ avec Élèves (88–91 min), une à quatre
+minutes après sans eux, dans les six parties simulées ; le stock, à 90–97 et 98–106. L'invariant
+tient déjà par l'économie ; il restait à le faire tenir par une règle, contre le joueur qui
+thésaurise.
+
+**Tous les signes sont pris**, les quarante-cinq. Aucun ne peut être inventé pour déchiffrer la
+notation neuve — mais un seul n'a pas d'autre effet que d'être lu : ⟨zéro⟩, à qui le design
+doc §7 prêtait « la notation compacte des grands nombres » et que COMP-3 en avait privé,
+parce qu'elle était déjà celle de ⟨cent⟩, acquise par tout le monde.
+
+### Ce qui est tranché
+
+Trois questions à l'auteur, trois réponses, celles que je recommandais.
+
+- **Les zéros sont les leurs.** Au million, trois chiffres restent au joueur, en chiffres
+  arabes, et les zéros qui suivent s'écrivent du tracé de ⟨zéro⟩ — ⟨ne-pas⟩ sur ⟨un⟩. 2 345 678
+  devient « 234 » et quatre zéros ; 1 000 000, « 1 » et six. Contre une vraie mantisse suivie
+  d'un exposant en chiffres de la langue morte (« 2,34 ⟨zéro⟩⟨cinq⟩⟨un⟩ »), plus opaque, et
+  dont seul l'exposant 6 paraît jamais ; et contre « mille mille », que le redoublement de
+  ⟨deux⟩ fait lire 2 000.
+- **⟨zéro⟩, posé à la grille, la déchiffre.** La notation compacte revient. Contre une porte
+  garantie à un signe de la Personne, qui lui aurait donné un effet sans rapport avec lui, et
+  contre une perte définitive.
+- **Au million, pas avant ⟨nous⟩.** Contre une bascule à l'entrée de l'acte IV dès 10 000, où
+  c'est l'acte qui décide et non la taille des nombres.
+
+### Pourquoi ça tient
+
+**La notation se déchiffre sans rien acheter.** Elle est positionnelle : les glyphes sont des
+zéros, à la place exacte où le joueur les attendait, et le nombre garde sa largeur. Un compteur
+qui passe de « 999,9 k » à « 1 » suivi de six fois le même signe, puis à « 101 » et quatre,
+puis à « 102 », apprend ce qu'est ce signe à qui le regarde monter. C'est le « premier plaisir
+du jeu » de l'acte I (design doc §10), celui qu'⟨un⟩ éteint à la deuxième Certitude : il revient
+à l'acte IV, à l'envers — on perd l'écriture de ses nombres au lieu de la gagner.
+
+**⟨zéro⟩ ne renseigne rien de neuf** (règle 14). Son tracé est sous les yeux du joueur depuis
+la première seconde : ce sont ses compteurs vides, et onze zéros du corpus. Le revoir dans un
+nombre ne dit pas qu'il se compose ; la palette, elle, ne le montre toujours pas.
+
+**La règle 3 ne bouge pas.** Les compteurs ne passent pas par `numLisible()` : ce sont les
+chiffres du joueur qui restent, et seuls ses zéros changent d'écriture. I2 est une quatrième
+porte, après les trois autres, dans `big()` — donc compteurs et coûts d'un coup, puisque c'est
+par là que tous deux passent.
+
+### Ce que le lot a trouvé en chemin
+
+**Tronquer, pas arrondir.** La notation compacte arrondit sa mantisse (`toFixed`) : 2 345 678
+s'y écrit « 2,35 M ». La notation neuve tronque, comme `big()` tronque avant de replier — un
+nombre du joueur ne s'affiche jamais plus grand qu'il n'est, et pour un prix c'est ce qui
+compte. Les deux notations ne disent donc pas tout à fait le même chiffre ; c'est ⟨cent⟩ qui a
+tort, et on ne le touche pas ici.
+
+**Les zéros prennent la couleur du nombre.** Dessinés comme les glyphes de nombre inertes, ils
+étaient presque invisibles à onze pixels : c'est le nombre du joueur qui change d'écriture, pas
+un signe qui s'ajoute à côté.
+
+**Le journal d'actions date ce que l'écran a montré**, et non une action : une ligne `zeros`,
+la première fois et une seule par partie. `depouiller.py` en tire le temps passé sans lire ses
+nombres, jusqu'à ⟨zéro⟩ ou jusqu'à la fin. Un test le savait avant moi : la Certitude que les
+tests poussent à neuf millions s'écrivait avec leurs zéros, et une ligne `zeros` venait se
+glisser après `finjeu`.
+
+### Mesuré
+
+Affichage seul : `sim.py` et `balayage.py` ne bougent pas (128,2–133,6 min au réglage en place,
+153,2–157,7 sans Élève, 42 combinaisons sur 54). Ce qui se mesure, c'est la durée de la perte :
+qui ne compose jamais ⟨zéro⟩ joue **40 à 42 minutes** sans lire ses nombres avec Élèves, **55 à
+56** sans — le tiers de la partie. Pour le playtest : **remarque-t-on qu'on a perdu ses
+nombres, les relit-on en les regardant monter, et compose-t-on ⟨zéro⟩ ensuite — à quelle
+minute ?** La troisième se lit dans le TSV ; les deux autres se demandent de vive voix, après
+la question sur ⟨grenier⟩ et le zéro, pour ne pas la souffler.
+
+`outils/verifier.py` passe de 429 à **438 assertions**.
+
+## Le Corpus jumeau — une copie à relever
+
+*19/10/2026, VOIX-4, sur la branche empilée sur `eleve`.*
+
+Une ligne au design doc — « une deuxième inscription est trouvée », acte IV — et rien d'autre.
+Deux choses la bornaient. La fiction exclut un bilingue (« sans bilingue, sans descendant,
+sans contexte »), donc le jumeau ne peut rien traduire. Et la tablette 23 dit, depuis l'acte
+IV, « si copier 100 · un devenir » : ils copiaient tout cent fois pour qu'un exemplaire
+survive. Une deuxième inscription est donc une **copie** : le même texte, signe pour signe.
+
+### Ce que la mesure a montré avant tout choix
+
+Deux familles mesurées. **Un témoin qui renforce** — la copie double ce que rassemblent la
+Concordance et la Grammaire — raccourcissait les actes IV et V de cinq à huit minutes ; mais
+l'acte IV tient déjà 3,2 min par signe avec Élèves, et I4 cassait encore plus bas. **Un second
+gisement** — chaque tablette de la copie se relève à nouveau, tarifée au débit de l'acte IV par
+la règle 9 — ne touchait presque pas la durée, et ramenait la main dans le corpus après la
+quarantième minute, le défaut de PT10. Entier, il la poussait au-delà du plafond de 40 % à
+forte cadence ; un seul exemplaire à demi-gisement la tenait.
+
+### Ce qui est tranché
+
+Deux questions à l'auteur, deux réponses, celles que je recommandais : **une copie à relever,
+une seule, à demi-gisement.** Huitième instrument, ouvert par ⟨nous⟩, payé en occurrences, et le
+seul qui ne s'achète qu'une fois. Chaque tablette de la copie a la moitié du gisement de
+l'original et son propre tarif, figé au premier relevé qu'on y fait ; le relevé va à l'original
+tant qu'il en reste. La barre rallume les tablettes vidées, l'infobulle dit « copie intacte »,
+un jeton relevé sur les deux porte une marque plus forte, et une ligne de journal dit la
+trouvaille sans nommer un signe : « Une deuxième inscription, gravée ailleurs : le même texte,
+signe pour signe. »
+
+### La mesure soumise à l'auteur était fausse
+
+La sonde qui a servi à choisir **remplaçait** le gisement restant de chaque tablette par la
+copie, au lieu de l'y ajouter : elle amputait de moitié les quatre tablettes encore sous terre
+à ⟨nous⟩. Elle annonçait 25 % des occurrences à la main, les mêmes à 5 et à 40 clics par minute.
+Le simulateur définitif, qui garde les deux gisements séparés comme le jeu, donne **26 % à 5
+clics par minute et 33 % à 15 et 40** avec Élèves, 26 % sans. Le plafond de 40 % tient ; ce qui
+ne tient plus, c'est l'indépendance à la cadence — un joueur lent ne vide pas la copie avant la
+fin. Le choix reste bon sur le critère qui comptait, et c'est écrit ici parce que l'auteur a
+choisi sur un chiffre qui n'était pas le bon.
+
+### Ce que le lot a trouvé en chemin
+
+**Le Lecteur se disputait une classe avec la barre.** Il marquait les tablettes lues avec `lue`
+— le nom que `peindreGisement()` donnait déjà à une tablette au tarif figé. Les deux se volaient
+la classe à chaque frame, et les tests du Lecteur passaient par coïncidence. Il marque désormais
+avec `parcourue`.
+
+**Le journal d'actions dit lequel des deux gisements a payé.** Le tarif de la copie ne s'écrit
+nulle part ailleurs, et `depouiller.py` rejoue la part de la main à partir des relevés : un
+relevé sur la copie porte donc « · copie », et `relever()` rend désormais où il est allé.
+
+### Mesuré
+
+**128,2–133,6 min** au réglage en place (130,9–134,3 sans le jumeau) ; **153,2–157,7** sans Élève
+(155,5–158,6) ; écart max 5,2 avec Élèves, 6,0 sans. Main : **26–33 %** des occurrences avec
+Élèves (17,3), **26 %** sans (13,7). Le jumeau s'achète à la 89ᵉ minute avec Élèves, à la 96ᵉ
+sans. `balayage.py` : fenêtre de durée re-basée à (116, 160), mêmes marges, et **42 combinaisons
+sur 54** passent, dont le réglage en place (119,0–157,7 min, écart 6,0, main 26 %). Ce n'est pas un réglage contre la mesure de PT10 (règle 9) : `REL_K` ne
+bouge pas, et la branche n'est pas celle que PT11 jouera. Pour le playtest : **revient-on
+relever après ⟨nous⟩, et sur quelles tablettes ?**
+
+`outils/verifier.py` passe de 421 à **429 assertions**.
+
+## Le Lecteur — le corpus a commencé à lire
+
+*19/10/2026, GRAINE-2, sur la branche empilée sur `eleve`.*
+
+Le design doc ne lui donnait qu'une ligne : « acheté avant qu'on sache ce que c'est. On
+découvre à l'acte V que ce n'est pas un instrument : c'est le corpus qui a commencé à lire. »
+Et le backlog un critère : achetable sans description, la révélation par le texte. Tout le
+reste était à trancher, et ce qu'il fait touchait le rythme de l'acte V : mesuré d'abord,
+soumis à l'auteur ensuite, deux questions, deux réponses — celles que je recommandais.
+
+### Ce que la mesure a montré avant tout choix
+
+À l'acte V, le rythme tient à deux choses : la Grammaire gelée, qui rend 44 à 50 Certitude par
+seconde avec Élèves et 32 à 35 sans, et le prix de 9 999. Avec Élèves, l'acte V tient déjà
+4,0 min par signe, la borne basse d'I4 : **tout ce qui accélère la Certitude casse I4 par le
+bas.** Ce qui reste libre, ce sont les attentes de question — les trois mots qu'une réponse
+ouvre attendent que le surplus remplisse 4 000 —, et ce sont elles qui faisaient les trous de
+7,2 min sans Élève. Un Lecteur qui ne nourrit que la question suivante ne raccourcit que là.
+
+### Ce qui est tranché
+
+**Il lit seul.** Une fois acheté, il parcourt le corpus de lui-même, une tablette par minute et
+par Lecteur, dans l'ordre des numéros, et chaque tablette lue verse 300 à la question suivante :
+trente tablettes, 9 000 au plus. Il lit aussi ce qui n'est pas encore sorti de terre — le
+corpus lit ce que le joueur n'a pas dégagé. Les deux autres réponses tenaient : qu'il fasse lire
+le joueur (chaque tablette ramenée sous les yeux comptant une fois) aurait rendu à l'acte V un
+geste dans le corpus, le défaut de PT10, mais rien ne l'aurait dit ; qu'il ne fasse rien, pris
+au mot, se serait lu comme une panne.
+
+**Son nom est ⟨devenir-lecture⟩.** Le panneau des instruments écrit son nom en signe, le seul
+des neuf sans nom français, et sans ligne d'effet, même ⟨dire⟩ acquis. On reconnaît ⟨lire⟩ dans
+le tracé (règle 4) ; on ne le lit qu'au dernier achat, et c'est la ligne même que l'effacement
+attend sur la tablette 27 : « tablette · devenir-lecture ». Ce qu'on avait acheté pendant tout
+l'acte V, c'était la tablette qui devient lecture.
+
+### Ce que le lot a trouvé en chemin
+
+**Le voir faire, faute de le dire.** Un instrument sans description ne se comprend qu'à
+l'observation, comme le compteur de l'acte I. Il fallait donc qu'il se voie : un trait sur
+chaque tablette lue, dans la barre et au bord du texte, et dans la tablette en cours la ligne
+qu'il lit, qui s'éclaire puis passe à la suivante. Et la jauge de la question qui avance d'un
+cran à chaque tablette. Rien d'autre ne l'explique.
+
+**La nuit ne lit pas.** Le Lecteur avance dans `tick`, que la veillée ne traverse pas ; la règle
+24 (« la nuit ne remplit jamais une question ») tient sans une ligne de plus. Et ce qu'il verse
+passe par le même chemin que le surplus, `nourrirQuestion()`, sorti de `gagnerC()` pour
+l'occasion : il n'a pas de compte à lui.
+
+**Le simulateur le porte**, comme ECO-2 le demande de chaque instrument : `lec_b`, `lec_r`,
+`lec_v`, `lec_q` dans `P`, acheté en dernier, sans épargne. Le prix double à chaque Lecteur, et
+en laisse trois à l'acheteur.
+
+### Mesuré
+
+**130,9–134,3 min** au réglage en place (133,5–136,9 sans Lecteur) ; **155,5–158,6** sans Élève
+(159,5–162,6). L'acte V passe de 28,2 à **25,6 min** avec Élèves et de 40,3 à **36,3** sans ; le
+pire trou sans Élève de 7,2 à **5,8 min**. La contradiction chez qui ne révise jamais coûte un
+peu moins (paire réparante 216,7–219,7 au lieu de 223,6–226,6), et I4 y cède toujours, à 11,3
+min au lieu de 12,9. `balayage.py` : sa fenêtre de durée re-basée à (118, 161), mêmes marges — à
+(121, 165), quinze combinaisons tombaient sur le plancher de quelques dixièmes —, et **42
+combinaisons sur 54** passent, comme avant le Lecteur, dont le réglage en place (121,7–158,6
+min, écart 5,8).
+
+**Réserve.** Avec Élèves, l'acte V tombe à 3,7 min par signe : sous les quatre d'I4, où il était
+tout juste. La borne basse n'est pas un garde-fou de `balayage.py`, et l'acheteur du simulateur
+prend trois Lecteurs dès ⟨semence⟩, ce qu'un joueur qui ne sait pas ce qu'il achète ne fera
+peut-être pas. Non réglé, à observer : le journal d'actions date chaque Lecteur et chaque
+tablette qu'il finit. Pour le playtest : **voit-on le Lecteur lire, et à quelle minute va-t-on
+voir une tablette qu'il a marquée ?**
+
+`outils/verifier.py` passe de 412 à **421 assertions**.
+
+## La relecture — ce que le livre avoue une fois fermé
+
+*19/10/2026, FIN-3, sur la branche empilée sur `eleve`.*
+
+Depuis le 14/09/2026, ce n'était plus une préférence : les paires réparantes passent sans rien
+trahir (`docs/corpus.md` §7.3), donc la relecture est **le seul endroit où le jeu admet jamais
+qu'on a lu autre chose**. Le design doc §11 en donne la lettre : le corpus intégralement
+lisible, toutes les erreurs de la partie surlignées, y compris celles jamais détectées, vingt
+minutes, sans mécanique. Quatre questions à l'auteur, quatre réponses, celles que je
+recommandais.
+
+**Quelles erreurs.** Toutes : celles encore en place à la fin, détectées ou non, et celles
+qu'une révision avait corrigées, marquées à part. La seconde moitié ne se déduisait de rien —
+une révision écrase la lecture —, d'où `S_.fautes`, qui garde chaque signe lu faux un jour et
+par qui. C'est le premier état du jeu qui soit une **mémoire** et non une conséquence : la
+règle 18 interdit de stocker ce qui se dérive, et ceci ne se dérive pas.
+
+**Comment.** Le texte juste, et la faute surlignée **sur le jeton**. Pendant la partie, la
+règle 20 l'interdisait : désigner le signe fautif aurait été l'oracle. Le livre est fermé, il
+n'y a plus rien à protéger, et c'est exactement ce qui fait de la relecture un aveu et non un
+corrigé — elle vient trop tard pour servir. Le mot qu'on avait lu se lit au survol. Basculer
+entre les deux livres aurait été le plus fort pour la paire réparante, qui en donne un second
+cohérent ; mais c'était une mécanique, et le §11 n'en veut pas.
+
+**Qui.** « j'avais lu … » ou « un élève avait lu … ». La règle 21 refuse un solde à part pour
+l'Élève, et ce n'en est pas un : la dette, la prime et la contradiction ne lisent que `lect`,
+et `S_.lusEleve` ne se lit que dans la relecture.
+
+**Ce qu'on a raté.** ⟨grenier⟩ et le zéro, jamais posés, passent en français avec leur propre
+marque. La règle 14 protégeait l'existence des signes hors de l'arbre ; elle protégeait une
+partie, et il n'y en a plus.
+
+### Ce que le lot a trouvé en chemin
+
+**`motDe` ne pouvait pas prendre de second argument.** La relecture a besoin du mot sous
+d'autres lectures — les justes, ou celles d'avant une révision. Le plus simple était un
+paramètre ; mais `traces.js` passe `motDe` telle quelle à `map`, qui lui aurait donné l'indice
+du tableau en guise de lectures, et le journal d'actions aurait écrit le mot juste là où le
+joueur lisait le faux, sans erreur et sans que rien ne le dise. D'où `motSous(id, lect)`, et
+`motDe` qui l'appelle.
+
+**Un composé sali par sa partie est une faute aussi.** ⟨sinon⟩ se lit « à la fin » chez qui a
+lu ⟨ne-pas⟩ de travers ; la relecture le surligne, et le survol dit « j'avais lu « à la fin » ».
+Le critère est le mot affiché, pas le signe tranché : un jeton est fautif quand la lecture du
+joueur ne donnait pas son mot, ce qui couvre d'un coup les signes, leurs composés et le verrou
+du passé.
+
+**Le texte juste se construit partout.** Le passage que la contradiction retient et les lignes
+que `faux` allume s'éteignent à la relecture : ils disaient que la lecture du joueur ne tenait
+pas, et ce n'est plus sa lecture qu'on lit.
+
+**Aucun chiffre à l'écran, tous au journal.** La légende nomme les trois marques et ne compte
+rien. Le journal d'actions, hors jeu, compte ce que la relecture avoue — mille cent douze
+jetons mal lus pour la partie d'essai des tests, qui s'est trompée sur quatre signes, paire
+réparante comprise.
+
+### Pour le playtest
+
+**L'entretien se fait avant « relire ».** La relecture répond à trois de ses questions — combien
+de lectures fausses, a-t-on remarqué qu'on choisissait, à qui attribue-t-on un mot faux —, et
+un joueur qui relit avant d'être interrogé les entend répondues. Ensuite : l'ouvre-t-on, et
+combien de temps y reste-t-on ? `depouiller.py` date son ouverture.
+
+Mesuré : économie inchangée (`sim.py` 133,5–136,9 min, rien n'y touche) ; `outils/verifier.py`
+passe de 395 à **412 assertions**.
+
+## Les deux fins — achever, interrompre
+
+*19/10/2026, FIN-1 + FIN-2, sur la branche empilée sur `eleve`.*
+
+Jusqu'ici une partie finissait sur une carte : « Fin du prototype », une citation, et cinq
+chiffres — temps de lecture, signes relevés, recoupements, lignes lues, signes déchiffrés. Le
+design doc §11 prévoit autre chose depuis le premier jour : « un dernier signe reste à l'écran.
+Deux boutons », aucun n'est présenté comme le bon, et « le jeu n'attribue pas de score ». Les
+cinq actes ont leurs signes depuis GRAINE-1 : la fin pouvait enfin être la leur.
+
+Trois questions à l'auteur, trois réponses, celles que je recommandais.
+
+**Où se décide la fin.** À l'achat du dernier signe, et seulement quand on peut le payer. C'est
+la réponse qui tient « aucune n'est la bonne » : un second geste sur la carte du lexique, qui
+marche sans les 9 999 C, aurait fait d'interrompre l'option bon marché, celle de qui ne peut pas
+encore achever. Ici les deux demandent le même état, et interrompre est un refus. Le reste en
+découle : même habit pour les deux boutons, ordre tiré au sort à chaque ouverture comme celui
+des deux lectures — la place de gauche se lit comme le choix par défaut —, et la fenêtre écrit
+sa règle, « lu ou non, la partie s'arrête là ». Sans cette phrase, « le laisser non lu » se lit
+« pas maintenant », et le joueur qui interrompt croit remettre à plus tard.
+
+**Ce qui reste.** Rien qu'un bouton, « recommencer ». La carte de statistiques est retirée :
+« signes déchiffrés 87 % » est un score, quelle que soit la façon de le présenter. Le journal
+d'actions garde tous ces chiffres pour l'auteur. Achever vide l'interface pièce à pièce —
+compteurs, instruments, panneaux, lexique, cadre du corpus, titre —, puis le texte glisse au
+milieu de la page, reste seul quarante secondes et s'efface. Interrompre vide l'interface de la
+même façon, et laisse le corpus figé, qui ne s'efface pas : le texte interrompu reste, le texte
+achevé s'en va. L'asymétrie n'était pas demandée ; elle tombe de la lettre du §11, et elle dit
+quelque chose.
+
+**Sur quel signe.** Le dernier qui manque, quel qu'il soit, au lexique comme à la grille. Qui a
+composé ⟨devenir-lecture⟩ tôt finit sur un autre mot : il a grillé la révélation, comme la règle
+25 le voulait déjà. L'autre réponse — tenir ⟨devenir-lecture⟩ jusqu'au bout — revenait sur une
+décision prise le matin même.
+
+### Ce que le lot a trouvé en chemin
+
+**La première migration de sauvegarde.** LIV-3 l'annonçait : une partie interrompue a un signe de
+moins que l'arbre par définition, et la règle qui rouvre une partie que l'arbre a dépassée l'aurait
+fait reprendre. La règle lit désormais `S_.fin` — une partie interrompue ne rouvre jamais, une
+partie achevée rouvre si l'arbre a grandi sous elle. Mais `fin` vaut `null` dans `fresh()`, ce qui
+veut dire « elle court », et c'est faux pour toute partie finie avant ce lot. Un champ ajouté dont
+la valeur neuve ment sur les parties d'avant n'est pas un ajout : c'est la frontière que la
+règle 22 traçait sans exemple, et la migration 1 → 2 la franchit. Une partie `done` d'avant est
+achevée, il n'y avait pas d'autre façon de finir, et son effacement a eu lieu — elle avait vu sa
+carte. La taille de l'arbre au moment de l'arrêt, que LIV-3 croyait devoir écrire, n'est pas
+nécessaire : ce qui distingue une partie interrompue d'une partie dépassée, c'est son choix, pas
+sa taille.
+
+**Le texte ne restait pas au milieu.** Une fois l'interface partie, le corpus restait dans sa
+colonne de gauche, devant un écran vide : on aurait dit un panneau oublié. Il glisse donc au
+milieu, sur trois secondes, au lieu de changer de mise en page — un texte ne doit pas sauter
+sous les yeux de qui le lit.
+
+**Une partie interrompue doit le rester pendant qu'elle s'efface.** L'interface met quatorze
+secondes à partir, et pendant ce temps la carte du signe laissé et la grille restent sous la
+main : un clic de plus, et la partie interrompue devenait achevée. La garde est sur le seul
+chemin qui paie, `acheterGl`, et non dans les boutons, et un test essaie les trois portes.
+
+**La barre hors jeu reste.** C'est à la fin qu'on exporte le journal d'actions : PT5 avait déjà
+trouvé la carte posée par-dessus le bouton « copier ». Un test vérifie qu'il reste cliquable
+pendant et après l'effacement.
+
+**Les durées ne sont pas des mesures.** Quatorze secondes pour vider l'interface, quarante de
+texte seul, vingt-quatre pour l'effacer (`FIN_EFF`, `rendu.js`). Ce sont des choix de mise en
+scène, le jeu est arrêté et aucune économie n'en dépend. Le journal d'actions date le début de
+l'effacement ; c'est au playtest de dire si quarante secondes sont lues.
+
+### Ce qui n'est pas fait
+
+**« Juste le texte, entièrement en français » ne vaut que pour ce que le joueur a lu.** Les noms
+propres ne se déchiffrent jamais, et un composé secret jamais trouvé — ⟨grenier⟩, le zéro —
+reste en signes. L'effacement montre le corpus tel qu'il a été lu, avec ses lectures fausses ; le
+corriger serait le travail de la relecture, FIN-3, qui s'ouvre sur demande et qui seule peut
+avouer ce qu'on a raté. Le bouton « relire » viendra s'asseoir à côté de « recommencer ».
+
+Mesuré : économie inchangée (`sim.py` 133,5–136,9 min, rien n'y touche) ; `outils/verifier.py`
+passe de 376 à **395 assertions**, dont la fenêtre au lexique et à la grille, l'attente de
+lecture, ce qui reste à l'écran — « recommencer » et pas un chiffre —, la partie interrompue qui
+ne reprend pas au chargement, et la migration. Pour le playtest : **achève-t-on ou
+interrompt-on, combien de fois ouvre-t-on la fenêtre avant de choisir** — `depouiller.py` le
+compte, avec le temps entre la première ouverture et le choix —, **et lit-on les quarante
+secondes de texte seul ?**
+
+## La Fin — lire la fin dans leur langue
+
+*19/10/2026, GRAINE-1, avec la moitié d'AMB-4 et de COMP-4 qui l'attendaient. Sur la branche de
+travail de la Personne, empilée sur `eleve`.*
+
+Sept signes : ⟨semence⟩, ⟨finir⟩, ⟨le-dernier⟩, ⟨devenir⟩, ⟨notre-fin⟩, ⟨germer⟩,
+⟨devenir-lecture⟩. Soixante attestations à eux tous, dont trente-sept pour ⟨semence⟩, qui est
+dans les registres depuis la tablette 5 et monte de soixante à cent pendant que tout le reste
+baisse. Aucune ligne du corpus ne change ; beaucoup de ce lot était écrit d'avance — les deux
+lectures fausses, leurs ruptures, les mots des composés salis, les participes — et attendait
+que ses signes entrent dans `GL`. Ils y sont, et tout s'est mis à servir de soi-même : la
+recette de ⟨dernière-année⟩ et celle de ⟨nous-fûmes⟩ se sont ouvertes sans une ligne (règle 15).
+
+### Le dernier signe
+
+`devenir-lecture` était la question ouverte de l'issue : « le dernier signe et la clé de tout »
+pour le design doc, offert par aucune progression pour COMP-4. **Tranché par l'auteur : il compte
+dans l'arbre, et le lexique l'offre en dernier.** La grille seule bloquait la partie à 42 sur 43
+pour qui n'y pense pas ; hors de l'arbre, comme ⟨grenier⟩, il n'était plus le dernier. Le
+lexique l'offre donc quand les quarante-deux autres sont lus, et la carte de fin attend la
+tablette 27 — « tablette · devenir-lecture », sa seule attestation. La grille, elle, le donne
+dès qu'on a ⟨lire⟩ et ⟨devenir⟩ : composé tôt, il compte et ne ferme rien, et c'est le dernier
+signe acheté, quel qu'il soit, qui clôt la partie. Le design doc l'avait voulu : « griller la
+révélation de vitesse ».
+
+### Les portes sont au lexique
+
+Les Questions avaient posé un garde dans `acheterGl` : un mot `rep` ne s'y achetait pas avant
+sa réponse. En entrant dans le jeu, ⟨germer⟩ l'a fait tomber. Il est ⟨semence⟩ posé sur
+⟨devenir⟩, la grille le donne dès qu'on a les deux, et le garde refusait l'achat en laissant
+`composer()` répondre « acquis ». Le lexique gardait déjà l'ordre des chaînes sans que
+`acheterGl` le vérifie ; il garde désormais aussi les deux portes de la Fin, `offert()`, et
+lui seul. Qui voit ⟨germer⟩ dans le texte fait l'économie d'une question — 1,3 à 1,9 min
+d'acte V —, et c'est au playtest de dire combien le voient.
+
+Une carte en tête de sa chaîne qui attend autre chose que la Certitude dit sa règle : « le
+texte le donnera à qui l'interroge », « il vient quand tout le reste est lu ». C'est le
+lexique qui parle de lui-même (règle 14) ; ce qu'il faut demander, il ne le dit pas.
+
+### Les prix : tous au plafond
+
+Mesuré au simulateur, qui porte enfin l'acte V (ECO-2) : tous les signes à 9 999. ⟨semence⟩
+tombe alors juste après ⟨nous-fûmes⟩, et l'acte V vient entier après l'acte IV ; à 6 000 il se
+glissait entre ⟨toi-qui⟩ et ⟨moi-absent⟩ pour un dixième de minute de moyenne, et les rampes
+de 4 000 ou 7 000 à 9 999 font tomber les signes sans question en 2,2 à 2,7 min. La chaîne
+alterne les mots qui attendent une réponse et ceux qui n'attendent que leur prix.
+
+| | Partie | Acte V | Écarts de l'acte V |
+|---|---|---|---|
+| avec Élèves (l'acheteur en prend dix) | 133,5–136,9 min | 28,2 min | 3,2 à 5,1, moyenne 4,0 |
+| sans Élève | 159,5–162,6 min | 40,3 min | 4,7 à 7,2, moyenne 5,8 |
+| ⟨germer⟩ posé à la grille, sans Élève | 157,6–160,7 min | 38,4 min | moyenne 5,5 |
+
+Les chiffres de la note de conception, retrouvés au dixième : c'était le même modèle, à l'ordre
+de la chaîne près. I4 tient des deux côtés ; la pire tranche d'I6 hors ouverture reste à 25 %,
+à 20–30′.
+
+**Ce qui bouge, et qu'il faut regarder en face.** La main tombe de 22,4 à **16,7 %** des
+occurrences au réglage en place, et à **13,1 %** chez le joueur sans Élève : l'acte V dure
+vingt-huit à quarante minutes sur un gisement presque épuisé (395 relevés sur 399), et les
+instruments y produisent à plein. À l'entrée de l'acte V elle pèse encore 17,2 % sans Élève ;
+c'est la Fin seule qui la fait descendre, minute après minute, parce que le gisement est fini
+et la production passive non. Le plancher de `balayage.py` était à 15 % : les 54 combinaisons
+tombaient, réglage en place compris — « 0 sur 54 », la panne que la durée avait déjà faite à
+vingt-trois glyphes. Recalé sur ce qu'il doit attraper, mesuré dans l'arbre de quarante-trois
+signes : la grille fait 12 à 14 %, « tout dégager à 80 % de l'arbre » 9,7 %, à 90 % 11,5 %.
+**Plancher à 11.** Il trie moins bien qu'avant — trois points entre la famille fautive et la
+grille, contre dix à trente glyphes, la queue passive tassant tout — et la règle 9 dit de ne
+pas régler contre ce chiffre avant PT11. Ce que la Fin y ajoute pour le playtest : à l'acte V,
+la main n'a plus rien à relever, et le geste qui reste dans le corpus est la question —
+chercher un « si » pour savoir quoi demander. C'est la réponse de l'acte V à « revient-on dans
+le corpus après la quarantième minute ? », et rien ne dit encore qu'elle suffit. Et la
+contradiction coûte désormais une heure à qui ne révise jamais : 223,6–226,6 min pour la paire
+réparante, contre 159,5–162,6 en lecture parfaite. Un Élève qui lit faux : 207,9–211,0. Et
+I4 y cède : 11,4 à 12,9 min sans rien à acheter avant ⟨finir⟩, le premier mot qu'une question
+ouvre — la sanction divise la Certitude, donc aussi le surplus qui remplit les questions. À
+l'acte IV, elle cédait à huit minutes ; non réglé, pour la même raison qu'alors. La
+question que la Personne posait au playtest — révise-t-on, ou encaisse-t-on ? — est devenue la
+plus chère du jeu.
+
+`balayage.py` re-basé : durée (121, 165), **écart max à 8**, la borne d'I4, au lieu de 6, et
+main à 11 au lieu de 15. **42 combinaisons sur 54**, comme à la Personne, dont le réglage en
+place (124,1–162,6 min, écart 7,2, main 13 %, pire tranche 25 %) ; les douze autres ont toutes
+le Copiste à 15 et passent le plafond de durée de quelques dixièmes.
+L'acte V espace par construction ses mots ouverts par une question, de 6,6 à 7,2 min chez le
+joueur sans Élève : c'est le rythme mesuré en choisissant les prix, pas un défaut à cacher.
+
+### AMB-4, la moitié qui attendait
+
+⟨semence⟩ et ⟨devenir⟩ tranchent leurs deux lectures à l'achat, et leurs ruptures, vérifiées
+au corpus depuis TXT-1, s'allument : « si enfant · ne-pas né », tablette 22, et « il-fallait
+tablette · porté lu », tablette 17 — au passé, parce qu'à cette heure-là ⟨nous-fûmes⟩ est lu,
+et la ligne ne se construit pas davantage. La paire réparante ⟨semence⟩ + ⟨devenir⟩ éteint la
+première et pas la seconde, comme le §7.3 l'écrivait. Les onze lectures fausses sont dans
+l'arbre ; la dette va de 0 à 20.
+
+### Deux textes écrits d'avance, relus en entrant
+
+- La ligne fausse de ⟨semence⟩ disait « pendant que les tombes se vidaient » : c'est ⟨maison⟩
+  lu « tombe », dans la ligne d'un autre signe. À qui lisait « maison », le jeu aurait parlé
+  d'une lecture qu'il n'a pas faite (règle 17). Elle dit « pendant que tout le reste baissait ».
+- Celle de ⟨nous-fûmes⟩ disait « posé sur un signe que je ne sais pas encore lire » : vrai tant
+  que ⟨finir⟩ n'existait pas, faux dès qu'une réponse peut l'ouvrir avant. Elle dit « posé sur
+  un autre signe ».
+
+Et « notre-fin · ne-pas » ne se tranche pas : la ligne de journal dit qu'il est suivi d'un seul
+signe, et rien de plus — ni le sens, ni qu'il y en a deux.
+
+### Ce qui n'est pas fait
+
+Le **Lecteur** (GRAINE-2) et la **révélation** (GRAINE-3) ; les **fins** — Achever, Interrompre —
+et la **relecture** (E8). La carte de fin dit « actes I à V » et « Le prototype s'arrête ici. »,
+plus rien sur la suite. Le **Corpus jumeau** (VOIX-4), dernier morceau de l'acte IV.
+`outils/verifier.py` passe de 360 à **376 assertions**.
+
+## Les Questions — ce qui déborde devient question
+
+*19/10/2026, VOIX-3. Sur la branche de travail de la Personne, empilée sur `eleve`. Tranché
+par l'auteur sur une note de conception mesurée, `docs/note-questions.md` : l'option 3, avec
+le gel.*
+
+Le design doc ne donnait presque rien : une ressource Q, « acte IV+, interroger le texte, 0 à
+12 sur toute la partie », et « il répond, dans les limites de ce qui a été gravé il y a quatre
+mille ans ». Le backlog en faisait le plus gros risque de conception du projet — le seul
+système où le jeu pourrait se mettre à parler au lieu de laisser lire.
+
+### Le corpus avait déjà la forme
+
+La langue n'a pas d'interrogatif. ⟨si⟩ est ce qui s'en approche le plus, et le corpus pose
+seize conditions — quinze une fois les nombres ôtés —, chacune suivie de ce qui en découle.
+Une question est donc une condition, et la réponse est ce qui est gravé après. Rien n'est
+écrit pour l'occasion : la table est lue dans le corpus au chargement, et un test vérifie que
+chaque réponse finit une ligne gravée.
+
+Ce qui en est sorti n'était pas cherché. **Le texte répond à des questions que personne n'a
+posées** : qui demande « si toi lire » reçoit « nous ne-pas finir », la thèse du jeu rendue à
+une question que le joueur pose sur lui-même ; qui demande « si lire » reçoit « devenir » une
+fois, et cinquante-huit fois rien — les registres finissent sur « si lire » et s'arrêtent là.
+C'est l'acte V en avance, pour qui demande : un texte conçu pour un lecteur à venir a écrit
+ses réponses d'abord.
+
+Écartée en route : montrer un signe et demander ce qu'il veut dire. C'est une Concordance, et
+il faudrait choisir *la* ligne qui répond ; pour un signe ambigu, la plus parlante est sa
+rupture, et la question deviendrait l'oracle que les règles 17 à 20 refusent.
+
+### Ce qui coûte, et pourquoi le plafond
+
+Le problème d'ECO-3, que la Personne a rendu pressant : sous le plafond de quatre chiffres,
+il ne reste plus un cran de prix pour l'acte V. Mesuré sur un acte V provisoire — sept signes
+de la Fin, au plafond, sans Lecteur ni Corpus jumeau — il dure 16,7 min avec Élèves et 23,7
+sans, et ses écarts retombent à 1,4 min : I4 cède dès le troisième signe. Des questions
+données ne coûtent pas de temps et n'y changent rien.
+
+Ce qui y change quelque chose, c'est que **le prix d'une question n'est jamais détenu d'un
+coup**. La Certitude s'arrête à 9 999, et à partir de ⟨toi⟩ ce qui déborde remplit la question
+suivante. I1 cesse d'être une contrainte sur les prix : c'est une règle du jeu, et elle a un
+sens — au-delà de quatre chiffres, ce que je comprends devient question. Le panneau le dit en
+ces termes, et c'est tout ce qu'il dit de lui-même.
+
+Avec sept questions sur le chemin, un prix croissant de ×1,15 par question rend des écarts
+plats : 1,15 compense le 1,16 de la Grammaire, la leçon de `REC_R` une fois de plus. Mais le
+texte n'en donne que trois — ⟨finir⟩, ⟨devenir⟩ et ⟨germer⟩ sont les seuls mots de la Fin à
+suivre un « si » — et trois questions seules font des dents de scie qu'aucun prix ne tient
+sous I4. D'où le second levier : **la Grammaire gèle aux mots de la fin.** Elle compte l'arbre
+moins la branche de l'acte V ; une fois la Personne connue, la grammaire est complète, et
+c'est l'ordre que la tablette 28 donne au programme — les nombres, les choses, les verbes.
+Trois questions à 4 000 et le gel : 28,2 min d'acte V avec Élèves, 40,3 sans, écarts de 3,2 à
+7,2, I4 tenu des deux côtés. Aucun des deux seul ne le fait. Le gel contredit la lettre du
+design doc §5 ; c'est noté là.
+
+### Trouvé en mesurant : la nuit
+
+Quatre heures hors ligne à 40 %, c'est quatre-vingt-seize minutes de production pleine. À
+l'achat de ⟨nuit⟩, quatorze à dix-sept mille Certitude ; à celui de ⟨nous⟩, soixante-six à
+quatre-vingt-neuf mille — deux fois toute la branche Personne, à dépenser au retour. L'écran le
+cachait (« 17,4 k »), mais la lecture d'I1 qui avait fixé les prix de la Personne était déjà
+fausse hors ligne. Le plafond la referme au passage : la nuit remplit la Certitude jusqu'à
+9 999, et **jamais une question** — une question demande quelqu'un pour la poser.
+
+### Ce qui a été tranché à l'écriture
+
+Les points que la note laissait ouverts, réglés au plus simple :
+
+- **Les nombres ne font pas partie de la condition.** La palette ne pose que des signes, et
+  « si copier » rend donc ses trois suites, dont « un devenir » (« si copier 100 », tablette 23).
+- **Une réponse coûte une question, un silence rien.** Sans question en main, on ne pose rien
+  du tout : refuser seulement les conditions gravées dirait lesquelles le sont.
+- **Une condition déjà posée ne se repose pas** ; sa réponse reste au panneau, le silence
+  aussi, comme le carnet de la grille.
+- **La réponse s'écrit à l'infinitif**, comme la concordance : c'est un relevé, pas le récit.
+  Les lignes qui la portent s'allument dans le corpus, en bleu d'instrument et non en ocre — ce
+  n'est pas le texte qui se refuse, c'est le panneau qui montre où il a répondu.
+- **Le plafond ne retire rien** à une partie qui l'avait déjà dépassé (R2). La neuvième
+  révision coûte 10 308 C et devient impossible ; elle demandait déjà de détenir cinq chiffres.
+
+### Ce qui n'est pas fait
+
+**Les mots de la fin.** Une réponse ouvre un signe marqué `rep` dans le lexique ; aucun ne
+l'est avant GRAINE-1, et d'ici là le panneau répond sans rien ouvrir. L'ouverture n'est
+vérifiée qu'au niveau de la déduction (`ouvertsParReponse()` porte ⟨finir⟩ et ⟨devenir⟩
+après « si toi lire » et « si lire »). Le prix des questions, le gel et l'ordre de la Fin sont
+à remesurer dans `sim.py` quand ECO-2 y aura porté l'acte V : les chiffres ci-dessus viennent
+d'une copie modifiée hors du dépôt.
+
+Économie des actes I à IV inchangée au chiffre près : le plafond ne mord pas tant que
+l'acheteur dépense, et le gel n'a rien à geler. `sim.py` porte les deux. `outils/verifier.py`
+passe de 342 à **360 assertions**. Question pour le playtest qui jouera cette branche :
+**pose-t-on des questions, lesquelles, et après avoir lu les « si » ou au hasard ?**
+
+## La version entre dans la sauvegarde, et la clé ne bouge plus
+
+*19/10/2026, LIV-3.* La clé de sauvegarde changeait chaque fois qu'une partie gênait —
+`langue-morte-mvp-v2`, puis `langue-morte-actes-i-iii` à l'ouverture de l'acte III — et
+chaque fois toutes les parties en cours partaient avec. Le backlog le disait : ça se
+reproduirait à chaque acte livré. Elle s'appelle désormais `langue-morte-partie` et ne
+changera plus : **la version est écrite dans la sauvegarde**, et c'est elle qui migre. Une
+partie trouvée sous l'ancienne clé y déménage au premier chargement. Rien de l'économie ne
+bouge — `sim.py` redonne 91,1–94,3 min, `balayage.py` 34 combinaisons sur 54 — et rien de
+l'écran non plus. `outils/verifier.py` passe de 297 à **307 assertions**.
+
+### Aucune migration n'est écrite, et c'est la mesure
+
+Tout ce que les lots ont changé à la sauvegarde depuis l'acte III — le carnet, les lectures
+tranchées, le doute, les révisions, la contradiction — était un **ajout**, et un ajout se
+migre tout seul : `fresh()` donne le champ à toute partie qui ne l'a pas. Le lot livre donc
+une chaîne de migrations vide, et c'est exact : aucun champ n'a encore changé de sens. Ce
+qui en demandera une est écrit en tête de `MIGRATIONS` — un champ qui change de sens, de nom
+ou de forme, un signe qui quitte le lexique ou change d'identifiant.
+
+La version **se compte** sur cette liste au lieu de se régler à côté : `versionSauvegarde()`
+vaut le nombre de migrations plus un. On ne peut ni oublier de l'incrémenter, ni l'incrémenter
+sans dire comment on passe d'une version à l'autre — un état dérivable ne se stocke pas, même
+dans le code. Les sauvegardes d'avant ce lot n'ont pas de numéro ; elles sont en version 1, il
+ne leur manque que le chiffre. Et ce chiffre est posé par `sauver()`, pas par `fresh()` : il
+dit ce qu'est le fichier, pas ce qu'était la partie.
+
+La chaîne vide se teste quand même : une migration posée le temps du test fait la version 2,
+passe une fois sur une sauvegarde sans numéro, et ne repasse pas sur une sauvegarde déjà à
+jour.
+
+### La première qu'on voit venir : FIN-2
+
+Une partie `done` quand l'arbre était plus petit redevient une partie en cours. C'est
+`nArbre() < NGL`, posé avec la Parole III, et c'est juste tant que finir veut dire acheter le
+dernier signe. **FIN-2 casse cette équivalence** : interrompre, c'est laisser un signe non lu
+(design doc §11), donc `nArbre() < NGL` par définition — et une partie interrompue « ne
+propose pas de reprendre ». Telle quelle, la règle la rouvrirait au chargement suivant. Il
+faudra écrire à quelle taille d'arbre une partie s'est arrêtée, et l'écrire pour les parties
+déjà finies sera la première migration. C'est noté dans le code, au-dessus de la règle.
+
+### Ce qui se migrait déjà, à deux endroits
+
+Le chargement faisait déjà la moitié du travail sans le dire : `Object.assign(fresh(), p)`
+donnait les champs de premier niveau. Mais pas ceux de `b`, que l'assignation remplace en
+bloc — d'où une seconde ligne, qui recopiait **la liste des instruments à la main**. Tout
+instrument neuf s'écrivait donc à deux endroits, et l'Élève
+([#56](https://github.com/DavidGiangiacomo/langue-morte/pull/56)) a dû l'écrire aux deux.
+Oublié au second, il serait arrivé à `undefined` dans toute partie d'avant lui : `insCost()`
+rendait NaN, et rien ne le disait. `fusionner()` descend désormais d'un niveau : un instrument
+s'écrit dans `fresh()` et nulle part ailleurs. Le test ne nomme aucun instrument — il pose une
+partie qui ne connaît que le Copiste et vérifie que tous les autres arrivent à zéro, ceux des
+actes IV et V compris. La PR de l'Élève se fusionnera donc avec une ligne de moins : sa
+retouche du chargement devient inutile, et le conflit se résout en gardant `fusionner()`.
+
+### Une sauvegarde qu'on ne sait pas lire ne s'écrase pas
+
+Un numéro de version peut être **plus grand** que celui du jeu qui le lit : un déploiement
+défait, un vieux fichier rouvert dans le navigateur où l'on joue le neuf. Et une migration
+peut casser — c'est un défaut du jeu, pas de la partie. Dans les deux cas, la seule réponse
+qui ne perde rien est de n'y pas toucher : on joue une partie neuve, qui ne se garde pas, et
+ni la sauvegarde des quatre secondes ni « recommencer » n'écrivent par-dessus. Jouer quand
+même — la charger telle quelle, ou repartir de zéro en laissant la sauvegarde automatique
+faire le reste —, c'était remplacer la partie par ce qu'un jeu qui ne la comprenait pas en
+aurait fait, quatre secondes plus tard.
+
+### Le déménagement ne mange pas la nuit
+
+Une partie trouvée sous l'ancienne clé est écrite sous la nouvelle, puis effacée de
+l'ancienne — dans cet ordre, pour qu'une écriture ratée ne perde rien —, et elle part **telle
+quelle**. Le piège était dans le geste le plus simple, qui serait de l'enregistrer comme
+n'importe quelle partie : enregistrer, c'est dater de maintenant (`sauver()` pose `ts`), et
+`ts` est ce qui mesure la nuit (`veillee()`). Le joueur qui revient après deux heures
+retrouverait une nuit d'une seconde. Le test pose sous l'ancienne clé une partie quittée
+depuis deux heures et vérifie que la nuit est rattrapée. Deux mutants vérifiés à la main —
+un déménagement qui re-date la partie, une sauvegarde plus récente chargée quand même — font
+chacun échouer leur assertion.
+
+### Ce que LIV-3 ne fait pas
+
+- **Il ne lève pas la règle « rien sur `develop` pendant un playtest ».** Une version protège
+  le format d'une partie, pas son économie : un déploiement qui touche un réglage change le
+  jeu sous les pieds du joueur sans changer une virgule de sa sauvegarde, et rien dans le
+  journal d'actions ne date ce changement. Ce que disait LIV-2 reste vrai.
+- **`langue-morte-mvp-v2` n'est pas repris**, et c'est un choix : ses parties sont celles du
+  prototype à treize signes, abandonnées le 08/09/2026, et l'économie qui les a produites
+  n'existe plus. Une ligne dans `CLES_ANCIENNES` suffirait à les rouvrir.
+- **Le journal d'actions garde sa clé** (`langue-morte-traces-v1`) : hors jeu, il se décrit
+  lui-même par l'en-tête du TSV.
+
 ## Le compteur n'est pas le corpus — trois portes, et une qui s'ouvre à 2 C
 
 *14/10/2026.* Trouvé en jouant : **dès ⟨un⟩, les trois compteurs passent en chiffres arabes
@@ -182,7 +1026,7 @@ propres comptes ; le corpus reste les nombres de quelqu'un d'autre, et ceux-là 
 signe par signe. Le design doc en fait une catégorie à part depuis le premier jour, au §9,
 invariant **I2** : « le joueur perd la lisibilité de **ses propres nombres** au moment où ils
 deviennent énormes ». `readN` ouvre cette lisibilité à l'acte I ; VOIX-5 la refermera à
-l'acte IV. Les deux portes se tiennent par le même mot.
+l'acte IV. Les deux portes se tiennent par le même mot. *(Refermée le 20/10/2026 : voir « I2 — les zéros sont les leurs ».)*
 
 ### Pourquoi la règle 3 ne *peut pas* s'appliquer là
 
@@ -235,6 +1079,297 @@ réponse ne coûte aucun renseignement.
 (⟨deux⟩) emploient *relevé* dans deux sens différents, sur deux cartes voisines de la même
 branche — l'affichage et le geste de la règle 8. Non corrigé : ça entre dans le même
 arbitrage.
+## VOIX-2 — ce qui m'était adressé
+
+*14/10/2026, sur la même branche de travail que la Personne.*
+
+Le design doc : « Le corpus n'est pas un registre : il est écrit à la deuxième personne, et il
+l'a toujours été — le jeu réaffiche les passages déjà lus, désormais adressés au joueur. » Le
+backlog : « rien n'est ajouté au texte — la relecture suffit ». Trois lectures tenaient — un
+repli sur ce qui s'adresse au lecteur, une relecture déroulée qui rejoue l'apparition des mots
+depuis la première tablette, une deuxième personne conjuguée à l'écran comme le verrou du
+passé. **Tranché par l'auteur : le repli.**
+
+À l'achat de ⟨toi⟩, le corpus se replie une fois, comme une concordance, sur les lignes qui
+portent ⟨toi⟩, ⟨toi-qui⟩ ou ⟨lire⟩ : **quatre-vingt-douze lignes sur vingt-cinq tablettes**,
+dont treize seulement disent « toi ». Les soixante-dix-neuf autres sont déjà lues, et c'est
+tout le propos : « il-faut lire · eau », « après · il-faut lire », les registres de
+distribution qui finissent sur « si lire », l'abécédaire, la fabrique. Chaque tablette garde
+sa première ligne, celle qui la date, et le corpus étant rangé à ce stade, la relecture se
+fait dans l'ordre du temps. Rien n'est ajouté : c'est le choix des lignes qui dit « toi ».
+Le bouton de la concordance dit « à toi · 84 lignes ✕ » — les tablettes encore sous terre
+n'y sont pas — et c'est lui, ou échap, qui rend le corpus entier.
+
+Trois décisions prises en l'écrivant :
+
+- **Le choix porte sur les signes, jamais sur les mots.** ⟨lire⟩ lu « compter » se replie de
+  la même façon : le repli ne dit rien d'une lecture (règle 17).
+- **Il ne compte pas comme une concordance dans le degré de doute.** Le repli met sous les
+  yeux toutes les attestations de ⟨lire⟩, ce qui vaudrait le poids plein à la prochaine
+  révision de ce signe. Mais c'est le jeu qui montre, pas le joueur qui rassemble, et le
+  doute mesure ce que le joueur a fait (règle 18).
+- **Une fois, à l'achat.** Qui veut y revenir a la Concordance : ⟨toi⟩ et ⟨lire⟩ s'y
+  rassemblent comme les autres.
+
+Le journal d'actions date l'ouverture et la sortie — `concFermer` n'était jusqu'ici pas
+enveloppée, et le journal ne disait ni quand ni si l'on sortait d'une concordance —, et
+`depouiller.py` en tire la durée de la relecture. **C'est la question de ce lot pour le
+playtest qui jouera la branche : relit-on, ou referme-t-on tout de suite ?** Aucun effet sur
+l'économie. `outils/verifier.py` passe de 330 à **332 assertions**.
+
+## La Personne — qui parle, et le plafond des quatre chiffres
+
+*14/10/2026, VOIX-1. Écrit sur une branche de travail empilée sur `eleve` : PT11 attend un
+joueur, et `develop` reste figé sur la page qu'il jouera.*
+
+Six signes — ⟨nous⟩, ⟨je⟩, ⟨toi⟩, ⟨toi-qui⟩, ⟨moi-absent⟩, ⟨nous-fûmes⟩ —, soixante-six
+attestations, dont quarante et une pour ⟨nous⟩. Aucune ligne du corpus ne change : l'acte IV
+est écrit depuis le premier jour, il attendait ses mots.
+
+### La porte d'abord, le dernier mot en dernier
+
+⟨nous⟩ ouvre la branche parce que l'acte III l'a laissé dans le texte : seul devant le nom
+⟨les-lecteurs⟩, sur une tablette 18 qui s'arrêtait à 80 %. L'acheter la rend entière, nom
+propre à part. ⟨nous-fûmes⟩ la ferme parce qu'il n'a qu'une attestation, la dernière ligne de
+la tablette 30 : le dernier achat de l'arbre rend lisible le dernier mot du corpus, et la
+carte de fin attend qu'on soit allé le lire (règle 16). Entre les deux, ⟨toi⟩. La deuxième
+personne se découvre sur les tablettes 20 et 24 — « toi-qui lire · toi ne-pas nous », « si
+toi lire · nous ne-pas ⟨…⟩ » — et aucune carte du lexique ne l'annonce : les lignes d'effet
+disent ce qui se lit, jamais ce que ça veut dire.
+
+Aucun multiplicateur, comme la Modalité. Deux des six se posent à la grille dès qu'on a leur
+première moitié — ⟨toi-qui⟩ est ⟨toi⟩ sur ⟨si⟩, ⟨moi-absent⟩ ⟨je⟩ sur ⟨ne-pas⟩ — et avancent
+l'arbre comme `scribe` (règle 13). ⟨nous-fûmes⟩ est ⟨nous⟩ sur ⟨finir⟩, qui est de l'acte V :
+il ne se pose pas avant (règle 15). Et ⟨les-lecteurs⟩ devient composable de lui-même, sa
+seconde moitié étant enfin au lexique.
+
+⟨moi-absent⟩ n'a **aucune** attestation. 7 300 C pour un mot que le corpus n'emploie jamais,
+et la Table de fréquences l'affiche à côté du prix : le pari de `les-lecteurs` poussé au
+bout. Sa ligne de journal le dit — personne n'a écrit son propre départ — et sa variante
+sous ⟨ne-pas⟩ mal lu, « moi-mort », suit la même ligne au mot près : une différence de ton
+renseignerait.
+
+### Les prix butent sur un plafond
+
+Mesuré à `outils/sim.py`, l'acheteur prenant les Élèves qu'il veut :
+
+| Grille de prix (⟨nous⟩ → ⟨nous-fûmes⟩) | Durée | À 15 clics/min, la Personne tombe à |
+|---|---|---|
+| 1 400 → 3 300 C | 95,0–98,9 min | 88′ 90′ 91′ 93′ 95′ 96′ |
+| 1 600 → 9 000 C | 103,2–107,1 min | 88′ 91′ 94′ 97′ 100′ 104′ |
+| **1 800 → 9 500 C** *(retenu)* | **104,7–108,6 min** | 89′ 91′ 94′ 98′ 102′ 106′ |
+| 2 400 → 9 900 C | 107,3–111,1 min | 89′ 92′ 96′ 100′ 104′ 108′ |
+
+Au pas de la branche d'avant, les six signes tombent toutes les minute et demie. Il faut
+monter jusqu'à 9 500 C pour que l'acte IV ait un rythme, et au-delà il n'y a plus rien :
+**I1 interdit d'afficher plus de quatre chiffres de Certitude**, donc aucun prix ne passe
+9 999. Sans Élève, la grille retenue donne 118,6–122,2 min et des écarts de 2, 4, 4, 5, 5 et
+6 minutes entre les six signes — dans I4. L'écart max de la partie reste 5,2 min, la pire
+tranche d'I6 hors ouverture 25 %, la main 22,4–22,7 % des occurrences.
+
+**Ce que ça laisse à l'acte V : rien sous le plafond.** Sept signes de plus, les Questions, un
+dernier instrument — et plus un cran de prix. Dans une économie où la Grammaire croît de 16 %
+par signe, le prix ne peut plus être le levier de rythme de la fin de partie. C'est ECO-3, et
+ce lot le rend pressant.
+
+### Le premier franchissement d'acte
+
+La règle 19 disait depuis CONTR-1 : la contradiction *s'évalue à chaque franchissement d'acte
+à partir de `peut-être`*, dont le prototype ne voyait que le premier cas. Il en voit un
+second : le premier signe de la Personne, si le doute est ouvert (`franchit()`). C'est là
+que passent enfin au solde les lectures tranchées **après** `peut-être` — ⟨il-faut⟩, que le
+joueur tranche le panneau déjà ouvert, et ce que l'Élève a lu à sa place. Mesuré : une dette
+de 5 à l'ouverture du doute (⟨grain⟩ et ⟨avant⟩ mal lus), plus ⟨il-faut⟩ mal lu, arme la
+contradiction en entrant dans l'acte IV — **136,6–139,9 min au lieu de 115,6–118,9** pour qui
+ne révise jamais. Avant ce lot, ce joueur-là ne payait rien. Levée, elle ne se réarme
+toujours pas d'elle-même : seul le franchissement suivant la re-solde. `depouiller.py` la
+rejoue aux mêmes endroits.
+
+### Ce que la sanction coûte désormais
+
+Ce que ce lot n'a pas cherché, et qu'il faut regarder en face. La contradiction divise la
+Certitude par deux ; dans un acte IV dont les prix vont de 1 800 à 9 500 C, elle coûte
+beaucoup plus qu'en fin d'acte III. Chez qui ne révise jamais :
+
+| | Avant ce lot | Avec la Personne |
+|---|---|---|
+| lecture parfaite, sans Élève | 91,1–94,3 | 118,6–122,2 |
+| la paire réparante (⟨grain⟩ + ⟨maison⟩) | 102,1–105,1 *(+11)* | **150,7–153,9** *(+32)* |
+| toutes fausses | 98,1–101,2 | 143,1–146,3 |
+| un Élève qui lit faux | 99,5–102,6 | 143,1–146,6 |
+
+Pour la paire réparante sans révision, les six signes de la Personne tombent à 5, 6, 8, 9,
+9 et 11 minutes d'écart : **I4 cède**, à huit minutes. La sortie, elle, n'a pas renchéri : une
+révision coûte d'abord 240 C, puis ×1,6 à chaque fois, et la première vaut le septième du
+moins cher des signes de la Personne. Ce simulateur ne révise jamais : il mesure un joueur
+qui encaisse jusqu'au bout. Rien n'est
+réglé ici. Le seuil et la division sont calés sur des profils de lecture (CONTR-1), pas sur
+la durée de la peine ; c'est la durée de l'acte qui a changé. **Question pour le playtest qui
+jouera cette branche : un joueur sous contradiction en acte IV révise-t-il, ou encaisse-t-il ?**
+S'il encaisse, c'est R2 — « la contradiction paraît punitive » — et la réponse se cherchera
+du côté du bandeau avant celui du seuil.
+
+### ⟨les-lecteurs⟩, remesuré
+
+Sans effet chiffré parce qu'il était le dernier achat de l'arbre (règle 16) ; il ne l'est
+plus, et la règle demandait de remesurer ce jour-là. Un ×1,5 à la grammaire donne
+98,9–102,8 min — six minutes de moins sur un acte qu'on veut long, la leçon de `REC_R` par
+l'autre bout ; à la concordance 104,4–108,3, à la table 104,7–108,6, au copiste et à
+l'atelier 103,9–107,8. Il reste sans effet : ce qu'on y paie est une phrase.
+
+### Le verrou du passé
+
+Le design doc confie à ⟨nous-fûmes⟩ de « verrouiller le récit au passé, y compris les passages
+déjà lus ». Le corpus est télégraphique et sans temps grammatical — « je graver · toi lire »
+est le texte, et la couche d'affichage n'y ajoute rien (`docs/corpus.md` §1). Deux lectures
+tenaient : un verrou purement narratif, dans la ligne de journal, ou un verrou **à l'écran**.
+**Tranché par l'auteur le 14/10/2026 : à l'écran.** C'est la seule exception à « l'affichage
+n'ajoute rien », et elle est dans la traduction, pas dans le texte : qui a lu le dernier mot
+sait que tout ce qu'ils ont écrit était déjà du passé quand il a commencé à lire.
+
+La règle se décide segment par segment, entre deux « · », une fois pour toutes à la
+construction du corpus :
+
+- **un segment adressé à ⟨toi⟩ reste au présent** — le lecteur est vivant. « Si toi lire ·
+  nous ne-pas ⟨finir⟩ » garde le premier verbe et met le peuple au passé ;
+- un segment sans sujet hérite de celui d'avant — « toi · lire », tablette 20, reste un appel ;
+  un segment qui nomme ⟨nous⟩ ou ⟨je⟩ rend le récit au passé ;
+- ⟨il-faut⟩ devient « il-fallait », et le verbe qui le suit garde son infinitif ;
+- les autres verbes passent au participe.
+
+Ce que ça donne, sur 275 jetons : « je gravé · toi lire », « il-fallait copier · si ne-pas ·
+sinon » vingt-deux fois, « lu · gravé · copié » sur la fabrique, « je ne-pas dit ⟨N6⟩ · dit
+⟨…⟩ » sur la dernière tablette — et trente fois, dans les registres de distribution,
+« après · nous · il-fallait ». Le lexique, l'infobulle et la concordance gardent l'infinitif :
+c'est le récit qui passe au passé, pas le dictionnaire. La table est indexée par le mot
+affiché, donc le verrou tient sous les deux lectures sans une ligne de plus — ⟨il-faut⟩ lu
+« on peut » devient « on pouvait » (règle 17). Ce qui change de temps s'allume à l'achat,
+comme un mot qu'on vient de lire. Aucun effet sur l'économie : c'est le dernier achat.
+
+### Ce qui n'est pas fait
+
+- **VOIX-2** (⟨toi⟩ réaffiche les passages déjà lus), **VOIX-3** (les Questions), et la zone
+  d'interface de la Personne, « le journal » — qui est en français depuis t = 0 (écart
+  assumé n° 7).
+- Le sous-titre et la carte de fin disent toujours « actes I à III » : l'acte IV n'est qu'à
+  moitié là.
+
+`outils/balayage.py`, fenêtre de durée re-basée à **(95, 124)** : 42 combinaisons sur 54 passent,
+contre 34 avant ce lot. Le réglage en place donne 97,8–122,2 min sur ses douze variantes
+(trois cadences, deux lectures, avec et sans Élève), écart max **5,8 min** — c'est le joueur
+sans Élève, dont les six signes de la Personne s'espacent le plus —, main ≥ 18 % des
+occurrences, pire tranche hors ouverture 25 %. `outils/verifier.py` passe de 315 à
+**330 assertions**.
+
+## L'Élève tranche à ma place
+
+*12/10/2026, ELV-1 + ELV-2, sur la branche `eleve` — **à ne pas fusionner avant le retour du
+journal de PT11*** (`docs/pt11-protocole.md` §5). Septième instrument, dernier morceau de J2.
+Aucun playtest derrière ces chiffres : c'est un réglage de simulateur.
+
+### Ce que « déchiffre tout seul » veut dire
+
+Le design doc §5 tient en une phrase — « il multiplie tout, mais il déchiffre aussi tout
+seul, et il se trompe » — et le backlog n'avait pas de « fini quand » pour ELV-1. Trois
+lectures tenaient :
+
+| | Ce que fait l'Élève | Pourquoi non, ou oui |
+|---|---|---|
+| **Il tranche à l'achat** | le joueur paie le signe en Certitude ; dès le premier Élève, un signe ambigu n'offre plus ses deux lectures | **retenu** |
+| Il relit ce qui est acquis | il re-tranche au fil du temps les signes déjà lus | il écrase des choix du joueur (R2), et un Élève seul et soigneux ferait des révisions gratuites — CONTR-3 par terre |
+| Il acquiert des signes | il avance seul sur l'arbre, sans Certitude | c'est « acheter de la compréhension avec du volume », la règle du §4 ; et il déplace I4, la durée, le dégagement et la Grammaire d'un coup |
+
+La première ne casse rien : la règle du §4 tient, le rythme des signes ne bouge pas, et
+**l'erreur de l'Élève est une lecture** — posée dans `S_.lect` comme celle du joueur, donc la
+dette s'en déduit, la prime silencieuse s'y applique, la contradiction s'en solde et `faux`
+en allume les lignes, sans une ligne de comptabilité neuve (règle 18, corollaire).
+
+### Ce qu'un multiplicateur global déplace, et ce qu'il ne déplace pas
+
+Balayé sur 36 combinaisons de `elv_p` × `elv_b` × `elv_r`, trois cadences, Élèves qui lisent
+juste et Élèves qui lisent faux. **Aucune ne touche la pire tranche d'I6 ni l'écart max.** La
+pire tranche est 20-30′ (26 %) et l'Élève n'ouvre qu'avec la première Grammaire, à la 48ᵉ
+minute ; l'écart max (5,2 min) est celui de `siècle`, que rien ne rapproche. Un multiplicateur
+global ne fait que **raccourcir**, et les trois constantes ne règlent que deux choses : de
+combien, et combien on en empile.
+
+- `elv_p` — **0,05**. À 0,08 sept Élèves font gagner onze minutes, et sept Élèves qui lisent
+  tout faux finissent *avant* le joueur qui n'en a aucun : il n'y a plus d'arbitrage. À 0,15
+  la main monte à 46 % des occurrences, au-dessus du plafond de 40 %.
+- `elv_b` — **20 000**. Le premier Élève tombe 1,2 à 1,3 min après la première Grammaire
+  (I3 : ~90 s). À 60 000 il arrive après ⟨avant⟩, ses erreurs ne pèsent plus que quatre
+  points, la contradiction ne s'arme pas — et se tromper **paie** (85,9 min contre 87,1, mesuré à
+  `elv_p` 0,04).
+- `elv_r` — **1,8**, seul levier sur leur nombre (la leçon de `REC_R`, une fois de plus) :
+  sept à 1,8, dix à 1,4, quatre à 2,5.
+- `elv_e` — **0,15** pour un Élève seul, `1 − 0,85ⁿ` pour n : 28 % à deux, 48 % à quatre,
+  68 % à sept. Un Élève seul lit mieux que pile ou face ; c'est en les empilant qu'on se
+  trompe.
+
+Il ne multiplie **pas le relevé** : la main suit déjà le débit par son tarif (règle 9), et sa
+part monte d'elle-même de 22-27 % à 21-31 %.
+
+### L'arbitrage, mesuré
+
+Joueur qui lisait juste jusque-là et ne révise jamais (`python outils/sim.py`) :
+
+| Élèves | ils lisent juste | ils lisent faux | erreur à ⟨avant⟩ · ⟨ne-pas⟩ · ⟨lire⟩ |
+|---|---|---|---|
+| 0 | 91,1–94,3 min | — | — |
+| 1 | 89,1–92,3 | **99,5–102,6**, armée | 15 · 15 · 15 % |
+| 2 | 87,4–90,6 | 97,3–100,4, armée | 28 · 28 · 28 % |
+| 4 | 85,0–88,3 | 94,1–97,3, armée | 28 · 39 · 48 % |
+| 7 | **84,2–87,6** | 92,6–95,9, armée | 28 · 39 · 48 % |
+
+Sept Élèves font gagner 6,8 min s'ils lisent juste et en coûtent 1,5 s'ils lisent faux.
+⟨avant⟩, ⟨ne-pas⟩ et ⟨lire⟩ pèsent 2 + 3 + 1 = **six points**, un de plus que le seuil : les
+trois erreurs de l'Élève arment la contradiction à elles seules, sur un joueur qui n'en avait
+commis aucune. Et **un seul Élève qui se trompe est le pire cas du tableau** — la sanction
+entière pour 5 % de débit. C'est le résultat de CONTR-1 par l'autre bout : le pire n'est pas
+celui qui se trompe le plus, c'est celui qui paie la peine sans la prime.
+
+### Ce qui ne se voit pas, et pourquoi
+
+- **Le taux d'erreur ne s'affiche nulle part.** La ligne de l'instrument dit « +5 % aux
+  autres · déchiffre seul » et ne chiffre que la première moitié. ELV-2 dit « découvrir » :
+  que ce soit parfois faux se lit dans le texte, comme tout le reste (règle 17).
+- **Le doute d'un signe lu par l'Élève vaut cent, à un Élève comme à sept.** Le doute dit
+  l'aveuglement du joueur au moment de trancher, et il n'a rien tranché. L'indexer sur le
+  taux d'erreur en ferait un oracle chiffré ; à cent, il est identique pour la lecture juste
+  et pour la fausse (règle 18), et ces signes-là montent en tête du panneau — là où un joueur
+  qui ne lit pas dépensera ses révisions. La révision, elle, reste au joueur : elle rouvre
+  les deux lectures et recalcule son doute à lui.
+- **Une ligne de journal dit qui a lu** — « Un élève l'avait déjà recopié au propre. » — et
+  rien de la lecture. Sans elle, le joueur qui avait vu la fenêtre des deux mots lirait son
+  absence comme une panne.
+- **Le dé est jeté à l'achat, jamais avant.** Tiré d'avance et gardé en sauvegarde, il se
+  lirait dans le fichier.
+
+### Ce que le lot ne règle pas
+
+- **Lire soi-même coûte peu, dans le prototype.** Qui lit ⟨avant⟩ et ⟨ne-pas⟩ avant
+  d'engager son premier Élève finit en 85,0–88,4 min — **0,8 min** de plus que celui qui
+  empile tout de suite, pour cinq des six points de dette mis hors de portée. Les quatre
+  signes lus soi-même en coûtent 4,8. C'est cohérent avec « lire coûte moins cher que
+  chercher », mais c'est un arbitrage que le joueur informé gagne presque gratuitement : il
+  ne mord que sur celui qui ne sait pas, et le jeu ne le lui dira pas. Sur le jeu entier il
+  mordra autrement — ⟨semence⟩ et ⟨devenir⟩ sont à l'acte V, cent minutes plus loin, et
+  personne n'attendra jusque-là pour prendre un Élève.
+- **Quatre signes seulement lui échappent ici**, les cinq premiers ambigus étant lus avant
+  la 48ᵉ minute. Et ⟨il-faut⟩ vient après `peut-être` : son erreur court dans la dette mais
+  **n'arme jamais rien** dans le prototype, où la contradiction ne se solde qu'à l'ouverture
+  du doute (règle 19).
+- **L'acheteur simulé empile sans réfléchir**, comme il recoupe « tant que c'est rentable ».
+  Combien d'Élèves prend un joueur, et s'il relie le mot faux à l'Élève plutôt qu'à lui-même,
+  aucun simulateur ne le dira.
+- **La question de PT11 « combien de lectures fausses sur neuf » ne vaudra plus que pour les
+  signes que le joueur a lus lui-même.** Le journal d'actions marque donc chaque achat lu par
+  l'Élève (`· élève 3`), et `depouiller.py` compte les deux à part, avec le nombre d'erreurs
+  attendu.
+
+Garde-fou de durée re-basé à **(76, 96)**, par le bas seulement, et `balayage.py` gagne un
+axe — avec et sans Élève : 34 combinaisons sur 54, comme avant. `outils/verifier.py` passe de
+297 à **315 assertions**.
 
 ## La carte de fin soufflait la réponse
 
@@ -2937,6 +4072,7 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
 | Concordance | 450 occ., ×1,18, −0,5 hyp./s → +0,0039 cert./s |
 | Atelier de copie | 1 800 occ., ×1,15, +25 occ./s |
 | Grammaire *(acte III)* | 12 000 occ., ×1,20, −3 hyp./s → +0,0012 × 1,16^lexique cert./s. Fermée jusqu'à `année` |
+| Élève *(acte III)* | 20 000 occ., **×1,80**, +5 % à ce que rendent les cinq autres instruments, rien au relevé. Ouvert par la première Grammaire. Dès le premier, un signe ambigu est lu par lui : faux `1 − 0,85ⁿ` fois, doute 100 *(12/10/2026)* |
 | Hors ligne *(acte III)* | `nuit` : 40 % du débit, 4 h au plus, consommé au crédit |
 | Composer *(acte III)* | deux signes acquis, dans l'ordre. Ouvert par `année`. Réussite : le coût normal du glyphe en Certitude. Échec : 250 hyp. ×1,40 par paire déjà tentée, **jamais de Certitude**, et la paire entre au carnet |
 | Signes (27) | Nombre 2 · 5 · 11 · 18 · 33 · 110 — Matière 3 · 6 · 14 · 22 · 40 — Parole 8 · 27 · 48 · 300 · 600 · 900 — Temps 60 · 130 · 190 · 260 · 360 · 500 — Modalité **150 · 320 · 550 · 800** = **5 467 C** *(12/09/2026)* |

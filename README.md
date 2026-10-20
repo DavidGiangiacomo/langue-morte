@@ -2,7 +2,7 @@
 
 Un jeu incrémental où l'interface est illisible au départ. Chaque signe déchiffré rend une zone d'écran lisible et débloque des mécaniques qu'on ne soupçonnait pas. Le corpus — trente tablettes d'un peuple disparu — se traduit sous les yeux du joueur, et finit par expliquer pourquoi ce peuple a disparu.
 
-Prototype jouable des **actes I à III** : 30 signes sur 45, et le corpus complet — 30 tablettes, 705 lignes, 3 838 signes.
+Prototype jouable des **cinq actes** : les 43 signes de l'arbre et deux composés qu'aucune branche n'offre, le corpus complet — 30 tablettes, 705 lignes, 3 838 signes —, deux fins et une relecture. Une partie dure de deux heures à deux heures quarante au simulateur.
 
 ## Jouer
 
@@ -51,7 +51,7 @@ pip install playwright && playwright install chromium
 python build.py && python outils/verifier.py
 ```
 
-297 assertions bout en bout, en vingt-six sections : absence d'erreur JS, rendu complet du corpus, échelle de la numération signe par signe, infobulles, gisement et tarif du relevé, recoupement, datation et rangement chronologique, concordance, composition, ambiguïté, doute, révision, contradiction et passages rompus, progression hors ligne, fenêtre de fin, reprise d'une sauvegarde commencée avant une mécanique neuve, ce que le panneau de composition dit de lui-même, et ce que chacun des trois builds n'a pas. Chaque mécanique ajoutée doit y ajouter les siennes.
+444 assertions bout en bout, en trente-cinq sections : absence d'erreur JS, rendu complet du corpus, échelle de la numération signe par signe, infobulles, gisement et tarif du relevé, recoupement, datation et rangement chronologique, concordance, composition, ambiguïté, doute, révision, contradiction et passages rompus, l'Élève qui tranche à la place du joueur, la branche Personne et le franchissement d'acte, les Questions, le Corpus jumeau, la branche Fin et son dernier signe, le Lecteur, les deux fins et la relecture, les nombres du joueur au million, la sanction aux actes IV et V, progression hors ligne, reprise d'une sauvegarde commencée avant une mécanique neuve, sa migration d'une version à l'autre, ce que le panneau de composition dit de lui-même, et ce que chacun des builds n'a pas. Chaque mécanique ajoutée doit y ajouter les siennes.
 
 ## Équilibrer
 
@@ -76,4 +76,5 @@ python outils/balayage.py   # une grille de constantes, filtrée sur les garde-f
 | `docs/corpus.md` | les 30 tablettes, le lexique de 45 signes, les règles de génération, les signes ambigus |
 | `docs/journal.md` | les neuf playtests, les défauts trouvés, les décisions prises et pourquoi |
 | `docs/backlog-1.0.md` | ce qui reste jusqu'à la 1.0 : onze épics, leurs dépendances, leur ordre |
+| `docs/pt11-protocole.md` | le prochain playtest : le message au joueur, le dépouillement, l'entretien |
 | `CLAUDE.md` | contexte et règles pour travailler sur le projet |

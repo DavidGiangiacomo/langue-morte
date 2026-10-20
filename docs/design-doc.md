@@ -67,6 +67,8 @@ Une zone d'UI devient lisible → nouvel outil → meilleur taux de relevé
 
 Règle structurante : **on n'achète jamais un instrument avec de la Certitude, et on n'achète jamais un signe avec autre chose.** Les deux économies ne se touchent que par le taux de conversion. C'est ce qui empêche d'acheter de la compréhension avec du volume.
 
+**Ce que « interroger le texte » veut dire** (posé le 19/10/2026, VOIX-3). La langue n'a pas d'interrogatif : une question est une condition — ⟨si⟩ et des signes qu'on sait lire —, et la réponse est ce que le corpus a gravé après, jamais un mot écrit pour l'occasion. Le texte répond ainsi à des questions que personne n'a posées : « si toi lire » rend « nous ne-pas finir ». **Les questions naissent de ce qui déborde** : la Certitude s'arrête à 9 999 (I1 devient une règle du jeu), et à partir de ⟨toi⟩ le surplus fait des questions, 4 000 chacune, douze sur la partie. Une réponse ouvre les mots de la fin qu'elle porte — ⟨finir⟩, ⟨devenir⟩, ⟨germer⟩ —, et ils se paient en Certitude comme les autres : la règle structurante tient, la question donne l'accès et non la compréhension. Voir `docs/note-questions.md`.
+
 ---
 
 ## 5. Instruments
@@ -85,9 +87,17 @@ Les générateurs ne sont pas des bâtiments : ce sont des **méthodes philologi
 | 8 | **Corpus jumeau** | une deuxième inscription est trouvée | IV |
 | 9 | **Le Lecteur** | acheté avant qu'on sache ce que c'est. On découvre à l'acte V que ce n'est pas un instrument : c'est le corpus qui a commencé à lire. | V |
 
-*(Valeurs numériques : voir `docs/journal.md` § Réglages actuels pour les 1 à 6, qui sont implémentés et équilibrés sur sept playtests. La Grammaire est arrivée avec l'acte III ; l'Élève attend les lectures fausses de l'acte IV, sans lesquelles son taux d'erreur n'a rien à fausser.)*
+*(Valeurs numériques : voir `docs/journal.md` § Réglages actuels pour les 1 à 6, qui sont implémentés et équilibrés sur sept playtests. La Grammaire est arrivée avec l'acte III ; l'Élève a attendu les lectures fausses, sans lesquelles son taux d'erreur n'avait rien à fausser.)*
+
+**La Grammaire s'arrête aux mots de la fin** (posé le 19/10/2026, VOIX-3). Elle croît avec le lexique jusqu'à la Personne, et plus ensuite : une fois les verbes et les personnes connus, la grammaire est complète, et c'est l'ordre que la tablette 28 donne au programme. Sans ce gel, l'acte V n'a plus de rythme sous le plafond de quatre chiffres ; avec lui et les questions, I4 tient.
+
+**Ce qu'est le Corpus jumeau** (posé le 19/10/2026, VOIX-4). Une copie, pas un bilingue — la fiction n'en a pas : l'exemplaire que la tablette 23 annonçait, « si copier 100 · un devenir ». Le même texte, signe pour signe, donc rien de neuf à lire et tout à relever de nouveau : chaque tablette rouvre la moitié de son gisement, tarifée au débit du moment où l'on y revient. Un seul exemplaire. C'est lui qui ramène la main dans le corpus à l'acte IV.
+
+**Ce que le Lecteur fait** (posé le 19/10/2026, GRAINE-2). Il ne produit rien : il lit le corpus tout seul, une tablette par minute et par Lecteur, et chaque tablette lue remplit un peu la question suivante. Rien ne le décrit — ni nom français, ni ligne d'effet : son nom est le signe ⟨devenir-lecture⟩, qu'on ne lit qu'au dernier achat. On le voit faire, une tablette marquée après l'autre, et la tablette 27 dit ce qu'il était : « tablette · devenir-lecture ». Il comble les attentes de question de l'acte V, ce qui le rend plus régulier.
 
 **L'Élève** est le premier générateur *ambivalent*. Il multiplie tout, mais il déchiffre aussi tout seul, et il se trompe. Le joueur qui empile les Élèves déchiffre vite et faux. C'est l'arbitrage central de la seconde moitié du jeu.
+
+**Ce que « déchiffre tout seul » veut dire** (posé le 12/10/2026, ELV-2). Il **tranche à l'achat** : le joueur paie toujours chaque signe en Certitude — la règle du §4 tient — mais dès le premier Élève, un signe ambigu n'offre plus ses deux lectures. Il a déjà été recopié au propre, faux d'autant plus souvent qu'on a empilé d'Élèves. Son erreur est une lecture comme une autre : même dette, même prime silencieuse, même contradiction (§8). Le taux ne s'affiche jamais, et le doute de ces signes est entier — le joueur n'a rien tranché. Qui veut lire lui-même lit avant d'engager le premier, et retarde ce qu'il rapporte.
 
 ---
 
@@ -113,7 +123,7 @@ Le détail des 45 signes est dans `docs/corpus.md` §2. Effets notables :
 - **Temps** — `nuit` débloque la progression hors-ligne (le corpus « se lit la nuit ») ; `avant`/`après` permettent de dater les tablettes, donc de les **ordonner** — le corpus se réorganise chronologiquement à l'écran et des passages jusque-là absurdes prennent sens.
 - **Modalité** — ouvre le système de confiance. Avant `peut-être`, le jeu ne dit jamais qu'une lecture est incertaine : le joueur croit tout ce qu'il achète. `faux` allume rétroactivement les passages où la lecture ne se construit pas — **il ne nomme aucun signe**, sans quoi le §11 ne pourrait pas promettre des erreurs « jamais détectées » à la relecture de fin. Le pic de malaise du jeu. *(Précisé le 15/09/2026, MOD-3.)*
 - **Personne** — `toi` révèle que tout le corpus est à la deuxième personne. Débloque les **Questions**. `nous-fûmes` verrouille le récit au passé, y compris les passages déjà lus.
-- **Fin** — `devenir-lecture` est le dernier signe et la clé de tout. Un joueur qui a `lire` et `devenir` peut le **composer lui-même** avant que le récit ne l'y amène, et griller la révélation de vitesse. C'est voulu.
+- **Fin** — `devenir-lecture` est le dernier signe et la clé de tout. Un joueur qui a `lire` et `devenir` peut le **composer lui-même** avant que le récit ne l'y amène, et griller la révélation de vitesse. C'est voulu. *(Posé le 19/10/2026, GRAINE-1 : il compte dans l'arbre, et le lexique ne l'offre que quand tout le reste est lu. ⟨finir⟩, ⟨devenir⟩ et ⟨germer⟩ ne s'y offrent qu'une fois qu'une question les a fait répondre au texte ; tous les signes de la Fin sont au plafond de quatre chiffres, et ce sont les questions qui espacent l'acte.)*
 
 ---
 
@@ -126,7 +136,7 @@ Le détail des 45 signes est dans `docs/corpus.md` §2. Effets notables :
 - **17 des 45 signes sont des composés** (table `COMP` dans `src/signes.js`), et ils sont dessinés comme composés dès le premier écran : le joueur voit ⟨maison⟩ et ⟨grain⟩ dans ⟨grenier⟩ bien avant de pouvoir composer quoi que ce soit.
 - **3 ne sont accessibles que par composition** et ne sont jamais offerts par la progression : `zéro` (= `ne-pas` + `un`), `grenier`, `devenir-lecture`.
 
-`zéro` est l'exemple canonique : un signe de la branche Nombre qui se compose avec un signe de la branche Modalité, deux actes plus tard. Il donne rétroactivement la notation compacte des grands nombres. Le joueur qui le trouve seul comprend, à ce moment précis, que ce peuple a *inventé* le zéro — et qu'il regardait ce signe dans ses propres compteurs depuis la première seconde de jeu sans le savoir.
+`zéro` est l'exemple canonique : un signe de la branche Nombre qui se compose avec un signe de la branche Modalité, deux actes plus tard. Il donne rétroactivement la notation compacte des grands nombres. *(Aux actes I à III elle est celle de `cent`, que tout le monde achète ; à l'acte IV, quand les nombres du joueur passent au million et que leurs zéros s'écrivent en signes, c'est lui qui la rend — VOIX-5, 20/10/2026.)* Le joueur qui le trouve seul comprend, à ce moment précis, que ce peuple a *inventé* le zéro — et qu'il regardait ce signe dans ses propres compteurs depuis la première seconde de jeu sans le savoir.
 
 C'est le système qui fait la différence entre ce jeu et un Cookie Clicker rethématisé : il y a un espace de découverte que le jeu ne guide pas.
 
@@ -146,7 +156,7 @@ Le piège est délibéré : se tromper *paie mieux à court terme*. C'est du bia
 
 **Les +25 % ne s'affichent jamais** (posé le 15/09/2026, AMB-1). Les deux lectures portent le même prix et la même ligne d'effet : deux chiffres différents feraient de la prime un oracle — « prends toujours le plus gros » — et les onze signes ambigus deviendraient onze péages. La prime porte sur le bonus du signe et non sur l'instrument (+30 % devient +37,5 %), et un signe qui ne multiplie rien ne gagne rien à être mal lu. Conséquence, et elle vaut mieux que ce qui était prévu : **la prime ne décide rien à l'achat, elle mord à la révision.** Corriger une lecture coûtera le prix *et* le quart du débit qu'elle rendait. L'optimum local n'est pas dans le choix, il est dans le refus de le défaire. Mesuré : se tromper sur les neuf signes ambigus de l'acte III fait gagner cinq minutes et demie sur quatre-vingt-dix, soit 6 %.
 
-**Contradiction** — au franchissement de chaque acte, si dette > seuil, un passage refuse de se résoudre : la production de C est divisée par deux jusqu'à révision. On ne perd jamais de progression, seulement du débit.
+**Contradiction** — au franchissement de chaque acte, si dette > seuil, un passage refuse de se résoudre : la production de C est divisée par deux jusqu'à révision. On ne perd jamais de progression, seulement du débit. *(Depuis le 20/10/2026, ECO-3 : par deux à l'acte III, d'un cinquième aux actes IV et V — où tout se paie en Certitude au plafond, et où le ÷2 doublait tout ce qui restait —, et les Élèves ne rendent plus leur bonus tant qu'elle court.)*
 
 **Ce que le franchissement veut dire** (posé le 15/09/2026, CONTR-1). La contradiction s'évalue à chaque franchissement d'acte **à partir de `peut-être`** : avant lui le jeu n'admet pas qu'une lecture puisse être fausse, et une sanction sans remède ni explication se lirait comme une panne. Le seuil est **5** sur une dette qui va de 0 (lecture parfaite) à 18 (tout faux), et il est calé sur des profils réels : un lecteur qui ne rate que les deux signes conçus pour ne pas casser pèse 3 et passe ; la paire réparante pèse 6 et déclenche, comme le §7.3 l'exigeait. Le passage qui refuse est **fixe** et ne dépend jamais des signes mal lus — le choisir d'après l'erreur la désignerait. L'état est nommé sans ambiguïté, y compris ce qu'il ne veut pas dire : le passage retenu n'est pas celui qui est en cause. Et « on ne perd que du débit » est littéral — le passage refuse de se *résoudre*, il ne devient pas illisible : les mesures de lisibilité ne bougent pas. Mesuré : se tromper partout faisait gagner 5,5 min, il en coûte 11 de plus ; et le pire cas du jeu n'est pas « tout faux » mais **la paire réparante**, qui prend la sanction entière avec la prime de deux signes seulement.
 
@@ -176,10 +186,10 @@ Le piège est délibéré : se tromper *paie mieux à court terme*. C'est du bia
 
 ### Invariants
 
-- **I1** — La Certitude ne dépasse jamais 4 chiffres à l'écran.
-- **I2** — Pas de notation scientifique avant l'acte IV. Quand elle apparaît, elle apparaît **d'abord en signes non déchiffrés** : le joueur perd la lisibilité de ses propres nombres au moment où ils deviennent énormes.
+- **I1** — La Certitude ne dépasse jamais 4 chiffres à l'écran. *Depuis VOIX-3 (19/10/2026), c'est une règle et non plus une contrainte d'équilibrage : elle s'arrête à 9 999, et ce qui déborde devient question (§4).*
+- **I2** — Pas de notation scientifique avant l'acte IV. Quand elle apparaît, elle apparaît **d'abord en signes non déchiffrés** : le joueur perd la lisibilité de ses propres nombres au moment où ils deviennent énormes. *Posé le 20/10/2026 (VOIX-5) : au million, une fois l'acte IV ouvert, trois chiffres restent au joueur et les zéros qui suivent s'écrivent du tracé de ⟨zéro⟩ ; ⟨zéro⟩, posé à la grille, rend la notation compacte. Le prototype n'affiche jamais plus de cinq millions — le ~10¹⁰ du §1 est ce que la partie produit, pas ce qu'elle montre.*
 - **I3** — Chaque nouveau palier d'instrument devient abordable ~90 s après le premier achat du palier précédent.
-- **I4** — Un signe toutes les 4 à 6 min en moyenne ; **jamais plus de 8 min sans déblocage**.
+- **I4** — Un signe toutes les 4 à 6 min en moyenne ; **jamais plus de 8 min sans déblocage**. *Précisé le 20/10/2026 (ECO-3) : la borne haute vaut pour tous les joueurs, contradiction comprise ; la borne basse se mesure sur le joueur sans Élève — l'Élève est l'instrument qui achète du temps, et avec lui les actes IV et V tiennent 3 à 3,6 min par signe.*
 - ~~**I5** — Le pourcentage de corpus lisible progresse quasi linéairement.~~ **RETIRÉ.** Mesuré faux : les signes se déchiffrent front-chargé (la masse administrative tombe tôt), les lignes entières back-chargé (le sens ne se complète qu'à la fin). L'écart entre les deux *est* le propos du jeu. Le jeu affiche les deux mesures et n'en lisse aucune.
 
 **Invariant ajouté après les playtests 1 et 2 :**
@@ -217,7 +227,11 @@ Un dernier signe reste à l'écran. Deux boutons :
 
 Aucune n'est présentée comme la bonne. Le jeu n'attribue pas de score.
 
+**Ce qui est posé** (19/10/2026, FIN-1 et FIN-2). Les deux boutons s'ouvrent sur le dernier signe de l'arbre qui manque, quel qu'il soit, au lexique comme à la grille, et seulement quand on peut le payer : interrompre est un refus, pas le repli de qui ne peut pas achever. Même habit, ordre tiré au sort, et la fenêtre dit que la partie s'arrête dans les deux cas. Après l'une ou l'autre il ne reste qu'un bouton, « recommencer » — plus de carte de statistiques, qui était un score. Le texte interrompu reste à l'écran ; le texte achevé s'efface. Et « entièrement en français » ne vaut que pour ce que le joueur a lu : les noms propres ne se déchiffrent jamais, et un composé secret jamais trouvé reste en signes — c'est à la relecture de tout rendre.
+
 **Relecture (NG+)** — après *Achever*, une option « relire » : le corpus est intégralement lisible dès le départ, et le jeu **surligne toutes les erreurs de traduction de la première partie**, y compris celles jamais détectées. Vingt minutes, sans mécanique. Ce n'est pas un prestige, c'est un épilogue. Coût de production quasi nul, valeur émotionnelle importante.
+
+**Ce qui est posé** (19/10/2026, FIN-3). Le texte s'écrit juste, et la faute se marque sur le jeton — ce que la partie interdisait, parce que c'eût été l'oracle, et que le livre fermé permet. Trois marques : mal lu (resté faux à la fin), mal lu puis corrigé (une révision l'avait rendu), jamais trouvé (un composé secret que personne n'a posé). Le survol dit le mot lu et qui l'avait lu, le joueur ou un Élève ; une légende nomme les marques et ne compte rien. C'est là, et là seulement, que la paire réparante est avouée.
 
 ---
 

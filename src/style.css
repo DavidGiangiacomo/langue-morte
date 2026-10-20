@@ -107,6 +107,8 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 /* Le signe relevé garde une marque : sur une tablette, on voit d'un coup d'œil le terrain
    déjà parcouru. Discret — c'est une note de travail, pas une décoration. */
 .tok.rel{box-shadow:inset 0 -1px 0 var(--ochre-d)}
+/* relevé sur l'original et sur la copie du Corpus jumeau (VOIX-4) */
+.tok.rel2{box-shadow:inset 0 -2px 0 var(--ochre-d)}
 .tok.g.rel{opacity:.62}
 .tok.flash{animation:flash .85s ease}
 @keyframes flash{0%{background:var(--ochre);color:#14100C}55%{background:#5A3A1A;color:var(--lamp)}100%{background:transparent}}
@@ -118,6 +120,10 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .tablet[hidden]{display:none}
 .numgl{display:inline-flex;gap:2px;align-items:center;color:var(--faint)}
 .numgl .gl{width:11px;height:15px}
+/* I2 : les zéros d'un grand nombre, collés aux chiffres qu'ils prolongent (VOIX-5) — dans
+   la couleur du nombre et non dans celle des glyphes inertes : ils en font partie, et c'est
+   le nombre du joueur qui change d'écriture, pas un signe qui s'ajoute à côté. */
+.numgl.zeros{margin-left:1px;vertical-align:-2px;color:inherit;opacity:.8}
 
 .log{border-top:1px solid var(--line);padding:9px 16px;min-height:52px;display:flex;flex-direction:column;gap:3px;justify-content:center}
 .log p{margin:0;font-size:14.5px;font-style:italic;color:var(--mid)}
@@ -202,6 +208,34 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .cpair{display:inline-flex;opacity:.38;color:var(--dim)}
 .cpair .gl2{width:24px;height:18px}
 
+/* ---------- les Questions ---------- */
+/* La règle du panneau, en mono comme une note d'instrument : elle dit d'où viennent les
+   questions, jamais ce qu'il y a à demander. */
+.qregle{font-family:var(--mono);font-size:9.5px;line-height:1.5;color:var(--dim);letter-spacing:.02em}
+.qjauge{height:2px;background:var(--line);position:relative;overflow:hidden}
+.qjauge i{position:absolute;inset:0 auto 0 0;background:var(--slate);opacity:.8;transition:width .3s}
+.qsi{font-size:16px;color:var(--lamp);min-width:22px;text-align:right}
+.qsi .gl{width:16px;height:21px;color:var(--dim)}
+.qreps{border-top:1px solid var(--line);padding-top:7px;display:flex;flex-direction:column;gap:3px}
+/* Une réponse est du texte ancien : elle s'écrit dans le serif du corpus, pas dans la mono
+   des instruments. */
+.qrep{display:flex;flex-direction:column;gap:1px;width:100%;text-align:left;padding:4px 7px;
+  border:1px solid transparent;border-radius:2px}
+.qrep:hover:not(:disabled){background:#2C2318;border-color:var(--line)}
+.qrep.vu{border-color:var(--line2);background:#252D30}
+.qrep:disabled{cursor:default;opacity:.55}
+.qcond{font-size:13.5px;color:var(--mid)}
+.qsuites{display:flex;flex-direction:column;padding-left:12px}
+.qsuite{font-size:15px;color:var(--lamp)}
+.qrep .gl{width:13px;height:17px;vertical-align:-3px}
+.qrep .gl2{width:22px;height:17px;vertical-align:-3px}
+.qsep{color:var(--faint);padding:0 2px}
+.qrien{font-family:var(--mono);font-size:9.5px;color:var(--faint);letter-spacing:.04em}
+.qfois{font-family:var(--mono);font-size:9.5px;color:var(--slate);opacity:.8}
+/* Les lignes qui portent la réponse qu'on regarde. En bleu d'instrument et non en ocre : ce
+   n'est pas le texte qui se refuse (`.rompu`), c'est le panneau qui montre où il a répondu. */
+.ln.repondu{background:#1F2629;box-shadow:inset 2px 0 0 var(--slate)}
+
 /* ---------- lexique ---------- */
 .lex{padding:10px 11px;display:flex;flex-direction:column;gap:13px}
 .branch .bh{font-family:var(--mono);font-size:9.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-bottom:6px}
@@ -222,6 +256,9 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
 .gcard.afford .sig{color:var(--ochre)} .gcard.afford .cost{color:var(--ochre)} .gcard.afford .ttl{color:var(--lamp)}
 .gcard.afford:hover{background:#3B2C1B;border-color:var(--ochre)}
 .gcard.locked{opacity:.28;cursor:default}
+/* En tête de sa chaîne, mais le lexique attend autre chose que la Certitude : une réponse,
+   ou que tout le reste soit lu. Plus lisible qu'une carte lointaine, puisqu'elle dit sa règle. */
+.gcard.attend{opacity:.55;cursor:default}
 .gcard.done{border-color:transparent;background:transparent;cursor:default}
 .gcard.done .sig{color:var(--lamp)} .gcard.done .ttl{color:var(--lamp)}
 .gcard.done .cost{color:var(--faint)}
@@ -308,19 +345,45 @@ button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--ochre);out
   font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
 .ambcard .ghost:hover{color:var(--lamp);border-color:var(--line2)}
 
-.end{position:fixed;inset:0;z-index:50;background:rgba(12,9,6,.93);display:flex;align-items:center;justify-content:center;padding:24px}
-.end[hidden]{display:none}
-.endcard{max-width:620px;background:var(--clay);border:1px solid var(--line2);border-radius:3px;padding:30px 34px}
-.endcard h2{font-size:24px;font-weight:600;margin:0 0 4px;letter-spacing:.04em}
-.endcard .k{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-bottom:18px}
-.endcard p{margin:0 0 13px;color:var(--mid);max-width:60ch}
-.endcard .quote{border-left:2px solid var(--ochre-d);padding-left:14px;font-style:italic;color:var(--lamp);font-size:17px}
-.endstats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px 20px;margin:20px 0;font-family:var(--mono);font-size:11px;color:var(--dim)}
-.endstats b{color:var(--lamp);font-weight:500;float:right;font-variant-numeric:tabular-nums}
-.endcard .go{border:1px solid var(--ochre-d);color:var(--ochre);padding:9px 18px;border-radius:2px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
-.endcard .go:hover{background:#33261A}
-.endacts{display:flex;align-items:center;gap:10px}
-.endcard .ghost{border:1px solid var(--line);color:var(--dim);padding:9px 14px;border-radius:2px;font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
-.endcard .ghost:hover{color:var(--lamp);border-color:var(--line2)}
+/* Le Lecteur (GRAINE-2) : ce qu'il a lu, et la ligne qu'il lit. Pas de légende : on le voit
+   faire. */
+.rail [data-go].parcourue{box-shadow:inset 0 2px 0 rgba(157,184,199,.55)}
+.tablet.parcourue{box-shadow:inset 2px 0 0 rgba(157,184,199,.28)}
+.ln.lecteur{background:rgba(157,184,199,.09);transition:background .8s ease}
+body.fin .tablet.parcourue{box-shadow:none}
+body.fin .ln.lecteur{background:none}
+
+/* Les deux fins : même habit, et le geste écrit sous le verbe. */
+.finschoix button b{display:block;font-weight:500}
+.finschoix button span{display:block;margin-top:5px;font-family:var(--mono);font-size:10px;letter-spacing:.08em;color:var(--dim)}
+
+/* Ce qui s'en va après les deux fins (FIN-1, FIN-2). Les délais viennent de `FIN_EFF`
+   (rendu.js), écrits sur chaque élément : la feuille ne porte que la durée d'un fondu. */
+.fin-x{transition:opacity 2.4s ease var(--fin-d,0s),visibility 0s linear calc(var(--fin-d,0s) + 2.4s)}
+body.fin .fin-x{opacity:0;visibility:hidden;pointer-events:none}
+.fin-cadre{transition:border-color 2.4s ease var(--fin-d,0s),background-color 2.4s ease var(--fin-d,0s)}
+body.fin .fin-cadre{border-color:transparent;background-color:transparent}
+.corpus-wrap.fin-cadre{transition:border-color 2.4s ease var(--fin-d,0s),background-color 2.4s ease var(--fin-d,0s),transform 3s ease}
+body.fin #corpus{cursor:default}
+body.fin-texte #corpus{opacity:0;visibility:hidden;
+  transition:opacity var(--fin-t,24s) ease,visibility 0s linear var(--fin-t,24s)}
+body.fin-sec .fin-x,body.fin-sec .fin-cadre,body.fin-sec #corpus{transition:none}
+.apres{position:fixed;left:0;right:0;bottom:30px;z-index:40;display:flex;justify-content:center;animation:apres 2.4s ease}
+.apres[hidden]{display:none}
+.apres .ghost{border:1px solid var(--line);color:var(--dim);background:var(--ink);padding:9px 16px;border-radius:2px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase}
+.apres .ghost:hover{color:var(--lamp);border-color:var(--line2)}
+@keyframes apres{from{opacity:0}to{opacity:1}}
+.apres{gap:10px;align-items:center}
+/* La relecture (FIN-3) : le texte revient, et trois marques sur les jetons. */
+body.relire #corpus{animation:apres 3s ease;max-height:calc(100vh - 190px)}
+.malu,.corrige,.jamais{border-radius:2px}
+.tok.malu,.legende .malu{background:rgba(214,140,70,.24);color:var(--lamp)}
+.tok.corrige,.legende .corrige{box-shadow:inset 0 -1px 0 var(--ochre)}
+.tok.jamais,.legende .jamais{color:var(--slate);box-shadow:inset 0 -1px 0 rgba(157,184,199,.5)}
+.tok.malu,.tok.corrige,.tok.jamais{cursor:help}
+.legende{display:flex;gap:14px;margin-right:8px;padding:6px 10px;background:var(--ink);
+  font-family:var(--serif);font-size:14px;color:var(--mid)}
+.legende span{padding:1px 4px}
 
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}

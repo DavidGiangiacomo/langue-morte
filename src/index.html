@@ -13,7 +13,7 @@
 <div class="shell">
   <header class="masthead">
     <h1>La langue morte</h1>
-    <span class="sub">prototype · actes I–III · <span class="ngl"></span> glyphes sur 45</span>
+    <span class="sub">prototype · actes I–V · <span class="ngl"></span> glyphes sur 45</span>
     <span class="spacer"></span>
     <!--#horsjeu-->
     <!-- La barre hors jeu. Ce que chaque build en garde se lit dans les marqueurs de
@@ -109,6 +109,31 @@
           <div class="carnet" id="carnet" hidden></div>
         </div>
       </section>
+
+      <!-- Les Questions (VOIX-3). Elles n'apparaissent qu'avec ⟨toi⟩ : on n'interroge pas un
+           texte avant de savoir qu'il s'adresse à quelqu'un. Une question est une condition —
+           ⟨si⟩ et des signes qu'on sait lire — et la réponse est ce que le corpus a gravé
+           après, jamais un mot écrit pour l'occasion. Le panneau dit sa propre règle (d'où
+           viennent les questions) et rien d'autre : ce qu'il y a à demander est au corpus. -->
+      <section class="panel" id="pquest" hidden>
+        <div class="phead"><span>Questions</span><span class="r" id="q-n"></span></div>
+        <div class="comp">
+          <div class="qregle" id="q-regle"></div>
+          <div class="qjauge" id="q-jauge-w"><i id="q-jauge"></i></div>
+          <div class="pose">
+            <span class="qsi" id="q-si"></span>
+            <button class="slot" data-qslot="0"></button>
+            <button class="slot" data-qslot="1"></button>
+            <button class="slot" data-qslot="2"></button>
+          </div>
+          <div class="palette">
+            <div class="ch">Ce que je sais lire</div>
+            <div class="choix" id="q-choix" aria-label="Ce que je sais lire. Cliquez pour l’ajouter à la question."></div>
+          </div>
+          <button class="act" id="a-quest"><span class="an">Demander au texte</span><span class="ac" id="ac-quest"></span></button>
+          <div class="qreps" id="q-reps" hidden></div>
+        </div>
+      </section>
     </div>
 
     <section class="panel">
@@ -135,24 +160,29 @@
     <button class="ghost" id="amb-annuler" title="échap — le signe reste à acheter">revenir au corpus</button>
   </div>
 </div>
-<!-- La carte de fin ne nomme rien de ce qu'il y avait à voir. Elle a porté jusqu'en PT10
-     « la seule question qui compte », celle de PT8 et PT9, et annonçait pour les actes IV
-     et V le doute et les contradictions : un joueur de PT11 aurait lu la réponse avant
-     l'entretien dont la question 5 est faite pour la laisser remonter sans la nommer, et
-     l'annonce démentait ce qu'il venait de jouer. Les questions sont au protocole, pas à
-     l'écran ; et rien ici n'annonce ce que les actes suivants révèlent. -->
-<div class="end" id="end" hidden>
-  <div class="endcard">
-    <h2>Fin du prototype</h2>
-    <div class="k">actes I à III · <span class="ngl"></span> glyphes sur 45</div>
-    <p class="quote" id="endquote">La dernière année. Elle n'a pas de nombre : après elle, personne n'a plus compté.</p>
-    <p>Le prototype s'arrête ici. La suite appartient aux actes IV et V.</p>
-    <div class="endstats" id="endstats"></div>
-    <div class="endacts">
-      <button class="go" id="again">recommencer</button>
-      <button class="ghost" id="fermer" title="échap — le corpus reste figé sur la partie terminée">revenir au corpus</button>
+<!-- Les deux fins (FIN-1, FIN-2). La fenêtre s'ouvre sur le dernier signe de l'arbre, quand
+     on peut le payer : le lire, ou le laisser non lu. Même habit pour les deux, ordre tiré au
+     sort — aucune n'est la bonne (design doc §11). Elle dit sa règle, et rien d'autre. -->
+<div class="amb" id="fins" hidden>
+  <div class="ambcard">
+    <div class="ambtete"><span class="ambsig" id="fins-sig"></span><span class="ambk">le dernier signe</span></div>
+    <div class="ambchoix finschoix" id="fins-choix">
+      <button data-fin="achever"><b>achever</b><span>le lire</span></button>
+      <button data-fin="interrompre"><b>interrompre</b><span>le laisser non lu</span></button>
     </div>
+    <div class="ambpied"><span>lu ou non, la partie s’arrête là</span><span id="fins-cost"></span></div>
+    <button class="ghost" id="fins-annuler" title="échap — le signe reste à lire">revenir au corpus</button>
   </div>
+</div>
+<!-- Ce qui reste après les deux fins : « recommencer », et « relire » après avoir achevé
+     (FIN-3). Ni carte, ni statistiques, ni score — et rien qui annonce ce que les actes
+     suivants révèlent : un écran de fin est lu avant l'entretien de playtest, il fait partie
+     du protocole. La légende n'apparaît qu'à la relecture : elle nomme ses trois marques, et
+     ne compte rien. -->
+<div class="apres" id="apres" hidden>
+  <span class="legende" id="legende" hidden><span class="malu">mal lu</span><span class="corrige">mal lu, puis corrigé</span><span class="jamais">jamais trouvé</span></span>
+  <button class="ghost" id="relire" hidden>relire</button>
+  <button class="ghost" id="again">recommencer</button>
 </div>
 
 <script src="signes.js"></script>
