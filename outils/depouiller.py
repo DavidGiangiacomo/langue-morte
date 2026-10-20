@@ -28,6 +28,7 @@ une composition ne disait pas son issue : ce qui peut se reconstituer l'est, et 
 annoncé comme manquant plutôt que compté pour zéro.
 """
 import math
+import pathlib
 import re
 import sys
 
@@ -40,6 +41,10 @@ BRANCHE = {g[0]: g[1] for g in sim.GL}
 COUT = {g[0]: g[2] for g in sim.GL}
 GIS = {t: -(-n // P['gis_div']) for t, n in sim.JETONS.items()}
 GIS_TOTAL = sum(GIS.values())
+# Le mot juste de chaque signe, lu dans lexique.js comme le reste : pour nommer un signe dans
+# le rapport sans en tenir une copie ici.
+_lex = (pathlib.Path(__file__).parent.parent / 'src' / 'lexique.js').read_text(encoding='utf-8')
+MOT = dict(re.findall(r"\{id:'(\w+)',\s*br:'\w+',[^}]*?mot:'([^']+)'", _lex))
 
 # genres d'événement qui se passent DANS le corpus (règle 8 : c'est là que se joue la
 # différence entre ce jeu et un incrémental habillé, donc c'est ça qu'on mesure)
@@ -135,7 +140,8 @@ class Rejeu:
                  recs=[], comps=[], concs=[], navs=[], revs=[], achats=[], etats=[],
                  couts_t=[], main_t=[], contr=None, contr_levee=None,
                  finjeu=None, fin=None, gis_fichier=None, eleve={}, toi=None, questions=[],
-                 fins=[], interrompu=None, relu=None, zeros=None)
+                 fins=[], interrompu=None, relu=None, zeros=None,
+                 reprises=[], copie_tb={}, elv_achats=[], lec=[], lues=[])
         prev_t = self.ev[0][0]
         for t, genre, det in self.ev:
             s['o_auto'] += self.obrut() * max(0.0, t - prev_t)
@@ -156,6 +162,7 @@ class Rejeu:
                         self.prixJ[tb] = (1 + P['click_share'] * self.obrut()) * self.m['click']()
                     s['o_main'] += self.prixJ[tb]
                     s['relev'] += 1; s['copie'] += 1
+                    s['copie_tb'][tb] = s['copie_tb'].get(tb, 0) + 1
                 elif self.rel.get(tb, 0) < GIS.get(tb, 0):
                     if tb not in self.prix:
                         self.prix[tb] = (1 + P['click_share'] * self.obrut()) * self.m['click']()
@@ -173,6 +180,19 @@ class Rejeu:
                 m = RE_INS.match(det)
                 if m:
                     self.b[m.group(1)] = int(m.group(2))
+                    # Le premier Élève et le premier Lecteur se datent : le protocole de PT11
+                    # demande quand, et avant ou après quels signes.
+                    if m.group(1) in ('elv', 'lec'):
+                        s['elv_achats' if m.group(1) == 'elv' else 'lec'].append((t, int(m.group(2))))
+
+            # Une coupure entre deux séances (PT11 se joue en deux fois au plus) : avant ⟨nuit⟩
+            # rien d'autre ne la marque, et le chrono, qui est du temps de jeu, l'efface.
+            elif genre == 'reprise':
+                s['reprises'].append((t, det))
+
+            # Les tablettes que le Lecteur a fini de lire (GRAINE-2), et à quelle minute.
+            elif genre == 'lireCorpus':
+                s['lues'].append((t, [int(x) for x in re.findall(r'\d+', det.split(' ·')[0])]))
 
             elif genre == 'acheterGl':
                 m = RE_GL.match(det)
@@ -408,6 +428,25 @@ def rapport(ev, nom):
         print('    les instants de ce journal sont des secondes de JEU et non de montre ;')
         print('    tout ce qui suit se lit comme tel, y compris les tranches de dix minutes')
 
+    # La coupure entre deux séances, et ce qu'elle a duré à l'horloge. Le chrono du journal
+    # est du temps de jeu : sans cette ligne, deux séances se liraient comme une seule.
+    if s['reprises']:
+        for t, det in s['reprises']:
+            print('  coupure : reprise à %s, %s' % (mmss(t), det))
+    else:
+        print('  aucune coupure : la partie s\'est jouée d\'une traite')
+    # I4 : jamais plus de huit minutes sans déblocage. Les attentes se comptent entre deux
+    # signes de l'arbre, en temps de jeu — une coupure n'en est pas une.
+    arbre = sorted((t, g) for t, g, _, _, _, _ in s['achats'] if g not in sim.SECRETS)
+    longues = [(arbre[i][0] - arbre[i - 1][0], arbre[i - 1][0], arbre[i][1])
+               for i in range(1, len(arbre)) if arbre[i][0] - arbre[i - 1][0] > 480]
+    if longues:
+        print('  attentes de plus de 8 min sans déblocage (I4) :')
+        for d, a, g in longues:
+            print('    %4.1f min — de %s à ⟨%s⟩' % (d / 60, mmss(a), MOT.get(g, g)))
+    elif len(arbre) > 1:
+        print('  aucune attente de plus de 8 min entre deux signes (I4 tenu)')
+
     titre('les deux gestes du corpus (règle 8)')
     tot_rel = s['relev'] + s['vides']
     print('  relevés %d — %d utiles, %d à vide (%.0f %%) · gisement %d / %d'
@@ -416,6 +455,15 @@ def rapport(ev, nom):
     if s['copie']:
         print('  dont %d sur la copie du Corpus jumeau (VOIX-4), chacune tarifée à son premier relevé'
               % s['copie'])
+        print('    tablettes de la copie : %s'
+              % ', '.join('%d (%d)' % kv for kv in sorted(s['copie_tb'].items())))
+    # La question que PT10 a ouverte : revient-on dans le corpus après la quarantième minute ?
+    # Depuis le Corpus jumeau, la réponse se lit d'abord après l'entrée dans l'acte IV.
+    acte4_t = next((t for t, g, _, _, _, _ in s['achats'] if sim.ACTE.get(BRANCHE.get(g), 0) >= 4), None)
+    if acte4_t is not None:
+        apres4 = [d for t, g, d in ev if g == 'relever' and t >= acte4_t]
+        print('  après l\'entrée dans l\'acte IV (%s) : %d relevés, dont %d sur la copie'
+              % (mmss(acte4_t), len(apres4), sum(1 for d in apres4 if d.endswith('· copie'))))
     if s['sans_tb']:
         print('  ⚠ %d relevés sans numéro de tablette (journal d\'avant PT9) : non tarifés'
               % s['sans_tb'])
@@ -513,14 +561,38 @@ def rapport(ev, nom):
                   % (len(siens), sum(1 for _, f in siens if f), len(elv),
                      sum(1 for g, _, f in tranches if f and g in elv),
                      sum(sim.erreur(P, n) for n in elv.values())))
-        for _, g, mot, f, _, dte in s['achats']:
+        # Le seul geste qui fasse baisser le doute est de concorder le signe AVANT de le
+        # trancher (règle 18) ; le jeu ne le dit nulle part, et c'est ici qu'on le voit.
+        # Dans l'ordre du journal et non à l'instant : deux lignes portent souvent le même.
+        vus, avant_achat = set(), set()
+        for _, g_, d_ in ev:
+            if g_ == 'concChoisir':
+                vus.add(d_.split(' ·')[0])
+            elif g_ == 'acheterGl' and d_.split(' ')[0] in vus:
+                avant_achat.add(d_.split(' ')[0])
+        conc_av = lambda g, t: g in avant_achat
+        for ta, g, mot, f, _, dte in s['achats']:
             if g in sim.AMBIGUS:
-                print('    %-6s %-12s %s%s%s' % (g, mot, '✗ faux' if f else 'juste',
-                                                 ' · doute %d' % dte if dte is not None else '',
-                                                 ' · lu par %d Élève(s), %d %% d\'erreur'
-                                                 % (elv[g], round(100 * sim.erreur(P, elv[g])))
-                                                 if g in elv else ''))
+                print('    %-6s %-12s %s%s%s%s' % (g, mot, '✗ faux' if f else 'juste',
+                                                   ' · doute %d' % dte if dte is not None else '',
+                                                   ' · concordé avant' if conc_av(g, ta) else '',
+                                                   ' · lu par %d Élève(s), %d %% d\'erreur'
+                                                   % (elv[g], round(100 * sim.erreur(P, elv[g])))
+                                                   if g in elv else ''))
         print('  dette %d (seuil %d)' % (sum(sim.DETTE[g] for g in fx), P['contr_s']))
+    if s['elv_achats']:
+        t1e = s['elv_achats'][0][0]
+        # Avant ou après ⟨avant⟩ et ⟨ne-pas⟩ — les deux signes dont l'erreur, avec ⟨lire⟩,
+        # arme la contradiction à elle seule. Dans l'ordre du journal, pas à l'instant.
+        rang = lambda pred: next((i for i, e in enumerate(ev) if pred(e)), None)
+        r_elv = rang(lambda e: e[1] == 'acheterIns' and e[2].startswith('elv '))
+        def cote(g):
+            r = rang(lambda e: e[1] == 'acheterGl' and e[2].split(' ')[0] == g)
+            return 'avant' if r is None or r_elv < r else 'après'
+        rel = ' · '.join('%s ⟨%s⟩' % (cote(g), MOT.get(g, g)) for g in ('pat', 'la'))
+        print('  Élèves : %d, le premier à %s — %s' % (s['elv_achats'][-1][1], mmss(t1e), rel))
+    elif tranches:
+        print('  aucun Élève')
     if s['contr']:
         print('  ⚠ contradiction ARMÉE à %s%s' % (mmss(s['contr']),
               ' · levée à ' + mmss(s['contr_levee']) if s['contr_levee'] else ' · jamais levée'))
@@ -561,6 +633,19 @@ def rapport(ev, nom):
         print('  %d posée%s · %d réponse%s · %d silence%s'
               % (len(s['questions']), 's' if len(s['questions']) > 1 else '',
                  n_rep, 's' if n_rep > 1 else '', n_sil, 's' if n_sil > 1 else ''))
+
+    # Le Lecteur (GRAINE-2) : « on le voit lire ». Ce qui se mesure, c'est si le joueur est
+    # allé voir une tablette que le Lecteur venait de marquer.
+    if s['lec']:
+        titre('le Lecteur (GRAINE-2)')
+        lues = [(t, n) for t, ns in s['lues'] for n in ns]
+        print('  acheté à %s · %d au plus · %d tablette%s lue%s%s'
+              % (mmss(s['lec'][0][0]), s['lec'][-1][1], len(lues), 's' if len(lues) > 1 else '',
+                 's' if len(lues) > 1 else '', ', la dernière à %s' % mmss(lues[-1][0]) if lues else ''))
+        vues = [(t, d) for t, d in s['navs']
+                if any(str(n) == str(d).strip() and tl <= t for tl, n in lues)]
+        print('  navigations vers une tablette qu\'il avait déjà lue : %d%s'
+              % (len(vues), ', la première à %s' % mmss(vues[0][0]) if vues else ''))
 
     # I2 (VOIX-5) : au million, une fois l'acte IV ouvert, les zéros des nombres du joueur
     # s'écrivent en ⟨zéro⟩ tant qu'il ne l'a pas composé. Ce qui se mesure : quand, et combien

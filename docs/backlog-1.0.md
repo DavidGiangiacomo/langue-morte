@@ -23,7 +23,7 @@
 | | Fait | Reste pour 1.0 |
 |---|---|---|
 | Glyphes | **30 / 45** *(+ `grenier` et `zéro`, composés, hors arbre)* — **43** avec la Personne et la Fin, sur une branche de travail pas encore fusionnée | **15** *(9)* |
-| Instruments | **9 / 9** (Œil, Copiste, Table, Concordance, Atelier, Grammaire, **Élève** *— branche `eleve`, pas encore fusionnée*, **Corpus jumeau** et **Le Lecteur** *— branche empilée dessus*) | 0 |
+| Instruments | **9 / 9** (Œil, Copiste, Table, Concordance, Atelier, Grammaire, **Élève**, **Corpus jumeau** et **Le Lecteur** *— fusionnés sur `develop` le 20/10/2026, pour PT11*) | 0 |
 | Actes | **I, II, III — entiers** | IV, V |
 | Corpus | **30 tablettes, 705 lignes, 3 838 signes — intégral**, ⟨N1⟩/⟨N2⟩ semés, **les 11 lectures fausses écrites** | — |
 | Mécaniques centrales | relevé, recoupement, datation, rangement, concordance, hors-ligne, **composition**, **ambiguïté**, **doute, révision, contradiction** | Questions |
@@ -321,6 +321,8 @@ Suivi : [#22](https://github.com/DavidGiangiacomo/langue-morte/issues/22) — le
 
 ### E5 — L'Élève *(instrument ambivalent)*
 
+*Fusionné sur `develop` le 20/10/2026 avec les actes IV et V, avant tout playtest : l'auteur a décidé que PT11 jouerait les cinq actes plutôt que `develop` tel qu'il était. On ne saura donc pas ce qu'aurait été la partie sans lui — le simulateur, si (règle 31 de `CLAUDE.md`).*
+
 Suivi : [#23](https://github.com/DavidGiangiacomo/langue-morte/issues/23) — les récits ouverts y sont des sous-issues.
 
 **ELV-1 — L'instrument qui multiplie tout** · ~~T:M~~ **fait** (12/10/2026, branche `eleve`) · [#32](https://github.com/DavidGiangiacomo/langue-morte/issues/32)
@@ -500,6 +502,7 @@ Suivi : [#27](https://github.com/DavidGiangiacomo/langue-morte/issues/27) — le
 - **Question neuve de PT10** : ⟨grenier⟩ se trouve-t-il ? Et ⟨ne-pas⟩ posé sur ⟨un⟩, quand le joueur vient d'acheter ⟨ne-pas⟩ et qu'il a neuf zéros sous les yeux sur la tablette 29 ? Le journal d'actions compte les tentatives de composition, avec leur paire et leur minute. Aucun simulateur ne peut y répondre.
 - ~~**La tranche 20-30′ monte d'un lot à l'autre**~~ — *traité le 14/09/2026, et la prémisse était fausse* : elle n'est pas en pente, elle oscille (dent de scie de quatre points sur les dénominateurs 28 à 45, dont 28 était le sommet). Le mécanisme, lui, était bien `revCount()`. `REV_R = 1,1` en ramène l'amplitude à 1,1 point ; ce qui est acheté, c'est que ce chiffre ne dépende plus de la taille du lexique. Le premier candidat de correction gagnait deux points d'I6 en ramenant la part manuelle des occurrences de 22,9 % à 12,4 % — PT6 en miniature (règle 9) — d'où le plancher de 15 % entré dans le tri de `balayage.py`, qui balaie aussi `rev_r`. Voir `docs/journal.md`, « Le dégagement ne dérive pas, il oscille ».
 - **Le garde-fou de durée de `balayage.py` suit la taille du lexique**, et doit être re-basé à chaque lot : resté à (71, 77) — PT9, vingt glyphes — il rejetait ses dix-huit combinaisons depuis `da61b19`, réglage en place compris, en affichant « 0 sur 18 ». Re-basé à (84, 92), puis à **(86, 95)** à 28 glyphes. La grille compte désormais `rev_r` (la courbe de dégagement) et un garde-fou de plus, la part manuelle des occurrences : 39 combinaisons sur 54 passent, dont le réglage en place (89,7–92,9 min, écart 5,2, main 23 %, pire tranche 26 %). **Le plancher de la main suit la longueur de la partie, lui aussi** : à quarante-trois glyphes (GRAINE-1, 19/10/2026), la Fin la fait passer de 17,2 % à 13,1 % sans Élève, et à 15 % les 54 combinaisons tombaient. Re-basé à 11, sur la famille qu'il doit attraper (« tout dégager à 80 % de l'arbre » : 9,7 %) ; durée (121, 165), écart max 8.
+- **PT11 (20/10/2026) joue les cinq actes**, déployés sur Pages depuis `develop`, en deux séances au plus. Le protocole est réécrit (`docs/pt11-protocole.md`) : vingt et une questions dans l'ordre où elles ne se contaminent pas, ce que le journal répond seul, et la relecture laissée au joueur. Le journal d'actions date désormais chaque reprise de partie (`reprise`), et `depouiller.py` rapporte les coupures, les attentes de plus de huit minutes, les Élèves, la concordance avant de trancher, les relevés après ⟨nous⟩ et le Lecteur.
 
 ---
 
@@ -608,7 +611,7 @@ Suivi : [#29](https://github.com/DavidGiangiacomo/langue-morte/issues/29) — le
 **LIV-5 — Étendre `verifier.py`** · T:L · [#53](https://github.com/DavidGiangiacomo/langue-morte/issues/53)
 > En tant qu'auteur, je veux que chaque mécanique nouvelle soit couverte bout en bout.
 
-- Le fichier porte aujourd'hui **325 assertions** sur le relevé, le recoupement, la numération, le gisement, la datation, les infobulles, la composition, la fenêtre de fin qui attend sa lecture, et la reprise d'une sauvegarde d'avant une mécanique neuve. Chaque épic de cette feuille de route doit y ajouter ses vérifications — en particulier AMB-4 (la phrase absurde est bien rendue) et COMP-3 (`zéro` replie les compteurs).
+- Le fichier porte aujourd’hui **444 assertions** (20/10/2026) sur le relevé, le recoupement, la numération, le gisement, la datation, les infobulles, la composition, la fenêtre de fin qui attend sa lecture, et la reprise d'une sauvegarde d'avant une mécanique neuve. Chaque épic de cette feuille de route doit y ajouter ses vérifications — en particulier AMB-4 (la phrase absurde est bien rendue) et COMP-3 (`zéro` replie les compteurs).
   *15/09/2026* : la section 21 en ajoute vingt-cinq sur l'ambiguïté, dont les cinq ruptures d'AMB-4
   qui existent dans l'arbre d'aujourd'hui et la vérification que **rien à l'écran ne nomme la dette** ;
   la section 22 en ajoute vingt-deux sur le doute et la révision, dont **le degré de doute est le
@@ -658,15 +661,17 @@ depuis le 14/09/2026 ; E3 et MOD-2 sont faits le 15/09/2026, avec CONTR-2 et CON
 `peut-être` ne pouvait pas laisser dehors — un doute qu'on ne peut pas payer ne sert à rien.
 CONTR-1 puis MOD-3 ferment la boucle le même jour : voir son doute, voir où le texte ne
 tient pas, payer pour rouvrir, ou encaisser. **E5, l'Élève, est écrit le 12/10/2026 sur la
-branche `eleve`** : J2 sera fait le jour où elle sera fusionnée, c'est-à-dire après le retour
-du journal de PT11 — il déplace l'économie que PT11 doit mesurer. Puis J3, l'acte IV.
+branche `eleve`**, et devait attendre le retour du journal de PT11. **Le 20/10/2026, l'auteur
+a décidé que PT11 jouerait les cinq actes** : l'Élève, les actes IV et V, les deux fins et la
+relecture sont fusionnés sur `develop` pour être déployés. J2 et J3 sont faits ; de J4, il
+reste la révélation, que PT11 mesurera.
 
 | Jalon | Contenu | Ce qu'on peut jouer à la fin |
 |---|---|---|
 | ~~**J1 — L'acte III se termine**~~ *(fait, 14/09/2026)* | ~~E1 (composition)~~ + ~~PAR-1~~ + ~~MOD-1~~ + ~~COMP-3~~ + ~~PAR-2~~ | 28 glyphes, la composition, `les-lecteurs` |
-| ~~**J2 — Le mensonge**~~ *(fait, 15/09/2026)* | ~~TXT-1 · E3 · MOD-2 · MOD-3 · E4~~ → **E5 (Élève)** écrit, à fusionner après PT11 | l'acte III entier, la confiance, la contradiction, **`faux`** |
-| **J3 — La voix** *(écrit, 20/10/2026, sur la branche empilée sur `eleve`)* | ~~E6 (Personne, Questions, Corpus jumeau, I2)~~ | l'acte IV |
-| **J4 — La graine** | E7 + E8 | les cinq actes, les deux fins, la relecture |
+| ~~**J2 — Le mensonge**~~ *(fait, 15/09/2026 ; l'Élève fusionné le 20/10/2026)* | ~~TXT-1 · E3 · MOD-2 · MOD-3 · E4 · E5 (Élève)~~ | l'acte III entier, la confiance, la contradiction, **`faux`** |
+| ~~**J3 — La voix**~~ *(fait, 20/10/2026)* | ~~E6 (Personne, Questions, Corpus jumeau, I2)~~ | l'acte IV |
+| **J4 — La graine** *(écrit, 20/10/2026, sauf GRAINE-3)* | ~~E7~~ + ~~E8~~ — reste la révélation, question 19 de PT11 | les cinq actes, les deux fins, la relecture |
 | **J5 — 1.0** | E9 (final) + E11 | une version publique |
 
 **En parallèle, en continu** : ECO-2 (le simulateur doit précéder chaque réglage), ECO-4

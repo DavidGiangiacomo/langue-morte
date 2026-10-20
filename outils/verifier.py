@@ -29,6 +29,8 @@ Contrôle :
  34. la sanction aux actes IV et V (ECO-3) : la contradiction ne divise plus que par 1,25 une
      fois l'acte IV ouvert, les Élèves n'y rendent plus leur bonus mais tranchent toujours,
      et le bandeau comme la ligne de l'instrument disent l'un et l'autre sans nommer un signe
+ 35. la coupure entre deux séances (PT11) : rouvrir une partie laisse au journal d'actions une
+     ligne `reprise` qui dit l'absence à l'horloge — avant ⟨nuit⟩, rien d'autre ne la marquait
   7. le relevé se fait dans le corpus ; le gisement s'épuise et se tarife à la 1re visite
   8. le recoupement se fait dans le corpus : deux passages d'un même signe
   9. la datation : une tablette se date quand on sait lire sa date, et pas avant
@@ -2462,6 +2464,30 @@ def main() -> None:
         verifier(r == ["2,35 M", 0, "1,22 M"], f"et mes nombres se relisent : {r}")
         page.evaluate("() => $('reset').click()")
         page.wait_for_timeout(200)
+
+        # ---- la coupure entre deux séances (PT11) ----
+        # PT11 se joue en deux fois au plus. Avant ⟨nuit⟩, rouvrir une partie ne laissait
+        # aucune trace : la partie attend, `veillee` ne journalise que ce qu'elle crédite, et le
+        # chrono est du temps de jeu. Deux séances se lisaient comme une seule.
+        print("\nla coupure entre deux séances")
+        page.evaluate("() => $('reset').click()")
+        page.wait_for_timeout(200)
+        page.evaluate("() => { S_.C = 99; acheterGl('an'); sauver(); sauverTraces(); }")
+        sauve = page.evaluate("() => { const s = JSON.parse(localStorage.getItem(KEY)); s.ts = Date.now() - 95*60000; return JSON.stringify(s); }")
+        traces = page.evaluate("() => localStorage.getItem('langue-morte-traces-v1')")
+        ctx = nav.new_context()
+        ctx.add_init_script("localStorage.setItem('langue-morte-partie', %r); localStorage.setItem('langue-morte-traces-v1', %r);"
+                            % (sauve, traces))
+        autre = ctx.new_page()
+        autre.goto(PAGE.resolve().as_uri())
+        autre.wait_for_timeout(600)
+        r = autre.evaluate("""() => { const t = TR.filter(e => e[1] !== 'etat');
+            return [t.slice(-1)[0][1], t.slice(-1)[0][2], TR.some(e => e[1] === 'veillee'), has('an')]; }""")
+        verifier(r[0] == "reprise" and r[1].startswith("95 min") and r[2] is False and r[3] is True,
+                 f"rouvrir la partie laisse une ligne « reprise » qui dit l'absence, même avant ⟨nuit⟩ : {r}")
+        ctx.close()
+        r = page.evaluate("() => TR.filter(e => e[1] === 'reprise').length")
+        verifier(r == 0, f"et une partie jamais rouverte n'en a aucune : {r}")
 
         # ---- les trois builds (LIV-2) ----
         # `python build.py` sort trois pages du même `src/`. Ce qui se vérifie ici n'est pas

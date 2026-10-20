@@ -1852,8 +1852,10 @@ const INS = [
    unlock:()=>has('nur')},
   /* Ouvert par la première Grammaire, comme chaque instrument l'est par le précédent. Son
      prix est en occurrences, comme les six autres, et c'est sa croissance qui décide de
-     combien on en empile — 1,8 en laisse sept à l'acheteur du simulateur, 1,4 en laissait
-     dix. Sa ligne dit les deux moitiés de ce qu'il fait, et ne chiffre que la première. */
+     combien on en empile — 1,8 en laissait sept à l'acheteur du simulateur quand la partie
+     s'arrêtait à l'acte III, neuf depuis les actes IV et V ; 1,4 en laissait dix. Sa ligne dit
+     les deux moitiés de ce qu'il fait, et ne chiffre que la première ; sous contradiction,
+     elle dit que la première attend (ECO-3). */
   {k:'elv', nom:'Élève',                sig:'shen', base:20000,r:1.80,
    ds:()=>(S_.contr ? 'suspendu tant qu’un passage refuse' : '+'+f(ELV_P*100,0)+' % aux autres')+' · déchiffre seul',
    unlock:()=>S_.b.gram>0},
@@ -3963,6 +3965,12 @@ function majBoutonTraces(){
 
 function sauverTraces(){ try{ localStorage.setItem(TKEY, JSON.stringify(TR)); }catch(e){} }
 
+/* La coupure entre deux séances (PT11 se joue en deux fois au plus). Avant ⟨nuit⟩ elle ne
+   laissait aucune trace : la partie attend, et `veillee` ne journalise que ce qu'elle a
+   crédité. Le chrono du journal est du temps de jeu, et deux séances s'y lisaient comme une
+   seule. L'absence se compte à l'horloge, depuis la dernière sauvegarde — avant que
+   `veillee()` ne la remette à l'heure, d'où sa place ici, qui se charge avant jeu.js. */
+if(TR.length && S_.ts) tracer('reprise', Math.round((Date.now() - S_.ts)/60000) + ' min d’absence');
 if(!TR.length) tracer('debut');
 majBoutonTraces();
 

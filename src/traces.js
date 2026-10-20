@@ -295,6 +295,12 @@ function majBoutonTraces(){
 
 function sauverTraces(){ try{ localStorage.setItem(TKEY, JSON.stringify(TR)); }catch(e){} }
 
+/* La coupure entre deux séances (PT11 se joue en deux fois au plus). Avant ⟨nuit⟩ elle ne
+   laissait aucune trace : la partie attend, et `veillee` ne journalise que ce qu'elle a
+   crédité. Le chrono du journal est du temps de jeu, et deux séances s'y lisaient comme une
+   seule. L'absence se compte à l'horloge, depuis la dernière sauvegarde — avant que
+   `veillee()` ne la remette à l'heure, d'où sa place ici, qui se charge avant jeu.js. */
+if(TR.length && S_.ts) tracer('reprise', Math.round((Date.now() - S_.ts)/60000) + ' min d’absence');
 if(!TR.length) tracer('debut');
 majBoutonTraces();
 

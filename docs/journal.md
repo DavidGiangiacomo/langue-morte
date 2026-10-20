@@ -142,6 +142,72 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## PT11 joue les cinq actes
+
+*20/10/2026.*
+
+PT11 attendait un joueur depuis le 14/10/2026, avec un protocole écrit le 17/09 pour les
+actes I à III. Pendant ce temps, la branche empilée sur `eleve` a écrit l'Élève, les actes IV
+et V, les deux fins et la relecture ; chaque lot y a laissé ses questions « pour le playtest »,
+et aucun protocole ne les rangeait. En voulant les ranger, la première question était de savoir
+à qui elles seraient posées.
+
+### Ce qui est tranché
+
+Quatre questions à l'auteur.
+
+- **Le prochain joueur joue la branche, à la place de `develop`.** Contre la recommandation :
+  je proposais PT11 sur `develop`, puis un PT12 pour la branche. Ce que ça coûte est écrit :
+  deux joueurs neufs devenaient un seul, mais **la seule mesure de l'économie sans Élève avant
+  de le fusionner** est perdue — il est à la portée du joueur dès la 48ᵉ minute. Le simulateur
+  la donne (règle 31) ; aucun joueur ne la donnera.
+- **La branche va sur `develop` pour que Pages la déploie** — proposé par l'auteur, à la place
+  des deux options que je proposais (envoyer le fichier, ou lancer le déploiement à la main
+  depuis la branche). C'est la plus simple pour le joueur : la même adresse que le message
+  prévoyait depuis le 17/09.
+- **Deux séances au plus.** Trois heures d'affilée sont une demande lourde, et l'abandon pour
+  fatigue s'y confondrait avec l'abandon pour ennui.
+- **« relire » n'est pas caché.** Le joueur qui achève le verra et cliquera sans doute avant
+  l'entretien. Le prévenir aurait annoncé qu'il y a quelque chose après la fin ; on le laisse
+  faire, et l'entretien s'adapte — la question « tu as remarqué que tu choisissais ? » devient
+  « pendant la partie, avant la fin, l'avais-tu remarqué ? », et vaut moins. C'est le prix.
+
+### Le protocole
+
+Réécrit plutôt qu'augmenté : `docs/pt11-protocole.md` garde la structure de la version du
+17/09 — le message, le dépouillement d'abord, les questions dans l'ordre, ce qu'on ne dit
+jamais, rien sur `develop` pendant le playtest —, et l'ancienne reste dans l'historique. Vingt
+et une questions au lieu de douze, en trois tours. Ce qui a décidé de l'ordre :
+
+- **Tout ce que l'écran a montré se demande au deuxième tour**, sans dire ce que ça cache : le
+  repli de ⟨toi⟩, le panneau des questions, l'instrument sans nom, la fenêtre des deux fins.
+  Chacune seulement si le journal dit qu'elle a eu lieu.
+- **Les nombres du joueur au million viennent après ⟨grenier⟩ et le zéro**, comme le compteur
+  de l'acte I : les deux désignent le tracé du zéro, que la question sur les composés mesure.
+- **La révélation de l'acte V** — la tablette 28 donne l'ordre des branches de l'arbre —
+  **passe juste avant « tu as remarqué que tu choisissais ? »**, qui reste la dernière ; et
+  « à qui attribues-tu un mot faux ? » la suit, parce qu'elle présuppose qu'il y en a eu.
+- **Une section entière dit ce que le journal répond seul** : la main, la composition, les
+  lectures séparées entre le joueur et les Élèves, les révisions, les questions posées, le
+  Lecteur, la fin. Ce qu'on peut lire ne se demande pas — une question est un renseignement.
+
+### Deux trous de mesure, trouvés en écrivant la section 2
+
+**Une coupure avant ⟨nuit⟩ ne laissait aucune trace.** La ligne `veillee` n'apparaît que s'il
+y a eu production hors ligne, et le chrono du journal est du temps de jeu : deux séances
+s'y lisaient comme une seule. Le journal d'actions écrit désormais une ligne `reprise` à chaque
+fois qu'une partie est rouverte, avec l'absence à l'horloge depuis la dernière sauvegarde.
+
+**Le dépouillement ne rapportait pas six des choses que le protocole lui attribuait** : les
+coupures, les attentes de plus de huit minutes entre deux signes (I4), le nombre d'Élèves et
+leur place par rapport à ⟨avant⟩ et ⟨ne-pas⟩, la concordance d'un signe faite avant de le
+trancher, les relevés après ⟨nous⟩ et sur quelles tablettes de la copie, et le Lecteur. Les
+six y sont, et les deux comparaisons d'ordre se font dans l'ordre du journal et non à
+l'instant — deux lignes portent souvent le même, et une concordance faite juste avant un achat
+ne se voyait pas. Les mots des signes sont lus dans `lexique.js`, comme le reste.
+
+`outils/verifier.py` passe de 442 à **444 assertions** (section 35).
+
 ## ECO-3 — les deux trous d'I4
 
 *20/10/2026, sur la branche empilée sur `eleve`.*
