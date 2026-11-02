@@ -904,7 +904,10 @@ def main() -> None:
         page.wait_for_timeout(900)
         verifier(not fin(), "ni sur une tablette qui n'a rien à voir")
         page.evaluate("() => versTablette(27)")
-        page.wait_for_timeout(900)
+        # Attendre la tablette et non une durée : ce saut de 25 000 px prend 1,6 s en défilement
+        # doux dans Chromium 151, et les 900 ms d'avant faisaient échouer six contrôles d'un coup.
+        page.wait_for_function("() => tabletteVisible().dataset.tb === '27'", timeout=5000)
+        page.wait_for_timeout(200)
         verifier(fin(), "il commence une fois la tablette 27 sous les yeux")
         verifier(page.evaluate("() => finArmee") == 0, "et se désarme en commençant")
         page.wait_for_timeout(3500)
@@ -2488,6 +2491,81 @@ def main() -> None:
         ctx.close()
         r = page.evaluate("() => TR.filter(e => e[1] === 'reprise').length")
         verifier(r == 0, f"et une partie jamais rouverte n'en a aucune : {r}")
+
+        # ---- l'écran unique (design doc §12) ----
+        # À l'acte V la page faisait 3,5 écrans et le corpus s'arrêtait à 960 px : on achetait et
+        # on composait loin du texte. Le stade est posé d'un coup et non joué : c'est la hauteur
+        # de ce qui est ouvert qui se mesure ici, pas l'économie.
+        print("\nl'écran unique")
+        ctx = nav.new_context(viewport={"width": 1440, "height": 900})
+        vue = ctx.new_page()
+        vue.goto(PAGE.resolve().as_uri())
+        vue.wait_for_timeout(600)
+        vue.evaluate("""() => {
+            S_.gl = GL.filter(g => !g.sec).sort((a, b) => a.cost - b.cost).slice(0, 33).map(g => g.id);
+            Object.assign(S_.b, {cop: 90, tab: 30, con: 15, ate: 15, gram: 12, elv: 3, jum: 1, lec: 1});
+            S_.O = 6e6; S_.H = 3e4; S_.C = 9000; S_.lect.tem = 'f';
+            majSignes(); paintCorpus(null); }""")
+        vue.wait_for_timeout(300)
+        boite = "(el => { const r = el.getBoundingClientRect(); return [Math.round(r.top), Math.round(r.bottom)]; })"
+        r = vue.evaluate(f"""() => [document.documentElement.scrollHeight, innerHeight,
+            {boite}(document.querySelector('.corpus-wrap'))[1]]""")
+        verifier(r[0] == r[1] and r[2] <= r[1], f"la page ne défile plus, le corpus tient dans la fenêtre : {r}")
+        r = vue.evaluate(f"""() => {{ const c = document.querySelector('.colonne');
+            const dessous = c.scrollHeight > c.clientHeight; c.scrollTop = c.scrollHeight;
+            const rel = {boite}($('vl-O').closest('.panel')), col = {boite}(c);
+            return [dessous, rel[0] === col[0], {boite}($('pquest'))[1] <= innerHeight,
+                    {boite}(document.querySelector('.corpus-wrap'))[0] === {boite}(c)[0]]; }}""")
+        verifier(r == [True] * 4, f"la colonne centrale défile seule, sous des Relevés qui restent, à côté du corpus : {r}")
+        vue.evaluate("() => { document.querySelector('.colonne').scrollTop = 0; }")
+
+        # Les pions. Le lexique montre tous ses tracés depuis la première seconde (règle 14).
+        r = vue.evaluate("""() => { const cs = [...$('lex').querySelectorAll('.gcard:not([hidden])')];
+            const large = c => c.getBoundingClientRect().width > 30;
+            return [cs.length === NGL, cs.every(c => c.querySelector('.sig svg')),
+                    cs.filter(c => c.matches('.done, .locked')).every(c => !large(c)),
+                    cs.filter(c => !c.matches('.done, .locked')).every(large)]; }""")
+        verifier(r == [True] * 4, f"tous les tracés restent, lus et lointains en pions, la carte de tête entière : {r}")
+        r = vue.evaluate("""() => [...document.querySelectorAll('#lex .branch:not([hidden])')].every(b => {
+            const hauts = [...b.querySelectorAll('.gcard:not(.done):not(.locked)')].map(c => c.getBoundingClientRect().top);
+            const bas = Math.max(...[...b.querySelectorAll('.gcard.done, .gcard.locked')].map(c => c.getBoundingClientRect().bottom));
+            return hauts.every(h => h >= bas); })""")
+        verifier(r is True, "la carte de tête descend sous la rangée de sa branche")
+        # Sans ça, les contrôles « rien à l'écran ne dit… » de ce fichier passeraient à vide.
+        verifier("poussière" in vue.evaluate("() => document.querySelector('.shell').innerText"),
+                 "le mot d'un signe lu reste dans le texte rendu")
+
+        survol = lambda sel: vue.evaluate(f"""() => {{ const b = $('lex').querySelector('{sel}').getBoundingClientRect();
+            return [b.left + b.width / 2, b.top + b.height / 2]; }}""")
+        vue.mouse.move(*survol("[data-gl=tem]"))
+        vue.wait_for_timeout(120)
+        r = vue.evaluate("() => [$('tip').hidden, $('tip').textContent, byId.tem.eff]")
+        verifier(r[0] is False and "poussière" in r[1] and r[2] in r[1],
+                 f"le survol d'un pion dit le mot lu, faux s'il est faux, et son effet : {r[1]}")
+        vue.mouse.move(*survol(".gcard.locked"))
+        vue.wait_for_timeout(120)
+        verifier(vue.evaluate("() => $('tip').hidden"), "un signe lointain ne dit rien")
+        # Un vrai clic, à la souris : c'est le geste que la mise en page peut casser.
+        carte = vue.query_selector("#lex .gcard.afford")
+        verifier(carte is not None, "une carte reste payable à ce stade")
+        gl = carte.get_attribute("data-gl")
+        carte.click()
+        vue.wait_for_timeout(120)
+        if vue.evaluate("() => !$('amb').hidden"):
+            vue.click("#amb-choix button:first-child")
+        verifier(vue.evaluate("g => has(g)", gl), f"la carte de tête s'achète à la souris : {gl}")
+
+        r = vue.evaluate("""() => { const c = document.querySelector('.colonne'); finVider(true);
+            const v = getComputedStyle(c).overflowY; finDefaire(); return [v, getComputedStyle(c).overflowY]; }""")
+        verifier(r == ["hidden", "auto"], f"l'interface partie, aucun ascenseur ne reste dans l'écran vide : {r}")
+        # Une fenêtre étroite ou très basse ne peut pas se figer : le corpus n'y aurait plus la place.
+        for (lg, ht) in ((1100, 800), (1440, 500)):
+            vue.set_viewport_size({"width": lg, "height": ht})
+            vue.wait_for_timeout(120)
+            r = vue.evaluate("""() => [document.documentElement.scrollHeight > innerHeight,
+                getComputedStyle(document.body).overflowY, getComputedStyle(elCorpus).maxHeight !== 'none']""")
+            verifier(r == [True, "visible", True], f"en {lg}×{ht}, la page redevient une colonne qui défile : {r}")
+        ctx.close()
 
         # ---- les trois builds (LIV-2) ----
         # `python build.py` sort trois pages du même `src/`. Ce qui se vérifie ici n'est pas

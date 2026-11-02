@@ -73,6 +73,9 @@ window.addEventListener('keydown', e=>{
 $('instr').addEventListener('click', e=>{ const b=e.target.closest('[data-ins]'); if(b&&!b.disabled) acheterIns(b.dataset.ins); });
 /* Un signe ambigu ne s'achète pas d'un clic : il ouvre les deux lectures, et c'est le
    second clic qui paie. Les trente-quatre autres n'ont rien à trancher et passent droit. */
+$('lex').addEventListener('mousemove', tipPion);
+$('lex').addEventListener('mouseleave', tipCacher);
+$('lex').addEventListener('scroll', tipCacher, {passive:true});
 $('lex').addEventListener('click', e=>{ const b=e.target.closest('[data-gl]');
   if(!b||b.disabled) return;
   const id=b.dataset.gl;
