@@ -142,6 +142,82 @@ dans l'infobulle. Il est maintenant **affiché sur les têtes de branche du pann
 - **Les tablettes se dégagent peut-être trop vite** — `revCount()` vaut `4 + 2 × signes`,
   donc les 30 sont sorties au 13ᵉ signe, pile à la fin du MVP. Signalé, non traité.
 
+## L'écran unique — le texte ne s'en va plus
+
+*02/11/2026, branche `ecran-unique`.*
+
+L'auteur a relevé que le menu de droite s'allongeait et que la navigation y perdait. Mesuré
+sur sept stades reconstitués — signes par coût croissant, instruments posés à la main, donc
+des hauteurs et non une partie : en 1440×900, la page passait de **2,3 à 3,5 écrans** (4,1 en
+1366×768), le lexique de **1 926 à 3 011 px**, la colonne centrale de 764 à 2 242 px — et le
+corpus s'arrêtait vers **960 px** à tous les stades. La longueur n'était pas le fond du
+problème : tout ce qui se trouvait sous 960 px se jouait sans le texte. La seule carte utile
+de l'acte V était à 2 930 px, la grille de composition à 1 600, alors qu'il s'y agit de
+reconnaître dans le corpus ce qu'on pose. Et le design doc §12 dit « écran unique » depuis le
+premier jour.
+
+### Ce qui a changé
+
+Deux gestes, tranchés par l'auteur sur trois proposés. **La page ne défile plus** : chaque
+colonne porte son défilement, les Relevés restent épinglés en tête de la colonne centrale.
+**Le lexique se replie** : une branche tient sur son nom et une rangée de pions, puis la carte
+de tête. Un signe lu n'écrit plus que son tracé, et rend son mot et son effet au survol ; un
+signe lointain garde son tracé pâle. Le lexique grandissait parce que les cartes **lues**
+gagnaient leur ligne d'effet : c'était l'endroit le moins utile qui prenait le plus de place.
+
+Mesuré après : **une page de 900 sur 900**, un lexique de **309 à 759 px**, entier à l'écran en
+1440×900 et au-dessus, et les sept cartes de tête visibles d'un coup — l'arbitrage entre
+branches, « 3 C pour 315 signes ou 40 C pour 49 », se voit enfin sans défiler. La colonne
+centrale fait toujours 2 242 px à l'acte V, dans 804 de hauteur : la grille reste à faire
+défiler, mais à côté du corpus. Regrouper Instruments, Doute, Composer et Questions en onglets,
+troisième geste proposé, n'est pas fait.
+
+Économie inchangée : aucune ligne d'`economie.js` n'est touchée.
+
+### Ce que ça coûte
+
+**Le corpus perd des lignes sur les petits écrans.** 666 → 591–667 px en 1440×900, 780 → 771–847
+en 1920×1080 ; mais 462 → 364–392 en 1366×625, la fenêtre réelle d'un portable de 768 lignes. Il
+ne sort plus de la fenêtre, c'est l'échange. Sous 700 px de haut, la barre des tablettes passe à
+une rangée et demie pour lui rendre 25 à 50 px.
+
+**Le glossaire d'un coup d'œil a disparu.** Le lexique donnait le mot de chaque signe lu ; il
+faut désormais le survoler, ou le retrouver dans le corpus, où il est écrit. C'est ce qu'on
+achète, et c'est ce que PT11 doit regarder.
+
+### Ce qui aurait pu casser sans bruit
+
+- **Les contrôles « rien à l'écran ne dit… ».** Une dizaine lisent `innerText`. Passer le mot
+  d'un signe lu en `display:none` les aurait fait réussir à vide. Il est découpé hors de la vue,
+  donc toujours rendu, et un contrôle le vérifie.
+- **La fin qui attend sa lecture** (règle 16) lit la tablette du haut du corpus. Un corpus plus
+  haut pourrait ne plus amener les dernières tablettes en haut de son cadre : l'effacement
+  attendrait alors ses quatre-vingt-dix secondes. Mesuré : la tablette 27 reste atteignable
+  jusqu'à 1 149 px de corpus, en 2560×1440.
+- **Les ascenseurs de fin.** L'interface s'efface, mais une colonne qui défile garde son
+  ascenseur, seul dans l'écran vide.
+- **9 999 écrit en signes.** Trente-six tracés qui débordaient déjà de leur carte, sans
+  conséquence tant que rien ne défilait ; dans une colonne, un ascenseur horizontal. Ils passent
+  à la ligne.
+- **Un bouton désactivé** n'émet pas les mêmes événements d'un navigateur à l'autre, et les pions
+  le sont tous : ils laissent passer le pointeur, et c'est la branche qui reconnaît celui qu'on
+  survole (`tipPion`).
+
+### Trouvé en chemin
+
+`verifier.py` échouait sur **six contrôles de la fin, sur `develop` même**, indépendamment de ce
+lot. Le test sautait à la tablette 27 et attendait 900 ms ; dans Chromium 151, ce défilement doux
+de 25 000 px prend 1,6 s. L'effacement ne commençait donc pas à temps, et les cinq contrôles
+suivants tombaient en cascade. Le jeu n'y était pour rien. Le test attend désormais la tablette,
+et non une durée.
+
+### Pour le playtest qui jouera cette branche
+
+Le journal d'actions ne date pas le défilement, donc **rien ne dira si l'ancienne disposition
+pesait sur les cinquante minutes de PT10 sans un geste dans le corpus** — une hypothèse, que la
+cause établie (le gisement) n'exclut pas. Une partie jouée sur cette branche et une partie jouée
+sur `develop` ne se comparent pas sur ce point.
+
 ## La répétition générale du dépouillement
 
 *20/10/2026, avant l'envoi du message de PT11.*

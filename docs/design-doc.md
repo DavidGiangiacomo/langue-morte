@@ -244,6 +244,8 @@ Aucune n'est présentée comme la bonne. Le jeu n'attribue pas de score.
 - **Droite** — le lexique, en branches.
 - **Trois états par élément d'UI** : *opaque* (signes, inerte) → *reconnu* (on sait que c'est un compteur, pas ce qu'il compte) → *lisible* (label + infobulle + opérable).
 
+**Ce qui est posé** (02/11/2026). L'écran unique était resté une intention : la page faisait 3,5 écrans à l'acte V et le corpus s'arrêtait au premier. Elle ne défile plus — chaque colonne porte son défilement, sous des Relevés épinglés —, et le lexique se replie : dans chaque branche, un signe lu ou lointain est un pion, et seule la carte de tête reste entière. Sur une fenêtre étroite ou très basse, la page redevient une colonne qui défile. Voir CLAUDE.md, règle 32.
+
 **Coût de production réel** : le budget du jeu est le texte, pas le code.
 
 ---

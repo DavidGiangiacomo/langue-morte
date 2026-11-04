@@ -1299,6 +1299,23 @@ function tipPlace(x,y){
   t.style.left=Math.max(6,px)+'px'; t.style.top=Math.max(6,py)+'px';
 }
 function tipCacher(){ if(tipCle!==null){ tipCle=null; $('tip').hidden=true; } }
+/* L'infobulle d'un pion du lexique : ce que sa carte écrivait avant de se replier. Le mot est
+   celui que `paintLex` a posé, donc `motDe()` — une lecture fausse s'y lit fausse (règle 17). */
+function tipPion(e){
+  const branche = !document.body.classList.contains('fin') && e.target.closest('.branch');
+  const p = branche && [...branche.querySelectorAll('.gcard.done')].find(b => {
+    const r = b.getBoundingClientRect();
+    return e.clientX >= r.left && e.clientX < r.right && e.clientY >= r.top && e.clientY < r.bottom; });
+  if(!p){ tipCacher(); return; }
+  const cle = 'L' + p.dataset.gl;
+  if(cle !== tipCle){
+    tipCle = cle;
+    $('tip').innerHTML = sv(p.dataset.gl) + '<span class="lab glose"><b>' + p.querySelector('.ttl').innerHTML
+                       + '</b><span>' + p.querySelector('.eff').innerHTML + '</span></span>';
+    $('tip').hidden = false;
+  }
+  tipPlace(e.clientX, e.clientY);
+}
 
 /* ============================ journal ============================ */
 const LOGS=[];
