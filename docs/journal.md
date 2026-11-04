@@ -218,6 +218,15 @@ pesait sur les cinquante minutes de PT10 sans un geste dans le corpus** — une 
 cause établie (le gisement) n'exclut pas. Une partie jouée sur cette branche et une partie jouée
 sur `develop` ne se comparent pas sur ce point.
 
+*04/11/2026 : fusionné sur `develop` avant l'envoi du message, donc PT11 jouera cette
+disposition. La répétition générale, refaite sur la page déployée, tient. Le protocole gagne
+deux questions. La première, posée avant toutes les autres : sur quel écran le joueur a joué.
+Sous 1181×520, un portable de 1366×768 affiché à 125 % par exemple, la page redevient la colonne
+qui défile, et le journal d'actions ne note pas la taille de la fenêtre. La seconde complète la
+question 7 : comment le joueur retrouve le mot d'un signe déjà lu. Le journal ne voit pas le
+survol, et le retour au corpus après la quarantième minute a désormais deux causes possibles,
+le Corpus jumeau et l'écran unique.*
+
 ## La répétition générale du dépouillement
 
 *20/10/2026, avant l'envoi du message de PT11.*
@@ -4334,7 +4343,7 @@ Proposition intermédiaire : faire compter à la jauge les **lignes entièrement
    moins cher de l'arbre, et il fait passer les trois compteurs en chiffres arabes d'un bloc
    (`readN`). C'est voulu, annoncé et cohérent avec I2 ; ce qui ne l'est pas, c'est que le
    design doc §10 demande de protéger « absolument » le décodage du compteur, qui s'éteint
-   donc au premier achat possible. **Rien à régler avant la réponse de PT11** (question 11 du
+   donc au premier achat possible. **Rien à régler avant la réponse de PT11** (question 18 du
    protocole) : la question n'est pas le seuil, c'est de savoir si la conversion est reçue
    comme une récompense ou comme une énigme perdue, et l'auteur ne peut pas y répondre. Issue
    [#57](https://github.com/DavidGiangiacomo/langue-morte/issues/57). Voir « Le compteur n'est
