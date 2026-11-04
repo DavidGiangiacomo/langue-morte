@@ -7,6 +7,12 @@ les actes IV et V, les deux fins, la relecture — et non plus `develop` tel qu'
 toujours le premier playtest joué à distance, et le premier depuis PT5 (06/09/2026, treize
 signes) par quelqu'un d'autre que l'auteur.*
 
+*Complété le 04/11/2026 : **l'écran unique** (règle 32) a été fusionné sur `develop` et déployé
+le jour même, c'est donc la disposition que PT11 jouera. La répétition générale a été refaite
+sur la page déployée, et elle tient. Le message ne change pas : la barre hors jeu, `copier` et
+le chronomètre sont restés où il les place. Le protocole y gagne une question préalable et une
+question (la seconde moitié de la 7), et §2 dit ce que le journal n'en voit pas.*
+
 > **La règle qui commande tout ce fichier** : le message ne doit rien apprendre. Plus de la
 > moitié des questions de PT11 portent sur ce qu'un joueur trouve **sans savoir qu'il y a
 > quelque chose à trouver** — la composition, les deux lectures, ⟨nous⟩ dans le nom, ce que
@@ -120,7 +126,10 @@ renseignement et fausse tout ce qui suit.
   nombre de recoupements (sous une vingtaine, le réglage du 09/09 a vidé un geste), et
   **après ⟨nous⟩, revient-on relever** — sur la copie du Corpus jumeau, et sur quelles
   tablettes (« · copie » dans le journal). C'est la question que PT10 a ouverte : cinquante
-  minutes sans un geste dans le texte, de 36:46 à 86:34.
+  minutes sans un geste dans le texte, de 36:46 à 86:34. **Deux changements depuis PT10
+  poussent dans le même sens** : le Corpus jumeau, qui rouvre un gisement, et l'écran unique,
+  qui garde le texte à l'écran pendant qu'on achète et qu'on compose. Si le joueur revient, le
+  journal ne dit pas lequel des deux l'a ramené.
 - **La composition** : chaque tentative, sa paire, sa minute et son issue (carnet, impayable,
   acquis). ⟨grenier⟩ et le zéro ont-ils été posés, et quand ; ⟨germer⟩ ou ⟨devenir-lecture⟩
   l'ont-ils été avant que le lexique les offre ?
@@ -144,6 +153,18 @@ renseignement et fausse tout ce qui suit.
 - **Le rythme** : la durée, et chaque attente de plus de huit minutes sans déblocage (I4) —
   avec sa minute, pour la croiser avec la question 3.
 
+### Ce que le journal ne voit pas — à demander
+
+- **La disposition.** L'écran unique ne vaut qu'à partir de 1181×520 pixels de fenêtre, tels
+  que le navigateur les compte. En dessous, la page redevient la colonne qui défile d'avant.
+  Un portable de 1366×768 affiché à 125 %, réglage courant sous Windows, n'en a que 1093 de
+  large, et joue la colonne. Le journal ne note ni la taille de la fenêtre ni le zoom. C'est la
+  question préalable du §3 qui le dit. Une partie jouée en colonne ne mesure pas l'écran
+  unique : la page y défile comme en PT10, avec le lexique replié en plus.
+- **Le survol.** Le journal ne date ni le défilement ni le survol d'un pion du lexique. Rien
+  n'y dira si le joueur est allé chercher le mot d'un signe déjà lu, ni où, ni combien de
+  fois : seule la question 7 répond. Les pions sont les mêmes dans les deux dispositions.
+
 ---
 
 ## 3. Les questions, dans l'ordre
@@ -154,6 +175,15 @@ dernières — celles qui révèlent — se posent à la fin, dans cet ordre-là
 
 Les questions 1 à 14 peuvent se poser par écrit. **Les questions 15 à 21 se posent de vive
 voix**, et la 20 une seule fois.
+
+### Avant la première — une question qui n'apprend rien
+
+0. **Tu as joué sur quel écran ?** Portable ou écran de bureau, fenêtre agrandie ou non, et le
+   zoom du navigateur, s'il l'a changé.
+   → *Le journal ne le note pas (§2, « ce que le journal ne voit pas »). La réponse dit si la
+   partie s'est jouée sur l'écran unique ou sur la colonne qui défile (règle 32). Elle ne
+   contamine rien, donc elle se pose en premier, avant que la fatigue de l'entretien ne la
+   fasse oublier.*
 
 ### Premier tour — ouvert, ne rien nommer
 
@@ -190,6 +220,13 @@ voix**, et la 20 une seule fois.
    → *LA question ouverte par PT10. Le journal répond sur les gestes ; on veut savoir s'il a
    senti un vide, ou pas du tout. Ne pas demander « tu t'es ennuyé ? », qui souffle la
    réponse. Croiser avec les relevés sur la copie après ⟨nous⟩.*
+
+   **Et un signe que tu avais déjà lu, quand tu voulais retrouver ce qu'il voulait dire — tu
+   faisais comment ?**
+   → *L'écran unique (règle 32) : le lexique ne donne plus le mot d'un signe lu qu'au survol de
+   son pion. Le cherche-t-on, et où : dans le lexique, dans le corpus, où il est écrit, ou
+   nulle part ? Le journal ne voit pas le survol (§2) ; seule cette question répond. Ne dire ni
+   « en survolant », ni « dans le lexique ». « Je n'en ai jamais eu besoin » est une réponse.*
 8. **Le panneau où on assemble deux signes — tu t'en es servi ?** Qu'est-ce que tu attendais
    qu'il se passe ?
    → *Le seul retour qualitatif de PT10 portait là-dessus ; COMP-6 y a répondu par un intitulé.
